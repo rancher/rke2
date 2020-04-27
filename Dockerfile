@@ -44,11 +44,11 @@ COPY --from=k8s \
         /bin/
 COPY --from=k3s \
     /bin/runc \
-        /bin
+        /bin/
 COPY --from=containerd \
     /usr/local/bin/containerd-shim-runc-v2 \
     /usr/local/bin/containerd \
     /usr/local/bin/containerd-shim \
     /usr/local/bin/ctr \
     /usr/local/bin/containerd-shim-runc-v1 \
-        /bin
+        /bin/

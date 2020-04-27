@@ -39,9 +39,9 @@ else
 	DEBUG_GO_GCFLAGS := -gcflags=all="-N -l"
 endif
 
-VERSION=$(shell git describe --match 'v[0-9]*' --dirty='.m' --always)
-REVISION=$(shell git rev-parse HEAD)$(shell if ! git diff --no-ext-diff --quiet --exit-code; then echo .m; fi)
-RELEASE=${PROG}-$(VERSION:v%=%).${GOOS}-${GOARCH}
+VERSION=$(shell git describe --match 'v[0-9]*' --dirty='.dirty' --always --tags)
+REVISION=$(shell git rev-parse HEAD)$(shell if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
+RELEASE=${PROG}-$(VERSION).${GOOS}-${GOARCH}
 
 ifdef BUILDTAGS
     GO_BUILDTAGS = ${BUILDTAGS}
@@ -112,9 +112,11 @@ dev-shell: .dev-shell-build              ## Launch a development shell to run te
 dev-shell-enter:                         ## Enter the development shell on another terminal
 	docker exec -it ${PROG}-dev-shell bash
 
-.ci: validate-ci build
+artifacts: build
 	mkdir -p dist/artifacts
 	cp bin/${PROG} dist/artifacts/${RELEASE}
+
+.ci: validate-ci artifacts
 
 in-docker-%: .dapper                     ## Advanced: wraps any target in Docker environment, for example: in-docker-build-debug
 	mkdir -p bin/ dist/
