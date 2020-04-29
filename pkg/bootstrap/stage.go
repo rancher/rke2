@@ -27,6 +27,10 @@ func dataDirFor(dataDir, dataName string) string {
 	return filepath.Join(dataDir, "data", dataName, "bin")
 }
 
+func symlinkDataDir(dataDir string) string {
+	return filepath.Join(dataDir, "bin")
+}
+
 func dirExists(dir string) bool {
 	if s, err := os.Stat(dir); err == nil && s.IsDir() {
 		return true
@@ -82,7 +86,16 @@ func Stage(dataDir string, images images.Images) (string, error) {
 		return "", err
 	}
 
-	return dir, os.Rename(tempDir, dir)
+	err = os.Rename(tempDir, dir)
+	if err != nil {
+		return "", err
+	}
+
+	// ignore errors
+	_ = os.RemoveAll(symlinkDataDir(dataDir))
+	_ = os.Symlink(dir, symlinkDataDir(dataDir))
+
+	return dir, err
 }
 
 func extract(image, targetDir string, reader io.Reader) error {

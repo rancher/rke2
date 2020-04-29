@@ -11,8 +11,17 @@ import (
 )
 
 var (
-	debug   bool
-	appName = filepath.Base(os.Args[0])
+	debug      bool
+	appName    = filepath.Base(os.Args[0])
+	commonFlag = []cli.Flag{
+		cli.StringFlag{
+			Name:        "repo",
+			Usage:       "(image) Image repository to use for RKE2 images",
+			EnvVar:      "RKE2_REPO",
+			Value:       "rancher",
+			Destination: &config.Repo,
+		},
+	}
 )
 
 func init() {

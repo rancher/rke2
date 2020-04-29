@@ -46,11 +46,10 @@ RELEASE=${PROG}-$(VERSION).${GOOS}-${GOARCH}
 ifdef BUILDTAGS
     GO_BUILDTAGS = ${BUILDTAGS}
 endif
-# Build tags seccomp, apparmor and selinux are needed by CRI plugin.
-GO_BUILDTAGS ?= todo
+GO_BUILDTAGS ?= no_embedded_executor
 GO_BUILDTAGS += ${DEBUG_TAGS}
 GO_TAGS=$(if $(GO_BUILDTAGS),-tags "$(GO_BUILDTAGS)",)
-GO_LDFLAGS=-ldflags '-X $(PKG)/version.Version=$(VERSION) -X $(PKG)/version.Revision=$(REVISION) -X $(PKG)/version.Package=$(PACKAGE) $(EXTRA_LDFLAGS)'
+GO_LDFLAGS=-ldflags '-X $(PKG)/version.Program=$(PROG) -X $(PKG)/version.Version=$(VERSION) -X $(PKG)/version.Revision=$(REVISION) -X $(PKG)/version.Package=$(PACKAGE) $(EXTRA_LDFLAGS)'
 
 
 default: in-docker-build                 ## Build using docker environment (default target)
@@ -87,17 +86,21 @@ validate:                                ## Run go fmt/vet
 validate-ci: validate bin/golangci-lint  ## Run more validation for CI
 	./bin/golangci-lint run
 
+COMMAND ?= "server"
 run: build-debug
-	./bin/${PROG} server
+	./bin/${PROG} ${COMMAND} ${ARGS}
 
 bin/dlv:
 	go build -o bin/dlv github.com/go-delve/delve/cmd/dlv
 
 remote-debug: build-debug bin/dlv        ## Run with remote debugging listening on :2345
-	./bin/dlv --listen=:2345 --headless=true --api-version=2 --accept-multiclient exec ./bin/${PROG} server
+	CATTLE_DEV_MODE=true ./bin/dlv --listen=:2345 --headless=true --api-version=2 --accept-multiclient exec -- ./bin/${PROG} ${COMMAND} ${ARGS}
+
+remote-debug-exit: bin/dlv               ## Kill dlv started with make remote-debug
+	echo exit | ./bin/dlv connect :2345 --init /dev/stdin
 
 .dev-shell-build:
-	docker build -t ${PROG}-dev --target shell -f Dockerfile --target dapper .
+	docker build -t ${PROG}-dev --target shell .
 
 clean-cache:                             ## Clean up docker base caches used for development
 	docker rm -fv ${PROG}-dev-shell
@@ -107,10 +110,17 @@ clean:                                   ## Clean up workspace
 	rm -rf bin dist
 
 dev-shell: .dev-shell-build              ## Launch a development shell to run test builds
-	docker run --rm --name ${PROG}-dev-shell -ti -v $${HOME}:$${HOME} -v ${PROG} -w $$(pwd) --privileged --net=host -v ${PROG}-pkg:/go/pkg -v ${PROG}-cache:/root/.cache/go-build ${PROG}-dev bash
+	docker run --rm --name ${PROG}-dev-shell --hostname ${PROG}-server -ti -e WORKSPACE=$$(pwd) -p 127.0.0.1:2345:2345 -v $${HOME}:$${HOME} -v ${PROG} -w $$(pwd) --privileged -v ${PROG}-pkg:/go/pkg -v ${PROG}-cache:/root/.cache/go-build ${PROG}-dev bash
 
 dev-shell-enter:                         ## Enter the development shell on another terminal
 	docker exec -it ${PROG}-dev-shell bash
+
+PEER ?= 1
+dev-peer: .dev-shell-build              ## Launch a server peer to run test builds
+	docker run --rm --link ${PROG}-dev-shell:${PROG}-server --name ${PROG}-peer${PEER} --hostname ${PROG}-peer${PEER} -p 127.0.0.1:234${PEER}:2345 -ti -e WORKSPACE=$$(pwd) -v $${HOME}:$${HOME} -v ${PROG} -w $$(pwd) --privileged -v ${PROG}-pkg:/go/pkg -v ${PROG}-cache:/root/.cache/go-build ${PROG}-dev bash
+
+dev-peer-enter:                         ## Enter the peer shell on another terminal
+	docker exec -it ${PROG}-peer${PEER} bash
 
 artifacts: build
 	mkdir -p dist/artifacts
