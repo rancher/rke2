@@ -3,15 +3,13 @@ module github.com/rancher/rke2
 go 1.14
 
 replace (
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.0.0+incompatible
-
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.8.7-0.20190926181021-82c7525d98c8
 	github.com/containerd/btrfs => github.com/containerd/btrfs v0.0.0-20181101203652-af5082808c83
 	github.com/containerd/cgroups => github.com/containerd/cgroups v0.0.0-20190717030353-c4b9ac5c7601
 	github.com/containerd/console => github.com/containerd/console v0.0.0-20181022165439-0650fd9eeb50
 	github.com/containerd/containerd => github.com/rancher/containerd v1.3.3-k3s2
 	github.com/containerd/continuity => github.com/containerd/continuity v0.0.0-20190815185530-f2a389ac0a02
-	github.com/containerd/cri => github.com/rancher/cri v1.3.0-k3s.5
+	github.com/containerd/cri => github.com/rancher/cri v1.3.0-k3s.6
 	github.com/containerd/fifo => github.com/containerd/fifo v0.0.0-20190816180239-bda0ff6ed73c
 	github.com/containerd/go-runc => github.com/containerd/go-runc v0.0.0-20190911050354-e029b79d8cda
 	github.com/containerd/typeurl => github.com/containerd/typeurl v0.0.0-20180627222232-a93fcdb778cd
@@ -34,10 +32,7 @@ replace (
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910
 	github.com/prometheus/common => github.com/prometheus/common v0.0.0-20181126121408-4724e9255275
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.0.0-20181204211112-1dc9a6cbc91a
-	github.com/rancher/helm-controller => github.com/ibuildthecloud/helm-controller-1 v0.1.2-0.20200427180043-a4b3f2c320ef
-
-	github.com/rancher/k3s => github.com/ibuildthecloud/k3s-dev v0.1.0-rc6.0.20200427184827-21712abb0a8a
-
+	github.com/rancher/k3s => github.com/ibuildthecloud/k3s-dev v0.1.0-rc6.0.20200507231729-5cf25b189e0e
 	k8s.io/api => github.com/rancher/kubernetes/staging/src/k8s.io/api v1.18.2-k3s.1
 	k8s.io/apiextensions-apiserver => github.com/rancher/kubernetes/staging/src/k8s.io/apiextensions-apiserver v1.18.2-k3s.1
 	k8s.io/apimachinery => github.com/rancher/kubernetes/staging/src/k8s.io/apimachinery v1.18.2-k3s.1
@@ -68,11 +63,15 @@ replace (
 
 require (
 	github.com/google/go-containerregistry v0.0.0-20200424115305-087a4bdef7c4
+	github.com/pkg/errors v0.9.1
 	github.com/rancher/k3s v0.0.0
-	github.com/rancher/wrangler v0.6.2-0.20200427172034-da9b142ae061
+	github.com/rancher/wrangler v0.6.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/urfave/cli v1.22.2
+	google.golang.org/grpc v1.26.0
 	k8s.io/api v0.18.0
 	k8s.io/apimachinery v0.18.0
 	k8s.io/apiserver v0.0.0
+	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
+	sigs.k8s.io/yaml v1.2.0
 )

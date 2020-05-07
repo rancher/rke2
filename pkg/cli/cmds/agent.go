@@ -1,13 +1,13 @@
 package cmds
 
 import (
-	"github.com/rancher/k3s/pkg/cli/agent"
 	"github.com/rancher/k3s/pkg/cli/cmds"
+	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/urfave/cli"
 )
 
 var (
-	k3sAgentBase = mustCmdFromK3S(cmds.NewAgentCommand(agent.Run), map[string]*K3SFlagOption{
+	k3sAgentBase = mustCmdFromK3S(cmds.NewAgentCommand(AgentRun), map[string]*K3SFlagOption{
 		"v":               Hide,
 		"vmodule":         Hide,
 		"log":             Hide,
@@ -26,7 +26,7 @@ var (
 		"docker":                     Drop,
 		"container-runtime-endpoint": Drop,
 		"pause-image":                Drop,
-		"private-registry":           Drop,
+		"private-registry":           nil,
 		"node-ip":                    nil,
 		"node-external-ip":           Drop,
 		"resolv-conf":                nil,
@@ -42,5 +42,11 @@ var (
 )
 
 func NewAgentCommand() cli.Command {
-	return k3sAgentBase
+	cmd := k3sAgentBase
+	cmd.Flags = append(cmd.Flags, commonFlag...)
+	return cmd
+}
+
+func AgentRun(app *cli.Context) error {
+	return rke2.Agent(app, config)
 }

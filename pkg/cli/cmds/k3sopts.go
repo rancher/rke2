@@ -62,10 +62,6 @@ func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Co
 			if opt.Default != "" {
 				strFlag.Value = opt.Default
 			}
-			if strFlag.EnvVar != "" {
-				strFlag.EnvVar = strings.Replace(strFlag.EnvVar, "K3S_", "RKE2_", 1)
-			}
-			strFlag.Usage = strings.Replace(strFlag.Usage, "k3s", "RKE2", -1)
 			if opt.Hide {
 				strFlag.Hidden = true
 			}
@@ -74,10 +70,6 @@ func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Co
 			if opt.Usage != "" {
 				intFlag.Usage = opt.Usage
 			}
-			if intFlag.EnvVar != "" {
-				intFlag.EnvVar = strings.Replace(intFlag.EnvVar, "K3S_", "RKE2_", 1)
-			}
-			intFlag.Usage = strings.Replace(intFlag.Usage, "k3s", "RKE2", -1)
 			if opt.Hide {
 				intFlag.Hidden = true
 			}
@@ -86,10 +78,6 @@ func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Co
 			if opt.Usage != "" {
 				boolFlag.Usage = opt.Usage
 			}
-			if boolFlag.EnvVar != "" {
-				boolFlag.EnvVar = strings.Replace(boolFlag.EnvVar, "K3S_", "RKE2_", 1)
-			}
-			boolFlag.Usage = strings.Replace(boolFlag.Usage, "k3s", "RKE2", -1)
 			if opt.Hide {
 				boolFlag.Hidden = true
 			}

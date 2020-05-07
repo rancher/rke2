@@ -2,12 +2,13 @@ package cmds
 
 import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
-	"github.com/rancher/rke2/pkg/server"
+	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/urfave/cli"
 )
 
 var (
-	config        server.Config
+	config rke2.Config
+
 	k3sServerBase = mustCmdFromK3S(cmds.NewServerCommand(ServerRun), map[string]*K3SFlagOption{
 		"v":                 Hide,
 		"vmodule":           Hide,
@@ -53,6 +54,7 @@ var (
 		"disable-scheduler":          Drop,
 		"disable-cloud-controller":   Drop,
 		"disable-network-policy":     Drop,
+		"disable-kube-proxy":         Drop,
 		"node-name":                  nil,
 		"with-node-id":               Drop,
 		"node-label":                 nil,
@@ -60,7 +62,7 @@ var (
 		"docker":                     Drop,
 		"container-runtime-endpoint": nil,
 		"pause-image":                Drop,
-		"private-registry":           Drop,
+		"private-registry":           nil,
 		"node-ip":                    nil,
 		"node-external-ip":           Drop,
 		"resolv-conf":                nil,
@@ -81,22 +83,10 @@ var (
 
 func NewServerCommand() cli.Command {
 	cmd := k3sServerBase
-	cmd.Flags = append(cmd.Flags, cli.StringFlag{
-		Name:        "version",
-		Usage:       "(image) Label used for the image download",
-		EnvVar:      "RKE2_VERSION",
-		Value:       "latest",
-		Destination: &config.Version,
-	}, cli.StringFlag{
-		Name:        "repo",
-		Usage:       "(image) Image repository to use for RKE2 images",
-		EnvVar:      "RKE2_REPO",
-		Value:       "rancher",
-		Destination: &config.Repo,
-	})
+	cmd.Flags = append(cmd.Flags, commonFlag...)
 	return cmd
 }
 
 func ServerRun(app *cli.Context) error {
-	return server.Run(app, config)
+	return rke2.Server(app, config)
 }

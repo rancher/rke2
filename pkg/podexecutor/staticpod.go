@@ -2,23 +2,24 @@ package podexecutor
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
-	"k8s.io/apiserver/plugin/pkg/authenticator/password/passwordfile"
-	"k8s.io/apiserver/plugin/pkg/authenticator/request/basicauth"
+	"sigs.k8s.io/yaml"
 
-	"github.com/rancher/rke2/pkg/images"
-	"github.com/rancher/wrangler/pkg/yaml"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/rancher/k3s/pkg/daemons/executor"
+	"github.com/rancher/rke2/pkg/auth"
+	"github.com/rancher/rke2/pkg/images"
+	"github.com/rancher/rke2/pkg/staticpod"
+	"github.com/sirupsen/logrus"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 )
 
@@ -32,28 +33,23 @@ var (
 )
 
 type StaticPod struct {
-	Manifests string
-	Images    images.Images
-}
-
-type PodArgs struct {
-	Command    string
-	Args       []string
-	Image      string
-	Dirs       []string
-	Files      []string
-	HealthPort int32
-	CPUMillis  int64
+	Manifests  string
+	PullImages string
+	Images     images.Images
 }
 
 func (s *StaticPod) Kubelet(args []string) error {
 	go func() {
 		for {
-			fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! START", args)
 			cmd := exec.Command("kubelet", args...)
 			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			cmd.Run()
+			//cmd.Stderr = os.Stderr
+			addDeathSig(cmd)
+
+			err := cmd.Run()
+			logrus.Errorf("Kubelet exited: %v", err)
+
+			time.Sleep(5 * time.Second)
 		}
 	}()
 
@@ -64,203 +60,130 @@ func (s *StaticPod) KubeProxy(args []string) error {
 	panic("kube-proxy unsupported")
 }
 
-func (s *StaticPod) APIServer(ctx context.Context, args []string) (authenticator.Request, http.Handler, bool, error) {
+func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) (authenticator.Request, http.Handler, error) {
+	if err := images.Pull(s.PullImages, "kube-apiserver", s.Images.KubeAPIServer); err != nil {
+		return nil, nil, err
+	}
+
 	for i, arg := range args {
+		// This is an option k3s adds that does not exist upstream
 		if strings.HasPrefix(arg, "--advertise-port=") {
 			args = append(args[:i], args[i+1:]...)
 			break
 		}
 	}
 
-	err := RunPod(s.Manifests, PodArgs{
-		Command:    "kube-apiserver",
-		Args:       args,
-		Image:      s.Images.KubeAPIServer,
-		Dirs:       ssldirs,
-		HealthPort: 6443,
-		CPUMillis:  250,
-	})
-	if err != nil {
-		return nil, nil, false, err
-	}
-	auth, err := auth(args)
-	return auth, http.NotFoundHandler(), false, err
-}
-
-func auth(args []string) (authenticator.Request, error) {
-	for _, arg := range args {
-		if !strings.HasPrefix(arg, "--basic-auth-file=") {
-			continue
-		}
-		file := strings.SplitN(arg, "=", 2)[1]
-		basicAuthenticator, err := passwordfile.NewCSV(file)
-		if err != nil {
-			return nil, err
-		}
-
-		return basicauth.New(basicAuthenticator), nil
-	}
-
-	return nil, nil
-}
-
-func (s *StaticPod) Scheduler(args []string) error {
-	if true {
-		return nil
-	}
-	return RunPod(s.Manifests, PodArgs{
-		Command:    "kube-scheduler",
-		Args:       args,
-		Image:      s.Images.KubeScheduler,
-		HealthPort: 10259,
-		CPUMillis:  100,
-	})
-}
-
-func (s *StaticPod) ControllerManager(args []string) error {
-	if true {
-		return nil
-	}
-	return RunPod(s.Manifests, PodArgs{
-		Command: "kube-controller-manager",
-		Args: append(args,
-			"/usr/libexec/kubernetes/kubelet-plugins/volume/exec"),
-		Image:      s.Images.KubeControllManager,
-		HealthPort: 10257,
-		CPUMillis:  200,
-	})
-}
-
-func RunPod(dir string, args PodArgs) error {
-	seen := map[string]bool{}
-	for _, arg := range args.Args {
-		parts := strings.SplitN(arg, "=", 2)
-		if len(parts) == 2 && strings.HasPrefix(parts[1], "/") {
-			if stat, err := os.Stat(parts[1]); err == nil && !stat.IsDir() {
-				if seen[parts[1]] {
-					continue
-				}
-				seen[parts[1]] = true
-				args.Files = append(args.Files, parts[1])
-			}
-		}
-	}
-
-	pod := pod(args)
-	bytes, err := yaml.Export(pod)
-	if err != nil {
-		return err
-	}
-
-	return writeFile(dir, args.Command, bytes)
-}
-
-func writeFile(dir, name string, content []byte) error {
-	if err := os.MkdirAll(dir, 0700); err != nil {
-		return err
-	}
-
-	dest := filepath.Join(dir, name+".yaml")
-	tmp := filepath.Join(dir, name+".tmp")
-	if err := ioutil.WriteFile(tmp, content, 0777); err != nil {
-		return err
-	}
-	return os.Rename(tmp, dest)
-}
-
-func pod(args PodArgs) *v1.Pod {
-	p := &v1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      args.Command,
-			Namespace: "kube-system",
-			Labels: map[string]string{
-				"component": args.Command,
-				"tier":      "control-plane",
-			},
-		},
-		Spec: v1.PodSpec{
-			Containers: []v1.Container{
-				{
-					Command:         append([]string{args.Command}, args.Args...),
-					Image:           args.Image,
-					ImagePullPolicy: v1.PullIfNotPresent,
-					LivenessProbe: &v1.Probe{
-						Handler: v1.Handler{
-							HTTPGet: &v1.HTTPGetAction{
-								Path: "/healthz",
-								Port: intstr.IntOrString{
-									IntVal: args.HealthPort,
-								},
-								Host:   "127.0.0.1",
-								Scheme: "HTTPS",
-							},
-						},
-						InitialDelaySeconds: 15,
-						TimeoutSeconds:      15,
-						FailureThreshold:    8,
-					},
-					Name: args.Command,
-					Resources: v1.ResourceRequirements{
-						Requests: v1.ResourceList{
-							v1.ResourceCPU: *resource.NewMilliQuantity(args.CPUMillis, resource.DecimalSI),
-						},
-					},
-				},
-			},
-			HostNetwork:       true,
-			PriorityClassName: "system-cluster-critical",
-		},
-	}
-
-	for _, env := range os.Environ() {
-		parts := strings.SplitN(env, "=", 2)
-		if !strings.Contains(strings.ToLower(parts[0]), "proxy") {
-			continue
-		}
-		if len(parts) == 1 {
-			p.Spec.Containers[0].Env = append(p.Spec.Containers[0].Env, v1.EnvVar{
-				Name: parts[0],
-			})
-		} else {
-			p.Spec.Containers[0].Env = append(p.Spec.Containers[0].Env, v1.EnvVar{
-				Name:  parts[0],
-				Value: parts[1],
-			})
-		}
-	}
-
-	addVolumes(p, args.Dirs, true)
-	addVolumes(p, args.Files, false)
-
-	return p
-}
-
-func addVolumes(p *v1.Pod, src []string, dir bool) {
-	var (
-		prefix     = "dir"
-		sourceType = v1.HostPathDirectoryOrCreate
-	)
-	if !dir {
-		prefix = "file"
-		sourceType = v1.HostPathFile
-	}
-
-	for i, src := range src {
-		name := fmt.Sprintf("%s%d", prefix, i)
-		p.Spec.Volumes = append(p.Spec.Volumes, v1.Volume{
-			Name: name,
-			VolumeSource: v1.VolumeSource{
-				HostPath: &v1.HostPathVolumeSource{
-					Path: src,
-					Type: &sourceType,
-				},
-			},
+	after(etcdReady, func() error {
+		return staticpod.Run(s.Manifests, staticpod.Args{
+			Command:   "kube-apiserver",
+			Args:      args,
+			Image:     s.Images.KubeAPIServer,
+			Dirs:      ssldirs,
+			CPUMillis: 250,
 		})
-		p.Spec.Containers[0].VolumeMounts = append(p.Spec.Containers[0].VolumeMounts, v1.VolumeMount{
-			Name:      name,
-			ReadOnly:  true,
-			MountPath: src,
+	})
+
+	auth, err := auth.FromArgs(args)
+	return auth, http.NotFoundHandler(), err
+}
+
+func (s *StaticPod) Scheduler(apiReady <-chan struct{}, args []string) error {
+	if err := images.Pull(s.PullImages, "kube-scheduler", s.Images.KubeScheduler); err != nil {
+		return err
+	}
+	return after(apiReady, func() error {
+		return staticpod.Run(s.Manifests, staticpod.Args{
+			Command:     "kube-scheduler",
+			Args:        args,
+			Image:       s.Images.KubeScheduler,
+			HealthPort:  10251,
+			HealthProto: "HTTP",
+			CPUMillis:   100,
 		})
+	})
+}
+
+func after(after <-chan struct{}, f func() error) error {
+	go func() {
+		<-after
+		if err := f(); err != nil {
+			logrus.Fatal(err)
+		}
+	}()
+	return nil
+}
+
+func (s *StaticPod) ControllerManager(apiReady <-chan struct{}, args []string) error {
+	if err := images.Pull(s.PullImages, "kube-controller-manager", s.Images.KubeControllManager); err != nil {
+		return err
+	}
+	return after(apiReady, func() error {
+		return staticpod.Run(s.Manifests, staticpod.Args{
+			Command: "kube-controller-manager",
+			Args: append(args,
+				"/usr/libexec/kubernetes/kubelet-plugins/volume/exec"),
+			Image:       s.Images.KubeControllManager,
+			HealthPort:  10252,
+			HealthProto: "HTTP",
+			CPUMillis:   200,
+		})
+	})
+}
+
+func (s *StaticPod) CurrentETCDOptions() (opts executor.InitialOptions, err error) {
+	bytes, err := ioutil.ReadFile(filepath.Join(s.Manifests, "etcd.yaml"))
+	if os.IsNotExist(err) {
+		return
 	}
 
+	pod := &v1.Pod{}
+	if err := yaml.Unmarshal(bytes, pod); err != nil {
+		return opts, err
+	}
+
+	v, ok := pod.Annotations["etcd.k3s.io/initial"]
+	if ok {
+		return opts, json.NewDecoder(strings.NewReader(v)).Decode(&opts)
+	}
+
+	return
+}
+
+func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
+	if err := images.Pull(s.PullImages, "etcd", s.Images.ETCD); err != nil {
+		return err
+	}
+
+	initial, err := json.Marshal(args.InitialOptions)
+	if err != nil {
+		return err
+	}
+
+	confFile, err := args.ToConfigFile()
+	if err != nil {
+		return err
+	}
+
+	return staticpod.Run(s.Manifests, staticpod.Args{
+		Annotations: map[string]string{
+			"etcd.k3s.io/initial": string(initial),
+		},
+		Command: "etcd",
+		Args: []string{
+			"--config-file=" + confFile,
+		},
+		Image: s.Images.ETCD,
+		Dirs:  []string{args.DataDir},
+		Files: []string{
+			args.ServerTrust.CertFile,
+			args.ServerTrust.KeyFile,
+			args.ServerTrust.TrustedCAFile,
+			args.PeerTrust.CertFile,
+			args.PeerTrust.KeyFile,
+			args.PeerTrust.TrustedCAFile,
+		},
+		HealthPort:  2381,
+		HealthPath:  "/health",
+		HealthProto: "HTTP",
+	})
 }
