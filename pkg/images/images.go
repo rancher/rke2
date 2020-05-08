@@ -39,7 +39,7 @@ func override(str, override string) string {
 func New(repo string) Images {
 	return Images{
 		KubeAPIServer:       override(override("k8s.gcr.io", repo)+"/kube-apiserver:"+KubernetesVersion, apiServer),
-		KubeControllManager: override(override("k8s.gcr.io", repo)+"/kube-controller-maanger:"+KubernetesVersion, controllerManager),
+		KubeControllManager: override(override("k8s.gcr.io", repo)+"/kube-controller-manager:"+KubernetesVersion, controllerManager),
 		KubeScheduler:       override(override("k8s.gcr.io", repo)+"/kube-scheduler:"+KubernetesVersion, scheduler),
 		Pause:               override(override("k8s.gcr.io", repo)+"/pause:"+PauseVersion, pause),
 		Runtime:             override(override("rancher", repo)+"/rke2-runtime:"+version.Version, runtime),
