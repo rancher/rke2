@@ -9,7 +9,7 @@ RUN apt-get update && \
 RUN cp -f /etc/skel/.bashrc /etc/skel/.profile /root/ && \
     echo 'alias abort="echo -e '\''q\ny\n'\'' | ./bin/dlv connect :2345"' >> /root/.bashrc
 ENV PATH=/var/lib/rancher/rke2/bin:$PATH
-ENV KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+ENV KUBECONFIG=/etc/rancher/rke2/rke2.yaml
 VOLUME /var/lib/rancher/rke2
 # This makes it so we can run and debug k3s too
 VOLUME /var/lib/rancher/k3s
