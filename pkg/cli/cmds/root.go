@@ -16,9 +16,8 @@ var (
 	commonFlag = []cli.Flag{
 		cli.StringFlag{
 			Name:        "repo",
-			Usage:       "(image) Image repository to use for RKE2 images",
+			Usage:       "(image) Image repository override for for RKE2 images",
 			EnvVar:      "RKE2_REPO",
-			Value:       "rancher",
 			Destination: &config.Repo,
 		},
 	}

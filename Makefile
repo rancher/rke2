@@ -2,7 +2,7 @@ PROG=rke2
 GOLANGCI_VERSION=v1.25.1
 REPO ?= rancher
 IMAGE=${REPO}/rke2-runtime
-PKG=github.com/rancher/rke2
+K3S_PKG=github.com/rancher/k3s
 
 ifneq "$(strip $(shell command -v go 2>/dev/null))" ""
 	GOOS ?= $(shell go env GOOS)
@@ -39,7 +39,11 @@ else
 	DEBUG_GO_GCFLAGS := -gcflags=all="-N -l"
 endif
 
-VERSION=$(shell git describe --match 'v[0-9]*' --dirty='.dirty' --always --tags)
+ifdef DRONE_TAG
+	VERSION=${DRONE_TAG}
+else
+	VERSION?=$(shell git describe --match 'v[0-9]*' --dirty='.dirty' --always --tags)
+endif
 REVISION=$(shell git rev-parse HEAD)$(shell if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
 RELEASE=${PROG}-$(VERSION).${GOOS}-${GOARCH}
 
@@ -49,7 +53,7 @@ endif
 GO_BUILDTAGS ?= no_embedded_executor
 GO_BUILDTAGS += ${DEBUG_TAGS}
 GO_TAGS=$(if $(GO_BUILDTAGS),-tags "$(GO_BUILDTAGS)",)
-GO_LDFLAGS=-ldflags '-X $(PKG)/version.Program=$(PROG) -X $(PKG)/version.Version=$(VERSION) -X $(PKG)/version.Revision=$(REVISION) -X $(PKG)/version.Package=$(PACKAGE) $(EXTRA_LDFLAGS)'
+GO_LDFLAGS=-ldflags '-X $(K3S_PKG)/pkg/version.Program=$(PROG) -X $(K3S_PKG)/pkg/version.Version=$(VERSION) -X $(K3S_PKG)/pkg/version.Revision=$(REVISION) $(EXTRA_LDFLAGS)'
 
 
 default: in-docker-build                 ## Build using docker environment (default target)
