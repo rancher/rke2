@@ -59,7 +59,7 @@ var (
 		"with-node-id":               Drop,
 		"node-label":                 nil,
 		"node-taint":                 nil,
-		"docker":                     Drop,
+		"docker":                     nil,
 		"container-runtime-endpoint": nil,
 		"pause-image":                Drop,
 		"private-registry":           nil,
