@@ -1,5 +1,7 @@
+ARG GO_IMAGE=ranchertest/build-base:v1.14.2
+
 # Build environment
-FROM golang:1.14.2 AS build
+FROM ${GO_IMAGE} AS build
 # Yep nothing special here yet
 
 # Shell used for debugging
