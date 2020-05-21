@@ -1,7 +1,9 @@
 package images
 
 import (
+	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/rancher/k3s/pkg/version"
 )
@@ -38,11 +40,28 @@ func override(str, override string) string {
 
 func New(repo string) Images {
 	return Images{
-		KubeAPIServer:       override(override("k8s.gcr.io", repo)+"/kube-apiserver:"+KubernetesVersion, apiServer),
-		KubeControllManager: override(override("k8s.gcr.io", repo)+"/kube-controller-manager:"+KubernetesVersion, controllerManager),
-		KubeScheduler:       override(override("k8s.gcr.io", repo)+"/kube-scheduler:"+KubernetesVersion, scheduler),
+		KubeAPIServer:       override(override("ranchertest", repo)+"/kubernetes:"+KubernetesVersion, apiServer),
+		KubeControllManager: override(override("ranchertest", repo)+"/kubernetes:"+KubernetesVersion, controllerManager),
+		KubeScheduler:       override(override("ranchertest", repo)+"/kubernetes:"+KubernetesVersion, scheduler),
 		Pause:               override(override("k8s.gcr.io", repo)+"/pause:"+PauseVersion, pause),
 		Runtime:             override(override("rancher", repo)+"/rke2-runtime:"+version.Version, runtime),
-		ETCD:                override(override("k8s.gcr.io", repo)+"/etcd:"+EtcdVersion, etcd),
+		ETCD:                override(override("ranchertest", repo)+"/etcd:"+EtcdVersion, etcd),
 	}
+}
+
+func Pull(dir, name, image string) error {
+	if dir == "" {
+		return nil
+	}
+
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+
+	dest := filepath.Join(dir, name+".txt")
+	if err := ioutil.WriteFile(dest, []byte(image+"\n"), 0644); err != nil {
+		return err
+	}
+
+	return nil
 }
