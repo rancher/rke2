@@ -1,7 +1,6 @@
 package rke2
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -61,7 +60,7 @@ func setup(ctx *cli.Context, cfg Config) error {
 		return err
 	}
 
-	if err := os.Setenv("PATH", fmt.Sprintf("%s:%s", execPath, os.Getenv("PATH"))); err != nil {
+	if err := os.Setenv("PATH", execPath+":"+os.Getenv("PATH")); err != nil {
 		return err
 	}
 

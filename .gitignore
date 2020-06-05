@@ -4,3 +4,6 @@
 /dist
 *.swp
 .idea
+.vscode
+
+rke2
