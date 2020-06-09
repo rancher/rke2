@@ -32,7 +32,6 @@ replace (
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910
 	github.com/prometheus/common => github.com/prometheus/common v0.0.0-20181126121408-4724e9255275
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.0.0-20181204211112-1dc9a6cbc91a
-	github.com/rancher/k3s => github.com/ibuildthecloud/k3s-dev v0.1.0-rc6.0.20200508172341-d560cca31b9e
 	k8s.io/api => github.com/rancher/kubernetes/staging/src/k8s.io/api v1.18.2-k3s.1
 	k8s.io/apiextensions-apiserver => github.com/rancher/kubernetes/staging/src/k8s.io/apiextensions-apiserver v1.18.2-k3s.1
 	k8s.io/apimachinery => github.com/rancher/kubernetes/staging/src/k8s.io/apimachinery v1.18.2-k3s.1
@@ -64,7 +63,7 @@ replace (
 require (
 	github.com/google/go-containerregistry v0.0.0-20200424115305-087a4bdef7c4
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v0.0.0
+	github.com/rancher/k3s v1.18.3-0.20200609001645-af10a574f19a
 	github.com/rancher/wrangler v0.6.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/urfave/cli v1.22.2
