@@ -64,7 +64,7 @@ func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, ar
 	if err := images.Pull(s.PullImages, "kube-apiserver", s.Images.KubeAPIServer); err != nil {
 		return nil, nil, err
 	}
-
+	args = append(args, `--basic-auth-file=""`)
 	for i, arg := range args {
 		// This is an option k3s adds that does not exist upstream
 		if strings.HasPrefix(arg, "--advertise-port=") {
@@ -113,6 +113,8 @@ func after(after <-chan struct{}, f func() error) error {
 	return nil
 }
 
+// --terminated-pod-gc-threshold=1000
+
 func (s *StaticPod) ControllerManager(apiReady <-chan struct{}, args []string) error {
 	if err := images.Pull(s.PullImages, "kube-controller-manager", s.Images.KubeControllManager); err != nil {
 		return err
@@ -121,7 +123,8 @@ func (s *StaticPod) ControllerManager(apiReady <-chan struct{}, args []string) e
 		return staticpod.Run(s.Manifests, staticpod.Args{
 			Command: "kube-controller-manager",
 			Args: append(args,
-				"/usr/libexec/kubernetes/kubelet-plugins/volume/exec"),
+				"--flex-volume-plugin-dir=/usr/libexec/kubernetes/kubelet-plugins/volume/exec",
+				"--terminated-pod-gc-threshold=1000"),
 			Image:       s.Images.KubeControllManager,
 			HealthPort:  10252,
 			HealthProto: "HTTP",
