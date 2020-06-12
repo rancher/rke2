@@ -119,8 +119,6 @@ func after(after <-chan struct{}, f func() error) error {
 	return nil
 }
 
-// --terminated-pod-gc-threshold=1000
-
 func (s *StaticPod) ControllerManager(apiReady <-chan struct{}, args []string) error {
 	if err := images.Pull(s.PullImages, "kube-controller-manager", s.Images.KubeControllManager); err != nil {
 		return err
