@@ -65,7 +65,7 @@ func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, ar
 		return nil, nil, err
 	}
 	args = append(args,
-		`--basic-auth-file=""`,
+		`--basic-auth-file=""`, // explicitly setting to empty value per CIS 1.5.
 		"--audit-log-path=/var/log/kube-audit/audit-log.json",
 		"--audit-log-maxage=5",
 		"--audit-log-maxbackup=5",
