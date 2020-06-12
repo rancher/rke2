@@ -64,7 +64,13 @@ func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, ar
 	if err := images.Pull(s.PullImages, "kube-apiserver", s.Images.KubeAPIServer); err != nil {
 		return nil, nil, err
 	}
-	args = append(args, `--basic-auth-file=""`)
+	args = append(args,
+		`--basic-auth-file=""`,
+		"--audit-log-path=/var/log/kube-audit/audit-log.json",
+		"--audit-log-maxage=5",
+		"--audit-log-maxbackup=5",
+		"--audit-log-maxsize=100",
+	)
 	for i, arg := range args {
 		// This is an option k3s adds that does not exist upstream
 		if strings.HasPrefix(arg, "--advertise-port=") {
@@ -125,10 +131,6 @@ func (s *StaticPod) ControllerManager(apiReady <-chan struct{}, args []string) e
 			Args: append(args,
 				"--flex-volume-plugin-dir=/usr/libexec/kubernetes/kubelet-plugins/volume/exec",
 				"--terminated-pod-gc-threshold=1000",
-				"--audit-log-path=/var/log/kube-audit/audit-log.json",
-				"--audit-log-maxage=5",
-				"--audit-log-maxbackup=5",
-				"--audit-log-maxsize=100",
 			),
 			Image:       s.Images.KubeControllManager,
 			HealthPort:  10252,
