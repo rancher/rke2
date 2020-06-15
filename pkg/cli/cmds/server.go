@@ -74,10 +74,13 @@ var (
 		"agent-token":                nil,
 		"agent-token-file":           nil,
 		"server":                     nil,
-		"secrets-encryption":         nil,
-		"no-flannel":                 Drop,
-		"no-deploy":                  Drop,
-		"cluster-secret":             Drop,
+		"secrets-encryption": {
+			Hide:    false,
+			Default: rke2ServerPath,
+		},
+		"no-flannel":     Drop,
+		"no-deploy":      Drop,
+		"cluster-secret": Drop,
 	})
 )
 

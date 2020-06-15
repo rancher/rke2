@@ -14,7 +14,7 @@ var (
 		"alsologtostderr": Hide,
 		"data-dir": {
 			Usage:   "(data) Folder to hold state",
-			Default: "/var/lib/rancher/rke2",
+			Default: rke2Path,
 		},
 		"token":                      nil,
 		"token-file":                 nil,
