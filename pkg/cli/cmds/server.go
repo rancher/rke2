@@ -75,8 +75,7 @@ var (
 		"agent-token-file":           nil,
 		"server":                     nil,
 		"secrets-encryption": {
-			Hide:    false,
-			Default: rke2ServerPath,
+			Hide: false,
 		},
 		"no-flannel":     drop,
 		"no-deploy":      drop,
