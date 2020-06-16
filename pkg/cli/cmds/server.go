@@ -44,8 +44,8 @@ var (
 		"datastore-keyfile":                 drop,
 		"default-local-storage-path":        drop,
 		"disable": {
-			Hide:         true,
-			DefaultValue: cmds.DisableItems,
+			Hide:    true,
+			Default: cmds.DisableItems,
 		},
 		"disable-selinux":            drop,
 		"disable-scheduler":          drop,

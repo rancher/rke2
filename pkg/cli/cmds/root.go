@@ -23,8 +23,6 @@ var (
 	}
 )
 
-const rke2Path = "/var/lib/rancher/rke2"
-
 func init() {
 	// hack - force "file,dns" lookup order if go dns is used
 	if os.Getenv("RES_OPTIONS") == "" {

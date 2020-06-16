@@ -19,10 +19,10 @@ var (
 var copy *K3SFlagOption = nil
 
 type K3SFlagOption struct {
-	Hide         bool
-	Drop         bool
-	Usage        string
-	DefaultValue string
+	Hide    bool
+	Drop    bool
+	Usage   string
+	Default string
 }
 
 func mustCmdFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) cli.Command {
@@ -61,8 +61,8 @@ func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Co
 			if opt.Usage != "" {
 				strFlag.Usage = opt.Usage
 			}
-			if opt.DefaultValue != "" {
-				strFlag.Value = opt.DefaultValue
+			if opt.Default != "" {
+				strFlag.Value = opt.Default
 			}
 			if opt.Hide {
 				strFlag.Hidden = true
