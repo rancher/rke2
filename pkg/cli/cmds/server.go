@@ -74,12 +74,10 @@ var (
 		"agent-token":                nil,
 		"agent-token-file":           nil,
 		"server":                     nil,
-		"secrets-encryption": {
-			Hide: false,
-		},
-		"no-flannel":     drop,
-		"no-deploy":      drop,
-		"cluster-secret": drop,
+		"secrets-encryption":         nil,
+		"no-flannel":                 drop,
+		"no-deploy":                  drop,
+		"cluster-secret":             drop,
 	})
 )
 
