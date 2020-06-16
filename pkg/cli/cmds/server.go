@@ -19,10 +19,11 @@ var (
 		"advertise-address": copy,
 		"advertise-port":    drop,
 		"tls-san":           copy,
-		"data-dir": {
-			Usage:        "(data) Folder to hold state",
-			DefaultValue: rke2Path,
-		},
+		"data-dir":          copy,
+		// "data-dir": {
+		// 	Usage:        "(data) Folder to hold state",
+		// 	DefaultValue: rke2Path,
+		// },
 		"disable-agent":                     hide,
 		"cluster-cidr":                      copy,
 		"service-cidr":                      copy,
