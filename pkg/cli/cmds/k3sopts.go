@@ -30,7 +30,6 @@ func mustCmdFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) cli.Com
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%#v\n", cmd)
 	return cmd
 }
 
