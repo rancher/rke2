@@ -33,7 +33,8 @@ func Set(images images.Images, dataDir string) error {
 		"stderrthreshold=FATAL",
 		"log-file-max-size=50",
 		"alsologtostderr=false",
-		"logtostderr=false", "log-file="+filepath.Join(logsDir, "kubelet.log"))
+		"logtostderr=false",
+		"log-file="+filepath.Join(logsDir, "kubelet.log"))
 
 	if !cmds.Debug {
 		l := grpclog.NewLoggerV2(ioutil.Discard, ioutil.Discard, os.Stderr)
