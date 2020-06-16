@@ -13,8 +13,8 @@ var (
 		"log":             hide,
 		"alsologtostderr": hide,
 		"data-dir": {
-			Usage:   "(data) Folder to hold state",
-			Default: rke2Path,
+			Usage:        "(data) Folder to hold state",
+			DefaultValue: rke2Path,
 		},
 		"token":                      copy,
 		"token-file":                 copy,

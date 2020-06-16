@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 
 	"github.com/rancher/k3s/pkg/agent/config"
-
 	"github.com/rancher/k3s/pkg/cli/agent"
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/k3s/pkg/cli/server"
@@ -28,6 +27,9 @@ func Server(ctx *cli.Context, cfg Config) error {
 		return err
 	}
 	if err := ctx.Set("disable", cmds.DisableItems); err != nil {
+		return err
+	}
+	if err := ctx.Set("secrets-encryption", "true"); err != nil {
 		return err
 	}
 	return server.Run(ctx)

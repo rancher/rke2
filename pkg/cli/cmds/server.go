@@ -20,8 +20,8 @@ var (
 		"advertise-port":    drop,
 		"tls-san":           copy,
 		"data-dir": {
-			Usage:   "(data) Folder to hold state",
-			Default: rke2Path,
+			Usage:        "(data) Folder to hold state",
+			DefaultValue: rke2Path,
 		},
 		"disable-agent":                     hide,
 		"cluster-cidr":                      copy,
@@ -47,8 +47,8 @@ var (
 		"datastore-keyfile":                 drop,
 		"default-local-storage-path":        drop,
 		"disable": {
-			Hide:    true,
-			Default: cmds.DisableItems,
+			Hide:         true,
+			DefaultValue: cmds.DisableItems,
 		},
 		"disable-selinux":            drop,
 		"disable-scheduler":          drop,
