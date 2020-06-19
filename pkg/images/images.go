@@ -17,7 +17,7 @@ var (
 	runtime           = os.Getenv("RKE2_RUNTIME_IMAGE")
 	etcd              = os.Getenv("RKE2_ETCD_IMAGE")
 
-	KubernetesVersion = "v1.18.2"
+	KubernetesVersion = "v1.18.4"
 	PauseVersion      = "3.2"
 	EtcdVersion       = "3.4.3-0"
 )
