@@ -9,13 +9,14 @@ import (
 )
 
 var (
-	Drop = &K3SFlagOption{
+	drop = &K3SFlagOption{
 		Drop: true,
 	}
-	Hide = &K3SFlagOption{
+	hide = &K3SFlagOption{
 		Hide: true,
 	}
 )
+var copy *K3SFlagOption = nil
 
 type K3SFlagOption struct {
 	Hide    bool
