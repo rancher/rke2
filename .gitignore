@@ -5,5 +5,5 @@
 *.swp
 .idea
 .vscode
-
+/data
 rke2
