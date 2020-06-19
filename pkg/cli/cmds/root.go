@@ -96,7 +96,7 @@ func validateCISreqs() error {
 			logrus.Fatal(err)
 		}
 		if cv != pv {
-			ce = append(ce, fmt.Errorf("expected: %d but got %d", pv, cv))
+			ce = append(ce, fmt.Errorf("%s=%d - expected %d", kp, cv, pv))
 		}
 	}
 	if len(ce) != 0 {
@@ -136,10 +136,9 @@ func NewApp() *cli.App {
 		case "cis-1.5":
 			if err := validateCISreqs(); err != nil {
 				logrus.Fatal(err)
-			} else {
-				logrus.Warn(err)
 			}
 		case "":
+			logrus.Warn("not running in CIS 1.5 mode")
 			return nil
 		default:
 			logrus.Fatal("invalid value provided for --profile flag")
