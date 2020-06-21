@@ -1,0 +1,8 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: canal
+  namespace: kube-system
+spec:
+  chartContent: %{CHART_CONTENT}%
+  bootstrap: true

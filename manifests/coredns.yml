@@ -1,0 +1,8 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: coredns
+  namespace: kube-system
+spec:
+  chartContent: %{CHART_CONTENT}%
+  bootstrap: true

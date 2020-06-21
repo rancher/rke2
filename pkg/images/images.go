@@ -19,7 +19,7 @@ var (
 
 	KubernetesVersion = "v1.18.4"
 	PauseVersion      = "3.2"
-	EtcdVersion       = "3.4.3-0"
+	EtcdVersion       = "v3.4.3"
 )
 
 type Images struct {

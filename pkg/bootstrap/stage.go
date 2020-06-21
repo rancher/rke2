@@ -15,6 +15,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/sirupsen/logrus"
 )
@@ -27,7 +28,11 @@ func dataDirFor(dataDir, dataName string) string {
 	return filepath.Join(dataDir, "data", dataName, "bin")
 }
 
-func symlinkDataDir(dataDir string) string {
+func manifestsDir(dataDir string) string {
+	return filepath.Join(dataDir, "server", "manifests")
+}
+
+func symlinkBinDir(dataDir string) string {
 	return filepath.Join(dataDir, "bin")
 }
 
@@ -43,6 +48,11 @@ func Stage(dataDir string, images images.Images) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// downloading the image
+	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+	if err != nil {
+		return "", err
+	}
 
 	dataName := releaseName(ref)
 	if dataName != "" {
@@ -50,12 +60,6 @@ func Stage(dataDir string, images images.Images) (string, error) {
 			return dir, nil
 		}
 	}
-
-	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
-	if err != nil {
-		return "", err
-	}
-
 	if dataName == "" {
 		digest, err := img.Digest()
 		if err != nil {
@@ -64,41 +68,22 @@ func Stage(dataDir string, images images.Images) (string, error) {
 		dataName = digest.Hex
 	}
 
-	dir := dataDirFor(dataDir, dataName)
-	if dirExists(dir) {
-		return dir, nil
-	}
-
-	if err := os.MkdirAll(filepath.Dir(dir), 0755); err != nil {
+	binDir := dataDirFor(dataDir, dataName)
+	if err := extractFromDir(binDir, "/bin/", img, images.Runtime); err != nil {
 		return "", err
 	}
 
-	tempDir, err := ioutil.TempDir(filepath.Split(dir))
-	if err != nil {
-		return "", err
-	}
-	defer os.RemoveAll(tempDir)
-
-	r := mutate.Extract(img)
-	defer r.Close()
-
-	if err := extract(images.Runtime, tempDir, r); err != nil {
-		return "", err
-	}
-
-	err = os.Rename(tempDir, dir)
-	if err != nil {
-		return "", err
-	}
+	manifestDir := manifestsDir(dataDir)
+	err = extractFromDir(manifestDir, "/charts/", img, images.Runtime)
 
 	// ignore errors
-	_ = os.RemoveAll(symlinkDataDir(dataDir))
-	_ = os.Symlink(dir, symlinkDataDir(dataDir))
+	_ = os.RemoveAll(symlinkBinDir(dataDir))
+	_ = os.Symlink(binDir, symlinkBinDir(dataDir))
 
-	return dir, err
+	return binDir, err
 }
 
-func extract(image, targetDir string, reader io.Reader) error {
+func extract(image, targetDir, prefix string, reader io.Reader) error {
 	if err := os.MkdirAll(targetDir, 0755); err != nil {
 		return err
 	}
@@ -118,7 +103,7 @@ func extract(image, targetDir string, reader io.Reader) error {
 		}
 
 		n := filepath.Join("/", h.Name)
-		if !strings.HasPrefix(n, "/bin/") {
+		if !strings.HasPrefix(n, prefix) {
 			continue
 		}
 
@@ -152,4 +137,29 @@ func releaseName(ref name.Reference) string {
 		return parts[0]
 	}
 	return ""
+}
+
+func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
+	if dirExists(dir) {
+		return nil
+	}
+
+	if err := os.MkdirAll(filepath.Dir(dir), 0755); err != nil {
+		return err
+	}
+
+	tempDir, err := ioutil.TempDir(filepath.Split(dir))
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tempDir)
+
+	r := mutate.Extract(img)
+	defer r.Close()
+
+	// extracting manifests
+	if err := extract(imgName, tempDir, prefix, r); err != nil {
+		return err
+	}
+	return os.Rename(tempDir, dir)
 }

@@ -17,7 +17,7 @@ VOLUME /var/lib/rancher/k3s
 # Dapper/Drone/CI environment
 FROM build AS dapper
 ENV DAPPER_ENV REPO TAG DRONE_TAG
-ENV DAPPER_OUTPUT ./bin ./dist
+ENV DAPPER_OUTPUT ./dist ./bin ./build
 ENV DAPPER_DOCKER_SOCKET true
 ENV DAPPER_TARGET dapper
 ENV DAPPER_RUN_ARGS "-v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build"
@@ -57,3 +57,4 @@ COPY --from=containerd \
     /usr/local/bin/ctr \
     /usr/local/bin/containerd-shim-runc-v1 \
         /bin/
+COPY ./build/static/charts /charts
