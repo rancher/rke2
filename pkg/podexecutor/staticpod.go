@@ -65,7 +65,6 @@ func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, ar
 		return nil, nil, err
 	}
 	args = append(args,
-		`--basic-auth-file=""`, // explicitly setting to empty value per CIS 1.5.
 		"--audit-log-path=/var/log/kube-audit/audit-log.json",
 		"--audit-log-maxage=5",
 		"--audit-log-maxbackup=5",
@@ -74,6 +73,11 @@ func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, ar
 	for i, arg := range args {
 		// This is an option k3s adds that does not exist upstream
 		if strings.HasPrefix(arg, "--advertise-port=") {
+			args = append(args[:i], args[i+1:]...)
+			break
+		}
+		// This option conflicts with cis benchmark
+		if strings.HasPrefix(arg, "--basic-auth=") {
 			args = append(args[:i], args[i+1:]...)
 			break
 		}

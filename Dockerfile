@@ -28,8 +28,8 @@ WORKDIR /source
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
-FROM k8s.gcr.io/hyperkube:v1.18.2 AS k8s
-FROM rancher/k3s:v1.18.2-rc2-k3s1 AS k3s
+FROM ranchertest/kubernetes:v1.18.4 AS k8s
+FROM rancher/k3s:v1.18.4-k3s1 AS k3s
 FROM ubuntu:18.04 AS containerd
 
 ENV CONTAINERD_VERION=1.3.4

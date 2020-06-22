@@ -1,5 +1,5 @@
 PROG=rke2
-GOLANGCI_VERSION=v1.25.1
+GOLANGCI_VERSION=v1.27.0
 REPO ?= rancher
 IMAGE=${REPO}/rke2-runtime
 K3S_PKG=github.com/rancher/k3s
