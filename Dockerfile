@@ -17,7 +17,7 @@ VOLUME /var/lib/rancher/k3s
 # Dapper/Drone/CI environment
 FROM build AS dapper
 ENV DAPPER_ENV REPO TAG DRONE_TAG
-ENV DAPPER_OUTPUT ./bin ./dist
+ENV DAPPER_OUTPUT ./dist ./bin ./build
 ENV DAPPER_DOCKER_SOCKET true
 ENV DAPPER_TARGET dapper
 ENV DAPPER_RUN_ARGS "-v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build"
@@ -28,8 +28,8 @@ WORKDIR /source
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
-FROM k8s.gcr.io/hyperkube:v1.18.2 AS k8s
-FROM rancher/k3s:v1.18.2-rc2-k3s1 AS k3s
+FROM ranchertest/kubernetes:v1.18.4 AS k8s
+FROM rancher/k3s:v1.18.4-k3s1 AS k3s
 FROM ubuntu:18.04 AS containerd
 
 ENV CONTAINERD_VERION=1.3.4
@@ -57,3 +57,4 @@ COPY --from=containerd \
     /usr/local/bin/ctr \
     /usr/local/bin/containerd-shim-runc-v1 \
         /bin/
+COPY ./build/static/charts /charts

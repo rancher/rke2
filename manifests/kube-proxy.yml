@@ -1,0 +1,9 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: kube-proxy
+  namespace: kube-system
+spec:
+  chartContent: %{CHART_CONTENT}%
+  bootstrap: true
+

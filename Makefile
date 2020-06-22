@@ -1,5 +1,5 @@
 PROG=rke2
-GOLANGCI_VERSION=v1.25.1
+GOLANGCI_VERSION=v1.27.0
 REPO ?= rancher
 IMAGE=${REPO}/rke2-runtime
 K3S_PKG=github.com/rancher/k3s
@@ -111,7 +111,7 @@ clean-cache:                             ## Clean up docker base caches used for
 	docker volume rm ${PROG}-cache ${PROG}-pkg
 
 clean:                                   ## Clean up workspace
-	rm -rf bin dist
+	rm -rf bin dist build
 
 dev-shell: .dev-shell-build              ## Launch a development shell to run test builds
 	docker run --rm --name ${PROG}-dev-shell --hostname ${PROG}-server -ti -e WORKSPACE=$$(pwd) -p 127.0.0.1:2345:2345 -v $${HOME}:$${HOME} -v ${PROG} -w $$(pwd) --privileged -v ${PROG}-pkg:/go/pkg -v ${PROG}-cache:/root/.cache/go-build ${PROG}-dev bash
@@ -126,15 +126,29 @@ dev-peer: .dev-shell-build              ## Launch a server peer to run test buil
 dev-peer-enter:                         ## Enter the peer shell on another terminal
 	docker exec -it ${PROG}-peer${PEER} bash
 
-artifacts: build
+artifacts: build download-charts
 	mkdir -p dist/artifacts
 	cp bin/${PROG} dist/artifacts/${RELEASE}
 
 .ci: validate-ci artifacts
 
 in-docker-%: .dapper                     ## Advanced: wraps any target in Docker environment, for example: in-docker-build-debug
-	mkdir -p bin/ dist/
+	mkdir -p ./bin/ ./dist/
 	./.dapper -f Dockerfile --target dapper make $*
+
+CHARTS_DIR = build/static/charts
+MANIFEST_DIR = manifests
+CHARTS = canal:v3.13.3 coredns:1.10.101 kube-proxy:v1.18.4 metrics-server:2.11.100 nginx-ingress:1.36.300
+download-charts:
+	mkdir -p $(CHARTS_DIR)
+	for chart in $(CHARTS); do \
+    	  chart_name=`echo "$${chart}" | cut -d ":" -f 1`;\
+    	  chart_version=`echo "$${chart}" | cut -d ":" -f 2`;\
+    	  curl -sfL https://dev-charts.rancher.io/$$chart_name/$$chart_name-$$chart_version.tgz -o ${CHARTS_DIR}/$$chart_name-$$chart_version.tgz;\
+    	  chart_content=`base64 -w 0 ${CHARTS_DIR}/$$chart_name-$$chart_version.tgz`;\
+    	  sed -e "s|%{CHART_CONTENT}%|$$chart_content|g" $(MANIFEST_DIR)/$$chart_name.yml > $(CHARTS_DIR)/$$chart_name-chart.yml;\
+    	  rm ${CHARTS_DIR}/$$chart_name-$$chart_version.tgz;\
+    done
 
 ./.dapper:
 	@echo Downloading dapper
