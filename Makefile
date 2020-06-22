@@ -138,7 +138,7 @@ in-docker-%: .dapper                     ## Advanced: wraps any target in Docker
 
 CHARTS_DIR = build/static/charts
 MANIFEST_DIR = manifests
-CHARTS = canal:v3.13.3 coredns:1.10.101 kube-proxy:v1.18.2 metrics-server:2.11.100 nginx-ingress:1.36.300
+CHARTS = canal:v3.13.3 coredns:1.10.101 kube-proxy:v1.18.4 metrics-server:2.11.100 nginx-ingress:1.36.300
 download-charts:
 	mkdir -p $(CHARTS_DIR)
 	for chart in $(CHARTS); do \
