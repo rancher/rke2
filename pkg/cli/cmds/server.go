@@ -6,20 +6,25 @@ import (
 	"github.com/urfave/cli"
 )
 
+const rke2Path = "/var/lib/rancher/rke2"
+
 var (
 	config rke2.Config
 
 	k3sServerBase = mustCmdFromK3S(cmds.NewServerCommand(ServerRun), map[string]*K3SFlagOption{
-		"v":                                 hide,
-		"vmodule":                           hide,
-		"log":                               hide,
-		"alsologtostderr":                   hide,
-		"bind-address":                      copy,
-		"https-listen-port":                 drop,
-		"advertise-address":                 copy,
-		"advertise-port":                    drop,
-		"tls-san":                           copy,
-		"data-dir":                          copy,
+		"v":                 hide,
+		"vmodule":           hide,
+		"log":               hide,
+		"alsologtostderr":   hide,
+		"bind-address":      copy,
+		"https-listen-port": drop,
+		"advertise-address": copy,
+		"advertise-port":    drop,
+		"tls-san":           copy,
+		"data-dir": {
+			Usage:   "(data) Folder to hold state",
+			Default: rke2Path,
+		},
 		"disable-agent":                     hide,
 		"cluster-cidr":                      copy,
 		"service-cidr":                      copy,
