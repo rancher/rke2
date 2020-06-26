@@ -41,10 +41,6 @@ fi
 #     Version of rke2 to download from github. Will attempt to download from the
 #     stable channel if not specified.
 #
-#   - INSTALL_RKE2_COMMIT
-#     Commit of rke2 to download from temporary cloud storage.
-#     * (for developer & QA use)
-#
 #   - INSTALL_RKE2_BIN_DIR
 #     Directory to install rke2 binary, links, and uninstall script to, or use
 #     /usr/local/bin as the default
@@ -81,21 +77,13 @@ fi
 #   - INSTALL_RKE2_SELINUX_WARN
 #     If set to true will continue if rke2-selinux policy is not found.
 #
-#   - INSTALL_RKE2_CHANNEL_URL
-#     Channel URL for fetching rke2 download URL.
-#     Defaults to 'https://update.rke2.io/v1-release/channels'.
-#
-#   - INSTALL_RKE2_CHANNEL
-#     Channel to use for fetching rke2 download URL.
-#     Defaults to 'stable'.
-#
 #   - INSTALL_RKE2_ETCD_USER
 #     Create a user 'etcd'. If this value is set, the installation
 #     will chown the etcd data-dir to this user and update the etcd
 #     pod manifest.
 
 BASE_DIR="/var/lib/rancher/rke2"
-INSTALL_PATH=/"usr/local/bin"
+INSTALL_PATH="/usr/local/bin"
 GITHUB_URL=https://github.com/rancher/rke2/releases
 STORAGE_URL=https://storage.googleapis.com/rke2-ci-builds
 DOWNLOADER=
@@ -105,17 +93,17 @@ USING_ETCD_USER=0
 
 # info logs the given argument at info log level.
 info() {
-    echo '[INFO] ' "$@"
+    echo "[INFO] " "$@"
 }
 
 # warn logs the given argument at warn log level.
 warn() {
-    echo '[WARN] ' "$@" >&2
+    echo "[WARN] " "$@" >&2
 }
 
 # fatal logs the given argument at fatal log level.
 fatal() {
-    echo '[ERROR] ' "$@" >&2
+    echo "[ERROR] " "$@" >&2
     exit 1
 }
 
@@ -137,28 +125,28 @@ verify_system() {
 # quote adds quotes to command arguments.
 quote() {
     for arg in "$@"; do
-        printf '%s\n' "$arg" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/"
+        printf "%s\n" "$arg" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/"
     done
 }
 
 # quote_indent adds indentation and trailing slash 
 # to quoted args.
 quote_indent() {
-    printf ' \\\n'
+    printf " \\\n"
     for arg in "$@"; do
-        printf '\t%s \\\n' "$(quote "$arg")"
+        printf "\t%s \\\n" "$(quote "$arg")"
     done
 }
 
 # escape escapes most punctuation characters, except 
 # quotes, forward slash, and space.
 escape() {
-    printf '%s' "$@" | sed -e 's/\([][!#$%&()*;<=>?\_`{|}]\)/\\\1/g;'
+    printf "%s" "$@" | sed -e 's/\([][!#$%&()*;<=>?\_`{|}]\)/\\\1/g;'
 }
 
 # escape_dq escapes double quotes.
 escape_dq() {
-    printf '%s' "$@" | sed -e 's/"/\\"/g'
+    printf "%s" "$@" | sed -e 's/"/\\"/g'
 }
 
 # setup_env defines needed environment variables.
@@ -196,9 +184,9 @@ setup_env() {
     fi
 
     # --- check for invalid characters in system name ---
-    valid_chars=$(printf '%s' "${SYSTEM_NAME}" | sed -e 's/[][!#$%&()*;<=>?\_`{|}/[:space:]]/^/g;' )
+    valid_chars=$(printf "%s" "${SYSTEM_NAME}" | sed -e 's/[][!#$%&()*;<=>?\_`{|}/[:space:]]/^/g;' )
     if [ "${SYSTEM_NAME}" != "${valid_chars}"  ]; then
-        invalid_chars=$(printf '%s' "${valid_chars}" | sed -e 's/[^^]/ /g')
+        invalid_chars=$(printf "%s" "${valid_chars}" | sed -e 's/[^^]/ /g')
         fatal "invalid characters for system name:
             ${SYSTEM_NAME}
             ${invalid_chars}"
@@ -354,13 +342,13 @@ get_release_version() {
         version_url="${INSTALL_RKE2_CHANNEL_URL}/${INSTALL_RKE2_CHANNEL}"
         case ${DOWNLOADER} in
             curl)
-                VERSION_RKE2=$(curl -w '%{url_effective}' -L -s -S ${version_url} -o /dev/null | sed -e 's|.*/||')
+                VERSION_RKE2=$(curl -w "%{url_effective}" -L -s -S ${version_url} -o /dev/null | sed -e 's|.*/||')
                 ;;
             wget)
                 VERSION_RKE2=$(wget -SqO /dev/null ${version_url} 2>&1 | grep -i Location | sed -e 's|.*/||')
                 ;;
             *)
-                fatal "Incorrect downloader executable '$DOWNLOADER'"
+                fatal "Incorrect downloader executable '${DOWNLOADER}'"
                 ;;
         esac
     fi
@@ -531,18 +519,18 @@ create_killall() {
 #!/bin/sh
 [ $(id -u) -eq 0 ] || exec sudo $0 $@
 
-for bin in ${BASE_DIR}/rke2/data/**/bin/; do
+for bin in ${BASE_DIR}/data/**/bin/; do
     [ -d $bin ] && export PATH=$PATH:$bin:$bin/aux
 done
 
 set -x
 
 for service in /etc/systemd/system/rke2*.service; do
-    [ -s $service ] && systemctl stop $(basename $service)
+    [ -s ${service} ] && systemctl stop $(basename ${service})
 done
 
 for service in /etc/init.d/rke2*; do
-    [ -x $service ] && $service stop
+    [ -x ${service} ] && ${service} stop
 done
 
 pschildren() {
@@ -554,9 +542,9 @@ pschildren() {
 
 pstree() {
     for pid in $@; do
-        echo $pid
-        for child in $(pschildren $pid); do
-            pstree $child
+        echo ${pid}
+        for child in $(pschildren ${pid}); do
+            pstree ${child}
         done
     done
 }
@@ -579,9 +567,9 @@ do_unmount() {
     { set +x; } 2>/dev/null
     MOUNTS=
     while read ignore mount ignore; do
-        MOUNTS="$mount\n$MOUNTS"
+        MOUNTS="${mount}\n${MOUNTS}"
     done </proc/self/mounts
-    MOUNTS=$(printf $MOUNTS | grep "^$1" | sort -r)
+    MOUNTS=$(printf ${MOUNTS} | grep "^$1" | sort -r)
     if [ -n "${MOUNTS}" ]; then
         set -x
         umount ${MOUNTS}
@@ -591,7 +579,7 @@ do_unmount() {
 }
 
 do_unmount '/run/rke2'
-do_unmount '${BASE_DIR}/rke2'
+do_unmount '${BASE_DIR}'
 do_unmount '/var/lib/kubelet/pods'
 do_unmount '/run/netns/cni-'
 
@@ -656,7 +644,7 @@ for cmd in kubectl crictl ctr; do
 done
 
 rm -rf /etc/rancher/rke2
-rm -rf "${BASE_DIR}/rke2"
+rm -rf "${BASE_DIR}"
 rm -rf /var/lib/kubelet
 rm -f ${BIN_DIR}/rke2
 rm -f ${KILLALL_RKE2_SH}
@@ -681,7 +669,7 @@ systemd_disable() {
 # create_env_file captures current env and creates
 # a file containing rke2_ variables.
 create_env_file() {
-    info "env: Creating environment file ${FILE_RKE2_ENV}"
+    info "env: creating environment file ${FILE_RKE2_ENV}"
     UMASK=$(umask)
     umask 0377
     env | grep '^RKE2_' | ${SUDO} tee "${FILE_RKE2_ENV}" >/dev/null
@@ -693,9 +681,9 @@ create_env_file() {
 # systemd service file.
 create_systemd_service_file() {
     info "systemd: Creating service file ${FILE_RKE2_SERVICE}"
-    ${SUDO} tee ${FILE_RKE2_SERVICE} >/dev/null << EOF
+    ${SUDO} tee "${FILE_RKE2_SERVICE}" >/dev/null << EOF
 [Unit]
-Description=Lightweight Kubernetes
+Description=Rancher Kubernetes Engine v2
 Documentation=https://rke2.io
 Wants=network-online.target
 
@@ -797,25 +785,25 @@ systemd_enable() {
 
 # systemd_start starts systemd.
 systemd_start() {
-    info "systemd: Starting ${SYSTEM_NAME}"
+    info "systemd: starting ${SYSTEM_NAME}"
     ${SUDO} systemctl restart "${SYSTEM_NAME}"
 }
 
 # openrc_enable enables and starts openrc service.
 openrc_enable() {
-    info "openrc: Enabling ${SYSTEM_NAME} service for default runlevel"
+    info "openrc: enabling ${SYSTEM_NAME} service for default runlevel"
     ${SUDO} rc-update add "${SYSTEM_NAME}" default >/dev/null
 }
 
 # openrc_start starts openrc.
 openrc_start() {
-    info "openrc: Starting ${SYSTEM_NAME}"
+    info "openrc: starting ${SYSTEM_NAME}"
     ${SUDO} "${FILE_RKE2_SERVICE}" restart
 }
 
 # service_enable_and_start starts up the supervisor service.
 service_enable_and_start() {
-    if [ "${INSTALL_RKE2_SKIP_ENABLE}" = true ];then
+    if [ "${INSTALL_RKE2_SKIP_ENABLE}" = true ]; then
         return
     fi
 
@@ -855,12 +843,10 @@ create_user() {
         exit 1
     fi
 
-    #if id -u "$1" > /dev/null 2>&1; then
     if [ "$(id -u "$1" 2>/dev/null)" != 1 ]; then
         no_login=$(command -v nologin)
         user_comment="RKE2 Service User Account"
-
-        mkdir -p "${BASE_DIR}"
+        
         if [ ! -z "${no_login}" ]; then
             useradd -r -d "${BASE_DIR}" -c "${user_comment}" -s "${no_login}" "$1"
         else
@@ -877,7 +863,9 @@ eval set -- $(escape "${INSTALL_RKE2_EXEC}") $(quote "$@")
 # main
 {
     if [ ! -z "${INSTALL_RKE2_USER}" ]; then
+        mkdir -p "${BASE_DIR}"
         create_user "${INSTALL_RKE2_USER}"
+	chown -R "${INSTALL_RKE2_USER}":"${INSTALL_RKE2_USER}" "$(dirname ${BASE_DIR})"
 	USING_RKE2_USER=1
     fi
 
