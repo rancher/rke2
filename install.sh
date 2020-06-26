@@ -87,6 +87,7 @@ INSTALL_PATH="/usr/local/bin"
 GITHUB_URL=https://github.com/rancher/rke2/releases
 STORAGE_URL=https://storage.googleapis.com/rke2-ci-builds
 DOWNLOADER=
+
 USING_RKE2_USER=0
 USING_ETCD_USER=0
 
@@ -432,7 +433,7 @@ setup_binary() {
     chmod 755 "${TMP_BIN}"
     info "installing rke2 to ${BIN_DIR}/rke2"
     if [ ${USING_RKE2_USER} ]; then
-        ${SUDO} chown ${INSTALL_RKE2_USER}:${INSTALL_RKE2_USER} "${TMP_BIN}"
+        ${SUDO} chown "${INSTALL_RKE2_USER}":"${INSTALL_RKE2_USER}" "${TMP_BIN}"
     else
         ${SUDO} chown root:root "${TMP_BIN}"
     fi
@@ -476,7 +477,7 @@ download_and_verify() {
     download_hash
 
     if installed_hash_matches; then
-        info "skipping binary downloaded, installed rke2 matches hash"
+        info "skipping binary download. installed rke2 matches hash"
         return
     fi
 
@@ -487,25 +488,9 @@ download_and_verify() {
 
 # create_symlinks adds additional utility links.
 create_symlinks() {
-    if [ "${INSTALL_RKE2_BIN_DIR_READ_ONLY}" = true ]; then
-        return
-    fi
-    if [ "${INSTALL_RKE2_SYMLINK}" = skip ]; then
-        return
-    fi
-
-    for cmd in kubectl crictl ctr; do
-        if [ ! -e ${BIN_DIR}/${cmd} ] || [ "${INSTALL_RKE2_SYMLINK}" = force ]; then
-            which_cmd=$(which ${cmd} 2>/dev/null || true)
-            if [ -z "${which_cmd}" ] || [ "${INSTALL_RKE2_SYMLINK}" = force ]; then
-                info "creating ${BIN_DIR}/${cmd} symlink to rke2"
-                ${SUDO} ln -sf rke2 ${BIN_DIR}/${cmd}
-            else
-                info "skipping ${BIN_DIR}/${cmd} symlink to rke2, command exists in PATH at ${which_cmd}"
-            fi
-        else
-            info "skipping ${BIN_DIR}/${cmd} symlink to rke2, already exists"
-        fi
+    info "creating symlinks..."
+    for bin in $(readlink -f "${BASE_DIR}/data/**/bin/*"); do
+        ln -sf ${bin} "${INSTALL_PATH}/$(basename $bin)"
     done
 }
 
@@ -596,7 +581,7 @@ EOF
     ${SUDO} chmod 755 "${KILLALL_RKE2_SH}"
 
     if [ ${USING_RKE2_USER} ]; then
-        ${SUDO} chown ${INSTALL_RKE2_USER}:${INSTALL_RKE2_USER} "${KILLALL_RKE2_SH}"
+        ${SUDO} chown "${INSTALL_RKE2_USER}":"${INSTALL_RKE2_USER}" "${KILLALL_RKE2_SH}"
     else 
         ${SUDO} chown root:root "${KILLALL_RKE2_SH}"
     fi
@@ -652,7 +637,7 @@ EOF
     ${SUDO} chmod 755 "${UNINSTALL_RKE2_SH}"
 
     if [ ${USING_RKE2_USER} ]; then
-        ${SUDO} chown ${INSTALL_RKE2_USER}:${INSTALL_RKE2_USER} "${UNINSTALL_RKE2_SH}"
+        ${SUDO} chown "${INSTALL_RKE2_USER}":"${INSTALL_RKE2_USER}" "${UNINSTALL_RKE2_SH}"
     else
         ${SUDO} chown root:root "${UNINSTALL_RKE2_SH}"
     fi
@@ -710,6 +695,7 @@ ExecStart=${BIN_DIR}/rke2 \\
     ${CMD_RKE2_EXEC}
 
 EOF
+    echo "HOME=/root" > /etc/systemd/system/rke2.service.env
 }
 
 # create_openrc_service_file writes the openrc
@@ -842,15 +828,18 @@ create_user() {
         echo "error: no user given for creation"
         exit 1
     fi
+    if [ -z "$2" ]; then
+        echo "error: no user description given"
+        exit 1
+    fi
 
     if [ "$(id -u "$1" 2>/dev/null)" != 1 ]; then
         no_login=$(command -v nologin)
-        user_comment="RKE2 Service User Account"
         
         if [ ! -z "${no_login}" ]; then
-            useradd -r -d "${BASE_DIR}" -c "${user_comment}" -s "${no_login}" "$1"
+            useradd -r -d "${BASE_DIR}" -c "$2" -s "${no_login}" "$1"
         else
-            useradd -r -d "${BASE_DIR}" -c "${user_comment}" -s /bin/false "$1"
+            useradd -r -d "${BASE_DIR}" -c "$2" -s /bin/false "$1"
         fi
     else 
         info "$1 exists. moving on..."
@@ -864,13 +853,13 @@ eval set -- $(escape "${INSTALL_RKE2_EXEC}") $(quote "$@")
 {
     if [ ! -z "${INSTALL_RKE2_USER}" ]; then
         mkdir -p "${BASE_DIR}"
-        create_user "${INSTALL_RKE2_USER}"
+        create_user "${INSTALL_RKE2_USER}" "RKE2 Service User Account"
 	chown -R "${INSTALL_RKE2_USER}":"${INSTALL_RKE2_USER}" "$(dirname ${BASE_DIR})"
 	USING_RKE2_USER=1
     fi
 
     if [ ! -z "${INSTALL_RKE2_ETCD_USER}" ]; then
-        create_user "${INSTALL_RKE2_ETCD_USER}"
+        create_user "${INSTALL_RKE2_ETCD_USER}" "ETCD Service User"
         USING_ETCD_USER=1
     fi
 
