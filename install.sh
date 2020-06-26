@@ -390,15 +390,13 @@ download_hash() {
     info "downloading hash ${HASH_URL}"
     download "${TMP_HASH}" "${HASH_URL}"
     HASH_EXPECTED=$(awk -F ' ' '{print $1}' ${TMP_HASH})
-    HASH_EXPECTED=${HASH_EXPECTED%%[[:blank:]]*}
 }
 
 # installed_hash_matches checks hash against 
 # installed version.
 installed_hash_matches() {
     if [ -x ${BIN_DIR}/rke2 ]; then
-        HASH_INSTALLED=$(sha256sum ${BIN_DIR}/rke2)
-        HASH_INSTALLED=${HASH_INSTALLED%%[[:blank:]]*}
+        HASH_INSTALLED=$(sha256sum ${BIN_DIR}/rke2 | awk -F ' ' '{print $1}')
         if [ "${HASH_EXPECTED}" = "${HASH_INSTALLED}" ]; then
             return
         fi
@@ -413,7 +411,7 @@ download_binary() {
     else
         BIN_URL=${GITHUB_URL}/download/${VERSION_RKE2}/rke2-${VERSION_RKE2}.linux-${ARCH}
     fi
-    info "downloading binary ${BIN_URL}"
+    info "downloading binary at ${BIN_URL}"
     download "${TMP_BIN}" "${BIN_URL}"
 }
 
