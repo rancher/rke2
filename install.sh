@@ -846,8 +846,8 @@ eval set -- $(escape "${INSTALL_RKE2_EXEC}") $(quote "$@")
     if [ ! -z "${INSTALL_RKE2_USER}" ]; then
         mkdir -p "${BASE_DIR}"
         create_user "${INSTALL_RKE2_USER}" "RKE2 Service User Account"
-	chown -R "${INSTALL_RKE2_USER}":"${INSTALL_RKE2_USER}" "$(dirname ${BASE_DIR})"
-	USING_RKE2_USER=1
+        chown -R "${INSTALL_RKE2_USER}":"${INSTALL_RKE2_USER}" "$(dirname ${BASE_DIR})"
+        USING_RKE2_USER=1
     fi
 
     if [ ! -z "${INSTALL_RKE2_ETCD_USER}" ]; then
