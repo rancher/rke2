@@ -11,12 +11,6 @@ fi
 #       or
 #   ENV_VAR=... ./install.sh
 #
-# Example:
-#   Installing a server without traefik:
-#     curl ... | INSTALL_RKE2_EXEC="--disable=traefik" sh -
-#   Installing an agent to point at a server:
-#     curl ... | RKE2_TOKEN=xxx RKE2_URL=https://server-url:6443 sh -
-#
 # Environment variables:
 #   - RKE2_*
 #     Environment variables which begin with RKE2_ will be preserved for the
