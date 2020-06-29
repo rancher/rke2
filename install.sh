@@ -852,7 +852,7 @@ eval set -- $(escape "${INSTALL_RKE2_EXEC}") $(quote "$@")
 
     if [ ! -z "${INSTALL_RKE2_ETCD_USER}" ]; then
         create_user "${INSTALL_RKE2_ETCD_USER}" "ETCD Service User"
-        usermod -a -G rke2 etcd
+        usermod -a -G "${INSTALL_RKE2_USER}" "${INSTALL_RKE2_ETCD_USER}"
         USING_ETCD_USER=1
     fi
 
