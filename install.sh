@@ -383,7 +383,7 @@ download_hash() {
     fi
     info "downloading hash ${HASH_URL}"
     download "${TMP_HASH}" "${HASH_URL}"
-    HASH_EXPECTED=$(awk -F ' ' '{print $1}' ${TMP_HASH})
+    HASH_EXPECTED=$(awk -F ' ' '{print $1}' "${TMP_HASH}")
 }
 
 # installed_hash_matches checks hash against 
@@ -481,8 +481,8 @@ download_and_verify() {
 # create_symlinks adds additional utility links.
 create_symlinks() {
     info "creating symlinks..."
-    for bin in $(readlink -f "${BASE_DIR}/data/**/bin/*"); do
-        ln -sf ${bin} "${INSTALL_PATH}/$(basename $bin)"
+    for bin in ${BASE_DIR}/data/*/bin/*; do
+        ln -sf "${bin}" "${INSTALL_PATH}"/"$(basename ${bin})"
     done
 }
 
@@ -860,13 +860,13 @@ eval set -- $(escape "${INSTALL_RKE2_EXEC}") $(quote "$@")
     setup_env "$@"
     download_and_verify
     setup_selinux
-    create_symlinks
     create_killall
     create_uninstall
     systemd_disable
     create_env_file
     create_service_file
     service_enable_and_start
+    create_symlinks
 }
 
 exit 0
