@@ -47,9 +47,9 @@ endif
 REVISION=$(shell git rev-parse HEAD)$(shell if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
 RELEASE=${PROG}-$(VERSION).${GOOS}-${GOARCH}
 
-ifdef BUILDTAGS
-    GO_BUILDTAGS = ${BUILDTAGS}
-endif
+
+BUILDTAGS     = netgo
+GO_BUILDTAGS += ${BUILDTAGS}
 GO_BUILDTAGS ?= no_embedded_executor
 GO_BUILDTAGS += ${DEBUG_TAGS}
 GO_TAGS=$(if $(GO_BUILDTAGS),-tags "$(GO_BUILDTAGS)",)
