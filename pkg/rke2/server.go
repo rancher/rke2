@@ -75,6 +75,7 @@ func setup(ctx *cli.Context, cfg Config) error {
 		Images:     images,
 		PullImages: pullImages,
 		Manifests:  manifests,
+		Config:     ctx,
 	})
 
 	return nil

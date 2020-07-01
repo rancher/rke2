@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -20,6 +22,7 @@ import (
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/staticpod"
 	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 )
 
@@ -35,6 +38,7 @@ var (
 type StaticPod struct {
 	Manifests  string
 	PullImages string
+	App        *cli.Context
 	Images     images.Images
 }
 
@@ -161,6 +165,11 @@ func (s *StaticPod) CurrentETCDOptions() (opts executor.InitialOptions, err erro
 	return
 }
 
+type etcConf struct {
+	uid int64
+	gid int64
+}
+
 func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
 	if err := images.Pull(s.PullImages, "etcd", s.Images.ETCD); err != nil {
 		return err
@@ -176,7 +185,7 @@ func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
 		return err
 	}
 
-	return staticpod.Run(s.Manifests, staticpod.Args{
+	spa := staticpod.Args{
 		Annotations: map[string]string{
 			"etcd.k3s.io/initial": string(initial),
 		},
@@ -197,5 +206,27 @@ func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
 		HealthPort:  2381,
 		HealthPath:  "/health",
 		HealthProto: "HTTP",
-	})
+	}
+
+	for _, f := range s.App.FlagNames() {
+		if f == "profile" {
+			etcdUser, err := user.Lookup("etcd")
+			if err != nil {
+				return err
+			}
+			uid, err := strconv.ParseInt(etcdUser.Uid, 10, 64)
+			if err != nil {
+				return err
+			}
+			gid, err := strconv.ParseInt(etcdUser.Gid, 10, 64)
+			if err != nil {
+				return err
+			}
+			spa.SecurityContext.UID = uid
+			spa.SecurityContext.GID = gid
+			break
+		}
+	}
+
+	return staticpod.Run(s.Manifests, spa)
 }

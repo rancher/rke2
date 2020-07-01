@@ -20,17 +20,25 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+// SecurityContext contains the relevant data
+// to setup a pod's security context for execution.
+type SecurityContext struct {
+	UID int64
+	GID int64
+}
+
 type Args struct {
-	Command     string
-	Args        []string
-	Image       string
-	Dirs        []string
-	Files       []string
-	HealthPort  int32
-	HealthProto string
-	HealthPath  string
-	CPUMillis   int64
-	Annotations map[string]string
+	Command         string
+	Args            []string
+	Image           string
+	Dirs            []string
+	Files           []string
+	HealthPort      int32
+	HealthProto     string
+	HealthPath      string
+	CPUMillis       int64
+	SecurityContext *SecurityContext
+	Annotations     map[string]string
 }
 
 func Run(dir string, args Args) error {
@@ -173,6 +181,13 @@ func pod(args Args) (*v1.Pod, error) {
 				Name:  parts[0],
 				Value: parts[1],
 			})
+		}
+	}
+
+	if args.SecurityContext != nil {
+		p.Spec.SecurityContext = &v1.PodSecurityContext{
+			RunAsUser:  &args.SecurityContext.UID,
+			RunAsGroup: &args.SecurityContext.GID,
 		}
 	}
 
