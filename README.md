@@ -37,9 +37,9 @@ kubectl get nodes
 `RKE2_TOKEN` is created at `/var/lib/rancher/rke2/server/node-token` on your server. To install on worker nodes we should pass `RKE2_URL` along with `RKE2_TOKEN` or `RKE2_CLUSTER_SECRET` environment variables, for example:
 
 ```sh
-KE2_URL=https://myserver:6443 RKE2_TOKEN=XXX ./install.sh
+RKE2_URL=https://myserver:6443 RKE2_TOKEN=XXX ./install.sh
 ```
 
 ## Automated deployment
 
-We provide a simple automated way to install rke2 on AWS via terraform scripts, this method requires terraform to be installed and access to AWS cloud, to get started please checkout the [rke2-build](https://github.com/rancher/rke2-build) repo.
+We provide a simple automated way to install RKE2 on AWS via terraform scripts, this method requires terraform to be installed and access to AWS cloud, to get started please checkout the [rke2-build](https://github.com/rancher/rke2-build) repo.
