@@ -167,7 +167,7 @@ func (s *StaticPod) CurrentETCDOptions() (opts executor.InitialOptions, err erro
 const (
 	basePath    = "/var/lib/rancher/rke2"
 	etcdDBPath  = basePath + "/server/db"
-	etcdTLSPath = "/server/tls/etcd"
+	etcdTLSPath = basePath + "/server/tls/etcd"
 )
 
 var etcdPaths = []string{
