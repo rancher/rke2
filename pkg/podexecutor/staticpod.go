@@ -164,6 +164,17 @@ func (s *StaticPod) CurrentETCDOptions() (opts executor.InitialOptions, err erro
 	return
 }
 
+const (
+	basePath    = "/var/lib/rancher/rke2"
+	etcdDBPath  = basePath + "/server/db"
+	etcdTLSPath = "/server/tls/etcd"
+)
+
+var etcdPaths = []string{
+	etcdDBPath,
+	etcdTLSPath,
+}
+
 func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
 	if err := images.Pull(s.PullImages, "etcd", s.Images.ETCD); err != nil {
 		return err
@@ -219,7 +230,24 @@ func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
 			UID: uid,
 			GID: gid,
 		}
+
+		for _, p := range etcdPaths {
+			if err := chownr(p, int(uid), int(gid)); err != nil {
+				return err
+			}
+		}
 	}
 
 	return staticpod.Run(s.Manifests, spa)
+}
+
+// chownr recursively changes the ownership of the given
+// path to the given user ID and group ID.
+func chownr(path string, uid, gid int) error {
+	return filepath.Walk(path, func(name string, info os.FileInfo, err error) error {
+		if err == nil {
+			err = os.Chown(name, uid, gid)
+		}
+		return err
+	})
 }
