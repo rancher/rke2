@@ -888,12 +888,12 @@ update_kernel_params() {
         setup_etcd_user "etcd"
     fi
 
-    if [ ! -z "${INSTALL_RKE2_USER}" ]; then
-        setup_rke2_user "${INSTALL_RKE2_USER}"
+    if [ "${INSTALL_RKE2_USER}" = true ]; then
+        setup_rke2_user "rke2"
     fi
 
-    if [ ! -z "${INSTALL_RKE2_ETCD_USER}" ] && [ ${USING_ETCD_USER} != 1 ] ; then
-        setup_etcd_user "${INSTALL_ETCD_USER}"
+    if [ "${INSTALL_RKE2_ETCD_USER}" = true ] && [ ${USING_ETCD_USER} != 1 ] ; then
+        setup_etcd_user "etcd"
     fi
 
     verify_system
