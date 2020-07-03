@@ -3,6 +3,7 @@ package podexecutor
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -164,17 +165,6 @@ func (s *StaticPod) CurrentETCDOptions() (opts executor.InitialOptions, err erro
 	return
 }
 
-const (
-	basePath    = "/var/lib/rancher/rke2"
-	etcdDBPath  = basePath + "/server/db"
-	etcdTLSPath = basePath + "/server/tls/etcd"
-)
-
-var etcdPaths = []string{
-	etcdDBPath,
-	etcdTLSPath,
-}
-
 func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
 	if err := images.Pull(s.PullImages, "etcd", s.Images.ETCD); err != nil {
 		return err
@@ -189,6 +179,7 @@ func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("data dir! " + args.DataDir)
 
 	spa := staticpod.Args{
 		Annotations: map[string]string{
@@ -230,8 +221,8 @@ func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
 			UID: uid,
 			GID: gid,
 		}
-
-		for _, p := range etcdPaths {
+		fmt.Println("here?")
+		for _, p := range []string{args.DataDir, filepath.Dir(args.ServerTrust.CertFile)} {
 			if err := chownr(p, int(uid), int(gid)); err != nil {
 				return err
 			}
