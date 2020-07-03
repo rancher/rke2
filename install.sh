@@ -75,6 +75,15 @@ fi
 #     Create a user 'etcd'. If this value is set, the installation
 #     will chown the etcd data-dir to this user and update the etcd
 #     pod manifest.
+#
+#   - INSTALL_RKE2_CIS_MODE
+#     Enable all options to allow RKE2 to run in CIS mode if set to true. This 
+#     will change add an "etcd" system user and will update the following kernel 
+#     parameters and set them to the necessary values:
+#         vm.panic_on_oom=0
+#         kernel.panic=10
+#         kernel.panic_on_oops=1
+#         kernel.keys.root_maxbytes=25000000
 
 BASE_DIR="/var/lib/rancher/rke2"
 INSTALL_PATH="/usr/local/bin"
@@ -84,7 +93,6 @@ DOWNLOADER=
 
 USING_RKE2_USER=0
 USING_ETCD_USER=0
-
 
 # info logs the given argument at info log level.
 info() {
@@ -165,7 +173,11 @@ setup_env() {
             shift
         ;;
     esac
-    CMD_RKE2_EXEC="${CMD_RKE2}$(quote_indent "$@")"
+    if [ "${INSTALL_RKE2_CIS_MODE}" = true ]; then
+        CMD_RKE2_EXEC=" --profile=cis-1.5 ${CMD_RKE2}$(quote_indent "$@")"
+    else
+        CMD_RKE2_EXEC="${CMD_RKE2}$(quote_indent "$@")"
+    fi
 
     # --- use systemd name if defined or create default ---
     if [ -n "${INSTALL_RKE2_NAME}" ]; then
@@ -841,19 +853,47 @@ create_user() {
 # re-evaluate args to include env command
 eval set -- $(escape "${INSTALL_RKE2_EXEC}") $(quote "$@")
 
+# setup_rke2_user creates the rke2 user and group, home
+# directory, and sets necessary ownership.
+setup_rke2_user() {
+    mkdir -p "${BASE_DIR}"
+    create_user "$1" "RKE2 Service User"
+    chown -R "$1":"$1" "$(dirname ${BASE_DIR})"
+    USING_RKE2_USER=1
+}
+
+# setup_etcd_user creates the etcd user, provides a description
+# and adds it to the rke2 group if it exists.
+setup_etcd_user() {
+    create_user "$1" "ETCD Service User"
+    if [ "$(id -u "rke2" 2>/dev/null)" = 1 ]; then
+        usermod -a -G "${INSTALL_RKE2_USER}" "${INSTALL_RKE2_ETCD_USER}"
+    fi
+    USING_ETCD_USER=1
+}
+
+# update_kernel_params adjusts the necessary kernel parameters
+# to allow RKE2 to run in CIS mode.
+update_kernel_params() {
+    sysctl -w vm.panic_on_oom=0
+    sysctl -w kernel.panic=10
+    sysctl -w kernel.panic_on_oops=1
+    sysctl -w kernel.keys.root_maxbytes=25000000
+}
+
 # main
 {
-    if [ ! -z "${INSTALL_RKE2_USER}" ]; then
-        mkdir -p "${BASE_DIR}"
-        create_user "${INSTALL_RKE2_USER}" "RKE2 Service User Account"
-        chown -R "${INSTALL_RKE2_USER}":"${INSTALL_RKE2_USER}" "$(dirname ${BASE_DIR})"
-        USING_RKE2_USER=1
+    if [ "${INSTALL_RKE2_CIS_MODE}" = true ]; then
+        update_kernel_params
+        setup_etcd_user "etcd"
     fi
 
-    if [ ! -z "${INSTALL_RKE2_ETCD_USER}" ]; then
-        create_user "${INSTALL_RKE2_ETCD_USER}" "ETCD Service User"
-        usermod -a -G "${INSTALL_RKE2_USER}" "${INSTALL_RKE2_ETCD_USER}"
-        USING_ETCD_USER=1
+    if [ ! -z "${INSTALL_RKE2_USER}" ]; then
+        setup_rke2_user "${INSTALL_RKE2_USER}"
+    fi
+
+    if [ ! -z "${INSTALL_RKE2_ETCD_USER}" ] && [ ${USING_ETCD_USER} != 1 ] ; then
+        setup_etcd_user "${INSTALL_ETCD_USER}"
     fi
 
     verify_system
