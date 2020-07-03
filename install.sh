@@ -78,7 +78,7 @@ fi
 #
 #   - INSTALL_RKE2_CIS_MODE
 #     Enable all options to allow RKE2 to run in CIS mode if set to true. This 
-#     will change add an "etcd" system user and will update the following kernel 
+#     will add an "etcd" system user and will update the following kernel 
 #     parameters and set them to the necessary values:
 #         vm.panic_on_oom=0
 #         kernel.panic=10
