@@ -3,7 +3,6 @@ package podexecutor
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -179,7 +178,6 @@ func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("data dir! " + args.DataDir)
 
 	spa := staticpod.Args{
 		Annotations: map[string]string{
@@ -221,7 +219,7 @@ func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
 			UID: uid,
 			GID: gid,
 		}
-		fmt.Println("here?")
+
 		for _, p := range []string{args.DataDir, filepath.Dir(args.ServerTrust.CertFile)} {
 			if err := chownr(p, int(uid), int(gid)); err != nil {
 				return err
