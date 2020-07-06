@@ -875,10 +875,10 @@ setup_etcd_user() {
 # update_kernel_params adjusts the necessary kernel parameters
 # to allow RKE2 to run in CIS mode.
 update_kernel_params() {
-    sysctl -w vm.panic_on_oom=0
-    sysctl -w kernel.panic=10
-    sysctl -w kernel.panic_on_oops=1
-    sysctl -w kernel.keys.root_maxbytes=25000000
+    for param in vm.panic_on_oom=0 kernel.panic=10 kernel.panic_on_oops=1 kernel.keys.root_maxbytes=25000000; do
+        sysctl -w ${param}
+        echo ${param} >> /etc/sysctl.d/local.conf
+    done
 }
 
 # main
