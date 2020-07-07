@@ -71,11 +71,24 @@ func setup(ctx *cli.Context, cfg Config) error {
 
 	managed.RegisterDriver(&etcd.ETCD{})
 
-	executor.Set(&podexecutor.StaticPod{
+	sp := podexecutor.StaticPod{
 		Images:     images,
 		PullImages: pullImages,
 		Manifests:  manifests,
-	})
+		CISMode:    false,
+	}
+
+	for _, f := range ctx.App.Flags {
+		switch t := f.(type) {
+		case cli.StringFlag:
+			if t.Name == "profile" {
+				sp.CISMode = true
+			}
+		default:
+			// nothing to do. Keep moving.
+		}
+	}
+	executor.Set(&sp)
 
 	return nil
 }

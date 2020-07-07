@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -36,6 +38,7 @@ type StaticPod struct {
 	Manifests  string
 	PullImages string
 	Images     images.Images
+	CISMode    bool
 }
 
 func (s *StaticPod) Kubelet(args []string) error {
@@ -176,7 +179,7 @@ func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
 		return err
 	}
 
-	return staticpod.Run(s.Manifests, staticpod.Args{
+	spa := staticpod.Args{
 		Annotations: map[string]string{
 			"etcd.k3s.io/initial": string(initial),
 		},
@@ -197,5 +200,43 @@ func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
 		HealthPort:  2381,
 		HealthPath:  "/health",
 		HealthProto: "HTTP",
+	}
+
+	if s.CISMode {
+		etcdUser, err := user.Lookup("etcd")
+		if err != nil {
+			return err
+		}
+		uid, err := strconv.ParseInt(etcdUser.Uid, 10, 64)
+		if err != nil {
+			return err
+		}
+		gid, err := strconv.ParseInt(etcdUser.Gid, 10, 64)
+		if err != nil {
+			return err
+		}
+		spa.SecurityContext = &staticpod.SecurityContext{
+			UID: uid,
+			GID: gid,
+		}
+
+		for _, p := range []string{args.DataDir, filepath.Dir(args.ServerTrust.CertFile)} {
+			if err := chownr(p, int(uid), int(gid)); err != nil {
+				return err
+			}
+		}
+	}
+
+	return staticpod.Run(s.Manifests, spa)
+}
+
+// chownr recursively changes the ownership of the given
+// path to the given user ID and group ID.
+func chownr(path string, uid, gid int) error {
+	return filepath.Walk(path, func(name string, info os.FileInfo, err error) error {
+		if err == nil {
+			err = os.Chown(name, uid, gid)
+		}
+		return err
 	})
 }
