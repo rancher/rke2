@@ -637,6 +637,8 @@ rm -rf "${BASE_DIR}"
 rm -rf /var/lib/kubelet
 rm -f ${BIN_DIR}/rke2
 rm -f ${KILLALL_RKE2_SH}
+
+userdel etcd
 EOF
     ${SUDO} chmod 755 "${UNINSTALL_RKE2_SH}"
 
