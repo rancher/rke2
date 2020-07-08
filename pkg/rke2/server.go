@@ -81,7 +81,7 @@ func setup(ctx *cli.Context, cfg Config) error {
 	for _, f := range ctx.App.Flags {
 		switch t := f.(type) {
 		case cli.StringFlag:
-			if t.Name == "profile" {
+			if t.Name == "profile" && t.Destination != nil && *t.Destination != "" {
 				sp.CISMode = true
 			}
 		default:
