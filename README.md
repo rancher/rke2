@@ -19,7 +19,7 @@ RKE2 is a fully compliant Kubernetes distribution, with the following changes:
 
 ## Installation
 
-RKE2 comes with a convenient and configurable installation script that allows for system configuration, binary release download, and openrc init script or systemd unit file. 
+RKE2 comes with a convenient and configurable installation script that handles OS configuration, binary release download, and installation of an openrc init script or systemd unit file. 
 
 ### Quick Start
 
