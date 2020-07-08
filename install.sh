@@ -638,7 +638,13 @@ rm -rf /var/lib/kubelet
 rm -f ${BIN_DIR}/rke2
 rm -f ${KILLALL_RKE2_SH}
 
-userdel etcd
+for u in etcd rke2; do
+    if id -u \${u} 2>/dev/null; then
+        userdel \${u}
+        groupdel \${u}
+    fi
+done
+
 EOF
     ${SUDO} chmod 755 "${UNINSTALL_RKE2_SH}"
 
