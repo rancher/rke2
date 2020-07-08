@@ -1,7 +1,6 @@
 package rke2
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -78,7 +77,7 @@ func setup(ctx *cli.Context, cfg Config) error {
 		Manifests:  manifests,
 		CISMode:    false,
 	}
-	fmt.Printf("sp := %#v\n", sp)
+
 	for _, f := range ctx.App.Flags {
 		switch t := f.(type) {
 		case cli.StringFlag:
