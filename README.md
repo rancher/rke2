@@ -17,15 +17,34 @@ RKE2 is a fully compliant Kubernetes distribution, with the following changes:
   - Nginx Ingress Controller
   - Metrics Server
 
-## Quick Start
+## Installation
+
+RKE2 comes with a convenient and configurable installation script that handles OS configuration, binary release download, and installation of an openrc init script or systemd unit file. 
+
+### Quick Start
 
 The `install.sh` script provides a convenient way for installing rke2 server and agent, to install rke2 service:
 
 ```sh
-INSTALL_RKE2_VERSION=v0.0.1-alpha.4 ./install.sh
+INSTALL_RKE2_VERSION=v0.0.1-alpha.7 ./install.sh
 ```
 
+### CIS Mode
+
+If you plan to run your RKE2 cluster in CIS mode, the installation script offers the ability to install RKE2 in preparation for this. Use the `INSTALL_RKE2_CIS_MODE` environment variable. This will configure the system for RKE2 to run in CIS compliant mode. This includes the creation of a user "etcd", updates a number of kernel parameters, and installs a systemd or openrc unit file that passes the CIS mode flag to the binary (`--profile=cis-1.5`). Please reference the installation script (`install.sh`) for CIS specifics.
+
+```sh
+INSTALL_RKE2_CIS_MODE=true INSTALL_RKE2_VERSION=v0.0.1-alpha.7 ./install.sh
+```
+
+*NOTE*
+RKE2 can be run in CIS mode without running the install script in CIS mode however the remediations will need to be done manually. 
+
+### Post Installation
+
 A kubeconfig is written to `/etc/rancher/rke2/rke2.yaml`, the install script will install rke2 and additional binaries such as `kubectl`, `ctr`, `rke2-uninstall.sh`.
+
+## Operation
 
 To start using the rke2 cluster:
 
