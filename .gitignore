@@ -7,3 +7,5 @@
 .vscode
 /data
 rke2
+/build
+

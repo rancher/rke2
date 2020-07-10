@@ -60,7 +60,7 @@ func sysctl(s string) (int, error) {
 	if len(v) < 2 || v[len(v)-1] != '\n' {
 		return 0, fmt.Errorf("invalid contents: %s", s)
 	}
-	return strconv.Atoi(string(v[0]))
+	return strconv.Atoi(strings.Replace(string(v), "\n", "", -1))
 }
 
 // cisErrors holds errors reported during
