@@ -40,7 +40,7 @@ else
 endif
 
 ifdef DRONE_TAG
-	VERSION=${DRONE_TAG}
+	VERSION=$(shell echo ${DRONE_TAG} | sed -e 's/+/-/g')
 else
 	VERSION=dev
 endif
@@ -78,7 +78,7 @@ build-debug:                             ## Debug build using host go tools
 	$(MAKE) GODEBUG=y build
 
 image:                                   ## Build final docker image for push
-	docker build -t ${REPO}/rke2-runtime:${VERSION} .
+	docker build --build-arg KUBERNETES_VERSION=${VERSION} -t ${REPO}/rke2-runtime:${VERSION} .
 
 bin/golangci-lint:
 	curl -sL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s ${GOLANGCI_VERSION}
@@ -156,6 +156,16 @@ download-charts:
 	@@chmod +x .dapper.tmp
 	@./.dapper.tmp -v
 	@mv .dapper.tmp .dapper
+
+k8s-image: k8s-image-build k8s-image-scan
+
+k8s-image-build:
+	docker build \
+    	--build-arg TAG=${VERSION} -f Dockerfile.k8s -t ranchertest/kubernetes:${VERSION} .
+
+SEVERITIES = HIGH,CRITICAL
+k8s-image-scan:
+	trivy --severity $(SEVERITIES) --no-progress --skip-update --ignore-unfixed ranchertest/kubernetes:${VERSION}
 
 help: ## this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
