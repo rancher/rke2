@@ -47,13 +47,16 @@ endif
 REVISION=$(shell git rev-parse HEAD)$(shell if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
 RELEASE=${PROG}-$(VERSION).${GOOS}-${GOARCH}
 
-ifdef BUILDTAGS
-    GO_BUILDTAGS = ${BUILDTAGS}
-endif
+
+BUILDTAGS     = netgo
+GO_BUILDTAGS += ${BUILDTAGS}
 GO_BUILDTAGS ?= no_embedded_executor
 GO_BUILDTAGS += ${DEBUG_TAGS}
 GO_TAGS=$(if $(GO_BUILDTAGS),-tags "$(GO_BUILDTAGS)",)
-GO_LDFLAGS=-ldflags '-X $(K3S_PKG)/pkg/version.Program=$(PROG) -X $(K3S_PKG)/pkg/version.Version=$(VERSION) -X $(K3S_PKG)/pkg/version.Revision=$(REVISION) $(EXTRA_LDFLAGS)'
+GO_LDFLAGS=-ldflags '-extldflags "-static"                        \
+					 -X $(K3S_PKG)/pkg/version.Program=$(PROG)    \
+					 -X $(K3S_PKG)/pkg/version.Version=$(VERSION) \
+					 -X $(K3S_PKG)/pkg/version.Revision=$(REVISION) $(EXTRA_LDFLAGS)'
 
 
 default: in-docker-build                 ## Build using docker environment (default target)
