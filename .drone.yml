@@ -42,7 +42,7 @@ steps:
     - name: docker
       path: /var/run/docker.sock
   commands:
-    - make image-scan
+    - make k8s-image-scan
   when:
     instance:
       - drone-publish.rancher.io
@@ -109,6 +109,7 @@ steps:
   image: rancher/dapper:v0.5.0
   commands:
   - dapper -f Dockerfile --target dapper make dapper-ci
+  - echo "${DRONE_TAG}-arm64" | sed -e 's/+/-/g' >.tags
   volumes:
   - name: docker
     path: /var/run/docker.sock
