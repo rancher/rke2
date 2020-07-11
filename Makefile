@@ -45,7 +45,7 @@ else
 	VERSION=dev
 endif
 REVISION=$(shell git rev-parse HEAD)$(shell if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
-RELEASE=${PROG}-$(VERSION).${GOOS}-${GOARCH}
+RELEASE=${PROG}-$(subst -rke2,,$(VERSION)).${GOOS}-${GOARCH}
 
 
 BUILDTAGS     = netgo
