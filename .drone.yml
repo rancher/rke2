@@ -76,6 +76,8 @@ steps:
 - name: docker-publish
   image: plugins/docker
   settings:
+    build_args:
+      - KUBERNETES_VERSION=${DRONE_TAG}
     dockerfile: Dockerfile
     password:
       from_secret: docker_password
@@ -138,6 +140,8 @@ steps:
 - name: docker-publish
   image: plugins/docker
   settings:
+    build_args:
+      - KUBERNETES_VERSION=${DRONE_TAG}
     dockerfile: Dockerfile
     password:
       from_secret: docker_password
