@@ -45,7 +45,7 @@ else
 	VERSION=dev
 endif
 REVISION=$(shell git rev-parse HEAD)$(shell if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
-RELEASE=${PROG}-$(subst -rke2,,$(VERSION)).${GOOS}-${GOARCH}
+RELEASE=${PROG}.${GOOS}-${GOARCH}
 
 
 BUILDTAGS     = netgo
@@ -164,11 +164,11 @@ k8s-image: k8s-image-build k8s-image-scan
 
 k8s-image-build:
 	docker build \
-    	--build-arg TAG=${VERSION} -f Dockerfile.k8s -t ranchertest/kubernetes:${VERSION} .
+    	--build-arg TAG=${VERSION} -f Dockerfile.k8s -t ranchertest/kubernetes:${VERSION}-${GOARCH} .
 
 SEVERITIES = HIGH,CRITICAL
 k8s-image-scan:
-	trivy --severity $(SEVERITIES) --no-progress --skip-update --ignore-unfixed ranchertest/kubernetes:${VERSION}
+	trivy --severity $(SEVERITIES) --no-progress --skip-update --ignore-unfixed ranchertest/kubernetes:${VERSION}-${GOARCH}
 
 help: ## this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
