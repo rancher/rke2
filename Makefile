@@ -182,5 +182,10 @@ k8s-image-scan:
 k8s-image-publish: k8s-image
 	docker push ranchertest/kubernetes:${VERSION}-${GOARCH}
 
+# currently works only with amd64
+image-manifest:
+	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create --amend ${REPO}/rke2-runtime:${VERSION} ${REPO}/rke2-runtime:${VERSION}-${GOARCH}
+	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push ${REPO}/rke2-runtime:${VERSION}
+
 help: ## this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
