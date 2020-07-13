@@ -11,46 +11,9 @@ steps:
   image: rancher/dapper:v0.5.0
   commands:
   - dapper -f Dockerfile --target dapper make dapper-ci
-  - echo "${DRONE_TAG}-amd64" | sed -e 's/+/-/g' >.tags
   volumes:
   - name: docker
     path: /var/run/docker.sock
-
-- name: docker-publish-k8s
-  image: plugins/docker
-  settings:
-    dockerfile: Dockerfile.k8s
-    build_args:
-      - TAG=${DRONE_TAG}
-    password:
-      from_secret: docker_password
-    repo: ranchertest/kubernetes
-    username:
-      from_secret: docker_username
-  when:
-    instance:
-      - drone-publish.rancher.io
-    ref:
-    - refs/head/master
-    - refs/tags/*
-    event:
-    - tag
-
-- name: docker-scan-k8s
-  image: ranchertest/build-base:v1.14.2
-  volumes:
-    - name: docker
-      path: /var/run/docker.sock
-  commands:
-    - make k8s-image-scan
-  when:
-    instance:
-      - drone-publish.rancher.io
-    ref:
-    - refs/head/master
-    - refs/tags/*
-    event:
-    - tag
 
 - name: github_binary_release
   image: plugins/github-release
@@ -73,17 +36,41 @@ steps:
     event:
     - tag
 
-- name: docker-publish
-  image: plugins/docker
-  settings:
-    build_args:
-      - KUBERNETES_VERSION=${DRONE_TAG}
-    dockerfile: Dockerfile
-    password:
-      from_secret: docker_password
-    repo: "rancher/rke2-runtime"
-    username:
+- name: docker-k8s-publish
+  image: ranchertest/build-base:v1.14.2
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  commands:
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - DRONE_TAG=${DRONE_TAG} make k8s-image-publish
+  environment:
+    DOCKER_USERNAME:
       from_secret: docker_username
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+  when:
+    instance:
+    - drone-publish.rancher.io
+    ref:
+    - refs/head/master
+    - refs/tags/*
+    event:
+    - tag
+
+- name: docker-publish
+  image: ranchertest/build-base:v1.14.2
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  environment:
+    DOCKER_USERNAME:
+      from_secret: docker_username
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+  commands:
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - DRONE_TAG=${DRONE_TAG} make image-publish
   when:
     instance:
     - drone-publish.rancher.io
@@ -111,7 +98,6 @@ steps:
   image: rancher/dapper:v0.5.0
   commands:
   - dapper -f Dockerfile --target dapper make dapper-ci
-  - echo "${DRONE_TAG}-arm64" | sed -e 's/+/-/g' >.tags
   volumes:
   - name: docker
     path: /var/run/docker.sock
@@ -138,16 +124,18 @@ steps:
     - tag
 
 - name: docker-publish
-  image: plugins/docker
-  settings:
-    build_args:
-      - KUBERNETES_VERSION=${DRONE_TAG}
-    dockerfile: Dockerfile
-    password:
-      from_secret: docker_password
-    repo: "rancher/rke2-runtime"
-    username:
+  image: ranchertest/build-base:v1.14.2
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  environment:
+    DOCKER_USERNAME:
       from_secret: docker_username
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+  commands:
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - DRONE_TAG=${DRONE_TAG} make image-publish
   when:
     instance:
     - drone-publish.rancher.io
