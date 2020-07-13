@@ -44,6 +44,12 @@ ifdef DRONE_TAG
 else
 	VERSION=dev
 endif
+ifeq (${GOARCH}, "arm64")
+		KUBERNETES_VERSION=${VERSION}
+else
+		KUBERNETES_VERSION=${VERSION}-${GOARCH}
+endif
+
 REVISION=$(shell git rev-parse HEAD)$(shell if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
 RELEASE=${PROG}.${GOOS}-${GOARCH}
 
@@ -81,7 +87,10 @@ build-debug:                             ## Debug build using host go tools
 	$(MAKE) GODEBUG=y build
 
 image:                                   ## Build final docker image for push
-	docker build --build-arg KUBERNETES_VERSION=${VERSION} -t ${REPO}/rke2-runtime:${VERSION} .
+	docker build --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} -t ${REPO}/rke2-runtime:${VERSION}-${GOARCH} .
+
+image-publish: image
+	docker push ${REPO}/rke2-runtime:${VERSION}-${GOARCH}
 
 bin/golangci-lint:
 	curl -sL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s ${GOLANGCI_VERSION}
@@ -169,6 +178,9 @@ k8s-image-build:
 SEVERITIES = HIGH,CRITICAL
 k8s-image-scan:
 	trivy --severity $(SEVERITIES) --no-progress --skip-update --ignore-unfixed ranchertest/kubernetes:${VERSION}-${GOARCH}
+
+k8s-image-publish: k8s-image
+	docker push ranchertest/kubernetes:${VERSION}-${GOARCH}
 
 help: ## this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
