@@ -95,16 +95,18 @@ platform:
 
 steps:
 - name: manifest
-  image: plugins/manifest:1.0.2
-  settings:
-    username:
+  image: ranchertest/build-base:v1.14.2
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  environment:
+    DOCKER_USERNAME:
       from_secret: docker_username
-    password:
+    DOCKER_PASSWORD:
       from_secret: docker_password
-    platforms:
-      - linux/amd64
-    target: "rancher/rke2-runtime:${DRONE_TAG}"
-    template: "rancher/rke2-runtime:${DRONE_TAG}-ARCH"
+  commands:
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - DRONE_TAG=${DRONE_TAG} make image-manifest
   when:
     instance:
     - drone-publish.rancher.io
