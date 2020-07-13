@@ -1,6 +1,6 @@
 ARG KUBERNETES_VERSION=dev
 # Build environment
-FROM golang:1.14.2 AS build
+FROM ranchertest/build-base:v1.14.2 AS build
 # Yep nothing special here yet
 
 # Shell used for debugging
