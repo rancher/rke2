@@ -415,7 +415,7 @@ download_binary() {
     if [ -n "${INSTALL_RKE2_COMMIT}" ]; then
         BIN_URL=${STORAGE_URL}/rke2${SUFFIX}-${INSTALL_RKE2_COMMIT}
     else
-        BIN_URL=${GITHUB_URL}/download/${VERSION_RKE2}/rke2-${VERSION_RKE2}.linux-${ARCH}
+        BIN_URL=${GITHUB_URL}/download/${VERSION_RKE2}/rke2.linux-${ARCH}
     fi
     info "downloading binary at ${BIN_URL}"
     download "${TMP_BIN}" "${BIN_URL}"
