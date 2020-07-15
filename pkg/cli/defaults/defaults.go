@@ -8,10 +8,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/rke2/pkg/images"
+	"github.com/rancher/spur/cli"
 	"google.golang.org/grpc/grpclog"
 )
 
-func Set(images images.Images, dataDir string) error {
+func Set(ctx *cli.Context, images images.Images, dataDir string) error {
 	logsDir := filepath.Join(dataDir, "agent", "logs")
 	if err := os.MkdirAll(logsDir, 0755); err != nil {
 		return errors.Wrapf(err, "failed to create directory %s", logsDir)
@@ -34,8 +35,11 @@ func Set(images images.Images, dataDir string) error {
 		"log-file-max-size=50",
 		"alsologtostderr=false",
 		"logtostderr=false",
-		"protect-kernel-defaults=true",
 		"log-file="+filepath.Join(logsDir, "kubelet.log"))
+	if ctx.String("profile") != "" {
+		cmds.AgentConfig.ExtraKubeletArgs = append(cmds.AgentConfig.ExtraKubeletArgs,
+			"protect-kernel-defaults=true")
+	}
 
 	if !cmds.Debug {
 		l := grpclog.NewLoggerV2(ioutil.Discard, ioutil.Discard, os.Stderr)
