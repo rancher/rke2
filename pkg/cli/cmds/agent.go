@@ -3,11 +3,13 @@ package cmds
 import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/rke2/pkg/rke2"
-	"github.com/urfave/cli"
+	"github.com/rancher/spur/cli"
 )
 
 var (
 	k3sAgentBase = mustCmdFromK3S(cmds.NewAgentCommand(AgentRun), map[string]*K3SFlagOption{
+		"config":                     copy,
+		"debug":                      copy,
 		"v":                          hide,
 		"vmodule":                    hide,
 		"log":                        hide,
@@ -38,7 +40,7 @@ var (
 	})
 )
 
-func NewAgentCommand() cli.Command {
+func NewAgentCommand() *cli.Command {
 	cmd := k3sAgentBase
 	cmd.Flags = append(cmd.Flags, commonFlag...)
 	return cmd

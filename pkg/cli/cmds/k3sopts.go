@@ -2,11 +2,16 @@ package cmds
 
 import (
 	"fmt"
-	"strings"
+	"reflect"
 
+	"github.com/rancher/k3s/pkg/cli/cmds"
+	"github.com/rancher/spur/cli"
 	"github.com/rancher/wrangler/pkg/merr"
-	"github.com/urfave/cli"
 )
+
+func init() {
+	cmds.ConfigFlag.Value = "/etc/rancher/rke2/flags.conf"
+}
 
 var (
 	drop = &K3SFlagOption{
@@ -25,7 +30,7 @@ type K3SFlagOption struct {
 	Default string
 }
 
-func mustCmdFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) cli.Command {
+func mustCmdFromK3S(cmd *cli.Command, flagOpts map[string]*K3SFlagOption) *cli.Command {
 	cmd, err := commandFromK3S(cmd, flagOpts)
 	if err != nil {
 		panic(err)
@@ -33,7 +38,11 @@ func mustCmdFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) cli.Com
 	return cmd
 }
 
-func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Command, error) {
+func flagValue(flag cli.Flag, field string) reflect.Value {
+	return reflect.Indirect(reflect.ValueOf(flag)).FieldByName(field)
+}
+
+func commandFromK3S(cmd *cli.Command, flagOpts map[string]*K3SFlagOption) (*cli.Command, error) {
 	var (
 		newFlags []cli.Flag
 		seen     = map[string]bool{}
@@ -41,10 +50,10 @@ func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Co
 	)
 
 	for _, flag := range cmd.Flags {
-		name := strings.SplitN(flag.GetName(), ",", 2)[0]
+		name := cli.FlagNames(flag)[0]
 		opt, ok := flagOpts[name]
 		if !ok {
-			errs = append(errs, fmt.Errorf("new unknown option from k3s %s", flag.GetName()))
+			errs = append(errs, fmt.Errorf("new unknown option from k3s %s", name))
 			continue
 		}
 		seen[name] = true
@@ -56,34 +65,22 @@ func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Co
 			continue
 		}
 
-		if strFlag, ok := flag.(cli.StringFlag); ok {
-			if opt.Usage != "" {
-				strFlag.Usage = opt.Usage
+		if opt.Usage != "" {
+			if v := flagValue(flag, "Usage"); v.IsValid() {
+				v.SetString(opt.Usage)
 			}
-			if opt.Default != "" {
-				strFlag.Value = opt.Default
-			}
-			if opt.Hide {
-				strFlag.Hidden = true
-			}
-			flag = strFlag
-		} else if intFlag, ok := flag.(cli.IntFlag); ok {
-			if opt.Usage != "" {
-				intFlag.Usage = opt.Usage
-			}
-			if opt.Hide {
-				intFlag.Hidden = true
-			}
-			flag = intFlag
-		} else if boolFlag, ok := flag.(cli.BoolFlag); ok {
-			if opt.Usage != "" {
-				boolFlag.Usage = opt.Usage
-			}
-			if opt.Hide {
-				boolFlag.Hidden = true
-			}
-			flag = boolFlag
 		}
+		if opt.Default != "" {
+			if v := flagValue(flag, "Default"); v.IsValid() {
+				v.SetString(opt.Default)
+			}
+		}
+		if opt.Hide {
+			if v := flagValue(flag, "Hidden"); v.IsValid() {
+				v.SetBool(true)
+			}
+		}
+
 		newFlags = append(newFlags, flag)
 	}
 

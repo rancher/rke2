@@ -63,7 +63,8 @@ replace (
 require (
 	github.com/google/go-containerregistry v0.0.0-20200424115305-087a4bdef7c4
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.18.3-0.20200622210601-f5ee757b86f8
+	github.com/rancher/k3s v1.18.3-0.20200714154145-66a8c2ad7f0f
+	github.com/rancher/spur v0.0.0-20200617165101-8702c8e4ce7a
 	github.com/rancher/wrangler v0.6.1
 	github.com/sirupsen/logrus v1.4.2
 	github.com/urfave/cli v1.22.2

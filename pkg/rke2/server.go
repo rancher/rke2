@@ -15,7 +15,7 @@ import (
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
-	"github.com/urfave/cli"
+	"github.com/rancher/spur/cli"
 )
 
 type Config struct {
@@ -43,10 +43,6 @@ func Agent(ctx *cli.Context, cfg Config) error {
 }
 
 func setup(ctx *cli.Context, cfg Config) error {
-	if err := cmds.InitLogging(); err != nil {
-		return err
-	}
-
 	dataDir := cmds.ServerConfig.DataDir
 	if dataDir == "" {
 		dataDir = cmds.AgentConfig.DataDir
@@ -68,6 +64,7 @@ func setup(ctx *cli.Context, cfg Config) error {
 
 	manifests := filepath.Join(dataDir, "agent", config.DefaultPodManifestPath)
 	pullImages := filepath.Join(dataDir, "agent", "images")
+	cisMode := ctx.String("profile") != ""
 
 	managed.RegisterDriver(&etcd.ETCD{})
 
@@ -75,18 +72,7 @@ func setup(ctx *cli.Context, cfg Config) error {
 		Images:     images,
 		PullImages: pullImages,
 		Manifests:  manifests,
-		CISMode:    false,
-	}
-
-	for _, f := range ctx.App.Flags {
-		switch t := f.(type) {
-		case cli.StringFlag:
-			if t.Name == "profile" && t.Destination != nil && *t.Destination != "" {
-				sp.CISMode = true
-			}
-		default:
-			// nothing to do. Keep moving.
-		}
+		CISMode:    cisMode,
 	}
 	executor.Set(&sp)
 
