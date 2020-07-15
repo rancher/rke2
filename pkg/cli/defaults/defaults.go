@@ -34,6 +34,7 @@ func Set(images images.Images, dataDir string) error {
 		"log-file-max-size=50",
 		"alsologtostderr=false",
 		"logtostderr=false",
+		"protect-kernel-defaults=true",
 		"log-file="+filepath.Join(logsDir, "kubelet.log"))
 
 	if !cmds.Debug {
