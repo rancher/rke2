@@ -11,7 +11,7 @@ import (
 
 	"github.com/rancher/k3s/pkg/version"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
+	"github.com/rancher/spur/cli"
 )
 
 var (
@@ -19,10 +19,10 @@ var (
 	profile    string
 	appName    = filepath.Base(os.Args[0])
 	commonFlag = []cli.Flag{
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "repo",
 			Usage:       "(image) Image repository override for for RKE2 images",
-			EnvVar:      "RKE2_REPO",
+			EnvVars:     []string{"RKE2_REPO"},
 			Destination: &config.Repo,
 		},
 	}
@@ -114,17 +114,17 @@ func NewApp() *cli.App {
 		fmt.Printf("%s version %s\n", app.Name, app.Version)
 	}
 	app.Flags = []cli.Flag{
-		cli.BoolFlag{
+		&cli.BoolFlag{
 			Name:        "debug",
 			Usage:       "Turn on debug logs",
 			Destination: &debug,
-			EnvVar:      "K3S_DEBUG",
+			EnvVars:      []string{"K3S_DEBUG"},
 		},
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:        "profile",
 			Usage:       "Indicate we need to run in CIS 1.5 mode",
 			Destination: &profile,
-			EnvVar:      "RKE2_CIS_PROFILE",
+			EnvVars:     []string{"RKE2_CIS_PROFILE"},
 		},
 	}
 

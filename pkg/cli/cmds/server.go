@@ -3,7 +3,7 @@ package cmds
 import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/rke2/pkg/rke2"
-	"github.com/urfave/cli"
+	"github.com/rancher/spur/cli"
 )
 
 const rke2Path = "/var/lib/rancher/rke2"
@@ -12,6 +12,8 @@ var (
 	config rke2.Config
 
 	k3sServerBase = mustCmdFromK3S(cmds.NewServerCommand(ServerRun), map[string]*K3SFlagOption{
+		"config":            copy,
+		"debug":             copy,
 		"v":                 hide,
 		"vmodule":           hide,
 		"log":               hide,
@@ -83,7 +85,7 @@ var (
 	})
 )
 
-func NewServerCommand() cli.Command {
+func NewServerCommand() *cli.Command {
 	cmd := k3sServerBase
 	cmd.Flags = append(cmd.Flags, commonFlag...)
 	return cmd
