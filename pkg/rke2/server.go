@@ -49,7 +49,7 @@ func setup(ctx *cli.Context, cfg Config) error {
 	}
 
 	images := images.New(cfg.Repo)
-	if err := defaults.Set(images, dataDir); err != nil {
+	if err := defaults.Set(ctx, images, dataDir); err != nil {
 		return err
 	}
 
