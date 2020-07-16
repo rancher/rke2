@@ -173,7 +173,7 @@ k8s-image: k8s-image-build k8s-image-scan
 
 k8s-image-build:
 	docker build \
-    	--build-arg TAG=${VERSION} -f Dockerfile.k8s -t ranchertest/kubernetes:${VERSION}-${GOARCH} .
+    	--build-arg TAG=${DRONE_TAG} -f Dockerfile.k8s -t ranchertest/kubernetes:${VERSION}-${GOARCH} .
 
 SEVERITIES = HIGH,CRITICAL
 k8s-image-scan:
