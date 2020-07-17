@@ -54,7 +54,7 @@ REVISION=$(shell git rev-parse HEAD)$(shell if ! git diff --no-ext-diff --quiet 
 RELEASE=${PROG}.${GOOS}-${GOARCH}
 
 
-BUILDTAGS     = netgo
+BUILDTAGS     = netgo osusergo
 GO_BUILDTAGS += ${BUILDTAGS}
 GO_BUILDTAGS ?= no_embedded_executor
 GO_BUILDTAGS += ${DEBUG_TAGS}

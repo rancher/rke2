@@ -36,10 +36,10 @@ func Set(ctx *cli.Context, images images.Images, dataDir string) error {
 		"alsologtostderr=false",
 		"logtostderr=false",
 		"log-file="+filepath.Join(logsDir, "kubelet.log"))
-	if ctx.String("profile") != "" {
-		cmds.AgentConfig.ExtraKubeletArgs = append(cmds.AgentConfig.ExtraKubeletArgs,
-			"protect-kernel-defaults=true")
-	}
+	// if ctx.String("profile") != "" {
+	// 	cmds.AgentConfig.ExtraKubeletArgs = append(cmds.AgentConfig.ExtraKubeletArgs,
+	// 		"protect-kernel-defaults=true")
+	// }
 
 	if !cmds.Debug {
 		l := grpclog.NewLoggerV2(ioutil.Discard, ioutil.Discard, os.Stderr)
