@@ -62,19 +62,13 @@ func commandFromK3S(cmd *cli.Command, flagOpts map[string]*K3SFlagOption) (*cli.
 		}
 
 		if opt.Usage != "" {
-			if err := flagSetUsage(flag, opt); err != nil {
-				return nil, err
-			}
+			flagSetUsage(flag, opt)
 		}
 		if opt.Default != "" {
-			if err := flagSetDefault(flag, opt); err != nil {
-				return nil, err
-			}
+			flagSetDefault(flag, opt)
 		}
 		if opt.Hide {
-			if err := flagSetHide(flag, opt); err != nil {
-				return nil, err
-			}
+			flagSetHide(flag, opt)
 		}
 		newFlags = append(newFlags, flag)
 	}
@@ -93,7 +87,7 @@ func commandFromK3S(cmd *cli.Command, flagOpts map[string]*K3SFlagOption) (*cli.
 // flagSetUsage receives a flag and a K3S flag option, parses
 // both and sets the necessary fields based on the underlying
 // flag type.
-func flagSetUsage(flag cli.Flag, opt *K3SFlagOption) error {
+func flagSetUsage(flag cli.Flag, opt *K3SFlagOption) {
 	v := reflect.ValueOf(flag).Elem()
 	if v.CanSet() {
 		switch t := flag.(type) {
@@ -103,18 +97,14 @@ func flagSetUsage(flag cli.Flag, opt *K3SFlagOption) error {
 			t.Usage = opt.Usage
 		case *cli.BoolFlag:
 			t.Usage = opt.Usage
-		case *cli.IntFlag:
-		default:
-			return fmt.Errorf("error: %T is unsupported", t)
 		}
 	}
-	return nil
 }
 
 // flagSetDefault receives a flag and a K3S flag option, parses
 // both and sets the necessary fields based on the underlying
 // flag type.
-func flagSetDefault(flag cli.Flag, opt *K3SFlagOption) error {
+func flagSetDefault(flag cli.Flag, opt *K3SFlagOption) {
 	v := reflect.ValueOf(flag).Elem()
 	if v.CanSet() {
 		switch t := flag.(type) {
@@ -131,18 +121,14 @@ func flagSetDefault(flag cli.Flag, opt *K3SFlagOption) error {
 			t.DefaultText = opt.Default
 			t.Destination = &opt.Hide
 			t.Value = opt.Hide
-		case *cli.IntFlag:
-		default:
-			return fmt.Errorf("error: %T is unsupported", t)
 		}
 	}
-	return nil
 }
 
 // flagSetHide receives a flag and a K3S flag option, parses
 // both and sets the necessary fields based on the underlying
 // flag type.
-func flagSetHide(flag cli.Flag, opt *K3SFlagOption) error {
+func flagSetHide(flag cli.Flag, opt *K3SFlagOption) {
 	v := reflect.ValueOf(flag).Elem()
 	if v.CanSet() {
 		switch t := flag.(type) {
@@ -152,10 +138,6 @@ func flagSetHide(flag cli.Flag, opt *K3SFlagOption) error {
 			t.Hidden = opt.Hide
 		case *cli.BoolFlag:
 			t.Hidden = opt.Hide
-		case *cli.IntFlag:
-		default:
-			return fmt.Errorf("error: %T is unsupported", t)
 		}
 	}
-	return nil
 }
