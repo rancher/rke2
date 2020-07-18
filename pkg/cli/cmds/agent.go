@@ -8,13 +8,16 @@ import (
 
 var (
 	k3sAgentBase = mustCmdFromK3S(cmds.NewAgentCommand(AgentRun), map[string]*K3SFlagOption{
-		"config":                     copy,
-		"debug":                      copy,
-		"v":                          hide,
-		"vmodule":                    hide,
-		"log":                        hide,
-		"alsologtostderr":            hide,
-		"data-dir":                   copy,
+		"config":          copy,
+		"debug":           copy,
+		"v":               hide,
+		"vmodule":         hide,
+		"log":             hide,
+		"alsologtostderr": hide,
+		"data-dir": {
+			Usage:   "(data) Folder to hold state",
+			Default: rke2Path,
+		},
 		"token":                      copy,
 		"token-file":                 copy,
 		"disable-selinux":            drop,
