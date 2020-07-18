@@ -49,6 +49,6 @@ func NewAgentCommand() *cli.Command {
 	return cmd
 }
 
-func AgentRun(app *cli.Context) error {
-	return rke2.Agent(app, config)
+func AgentRun(ctx *cli.Context) error {
+	return rke2.Agent(ctx, config)
 }
