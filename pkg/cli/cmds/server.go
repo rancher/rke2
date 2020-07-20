@@ -91,6 +91,6 @@ func NewServerCommand() *cli.Command {
 	return cmd
 }
 
-func ServerRun(app *cli.Context) error {
-	return rke2.Server(app, config)
+func ServerRun(ctx *cli.Context) error {
+	return rke2.Server(ctx, config)
 }

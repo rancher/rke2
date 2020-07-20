@@ -3,6 +3,7 @@ package rke2
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/rancher/k3s/pkg/agent/config"
 	"github.com/rancher/k3s/pkg/cli/agent"
@@ -43,9 +44,14 @@ func Agent(ctx *cli.Context, cfg Config) error {
 }
 
 func setup(ctx *cli.Context, cfg Config) error {
-	dataDir := cmds.ServerConfig.DataDir
-	if dataDir == "" {
-		dataDir = cmds.AgentConfig.DataDir
+	var dataDir string
+	for _, f := range ctx.Command.Flags {
+		switch t := f.(type) {
+		case *cli.StringFlag:
+			if strings.Contains(t.Name, "data-dir") {
+				dataDir = t.DefaultText
+			}
+		}
 	}
 
 	images := images.New(cfg.Repo)

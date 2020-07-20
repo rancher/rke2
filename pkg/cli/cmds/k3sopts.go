@@ -38,10 +38,6 @@ func mustCmdFromK3S(cmd *cli.Command, flagOpts map[string]*K3SFlagOption) *cli.C
 	return cmd
 }
 
-func flagValue(flag cli.Flag, field string) reflect.Value {
-	return reflect.Indirect(reflect.ValueOf(flag)).FieldByName(field)
-}
-
 func commandFromK3S(cmd *cli.Command, flagOpts map[string]*K3SFlagOption) (*cli.Command, error) {
 	var (
 		newFlags []cli.Flag
@@ -66,21 +62,14 @@ func commandFromK3S(cmd *cli.Command, flagOpts map[string]*K3SFlagOption) (*cli.
 		}
 
 		if opt.Usage != "" {
-			if v := flagValue(flag, "Usage"); v.IsValid() {
-				v.SetString(opt.Usage)
-			}
+			flagSetUsage(flag, opt)
 		}
 		if opt.Default != "" {
-			if v := flagValue(flag, "Default"); v.IsValid() {
-				v.SetString(opt.Default)
-			}
+			flagSetDefault(flag, opt)
 		}
 		if opt.Hide {
-			if v := flagValue(flag, "Hidden"); v.IsValid() {
-				v.SetBool(true)
-			}
+			flagSetHide(flag, opt)
 		}
-
 		newFlags = append(newFlags, flag)
 	}
 
@@ -93,4 +82,61 @@ func commandFromK3S(cmd *cli.Command, flagOpts map[string]*K3SFlagOption) (*cli.
 
 	cmd.Flags = newFlags
 	return cmd, errs.Err()
+}
+
+// flagSetUsage receives a flag and a K3S flag option, parses
+// both and sets the necessary fields based on the underlying
+// flag type.
+func flagSetUsage(flag cli.Flag, opt *K3SFlagOption) {
+	v := reflect.ValueOf(flag).Elem()
+	if v.CanSet() {
+		switch t := flag.(type) {
+		case *cli.StringFlag:
+			t.Usage = opt.Usage
+		case *cli.StringSliceFlag:
+			t.Usage = opt.Usage
+		case *cli.BoolFlag:
+			t.Usage = opt.Usage
+		}
+	}
+}
+
+// flagSetDefault receives a flag and a K3S flag option, parses
+// both and sets the necessary fields based on the underlying
+// flag type.
+func flagSetDefault(flag cli.Flag, opt *K3SFlagOption) {
+	v := reflect.ValueOf(flag).Elem()
+	if v.CanSet() {
+		switch t := flag.(type) {
+		case *cli.StringFlag:
+			t.DefaultText = opt.Default
+			t.Destination = &opt.Default
+			t.Value = opt.Default
+		case *cli.StringSliceFlag:
+			t.DefaultText = opt.Default
+			t.Destination = &([]string{opt.Default})
+			t.Value = []string{opt.Default}
+		case *cli.BoolFlag:
+			t.DefaultText = opt.Default
+			t.Destination = &opt.Hide
+			t.Value = opt.Hide
+		}
+	}
+}
+
+// flagSetHide receives a flag and a K3S flag option, parses
+// both and sets the necessary fields based on the underlying
+// flag type.
+func flagSetHide(flag cli.Flag, opt *K3SFlagOption) {
+	v := reflect.ValueOf(flag).Elem()
+	if v.CanSet() {
+		switch t := flag.(type) {
+		case *cli.StringFlag:
+			t.Hidden = opt.Hide
+		case *cli.StringSliceFlag:
+			t.Hidden = opt.Hide
+		case *cli.BoolFlag:
+			t.Hidden = opt.Hide
+		}
+	}
 }
