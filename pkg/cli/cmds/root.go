@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/rancher/k3s/pkg/version"
-	"github.com/sirupsen/logrus"
 	"github.com/rancher/spur/cli"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -118,7 +118,7 @@ func NewApp() *cli.App {
 			Name:        "debug",
 			Usage:       "Turn on debug logs",
 			Destination: &debug,
-			EnvVars:      []string{"K3S_DEBUG"},
+			EnvVars:     []string{"K3S_DEBUG"},
 		},
 		&cli.StringFlag{
 			Name:        "profile",

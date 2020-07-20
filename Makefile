@@ -3,6 +3,7 @@ GOLANGCI_VERSION=v1.27.0
 REPO ?= rancher
 IMAGE=${REPO}/rke2-runtime
 K3S_PKG=github.com/rancher/k3s
+RKE2_PKG=github.com/rancher/rke2
 
 ifneq "$(strip $(shell command -v go 2>/dev/null))" ""
 	GOOS ?= $(shell go env GOOS)
@@ -60,8 +61,9 @@ GO_BUILDTAGS ?= no_embedded_executor
 GO_BUILDTAGS += ${DEBUG_TAGS}
 GO_TAGS=$(if $(GO_BUILDTAGS),-tags "$(GO_BUILDTAGS)",)
 GO_LDFLAGS=-ldflags '-extldflags "-static"                        \
+					 -X $(RKE2_PKG)/pkg/images.KubernetesVersion=$(VERSION)    \
 					 -X $(K3S_PKG)/pkg/version.Program=$(PROG)    \
-					 -X $(K3S_PKG)/pkg/version.Version=$(VERSION) \
+					 -X $(K3S_PKG)/pkg/version.Version=${DRONE_TAG} \
 					 -X $(K3S_PKG)/pkg/version.Revision=$(REVISION) $(EXTRA_LDFLAGS)'
 
 
