@@ -109,9 +109,8 @@ func flagSetDefault(flag cli.Flag, opt *K3SFlagOption) {
 	if v.CanSet() {
 		switch t := flag.(type) {
 		case *cli.StringFlag:
-			x := opt.Default
-			t.DefaultText = x
-			t.Destination = &x
+			t.DefaultText = opt.Default
+			t.Destination = &opt.Default
 			t.Value = opt.Default
 		case *cli.StringSliceFlag:
 			t.DefaultText = opt.Default

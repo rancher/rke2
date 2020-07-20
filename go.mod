@@ -67,7 +67,6 @@ require (
 	github.com/rancher/spur v0.0.0-20200617165101-8702c8e4ce7a
 	github.com/rancher/wrangler v0.6.1
 	github.com/sirupsen/logrus v1.4.2
-	github.com/urfave/cli v1.22.2
 	google.golang.org/grpc v1.26.0
 	k8s.io/api v0.18.0
 	k8s.io/apimachinery v0.18.0
