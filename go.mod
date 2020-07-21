@@ -61,15 +61,18 @@ replace (
 )
 
 require (
+	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e // indirect
+	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
 	github.com/google/go-containerregistry v0.0.0-20200424115305-087a4bdef7c4
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.18.3-0.20200714154145-66a8c2ad7f0f
+	github.com/rakelkar/gonetsh v0.0.0-20190719023240-501daadcadf8 // indirect
+	github.com/rancher/k3s v1.18.3-0.20200720235607-04f57e5e1da4
 	github.com/rancher/spur v0.0.0-20200617165101-8702c8e4ce7a
 	github.com/rancher/wrangler v0.6.1
 	github.com/sirupsen/logrus v1.4.2
 	google.golang.org/grpc v1.26.0
-	k8s.io/api v0.18.0
-	k8s.io/apimachinery v0.18.0
+	k8s.io/api v0.18.5
+	k8s.io/apimachinery v0.18.5
 	k8s.io/apiserver v0.0.0
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	sigs.k8s.io/yaml v1.2.0

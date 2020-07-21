@@ -40,6 +40,8 @@ var (
 		"server":                     copy,
 		"no-flannel":                 drop,
 		"cluster-secret":             drop,
+		"protect-kernel-defaults":    copy,
+		"snapshotter":                copy,
 	})
 )
 
