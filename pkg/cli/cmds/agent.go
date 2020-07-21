@@ -41,7 +41,7 @@ var (
 		"no-flannel":                 drop,
 		"cluster-secret":             drop,
 		"protect-kernel-defaults":    copy,
-		"snapshotter":				  copy,
+		"snapshotter":                copy,
 	})
 )
 
