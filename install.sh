@@ -494,7 +494,7 @@ download_and_verify() {
 create_symlinks() {
     info "creating symlinks..."
     for bin in ${BASE_DIR}/data/*/bin/*; do
-        ln -sf "${bin}" "${INSTALL_PATH}"/"$(basename ${bin})"
+        ${SUDO} ln -sf "${bin}" "${INSTALL_PATH}"/"$(basename ${bin})"
     done
 }
 
