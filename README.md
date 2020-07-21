@@ -62,3 +62,16 @@ RKE2_URL=https://myserver:6443 RKE2_TOKEN=XXX ./install.sh
 ## Automated deployment
 
 We provide a simple automated way to install RKE2 on AWS via terraform scripts, this method requires terraform to be installed and access to AWS cloud, to get started please checkout the [rke2-build](https://github.com/rancher/rke2-build) repo.
+
+## Creating a Release
+
+RKE2 is drive by versioned releases in association with runtime and Kubernetes versions. They can be found in the Release section of the repository. 
+
+Follow the steps below to create a new RKE2 release:
+
+* Go to [Releases](https://github.com/rancher/rke2/releases)
+* Click "Daft a new release"
+* Add the "Tag version"
+* Click "Publish release"
+  
+Assets won't appear immediately. There is a Drone publish job that will need to complete and it will be responsible for pushing the assets into Github for that release.
