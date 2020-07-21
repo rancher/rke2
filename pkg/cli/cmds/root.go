@@ -118,7 +118,7 @@ func NewApp() *cli.App {
 			Name:        "debug",
 			Usage:       "Turn on debug logs",
 			Destination: &debug,
-			EnvVars:     []string{"K3S_DEBUG"},
+			EnvVars:     []string{"RKE2_DEBUG"},
 		},
 		&cli.StringFlag{
 			Name:        "profile",
