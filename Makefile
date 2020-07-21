@@ -63,7 +63,7 @@ GO_TAGS=$(if $(GO_BUILDTAGS),-tags "$(GO_BUILDTAGS)",)
 GO_LDFLAGS=-ldflags '-extldflags "-static"                        \
 					 -X $(RKE2_PKG)/pkg/images.KubernetesVersion=$(VERSION)    \
 					 -X $(K3S_PKG)/pkg/version.Program=$(PROG)    \
-					 -X $(K3S_PKG)/pkg/version.Version=${DRONE_TAG} \
+					 -X $(K3S_PKG)/pkg/version.Version=$(VERSION) \
 					 -X $(K3S_PKG)/pkg/version.Revision=$(REVISION) $(EXTRA_LDFLAGS)'
 
 
