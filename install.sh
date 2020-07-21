@@ -707,7 +707,7 @@ ExecStart=${BIN_DIR}/rke2 \\
     ${CMD_RKE2_EXEC}
 
 EOF
-    echo "HOME=/root" | ${SUDO} tee /etc/systemd/system/rke2.service.env
+    echo "HOME=/root" | ${SUDO} tee /etc/systemd/system/rke2.service.env >/dev/null
 }
 
 # create_openrc_service_file writes the openrc
