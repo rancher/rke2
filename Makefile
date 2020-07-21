@@ -189,5 +189,11 @@ image-manifest:
 	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create --amend ${REPO}/rke2-runtime:${VERSION} ${REPO}/rke2-runtime:${VERSION}-${GOARCH}
 	DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push ${REPO}/rke2-runtime:${VERSION}
 
+dispatch:
+	curl -XPOST -u "${PAT_USERNAME}:${PAT_TOKEN}" \
+            -H "Accept: application/vnd.github.everest-preview+json"  \
+            -H "Content-Type: application/json" https://api.github.com/repos/rancher/rke2-upgrade/dispatches \
+            --data '{"event_type": "create_tag", "client_payload": {"tag":"'"${DRONE_TAG}"'"}}'
+
 help: ## this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
