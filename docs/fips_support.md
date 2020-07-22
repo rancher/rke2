@@ -39,6 +39,7 @@ To ensure that all aspects of the system architecture are using FIPS 140-2 compl
   * containerd-shim-runc-v2
 * ctr
 * runc
+* crictl
 
 ## Ingress
 
