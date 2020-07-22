@@ -1,4 +1,4 @@
-# Rancher Kubernetes Enginer 2
+# Rancher Kubernetes Engine 2
 
 ## Support for FIPS Cryptography
 
@@ -31,7 +31,7 @@ Most of the components of the RKE2 system are statically compiled with the GoBor
 
 ## Runtime
 
-To ensure that all aspects of the system architecture are using FIPS 140-2 compliant algorithm implemenations, the RKE2 runtime contains utilities statically compiled with the customized Go compiler for FIPS 140-2 compliance. This ensures that all levels of the stack are compliant from Kuberenetes daemons to container orchestration mechanics.
+To ensure that all aspects of the system architecture are using FIPS 140-2 compliant algorithm implementations, the RKE2 runtime contains utilities statically compiled with the customized Go compiler for FIPS 140-2 compliance. This ensures that all levels of the stack are compliant from Kubernetes daemons to container orchestration mechanics.
 
 * containerd
   * containerd-shim
@@ -43,4 +43,4 @@ To ensure that all aspects of the system architecture are using FIPS 140-2 compl
 
 ## Ingress
 
-Ingress is not included in the RKE2 FIPS 140-2 compliance purview. This is the responsibility of the customers as ingress is ultimately their choice of implemenation.
+Ingress is not included in the RKE2 FIPS 140-2 compliance purview. This is the responsibility of the users as ingress is ultimately their choice of implementation.
