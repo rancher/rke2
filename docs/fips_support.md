@@ -2,7 +2,7 @@
 
 ## Support for FIPS Cryptography
 
-Starting with Rancher Kubernetes Enginer version 2 (RKE2), you can install a cluster that uses FIPS validated libraries. 
+Starting with Rancher Kubernetes Engine version 2 (RKE2), you can install a cluster that uses FIPS validated libraries. 
 
 ## Use of FIPS Compatible Go compiler.
 
