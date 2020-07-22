@@ -128,28 +128,28 @@ verify_system() {
 # quote adds quotes to command arguments.
 quote() {
     for arg in "$@"; do
-        printf "%s\n" "$arg" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/"
+        printf '%s\n' "$arg" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/"
     done
 }
 
 # quote_indent adds indentation and trailing slash 
 # to quoted args.
 quote_indent() {
-    printf " \\\n"
+    printf ' \\\n'
     for arg in "$@"; do
-        printf "\t%s \\\n" "$(quote "$arg")"
+        printf '\t%s \\\n' "$(quote "$arg")"
     done
 }
 
 # escape escapes most punctuation characters, except 
 # quotes, forward slash, and space.
 escape() {
-    printf "%s" "$@" | sed -e 's/\([][!#$%&()*;<=>?\_`{|}]\)/\\\1/g;'
+    printf '%s' "$@" | sed -e 's/\([][!#$%&()*;<=>?\_`{|}]\)/\\\1/g;'
 }
 
 # escape_dq escapes double quotes.
 escape_dq() {
-    printf "%s" "$@" | sed -e 's/"/\\"/g'
+    printf '%s' "$@" | sed -e 's/"/\\"/g'
 }
 
 # setup_env defines needed environment variables.
@@ -191,9 +191,9 @@ setup_env() {
     fi
 
     # --- check for invalid characters in system name ---
-    valid_chars=$(printf "%s" "${SYSTEM_NAME}" | sed -e 's/[][!#$%&()*;<=>?\_`{|}/[:space:]]/^/g;' )
+    valid_chars=$(printf '%s' "${SYSTEM_NAME}" | sed -e 's/[][!#$%&()*;<=>?\_`{|}/[:space:]]/^/g;' )
     if [ "${SYSTEM_NAME}" != "${valid_chars}"  ]; then
-        invalid_chars=$(printf "%s" "${valid_chars}" | sed -e 's/[^^]/ /g')
+        invalid_chars=$(printf '%s' "${valid_chars}" | sed -e 's/[^^]/ /g')
         fatal "invalid characters for system name:
             ${SYSTEM_NAME}
             ${invalid_chars}"
