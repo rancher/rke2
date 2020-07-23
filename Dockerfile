@@ -31,7 +31,7 @@ WORKDIR /source
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM ranchertest/kubernetes:${KUBERNETES_VERSION} AS k8s
 FROM ranchertest/runc:v1.0.0-rc10 AS runc
-FROM ranchertest/containerd:v1.3.5 AS containerd
+FROM ranchertest/containerd:v1.3.3 AS containerd
 
 FROM scratch AS release
 COPY --from=k8s \
