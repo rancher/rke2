@@ -81,7 +81,7 @@ node-label:
   - "something=amazing"
 ```
 
-In general, cli arguments map to their respective yaml key, with set cli args being represented as yaml lists.
+In general, cli arguments map to their respective yaml key, with repeatable cli args being represented as yaml lists.
 
 An identical configuration using solely cli arguments is shown below to demonstrate this:
 
@@ -93,6 +93,6 @@ rke2 server \
   --node-label "something=amazing"
 ```
 
-It is also possible to use both a configuration file and cli arguments.  In these situations, values will be loaded from both sources, but cli arguments will take precedence.  For set arguments such as `--node-label`, the cli arguments will overwrite all values in the set.
+It is also possible to use both a configuration file and cli arguments.  In these situations, values will be loaded from both sources, but cli arguments will take precedence.  For repeatable arguments such as `--node-label`, the cli arguments will overwrite all values in the list.
 
 Finally, the location of the config file can be changed either through the cli argument `--config FILE, -c FILE`, or the environment variable `$RKE2_CONFIG_FILE`.
