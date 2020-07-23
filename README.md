@@ -63,6 +63,42 @@ RKE2_URL=https://myserver:6443 RKE2_TOKEN=XXX ./install.sh
 
 We provide a simple automated way to install RKE2 on AWS via terraform scripts, this method requires terraform to be installed and access to AWS cloud, to get started please checkout the [rke2-build](https://github.com/rancher/rke2-build) repo.
 
+## CentOS/RHEL 7 RPM Installation
+
+Signed RPMs are published for RKE2 within the `rpm.rancher.io` RPM repository. In order to use the RPM repository, on a CentOS 7 or RHEL 7 system, run the following bash snippet:
+
+```bash
+cat << EOF > /etc/yum.repos.d/rancher-rke2-1-18-latest.repo
+[rancher-rke2-common-latest]
+name=Rancher RKE2 Common Latest
+baseurl=https://rpm.rancher.io/rke2/latest/common/centos/7/noarch
+enabled=1
+gpgcheck=1
+gpgkey=https://rpm.rancher.io/public.key
+
+[rancher-rke2-1-18-latest]
+name=Rancher RKE2 1.18 Latest
+baseurl=https://rpm.rancher.io/rke2/latest/1.18/centos/7/x86_64
+enabled=1
+gpgcheck=1
+gpgkey=https://rpm.rancher.io/public.key
+EOF
+```
+
+After this, you can either run:
+
+```bash
+yum -y install rke2-server
+```
+
+or 
+
+```bash
+`yum -y install rke2-agent
+```
+
+The RPM will install a corresponding `rke2-server.service` or `rke2-agent.service` systemd unit that can be invoked like: `systemctl start rke2-server`. Make sure that you configure `rke2` before you start it, by following the `Configuration File` instructions below.
+
 ## Configuration File
 
 In addition to configuring RKE2 with environment variables and cli arguments, RKE2 can also use a config file.
