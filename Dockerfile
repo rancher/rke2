@@ -30,16 +30,16 @@ WORKDIR /source
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM ranchertest/kubernetes:${KUBERNETES_VERSION} AS k8s
-FROM ranchertest/runc:v1.0.0-rc10 AS runc
-FROM ranchertest/containerd:v1.3.3 AS containerd
+FROM rancher/k3s:v1.18.4-k3s1 AS k3s
+FROM ranchertest/containerd:v1.3.4 AS containerd
 
 FROM scratch AS release
 COPY --from=k8s \
     /usr/local/bin/kubectl \
     /usr/local/bin/kubelet \
     /bin/
-COPY --from=runc \
-    /usr/local/bin/runc \
+COPY --from=k3s \
+    /bin/runc \
     /bin/
 COPY --from=containerd \
     /usr/local/bin/containerd-shim-runc-v2 \
