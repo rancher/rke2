@@ -93,4 +93,6 @@ rke2 server \
   --node-label "something=amazing"
 ```
 
+It is also possible to use both a configuration file and cli arguments.  In these situations, values will be loaded from both sources, but cli arguments will take precedence.  For set arguments such as `--node-label`, the cli arguments will overwrite all values in the set.
+
 Finally, the location of the config file can be changed either through the cli argument `--config FILE, -c FILE`, or the environment variable `$RKE2_CONFIG_FILE`.
