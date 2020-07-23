@@ -671,6 +671,7 @@ create_env_file() {
     umask 0377
     env | grep '^RKE2_' | ${SUDO} tee "${FILE_RKE2_ENV}" >/dev/null
     env | grep -E -i '^(NO|HTTP|HTTPS)_PROXY' | ${SUDO} tee -a "${FILE_RKE2_ENV}" >/dev/null
+    echo "HOME=/root" | ${SUDO} tee -a "${FILE_RKE2_ENV}" >/dev/null
     umask "${UMASK}"
 }
 
@@ -707,7 +708,6 @@ ExecStart=${BIN_DIR}/rke2 \\
     ${CMD_RKE2_EXEC}
 
 EOF
-    echo "HOME=/root" | ${SUDO} tee "${FILE_RKE2_ENV}" >/dev/null
 }
 
 # create_openrc_service_file writes the openrc
