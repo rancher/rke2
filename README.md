@@ -65,17 +65,17 @@ We provide a simple automated way to install RKE2 on AWS via terraform scripts, 
 
 ## Configuration File
 
-In addition to configuring RKE2 with environment variables and cli arguments, RKE2 kcan also use a config file.
+In addition to configuring RKE2 with environment variables and cli arguments, RKE2 can also use a config file.
 
 By default, values present in a `yaml` file located at `/etc/rancher/rke2/flags.conf` will be used on install.
 
-An example of a basic server config file is below:
+An example of a basic `server` config file is below:
 
 ```yaml
 # /etc/rancher/rke2/flags.conf
 write-kubeconfig-mode: "0644"
 tls-san:
-  - foo.local
+  - "foo.local"
 node-label:
   - "foo=bar"
   - "something=amazing"
