@@ -31,17 +31,7 @@ WORKDIR /source
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM ranchertest/kubernetes:${KUBERNETES_VERSION} AS k8s
 FROM rancher/k3s:v1.18.4-k3s1 AS k3s
-FROM ubuntu:18.04 AS containerd
-
-ENV CONTAINERD_VERION=1.3.4
-ENV CONTAINERD_HASH=61e65c9589e5abfded1daa353e6dfb4b8c2436199bbc5507fc45809a3bb80c1d
-ENV CONTAINERD_URL=https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERION}/containerd-${CONTAINERD_VERION}.linux-amd64.tar.gz
-
-RUN apt-get update && \
-    apt-get install -y curl
-RUN curl -O -fL ${CONTAINERD_URL}
-RUN echo "${CONTAINERD_HASH}  $(basename $CONTAINERD_URL)" | sha256sum -c -
-RUN tar xvf $(basename ${CONTAINERD_URL}) -C /usr/local
+FROM ranchertest/containerd:v1.3.4 AS containerd
 
 FROM scratch AS release
 COPY --from=k8s \
