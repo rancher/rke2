@@ -112,7 +112,6 @@ func extract(image, targetDir, prefix string, reader io.Reader) error {
 
 		targetName := filepath.Join(targetDir, filepath.Base(n))
 		mode := h.FileInfo().Mode() & 0755
-
 		f, err := os.OpenFile(targetName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
 		if err != nil {
 			return nil
