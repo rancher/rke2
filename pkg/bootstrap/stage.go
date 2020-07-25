@@ -72,6 +72,9 @@ func Stage(dataDir string, images images.Images) (string, error) {
 	if err := extractFromDir(binDir, "/bin/", img, images.Runtime); err != nil {
 		return "", err
 	}
+	if err := os.Chmod(binDir, 0755); err != nil {
+		return "", err
+	}
 
 	manifestDir := manifestsDir(dataDir)
 	err = extractFromDir(manifestDir, "/charts/", img, images.Runtime)
@@ -109,6 +112,7 @@ func extract(image, targetDir, prefix string, reader io.Reader) error {
 
 		targetName := filepath.Join(targetDir, filepath.Base(n))
 		mode := h.FileInfo().Mode() & 0755
+
 		f, err := os.OpenFile(targetName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
 		if err != nil {
 			return nil
@@ -153,7 +157,6 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 		return err
 	}
 	defer os.RemoveAll(tempDir)
-
 	r := mutate.Extract(img)
 	defer r.Close()
 

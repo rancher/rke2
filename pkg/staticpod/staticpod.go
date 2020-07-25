@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/rancher/wrangler/pkg/yaml"
+	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -62,6 +63,7 @@ func Run(dir string, args Args) error {
 }
 
 func writeFile(dir, name string, content []byte) error {
+	logrus.Warnf("writeFile() - creating director: %s/%s", dir, name)
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err
 	}
