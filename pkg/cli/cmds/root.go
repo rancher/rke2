@@ -44,6 +44,7 @@ func init() {
 // kernel.panic_on_oops=1
 // kernel.keys.root_maxbytes=25000000
 var kernelRuntimeParameters = map[string]int{
+	"vm.overcommit_memory":      1,
 	"vm.panic_on_oom":           0,
 	"kernel.panic":              10,
 	"kernel.panic_on_oops":      1,
