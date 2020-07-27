@@ -885,8 +885,8 @@ setup_etcd_user() {
 # to allow RKE2 to run in CIS mode.
 update_kernel_params() {
     for param in vm.panic_on_oom=0 kernel.panic=10 kernel.panic_on_oops=1 kernel.keys.root_maxbytes=25000000 vm.overcommit_memory=1; do
-        sysctl -w ${param}
-        echo ${param} >> /etc/sysctl.d/local.conf
+        ${SUDO} sysctl -w ${param}
+        echo ${param} | ${SUDO} tee -a /etc/sysctl.d/local.conf
     done
 }
 
