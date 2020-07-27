@@ -846,7 +846,7 @@ create_user() {
         exit 1
     fi
 
-    if [ "$(id -u "$1" 2>/dev/null)" != 1 ]; then
+    if [ ! $(id -u $1 > /dev/null 2>&1; echo $?) ]; then
         no_login=$(command -v nologin)
         
         if [ ! -z "${no_login}" ]; then
