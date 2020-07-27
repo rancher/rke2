@@ -850,9 +850,9 @@ create_user() {
         no_login=$(command -v nologin)
         
         if [ ! -z "${no_login}" ]; then
-            useradd -r -d "${BASE_DIR}" -c "$2" -s "${no_login}" "$1"
+            ${SUDO} useradd -r -d "${BASE_DIR}" -c "$2" -s "${no_login}" "$1"
         else
-            useradd -r -d "${BASE_DIR}" -c "$2" -s /bin/false "$1"
+            ${SUDO} useradd -r -d "${BASE_DIR}" -c "$2" -s /bin/false "$1"
         fi
     else 
         info "$1 exists. moving on..."
@@ -865,9 +865,9 @@ eval set -- $(escape "${INSTALL_RKE2_EXEC}") $(quote "$@")
 # setup_rke2_user creates the rke2 user and group, home
 # directory, and sets necessary ownership.
 setup_rke2_user() {
-    mkdir -p "${BASE_DIR}"
+    ${SUDO} mkdir -p "${BASE_DIR}"
     create_user "$1" "RKE2 Service User"
-    chown -R "$1":"$1" "$(dirname ${BASE_DIR})"
+    ${SUDO} chown -R "$1":"$1" "$(dirname ${BASE_DIR})"
     USING_RKE2_USER=1
 }
 
@@ -876,7 +876,7 @@ setup_rke2_user() {
 setup_etcd_user() {
     create_user "$1" "ETCD Service User"
     if [ "$(id -u "rke2" 2>/dev/null)" = 1 ]; then
-        usermod -a -G "${INSTALL_RKE2_USER}" "${INSTALL_RKE2_ETCD_USER}"
+        ${SUDO} usermod -a -G "${INSTALL_RKE2_USER}" "${INSTALL_RKE2_ETCD_USER}"
     fi
     USING_ETCD_USER=1
 }
@@ -892,6 +892,9 @@ update_kernel_params() {
 
 # main
 {
+    verify_system
+    setup_env "$@"
+
     if [ "${INSTALL_RKE2_CIS_MODE}" = true ]; then
         update_kernel_params
         setup_etcd_user "etcd"
@@ -905,8 +908,6 @@ update_kernel_params() {
         setup_etcd_user "etcd"
     fi
 
-    verify_system
-    setup_env "$@"
     download_and_verify
     setup_selinux
     create_killall
