@@ -94,7 +94,7 @@ yum -y install rke2-server
 or 
 
 ```bash
-`yum -y install rke2-agent
+yum -y install rke2-agent
 ```
 
 The RPM will install a corresponding `rke2-server.service` or `rke2-agent.service` systemd unit that can be invoked like: `systemctl start rke2-server`. Make sure that you configure `rke2` before you start it, by following the `Configuration File` instructions below.
