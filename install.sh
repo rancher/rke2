@@ -886,6 +886,8 @@ setup_etcd_user() {
 update_kernel_params() {
     for param in vm.panic_on_oom=0 kernel.panic=10 kernel.panic_on_oops=1 kernel.keys.root_maxbytes=25000000 vm.overcommit_memory=1; do
         ${SUDO} sysctl -w ${param}
+        # check if we've already written these values and only write them
+        # if we haven't previously.
         if ! grep -Fxq ${param} /etc/sysctl.d/local.conf >/dev/null; then
             echo ${param} | ${SUDO} tee -a /etc/sysctl.d/local.conf >/dev/null
         fi
