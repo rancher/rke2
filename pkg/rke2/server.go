@@ -1,6 +1,7 @@
 package rke2
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -77,13 +78,16 @@ func setup(ctx *cli.Context, cfg Config) error {
 	managed.RegisterDriver(&etcd.ETCD{})
 
 	var cpConifg *podexecutor.CloudProviderConfig
-	// setting this to OR to handle cloud providers that dont need config file
-	if cfg.CloudProviderConfig != "" || cfg.CloudProviderName != "" {
+	if cfg.CloudProviderConfig != "" && cfg.CloudProviderName == "" {
+		return fmt.Errorf("cloud provider name has to be provided with cloud config path")
+	}
+	if cfg.CloudProviderName != "" {
 		cpConifg = &podexecutor.CloudProviderConfig{
 			Name: cfg.CloudProviderName,
 			Path: cfg.CloudProviderConfig,
 		}
 	}
+
 	sp := podexecutor.StaticPod{
 		Images:        images,
 		PullImages:    pullImages,

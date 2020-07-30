@@ -38,8 +38,8 @@ type StaticPod struct {
 	Manifests     string
 	PullImages    string
 	Images        images.Images
-	CISMode       bool
 	CloudProvider *CloudProviderConfig
+	CISMode       bool
 }
 
 type CloudProviderConfig struct {
