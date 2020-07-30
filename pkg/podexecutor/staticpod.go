@@ -35,13 +35,24 @@ var (
 )
 
 type StaticPod struct {
-	Manifests  string
-	PullImages string
-	Images     images.Images
-	CISMode    bool
+	Manifests     string
+	PullImages    string
+	Images        images.Images
+	CISMode       bool
+	CloudProvider *CloudProviderConfig
+}
+
+type CloudProviderConfig struct {
+	Name string
+	Path string
 }
 
 func (s *StaticPod) Kubelet(args []string) error {
+	if s.CloudProvider != nil {
+		args = append(args,
+			"--cloud-provider=" + s.CloudProvider.Name,
+			"--cloud-config=" + s.CloudProvider.Path)
+	}
 	go func() {
 		for {
 			cmd := exec.Command("kubelet", args...)
@@ -64,6 +75,11 @@ func (s *StaticPod) KubeProxy(args []string) error {
 }
 
 func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) (authenticator.Request, http.Handler, error) {
+	if s.CloudProvider != nil {
+		args = append(args,
+			"--cloud-provider=" + s.CloudProvider.Name,
+			"--cloud-config=" + s.CloudProvider.Path)
+	}
 	if err := images.Pull(s.PullImages, "kube-apiserver", s.Images.KubeAPIServer); err != nil {
 		return nil, nil, err
 	}
@@ -127,6 +143,11 @@ func after(after <-chan struct{}, f func() error) error {
 }
 
 func (s *StaticPod) ControllerManager(apiReady <-chan struct{}, args []string) error {
+	if s.CloudProvider != nil {
+		args = append(args,
+			"--cloud-provider=" + s.CloudProvider.Name,
+			"--cloud-config=" + s.CloudProvider.Path)
+	}
 	if err := images.Pull(s.PullImages, "kube-controller-manager", s.Images.KubeControllManager); err != nil {
 		return err
 	}

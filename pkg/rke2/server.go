@@ -20,7 +20,9 @@ import (
 )
 
 type Config struct {
-	Repo string
+	Repo                string
+	CloudProviderName   string
+	CloudProviderConfig string
 }
 
 func Server(ctx *cli.Context, cfg Config) error {
@@ -74,11 +76,20 @@ func setup(ctx *cli.Context, cfg Config) error {
 
 	managed.RegisterDriver(&etcd.ETCD{})
 
+	var cpConifg *podexecutor.CloudProviderConfig
+	// setting this to OR to handle cloud providers that dont need config file
+	if cfg.CloudProviderConfig != "" || cfg.CloudProviderName != "" {
+		cpConifg = &podexecutor.CloudProviderConfig{
+			Name: cfg.CloudProviderName,
+			Path: cfg.CloudProviderConfig,
+		}
+	}
 	sp := podexecutor.StaticPod{
-		Images:     images,
-		PullImages: pullImages,
-		Manifests:  manifests,
-		CISMode:    cisMode,
+		Images:        images,
+		PullImages:    pullImages,
+		Manifests:     manifests,
+		CISMode:       cisMode,
+		CloudProvider: cpConifg,
 	}
 	executor.Set(&sp)
 
