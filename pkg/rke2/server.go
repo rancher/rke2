@@ -79,7 +79,7 @@ func setup(ctx *cli.Context, cfg Config) error {
 
 	var cpConfig *podexecutor.CloudProviderConfig
 	if cfg.CloudProviderConfig != "" && cfg.CloudProviderName == "" {
-		return fmt.Errorf("cloud provider name has to be provided with cloud config path")
+		return fmt.Errorf("--cloud-provider-config requires --cloud-provider-name to be provided")
 	}
 	if cfg.CloudProviderName != "" {
 		cpConfig = &podexecutor.CloudProviderConfig{
