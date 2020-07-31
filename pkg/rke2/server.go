@@ -77,12 +77,12 @@ func setup(ctx *cli.Context, cfg Config) error {
 
 	managed.RegisterDriver(&etcd.ETCD{})
 
-	var cpConifg *podexecutor.CloudProviderConfig
+	var cpConfig *podexecutor.CloudProviderConfig
 	if cfg.CloudProviderConfig != "" && cfg.CloudProviderName == "" {
 		return fmt.Errorf("cloud provider name has to be provided with cloud config path")
 	}
 	if cfg.CloudProviderName != "" {
-		cpConifg = &podexecutor.CloudProviderConfig{
+		cpConfig = &podexecutor.CloudProviderConfig{
 			Name: cfg.CloudProviderName,
 			Path: cfg.CloudProviderConfig,
 		}
@@ -93,7 +93,7 @@ func setup(ctx *cli.Context, cfg Config) error {
 		PullImages:    pullImages,
 		Manifests:     manifests,
 		CISMode:       cisMode,
-		CloudProvider: cpConifg,
+		CloudProvider: cpConfig,
 	}
 	executor.Set(&sp)
 
