@@ -1,6 +1,7 @@
 package rke2
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,7 +21,9 @@ import (
 )
 
 type Config struct {
-	Repo string
+	Repo                string
+	CloudProviderName   string
+	CloudProviderConfig string
 }
 
 func Server(ctx *cli.Context, cfg Config) error {
@@ -74,11 +77,23 @@ func setup(ctx *cli.Context, cfg Config) error {
 
 	managed.RegisterDriver(&etcd.ETCD{})
 
+	var cpConfig *podexecutor.CloudProviderConfig
+	if cfg.CloudProviderConfig != "" && cfg.CloudProviderName == "" {
+		return fmt.Errorf("--cloud-provider-config requires --cloud-provider-name to be provided")
+	}
+	if cfg.CloudProviderName != "" {
+		cpConfig = &podexecutor.CloudProviderConfig{
+			Name: cfg.CloudProviderName,
+			Path: cfg.CloudProviderConfig,
+		}
+	}
+
 	sp := podexecutor.StaticPod{
-		Images:     images,
-		PullImages: pullImages,
-		Manifests:  manifests,
-		CISMode:    cisMode,
+		Images:        images,
+		PullImages:    pullImages,
+		Manifests:     manifests,
+		CISMode:       cisMode,
+		CloudProvider: cpConfig,
 	}
 	executor.Set(&sp)
 
