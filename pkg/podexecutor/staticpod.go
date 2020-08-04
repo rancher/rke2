@@ -50,8 +50,8 @@ type CloudProviderConfig struct {
 func (s *StaticPod) Kubelet(args []string) error {
 	if s.CloudProvider != nil {
 		args = append(args,
-			"--cloud-provider=" + s.CloudProvider.Name,
-			"--cloud-config=" + s.CloudProvider.Path)
+			"--cloud-provider="+s.CloudProvider.Name,
+			"--cloud-config="+s.CloudProvider.Path)
 	}
 	go func() {
 		for {
@@ -77,16 +77,16 @@ func (s *StaticPod) KubeProxy(args []string) error {
 func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) (authenticator.Request, http.Handler, error) {
 	if s.CloudProvider != nil {
 		args = append(args,
-			"--cloud-provider=" + s.CloudProvider.Name,
-			"--cloud-config=" + s.CloudProvider.Path)
+			"--cloud-provider="+s.CloudProvider.Name,
+			"--cloud-config="+s.CloudProvider.Path)
 	}
 	if err := images.Pull(s.PullImages, "kube-apiserver", s.Images.KubeAPIServer); err != nil {
 		return nil, nil, err
 	}
 	args = append(args,
 		"--audit-log-path=/var/log/kube-audit/audit-log.json",
-		"--audit-log-maxage=5",
-		"--audit-log-maxbackup=5",
+		"--audit-log-maxage=30",
+		"--audit-log-maxbackup=10",
 		"--audit-log-maxsize=100",
 	)
 	for i, arg := range args {
@@ -145,8 +145,8 @@ func after(after <-chan struct{}, f func() error) error {
 func (s *StaticPod) ControllerManager(apiReady <-chan struct{}, args []string) error {
 	if s.CloudProvider != nil {
 		args = append(args,
-			"--cloud-provider=" + s.CloudProvider.Name,
-			"--cloud-config=" + s.CloudProvider.Path)
+			"--cloud-provider="+s.CloudProvider.Name,
+			"--cloud-config="+s.CloudProvider.Path)
 	}
 	if err := images.Pull(s.PullImages, "kube-controller-manager", s.Images.KubeControllManager); err != nil {
 		return err
