@@ -117,7 +117,7 @@ remote-debug: build-debug bin/dlv        ## Run with remote debugging listening 
 remote-debug-exit: bin/dlv               ## Kill dlv started with make remote-debug
 	echo exit | ./bin/dlv connect :2345 --init /dev/stdin
 
-.dev-shell-build:
+.dev-shell-build: package-airgap
 	docker build -t ${PROG}-dev --target shell .
 
 clean-cache:                             ## Clean up docker base caches used for development
@@ -140,8 +140,7 @@ dev-peer: .dev-shell-build              ## Launch a server peer to run test buil
 dev-peer-enter:                         ## Enter the peer shell on another terminal
 	docker exec -it ${PROG}-peer${PEER} bash
 
-artifacts: build download-charts
-	mkdir -p dist/artifacts
+artifacts: build download-charts package-airgap
 	cp bin/${PROG} dist/artifacts/${RELEASE}
 
 .ci: validate-ci artifacts
@@ -194,6 +193,10 @@ dispatch:
             -H "Accept: application/vnd.github.everest-preview+json"  \
             -H "Content-Type: application/json" https://api.github.com/repos/rancher/rke2-upgrade/dispatches \
             --data '{"event_type": "create_tag", "client_payload": {"tag":"'"${DRONE_TAG}"'"}}'
+
+package-airgap:
+	mkdir -p dist/artifacts
+	scripts/package-airgap
 
 help: ## this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
