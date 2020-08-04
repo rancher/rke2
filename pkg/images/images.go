@@ -4,6 +4,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/rancher/k3s/pkg/version"
 )
@@ -53,7 +56,13 @@ func Pull(dir, name, image string) error {
 	if dir == "" {
 		return nil
 	}
-
+	preloadedImages, err := checkPreloadedImages(dir)
+	if err != nil {
+		return err
+	}
+	if preloadedImages {
+		return nil
+	}
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
@@ -64,4 +73,31 @@ func Pull(dir, name, image string) error {
 	}
 
 	return nil
+}
+
+func checkPreloadedImages(dir string) (bool, error) {
+	_, err := os.Stat(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		logrus.Errorf("unable to find images in %s: %v", dir, err)
+		return false, err
+	}
+
+	fileInfos, err := ioutil.ReadDir(dir)
+	if err != nil {
+		logrus.Errorf("unable to read images in %s: %v", dir, err)
+		return false, nil
+	}
+	for _, fileInfo := range fileInfos {
+		if fileInfo.IsDir() {
+			continue
+		}
+		// the function will check for any file that doesnt end with .txt
+		if !strings.HasSuffix(fileInfo.Name(), ".txt") {
+			return true, nil
+		}
+	}
+	return false, nil
 }
