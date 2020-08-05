@@ -74,7 +74,7 @@ func writeFile(dir, name string, content []byte) error {
 	}
 
 	tmp := filepath.Join(dir, name+".tmp")
-	if err := ioutil.WriteFile(tmp, content, 0777); err != nil {
+	if err := ioutil.WriteFile(tmp, content, 0644); err != nil {
 		return err
 	}
 	return os.Rename(tmp, dest)
