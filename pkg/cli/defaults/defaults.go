@@ -39,6 +39,8 @@ func Set(ctx *cli.Context, images images.Images, dataDir string) error {
 	if ctx.String("profile") != "" {
 		cmds.AgentConfig.ExtraKubeletArgs = append(cmds.AgentConfig.ExtraKubeletArgs,
 			"protect-kernel-defaults=true")
+		cmds.ServerConfig.ExtraAPIArgs = append(cmds.ServerConfig.ExtraAPIArgs,
+			"enable-admission-plugins=NodeRestriction,PodSecurityPolicy")
 	}
 
 	if !cmds.Debug {

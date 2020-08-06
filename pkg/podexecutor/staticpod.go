@@ -75,13 +75,13 @@ func (s *StaticPod) KubeProxy(args []string) error {
 }
 
 func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) (authenticator.Request, http.Handler, error) {
+	if err := images.Pull(s.PullImages, "kube-apiserver", s.Images.KubeAPIServer); err != nil {
+		return nil, nil, err
+	}
 	if s.CloudProvider != nil {
 		args = append(args,
 			"--cloud-provider="+s.CloudProvider.Name,
 			"--cloud-config="+s.CloudProvider.Path)
-	}
-	if err := images.Pull(s.PullImages, "kube-apiserver", s.Images.KubeAPIServer); err != nil {
-		return nil, nil, err
 	}
 	args = append(args,
 		"--audit-log-path=/var/log/kube-audit/audit-log.json",
