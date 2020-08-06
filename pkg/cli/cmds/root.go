@@ -151,8 +151,7 @@ func NewApp() *cli.App {
 				logrus.Fatal(err)
 			}
 		case "":
-			logrus.Warn("not running in CIS 1.5 mode")
-			return nil
+			// continue. warning output another layer down.
 		default:
 			logrus.Fatal("invalid value provided for --profile flag")
 		}
