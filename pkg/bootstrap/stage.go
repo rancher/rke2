@@ -11,6 +11,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/google/go-containerregistry/pkg/v1/tarball"
+
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -48,10 +50,17 @@ func Stage(dataDir string, images images.Images) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// downloading the image
-	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+	// preload image from tarball
+	img, err := preloadBootstrapImage(dataDir)
 	if err != nil {
 		return "", err
+	}
+	if img == nil {
+		// downloading the image
+		img, err = remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+		if err != nil {
+			return "", err
+		}
 	}
 
 	dataName := releaseName(ref)
@@ -164,4 +173,28 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 		return err
 	}
 	return os.Rename(tempDir, dir)
+}
+
+func preloadBootstrapImage(dataDir string) (v1.Image, error) {
+	imagesDir := filepath.Join(dataDir, "agent", "images")
+	files := map[string]os.FileInfo{}
+	if err := filepath.Walk(imagesDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		files[path] = info
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	for fileName := range files {
+		if strings.HasSuffix(fileName, "rke2-runtime-image-amd64.tar") {
+			img, err := tarball.ImageFromPath(fileName, nil)
+			if err != nil {
+				return nil, err
+			}
+			return img, nil
+		}
+	}
+	return nil, nil
 }

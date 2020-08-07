@@ -1,0 +1,31 @@
+#!/bin/bash
+set -e
+
+cd $(dirname $0)/..
+
+GO=${GO-go}
+
+if ! command -v golangci-lint; then
+    echo Skipping validation: no golangci-lint available
+    exit
+fi
+echo Running validation
+
+echo Running: go fmt
+go fmt ./
+echo Running: go vet
+go vet ./
+
+echo Running: golangci-lint
+golangci-lint run
+
+GO111MODULE=on go mod tidy
+GO111MODULE=on go mod vendor
+
+. ./scripts/version.sh
+
+if [ -n "$DIRTY" ]; then
+    echo Source dir is dirty
+    git status --porcelain --untracked-files=no
+    exit 1
+fi

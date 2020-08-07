@@ -1,0 +1,27 @@
+#!/bin/bash
+set -e -x
+
+IMAGE_REPO=ranchertest
+SEVERITIES="HIGH,CRITICAL"
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+# build kubernetes image
+docker build \
+    	--build-arg TAG=${VERSION} \
+    	--build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
+    	-f Dockerfile.k8s \
+    	-t ${IMAGE_REPO}/kubernetes:${VERSION} .
+
+# scan kubernetes image
+if ! command -v trivy; then
+    echo trivy scanning tool is not installed
+    exit 1
+fi
+trivy --severity ${SEVERITIES} \
+  --no-progress \
+  --skip-update \
+  --ignore-unfixed \
+  ${IMAGE_REPO}/kubernetes:${VERSION}
+

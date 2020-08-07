@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+cd $(dirname $0)/..
+
+. ./scripts/version.sh
+
+docker exec -it ${PROG}-dev-shell bash

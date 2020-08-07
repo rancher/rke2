@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e -x
+
+PEER=${PEER:-1}
+
+cd $(dirname $0)/..
+
+. ./scripts/dev-shell-build.sh
+
+docker run --rm --link \
+    ${PROG}-dev-shell:${PROG}-server \
+    --name ${PROG}-peer${PEER} \
+    --hostname ${PROG}-peer${PEER} \
+    -p 127.0.0.1:234${PEER}:2345 \
+    -ti -e WORKSPACE=$(pwd) \
+    -v ${HOME}:${HOME} \
+    -v ${PROG} -w $(pwd) \
+    --privileged -v ${PROG}-pkg:/go/pkg \
+    -v ${PROG}-cache:/root/.cache/go-build ${PROG}-dev \
+        bash -c "mkdir -p ${IMAGES_DIR} && cp build/*.tar dist/artifacts/*.tar ${IMAGES_DIR}/ && bash"

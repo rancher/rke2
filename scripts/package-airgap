@@ -3,6 +3,7 @@ set -e -x
 
 cd $(dirname $0)/..
 
+mkdir -p dist/artifacts
 airgap_image_file='scripts/airgap/image-list.txt'
 images=$(cat "${airgap_image_file}")
 xargs -n1 docker pull <<< "${images}"

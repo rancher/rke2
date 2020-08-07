@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e -x
+
+cd $(dirname $0)/..
+
+. scripts/version.sh
+./scripts/download-charts.sh
+./scripts/package-airgap
+
+cp bin/${PROG} dist/artifacts/${RELEASE}
