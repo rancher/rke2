@@ -9,4 +9,3 @@ cd $(dirname $0)/..
 . ./scripts/k8s-image
 
 docker push ${IMAGE_REPO}/kubernetes:${VERSION}-${GOARCH}
-

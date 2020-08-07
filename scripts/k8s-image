@@ -24,4 +24,3 @@ trivy --severity ${SEVERITIES} \
   --skip-update \
   --ignore-unfixed \
   ${IMAGE_REPO}/kubernetes:${VERSION}
-
