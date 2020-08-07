@@ -4,6 +4,7 @@ import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/rancher/spur/cli"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -52,5 +53,8 @@ func NewAgentCommand() *cli.Command {
 }
 
 func AgentRun(ctx *cli.Context) error {
+	if ctx.String("profile") == "" {
+		logrus.Warn("not running in CIS 1.5 mode")
+	}
 	return rke2.Agent(ctx, config)
 }
