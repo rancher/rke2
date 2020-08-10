@@ -6,7 +6,7 @@ PEER=${PEER:-1}
 
 cd $(dirname $0)/..
 
-. ./scripts/dev-shell-build.sh
+. ./scripts/version.sh
 
 docker run --rm --link \
     ${PROG}-dev-shell:${PROG}-server \
@@ -16,6 +16,6 @@ docker run --rm --link \
     -ti -e WORKSPACE=$(pwd) \
     -v ${HOME}:${HOME} \
     -v ${PROG} -w $(pwd) \
+    -v ${PWD}/build/images:/var/lib/rancher/rke2/agent/images \
     --privileged -v ${PROG}-pkg:/go/pkg \
-    -v ${PROG}-cache:/root/.cache/go-build ${PROG}-dev \
-        bash -c "mkdir -p ${IMAGES_DIR} && cp build/*.tar dist/artifacts/*.tar ${IMAGES_DIR}/ && bash"
+    -v ${PROG}-cache:/root/.cache/go-build ${PROG}-dev bash

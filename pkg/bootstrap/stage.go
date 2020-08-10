@@ -9,15 +9,15 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
-
-	"github.com/google/go-containerregistry/pkg/v1/tarball"
 
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/sirupsen/logrus"
 )
@@ -51,7 +51,7 @@ func Stage(dataDir string, images images.Images) (string, error) {
 		return "", err
 	}
 	// preload image from tarball
-	img, err := preloadBootstrapImage(dataDir)
+	img, err := preloadBootstrapImage(dataDir, images.Runtime)
 	if err != nil {
 		return "", err
 	}
@@ -175,7 +175,7 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 	return os.Rename(tempDir, dir)
 }
 
-func preloadBootstrapImage(dataDir string) (v1.Image, error) {
+func preloadBootstrapImage(dataDir, runtimeImage string) (v1.Image, error) {
 	imagesDir := filepath.Join(dataDir, "agent", "images")
 	files := map[string]os.FileInfo{}
 	if err := filepath.Walk(imagesDir, func(path string, info os.FileInfo, err error) error {
@@ -187,14 +187,17 @@ func preloadBootstrapImage(dataDir string) (v1.Image, error) {
 	}); err != nil {
 		return nil, err
 	}
+	archTag, err := name.NewTag(runtimeImage+"-"+runtime.GOARCH, name.WeakValidation)
+	if err != nil {
+		return nil, err
+	}
 	for fileName := range files {
-		if strings.HasSuffix(fileName, "rke2-runtime-image-amd64.tar") {
-			img, err := tarball.ImageFromPath(fileName, nil)
-			if err != nil {
-				return nil, err
-			}
-			return img, nil
+		img, err := tarball.ImageFromPath(fileName, &archTag)
+		if err != nil {
+			continue
 		}
+		return img, nil
+
 	}
 	return nil, nil
 }

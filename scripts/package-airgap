@@ -3,9 +3,8 @@ set -e -x
 
 cd $(dirname $0)/..
 
-mkdir -p dist/artifacts
 airgap_image_file='scripts/airgap/image-list.txt'
-images=$(cat "${airgap_image_file}")
-xargs -n1 docker pull <<< "${images}"
-docker save ${images} -o dist/artifacts/rke2-airgap-images-amd64.tar
+mkdir -p dist/artifacts
+cp build/images/airgap.tar dist/artifacts/rke2-airgap-images-amd64.tar
 cp "${airgap_image_file}" dist/artifacts/rke2-images.txt
+

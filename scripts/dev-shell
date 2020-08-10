@@ -4,7 +4,7 @@ set -e -x
 
 cd $(dirname $0)/..
 
-. ./scripts/dev-shell-build.sh
+. ./scripts/version.sh
 
 IMAGES_DIR=/var/lib/rancher/rke2/agent/images
 docker run --rm --name ${PROG}-dev-shell \
@@ -13,8 +13,8 @@ docker run --rm --name ${PROG}-dev-shell \
   -p 127.0.0.1:2345:2345 \
   -v ${HOME}:${HOME} \
   -v ${PROG} -w ${PWD} \
+  -v ${PWD}/build/images:/var/lib/rancher/rke2/agent/images \
   --privileged \
   -v ${PROG}-pkg:/go/pkg \
   -v ${PROG}-cache:/root/.cache/go-build \
-  ${PROG}-dev \
-    bash -c "mkdir -p ${IMAGES_DIR} && cp build/*.tar dist/artifacts/*.tar ${IMAGES_DIR}/ && bash"
+  ${PROG}-dev bash

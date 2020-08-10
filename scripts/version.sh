@@ -10,18 +10,18 @@ GO=${GO-go}
 GOARCH=${GOARCH:-$("${GO}" env GOARCH)}
 GOOS=${GOOS-$("${GO}" env GOARCH)}
 if [ -z "$GOOS" ]; then
-  if [ "${OS}" == "Windows_NT" ]; then
-    GOOS="windows"
-  else
-    UNAME_S=$(shell uname -s)
-		if [ "${UNAME_S}" == "Linux" ]; then
-				GOOS="linux"
-		elif [ "${UNAME_S}" == "Darwin" ]; then
-				GOOS="darwin"
-		elif [ "${UNAME_S}" == "FreeBSD" ]; then
-				GOOS="freebsd"
-		fi
-  fi
+    if [ "${OS}" == "Windows_NT" ]; then
+      GOOS="windows"
+    else
+      UNAME_S=$(shell uname -s)
+		  if [ "${UNAME_S}" == "Linux" ]; then
+			    GOOS="linux"
+		  elif [ "${UNAME_S}" == "Darwin" ]; then
+				  GOOS="darwin"
+		  elif [ "${UNAME_S}" == "FreeBSD" ]; then
+				  GOOS="freebsd"
+		  fi
+    fi
 fi
 
 SUFFIX="-${GOARCH}"
@@ -44,7 +44,7 @@ if [ -d .git ]; then
 
     COMMIT=$(git log -n3 --pretty=format:"%H %ae" | grep -v ' drone@localhost$' | cut -f1 -d\  | head -1)
     if [ -z "${COMMIT}" ]; then
-    COMMIT=$(git rev-parse HEAD || true)
+        COMMIT=$(git rev-parse HEAD || true)
     fi
 fi
 
@@ -57,10 +57,10 @@ VERSION="$(sed -e 's/+/-/g' <<< "$VERSION")"
 
 # Setting kubernetes version for rke2
 if [ -z "${KUBERNETES_VERSION}" ]; then
-  if [ -n "${GIT_TAG}" ]; then
-    if [[ ! "$GIT_TAG" =~ ^"${KUBERNETES_VERSION}"[+-] ]]; then
-          echo "Tagged version '$GIT_TAG' does not match expected version '${KUBERNETES_VERSION}[+-]*'" >&2
-          exit 1
+    if [ -n "${GIT_TAG}" ]; then
+        if [[ ! "$GIT_TAG" =~ ^"${KUBERNETES_VERSION}"[+-] ]]; then
+            echo "Tagged version '$GIT_TAG' does not match expected version '${KUBERNETES_VERSION}[+-]*'" >&2
+            exit 1
+        fi
     fi
-  fi
 fi
