@@ -6,9 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/rancher/k3s/pkg/version"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -23,6 +22,7 @@ var (
 	KubernetesVersion = "v1.18.4"
 	PauseVersion      = "3.2"
 	EtcdVersion       = "v3.4.3"
+	RuntimeImageName  = "rke2-runtime"
 )
 
 type Images struct {
@@ -47,7 +47,7 @@ func New(repo string) Images {
 		KubeControllManager: override(override("ranchertest", repo)+"/kubernetes:"+KubernetesVersion, controllerManager),
 		KubeScheduler:       override(override("ranchertest", repo)+"/kubernetes:"+KubernetesVersion, scheduler),
 		Pause:               override(override("k8s.gcr.io", repo)+"/pause:"+PauseVersion, pause),
-		Runtime:             override(override("rancher", repo)+"/rke2-runtime:"+version.Version, runtime),
+		Runtime:             override(override("rancher", repo)+"/"+RuntimeImageName+":"+version.Version, runtime),
 		ETCD:                override(override("ranchertest", repo)+"/etcd:"+EtcdVersion, etcd),
 	}
 }
