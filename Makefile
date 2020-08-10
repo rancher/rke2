@@ -64,7 +64,7 @@ GO_LDFLAGS=-ldflags '-extldflags "-static"                        \
 					 -X $(RKE2_PKG)/pkg/images.KubernetesVersion=$(KUBERNETES_VERSION)    \
 					 -X $(K3S_PKG)/pkg/version.Program=$(PROG)    \
 					 -X $(K3S_PKG)/pkg/version.Version=$(VERSION) \
-					 -X $(K3S_PKG)/pkg/version.Revision=$(REVISION) $(EXTRA_LDFLAGS)'
+					 -X $(K3S_PKG)/pkg/version.GitCommit=$(REVISION) $(EXTRA_LDFLAGS)'
 
 
 default: in-docker-build                 ## Build using docker environment (default target)
