@@ -5,17 +5,14 @@ FROM ${UBI_IMAGE} as ubi
 
 FROM ${GO_IMAGE} as builder
 ARG TAG=""
+ARG KUBERNETES_VERSION=""
 
 RUN apt update     && \
     apt upgrade -y && \
     apt install -y ca-certificates git bash rsync
 
-RUN git clone --depth=1 https://github.com/kubernetes/kubernetes.git
-
-RUN export K8S_TAG=$(echo $TAG | grep -oP "^v(([0-9]+)\.([0-9]+)\.([0-9]+))") && \
-    cd /go/kubernetes                                                         && \
-    git fetch --all --tags --prune                                            && \
-    git checkout tags/${K8S_TAG} -b ${K8S_TAG}                                && \
+RUN git clone -b ${KUBERNETES_VERSION} --depth=1 https://github.com/kubernetes/kubernetes.git && \
+    cd /go/kubernetes   && \
     KUBE_GIT_VERSION=${TAG} make all
 
 FROM ubi

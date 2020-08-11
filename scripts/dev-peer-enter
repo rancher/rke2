@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+PEER=${PEER:-1}
+
+cd $(dirname $0)/..
+
+. ./scripts/version.sh
+
+docker exec -it ${PROG}-peer${PEER} bash

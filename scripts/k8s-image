@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e -x
+
+IMAGE_REPO=ranchertest
+SEVERITIES="HIGH,CRITICAL"
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+# build kubernetes image
+docker build \
+    	--build-arg TAG=${VERSION} \
+    	--build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
+    	-f Dockerfile.k8s \
+    	-t ${IMAGE_REPO}/kubernetes:${VERSION} .
+
+# scan kubernetes image
+docker run -v /var/run/docker.sock:/var/run/docker.sock --rm -it --name=scan-k8s docker.io/aquasec/trivy:0.10.2 i --severity ${SEVERITIES} \
+  --no-progress \
+  --ignore-unfixed \
+  ${IMAGE_REPO}/kubernetes:${VERSION}
