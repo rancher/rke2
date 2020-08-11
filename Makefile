@@ -174,14 +174,14 @@ k8s-image: k8s-image-build k8s-image-scan
 
 k8s-image-build:
 	docker build \
-    	--build-arg TAG=${DRONE_TAG} -f Dockerfile.k8s -t ranchertest/kubernetes:${VERSION}-${GOARCH} .
+    	--build-arg TAG=${DRONE_TAG} -f Dockerfile.k8s -t rancher/kubernetes:${VERSION}-${GOARCH} .
 
 SEVERITIES = HIGH,CRITICAL
 k8s-image-scan:
-	trivy --severity $(SEVERITIES) --no-progress --skip-update --ignore-unfixed ranchertest/kubernetes:${VERSION}-${GOARCH}
+	trivy --severity $(SEVERITIES) --no-progress --skip-update --ignore-unfixed rancher/kubernetes:${VERSION}-${GOARCH}
 
 k8s-image-publish: k8s-image
-	docker push ranchertest/kubernetes:${VERSION}-${GOARCH}
+	docker push rancher/kubernetes:${VERSION}-${GOARCH}
 
 # currently works only with amd64
 image-manifest:

@@ -37,7 +37,7 @@ steps:
     - tag
 
 - name: docker-k8s-publish
-  image: ranchertest/build-base:v1.14.2
+  image: rancher/build-base:v1.14.2
   volumes:
     - name: docker
       path: /var/run/docker.sock
@@ -59,7 +59,7 @@ steps:
     - tag
 
 - name: docker-publish
-  image: ranchertest/build-base:v1.14.2
+  image: rancher/build-base:v1.14.2
   volumes:
     - name: docker
       path: /var/run/docker.sock
@@ -95,7 +95,7 @@ platform:
 
 steps:
 - name: manifest
-  image: ranchertest/build-base:v1.14.2
+  image: rancher/build-base:v1.14.2
   volumes:
     - name: docker
       path: /var/run/docker.sock

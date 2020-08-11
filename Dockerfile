@@ -1,6 +1,6 @@
 ARG KUBERNETES_VERSION=dev
 # Build environment
-FROM ranchertest/build-base:v1.14.2 AS build
+FROM rancher/build-base:v1.14.2 AS build
 # Yep nothing special here yet
 
 # Shell used for debugging
@@ -29,9 +29,9 @@ WORKDIR /source
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
-FROM ranchertest/kubernetes:${KUBERNETES_VERSION} AS k8s
+FROM rancher/kubernetes:${KUBERNETES_VERSION} AS k8s
 FROM rancher/k3s:v1.18.4-k3s1 AS k3s
-FROM ranchertest/containerd:v1.3.6-k3s2 AS containerd 
+FROM rancher/containerd:v1.3.6-k3s2 AS containerd 
 
 FROM scratch AS release
 COPY --from=k8s \
