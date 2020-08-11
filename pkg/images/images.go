@@ -6,9 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/rancher/k3s/pkg/version"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -23,6 +22,7 @@ var (
 	KubernetesVersion = "v1.18.4"
 	PauseVersion      = "3.2"
 	EtcdVersion       = "v3.4.3"
+	RuntimeImageName  = "rke2-runtime"
 )
 
 type Images struct {
