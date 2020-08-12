@@ -10,7 +10,7 @@ mkdir -p ${CHARTS_DIR}
 for chart in ${CHARTS}; do
   chart_name=$(echo "${chart}" | cut -d ":" -f 1)
   chart_version=$(echo "${chart}" | cut -d ":" -f 2)
-  curl -sfL ${CHARTS_REPO}/${chart_name}/${chart_name}-${chart_version}.tgz -o ${CHARTS_DIR}/${chart_name}-$chart_version.tgz
+  curl -sfL ${CHARTS_REPO}/"assets"/${chart_name}/${chart_name}-${chart_version}.tgz -o ${CHARTS_DIR}/${chart_name}-$chart_version.tgz
   chart_content=$(base64 -w 0 ${CHARTS_DIR}/${chart_name}-${chart_version}.tgz)
   sed -e "s|%{CHART_CONTENT}%|${chart_content}|g" ${MANIFEST_DIR}/${chart_name}.yml >${CHARTS_DIR}/${chart_name}-chart.yml
   rm ${CHARTS_DIR}/${chart_name}-${chart_version}.tgz
