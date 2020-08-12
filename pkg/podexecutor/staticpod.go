@@ -91,12 +91,9 @@ func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, ar
 		// This is an option k3s adds that does not exist upstream
 		if strings.HasPrefix(arg, "--advertise-port=") {
 			args = append(args[:i], args[i+1:]...)
-			break
 		}
-		// This option conflicts with cis benchmark
-		if strings.HasPrefix(arg, "--basic-auth=") {
+		if strings.HasPrefix(arg, "--basic-auth-file=") {
 			args = append(args[:i], args[i+1:]...)
-			break
 		}
 	}
 
