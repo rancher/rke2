@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+if [ -n ${SKIP_VALIDATE} ]; then
+    echo "skipping validation. continuing..."
+    exit 0
+fi
+
 cd $(dirname $0)/..
 
 GO=${GO-go}
