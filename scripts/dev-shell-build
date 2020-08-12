@@ -10,11 +10,8 @@ IMAGE_REPO=ranchertest
 
 mkdir -p build/images
 
-docker save  ranchertest/kubernetes:${VERSION} \
-    -o build/images/k8s-image-amd64.tar
-
-docker save  rancher/rke2-runtime:${VERSION}-${GOARCH} \
-    -o build/images/rke2-runtime-image-amd64.tar
+docker save ranchertest/kubernetes:${VERSION} | gzip > ./build/images/k8s-image-amd64.tar.gz
+docker save rancher/rke2-runtime:${VERSION}-${GOARCH} | gzip > ./build/images/rke2-runtime-image-amd64.tar.gz
 
 # build the dev shell image
 docker build -t ${PROG}-dev --target shell .

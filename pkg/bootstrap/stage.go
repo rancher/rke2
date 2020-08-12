@@ -22,9 +22,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var (
-	releasePattern = regexp.MustCompile("^v[0-9]")
-)
+var releasePattern = regexp.MustCompile("^v[0-9]")
 
 func dataDirFor(dataDir, dataName string) string {
 	return filepath.Join(dataDir, "data", dataName, "bin")
