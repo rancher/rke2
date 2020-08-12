@@ -661,10 +661,10 @@ github.com/rancher/dynamiclistener v0.2.1-0.20200418023342-52ede5ec9234 h1:wZ1Zh
 github.com/rancher/dynamiclistener v0.2.1-0.20200418023342-52ede5ec9234/go.mod h1:9WusTANoiRr8cDWCTtf5txieulezHbpv4vhLADPp0zU=
 github.com/rancher/flannel v0.11.0-k3s.2 h1:0GVr5ORAIvcri1LYTE8eMQ+NrRbuPeIniPaW51IzLco=
 github.com/rancher/flannel v0.11.0-k3s.2/go.mod h1:Hn4ZV+eq0LhLZP63xZnxdGwXEoRSxs5sxELxu27M3UA=
-github.com/rancher/helm-controller v0.6.3 h1:tsqSXndQ7Ms8S0mBd2zWOcTV1tiZ4BUYkemYnijNXio=
-github.com/rancher/helm-controller v0.6.3/go.mod h1:ZylsxIMGNADRPRNW+NiBWhrwwks9vnKLQiCHYWb6Bi0=
-github.com/rancher/k3s v1.18.3-0.20200807184958-026584e1f72b h1:yZII7+CujAlMvNjQkfH9cWA+m20oxtpcrBV7+rCXm3s=
-github.com/rancher/k3s v1.18.3-0.20200807184958-026584e1f72b/go.mod h1:7hMbRoSumpe4oNnvdhdUeOHwVPCDLFa4JZvMfiSBrXE=
+github.com/rancher/helm-controller v0.6.4 h1:Q1N89ad5ejaBlQ4FFwDzfn/4C64FVwkqLatdFcqLn1Q=
+github.com/rancher/helm-controller v0.6.4/go.mod h1:ZylsxIMGNADRPRNW+NiBWhrwwks9vnKLQiCHYWb6Bi0=
+github.com/rancher/k3s v1.18.3-0.20200811231732-e2089bea18b6 h1:aVuEinf+8Lo1qP2UFkq+LfQ2ZVZ/oMp19OVPoj4MSE8=
+github.com/rancher/k3s v1.18.3-0.20200811231732-e2089bea18b6/go.mod h1:jqcRz5TjpoxZVIlbtP90HpcrkINdZWYhV6496TYV2/o=
 github.com/rancher/kine v0.4.0 h1:1IhWy3TzjExG8xnj46eyUEWdzqNAD1WrgL4eEBKm6Uc=
 github.com/rancher/kine v0.4.0/go.mod h1:IImtCJ68AIkE+VY/kUI0NkyJL5q5WzO8QvMsSXqbrpA=
 github.com/rancher/kubernetes v1.18.4-k3s1 h1:eTwiRm2Gu8AUDgrda5FK8atZvkh6/3ZDoRFsxmnLvLc=
