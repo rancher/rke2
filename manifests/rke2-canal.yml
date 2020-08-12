@@ -1,7 +1,7 @@
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
-  name: coredns
+  name: rke2-canal
   namespace: kube-system
 spec:
   chartContent: %{CHART_CONTENT}%
