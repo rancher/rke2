@@ -3,8 +3,8 @@ set -ex
 
 CHARTS_DIR=build/static/charts
 MANIFEST_DIR=manifests
-CHARTS="canal:v3.13.3 coredns:1.10.101 kube-proxy:v1.18.4 metrics-server:2.11.100 nginx-ingress:1.36.300"
-CHARTS_REPO="https://dev-charts.rancher.io"
+CHARTS="rke2-canal:v3.13.3 rke2-coredns:1.10.101 rke2-kube-proxy:v1.18.4 rke2-metrics-server:2.11.100 rke2-ingress-nginx:1.36.300"
+CHARTS_REPO="https://rke2-charts.rancher.io"
 
 mkdir -p ${CHARTS_DIR}
 for chart in ${CHARTS}; do
