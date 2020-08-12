@@ -1,5 +1,6 @@
 #!/bin/bash
-set -e -x
+
+set -ex
 
 cd $(dirname $0)/..
 
@@ -16,23 +17,22 @@ fi
 REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
 RELEASE=${PROG}.${GOOS}-${GOARCH}
 
-
 BUILDTAGS=" netgo osusergo"
 GO_BUILDTAGS=${GO_BUILDTAGS}${BUILDTAGS}${DEBUG_TAGS}
 
 VERSION_FLAGS="
-        -X ${RKE2_PKG}/pkg/images.KubernetesVersion=${KUBERNETES_VERSION}
-        -X ${K3S_PKG}/pkg/version.Program=${PROG}
-        -X ${K3S_PKG}/pkg/version.Version=${VERSION}
-        -X ${K3S_PKG}/pkg/version.GitCommit=${REVISION}
+    -X ${RKE2_PKG}/pkg/images.KubernetesVersion=${KUBERNETES_VERSION}
+    -X ${K3S_PKG}/pkg/version.Program=${PROG}
+    -X ${K3S_PKG}/pkg/version.Version=${VERSION}
+    -X ${K3S_PKG}/pkg/version.GitCommit=${REVISION}
 "
 STATIC_FLAGS='-extldflags "-static"'
 
 GO_LDFLAGS="${STATIC_FLAGS} ${EXTRA_LDFLAGS}"
 echo ${DEBUG_GO_GCFLAGS}
 go build \
-         -tags "${GO_BUILDTAGS}" \
-         ${GO_GCFLAGS} ${GO_BUILD_FLAGS} \
-         -o bin/${PROG} \
-         -ldflags "${GO_LDFLAGS} ${VERSION_FLAGS}" \
-         ${GO_TAGS}
+    -tags "${GO_BUILDTAGS}" \
+    ${GO_GCFLAGS} ${GO_BUILD_FLAGS} \
+    -o bin/${PROG} \
+    -ldflags "${GO_LDFLAGS} ${VERSION_FLAGS}" \
+    ${GO_TAGS}

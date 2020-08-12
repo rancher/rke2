@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -x
 
 PROG=rke2
@@ -11,16 +12,16 @@ GOARCH=${GOARCH:-$("${GO}" env GOARCH)}
 GOOS=${GOOS-$("${GO}" env GOARCH)}
 if [ -z "$GOOS" ]; then
     if [ "${OS}" == "Windows_NT" ]; then
-      GOOS="windows"
+        GOOS="windows"
     else
-      UNAME_S=$(shell uname -s)
-		  if [ "${UNAME_S}" == "Linux" ]; then
-			    GOOS="linux"
-		  elif [ "${UNAME_S}" == "Darwin" ]; then
-				  GOOS="darwin"
-		  elif [ "${UNAME_S}" == "FreeBSD" ]; then
-				  GOOS="freebsd"
-		  fi
+        UNAME_S=$(shell uname -s)
+        if [ "${UNAME_S}" == "Linux" ]; then
+            GOOS="linux"
+        elif [ "${UNAME_S}" == "Darwin" ]; then
+            GOOS="darwin"
+        elif [ "${UNAME_S}" == "FreeBSD" ]; then
+            GOOS="freebsd"
+        fi
     fi
 fi
 

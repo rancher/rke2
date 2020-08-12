@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -e
 
 cd $(dirname $0)/..
@@ -6,8 +7,8 @@ cd $(dirname $0)/..
 . ./scripts/version.sh
 
 DOCKER_CLI_EXPERIMENTAL=enabled docker manifest \
-  create --amend ${REPO}/rke2-runtime:${VERSION} \
-                 ${REPO}/rke2-runtime:${VERSION}-${GOARCH}
+    create --amend ${REPO}/rke2-runtime:${VERSION} \
+    ${REPO}/rke2-runtime:${VERSION}-${GOARCH}
 
 DOCKER_CLI_EXPERIMENTAL=enabled docker manifest \
-  push ${REPO}/rke2-runtime:${VERSION}
+    push ${REPO}/rke2-runtime:${VERSION}

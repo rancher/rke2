@@ -25,14 +25,12 @@ import (
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 )
 
-var (
-	ssldirs = []string{
-		"/etc/ssl/certs",
-		"/etc/ca-certificates",
-		"/usr/local/share/ca-certificates",
-		"/usr/share/ca-certificates",
-	}
-)
+var ssldirs = []string{
+	"/etc/ssl/certs",
+	"/etc/ca-certificates",
+	"/usr/local/share/ca-certificates",
+	"/usr/share/ca-certificates",
+}
 
 type StaticPod struct {
 	Manifests     string

@@ -6,6 +6,5 @@
 .idea
 .vscode
 /data
-rke2
+./rke2
 /build
-

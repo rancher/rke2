@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -e
 
 PEER=${PEER:-1}

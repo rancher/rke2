@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e -x
+set -ex
 
 cd $(dirname $0)/..
 
@@ -11,10 +11,10 @@ IMAGE_REPO=ranchertest
 mkdir -p build/images
 
 docker save  ranchertest/kubernetes:${VERSION} \
-      -o build/images/k8s-image-amd64.tar
+    -o build/images/k8s-image-amd64.tar
 
 docker save  rancher/rke2-runtime:${VERSION}-${GOARCH} \
-      -o build/images/rke2-runtime-image-amd64.tar
+    -o build/images/rke2-runtime-image-amd64.tar
 
 # build the dev shell image
 docker build -t ${PROG}-dev --target shell .

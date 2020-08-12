@@ -6,7 +6,7 @@ cd $(dirname $0)/..
 go build -o bin/dlv github.com/go-delve/delve/cmd/dlv
 
 CATTLE_DEV_MODE=true ./bin/dlv \
-  --listen=:2345 \
-  --headless=true \
-  --api-version=2 \
-  --accept-multigit client exec -- ./bin/${PROG} ${COMMAND} ${ARGS}
+    --listen=:2345 \
+    --headless=true \
+    --api-version=2 \
+    --accept-multigit client exec -- ./bin/${PROG} ${COMMAND} ${ARGS}

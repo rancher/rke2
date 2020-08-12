@@ -96,5 +96,6 @@ in-docker-%: .dapper                     ## Advanced: wraps any target in Docker
 	mkdir -p ./bin/ ./dist/ ./build
 	./.dapper -f Dockerfile --target dapper make $*
 
+.PHONY: help
 help: ## this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
