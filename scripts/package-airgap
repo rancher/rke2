@@ -5,6 +5,6 @@ cd $(dirname $0)/..
 
 airgap_image_file='scripts/airgap/image-list.txt'
 mkdir -p dist/artifacts
-cp build/images/airgap.tar dist/artifacts/rke2-airgap-images-amd64.tar
+cp build/images/airgap.tar.gz dist/artifacts/rke2-airgap-images-amd64.tar.gz
 cp "${airgap_image_file}" dist/artifacts/rke2-images.txt
 
