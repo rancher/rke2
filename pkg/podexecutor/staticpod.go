@@ -94,7 +94,6 @@ func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, ar
 		if strings.HasPrefix(arg, "--advertise-port=") {
 			args = append(args[:i], args[i+1:]...)
 		}
-		// This option conflicts with cis benchmark
 		if strings.HasPrefix(arg, "--basic-auth-file=") {
 			args = append(args[:i], args[i+1:]...)
 		}
