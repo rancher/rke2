@@ -97,8 +97,8 @@ const (
 	k8sWrapTransportTimeout = 30
 )
 
-// k8sCall
-type k8sCall func(*kubernetes.Clientset, interface{}) error
+// deployFn
+type deployFn func(*kubernetes.Clientset, interface{}) error
 
 // NewClient
 func NewClient(kubeConfigPath string, k8sWrapTransport transport.WrapperFunc) (*kubernetes.Clientset, error) {
@@ -120,7 +120,7 @@ func DecodeYamlResource(data interface{}, yaml string) error {
 }
 
 // retryTo
-func retryTo(runFunc k8sCall, cs *kubernetes.Clientset, resource interface{}, retries, wait int) error {
+func retryTo(runFunc deployFn, cs *kubernetes.Clientset, resource interface{}, retries, wait int) error {
 	var err error
 	if retries <= 0 {
 		retries = defaultRetries
@@ -139,7 +139,7 @@ func retryTo(runFunc k8sCall, cs *kubernetes.Clientset, resource interface{}, re
 }
 
 // retryToWithTimeout
-func retryToWithTimeout(runFunc k8sCall, cs *kubernetes.Clientset, resource interface{}, timeout int) error {
+func retryToWithTimeout(runFunc deployFn, cs *kubernetes.Clientset, resource interface{}, timeout int) error {
 	var err error
 	var timePassed int
 	for timePassed < timeout {
@@ -211,7 +211,6 @@ func DeployClusterRoleFromYaml(cs *kubernetes.Clientset, clusterRoleYaml string)
 	if err := DecodeYamlResource(&clusterRole, clusterRoleYaml); err != nil {
 		return err
 	}
-
 	return retryTo(deployClusterRole, cs, clusterRole, defaultRetries, defaultWaitSeconds)
 }
 
