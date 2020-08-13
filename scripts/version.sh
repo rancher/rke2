@@ -9,7 +9,7 @@ K3S_PKG=github.com/rancher/k3s
 RKE2_PKG=github.com/rancher/rke2
 GO=${GO-go}
 GOARCH=${GOARCH:-$("${GO}" env GOARCH)}
-GOOS=${GOOS-$("${GO}" env GOARCH)}
+GOOS=${GOOS:-$("${GO}" env GOOS)}
 if [ -z "$GOOS" ]; then
     if [ "${OS}" == "Windows_NT" ]; then
         GOOS="windows"
