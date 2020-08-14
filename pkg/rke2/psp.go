@@ -64,7 +64,6 @@ func setPSPs(ctx *cli.Context, k8sWrapTransport transport.WrapperFunc) {
 				logrus.Error(err)
 				return
 			}
-			return
 		} else { // we are in CIS mode
 			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), globalRestrictedPSPName, metav1.GetOptions{}); err == nil {
 				if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), globalUnrestrictedPSPName, metav1.GetOptions{}); err == nil {
@@ -87,6 +86,10 @@ func setPSPs(ctx *cli.Context, k8sWrapTransport transport.WrapperFunc) {
 					return
 				}
 			}
+		}
+		// node policy
+		if err := deployClusterRoleBindingFromYaml(cs, nodeClusterRoleBinding); err != nil {
+			logrus.Error(err)
 			return
 		}
 	}
