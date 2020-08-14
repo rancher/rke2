@@ -77,8 +77,8 @@ metadata:
   annotations:
     seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default,runtime/default'
     apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
-    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'runtime/default'
-    apparmor.security.beta.kubernetes.io/defaultProfileName:  'runtime/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName: 'runtime/default'
+    apparmor.security.beta.kubernetes.io/defaultProfileName: 'runtime/default'
 spec:
   privileged: false
   allowPrivilegeEscalation: false
