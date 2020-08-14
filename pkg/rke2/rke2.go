@@ -17,7 +17,9 @@ import (
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
+	"github.com/rancher/rke2/pkg/rke2/psp"
 	"github.com/rancher/spur/cli"
+	"github.com/sirupsen/logrus"
 )
 
 type Config struct {
@@ -36,7 +38,9 @@ func Server(ctx *cli.Context, cfg Config) error {
 	if err := ctx.Set("secrets-encryption", "true"); err != nil {
 		return err
 	}
-	go setPSPs(ctx, nil)
+	if err := psp.SetPSPs(ctx, nil); err != nil {
+		logrus.Fatal(err)
+	}
 	return server.Run(ctx)
 }
 
