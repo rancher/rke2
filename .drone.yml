@@ -43,7 +43,7 @@ steps:
       path: /var/run/docker.sock
   commands:
     - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-    - DRONE_TAG=${DRONE_TAG} make k8s-image-publish
+    - DRONE_TAG=${DRONE_TAG} BUILD_K8S_IMAGE=true make k8s-image-publish
   environment:
     DOCKER_USERNAME:
       from_secret: docker_username

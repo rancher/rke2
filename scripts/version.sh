@@ -53,7 +53,9 @@ if [[ -n "$GIT_TAG" ]]; then
 else
     VERSION="${KUBERNETES_VERSION}-dev+${COMMIT:0:8}$DIRTY"
 fi
+# Normalizing both version and k8s version
 VERSION="$(sed -e 's/+/-/g' <<< "$VERSION")"
+KUBERNETES_VERSION="$(sed -e 's/+/-/g' <<< "$KUBERNETES_VERSION")"
 
 # Setting kubernetes version for rke2
 if [ -z "${KUBERNETES_VERSION}" ]; then
