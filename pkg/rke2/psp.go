@@ -18,80 +18,6 @@ import (
 	"k8s.io/client-go/transport"
 )
 
-// globalUnrestrictedPSP
-const globalUnrestrictedPSP = `apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  name: global-unrestricted-psp
-  annotations:
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
-spec:
-  privileged: true
-  allowPrivilegeEscalation: true
-  allowedCapabilities:
-  - '*'
-  volumes:
-  - '*'
-  hostNetwork: true
-  hostPorts:
-  - min: 0
-    max: 65535
-  hostIPC: true
-  hostPID: true
-  runAsUser:
-    rule: 'RunAsAny'
-  seLinux:
-    rule: 'RunAsAny'
-  supplementalGroups:
-    rule: 'RunAsAny'
-  fsGroup:
-    rule: 'RunAsAny'
-`
-
-// globalUnrestrictedRole
-const globalUnrestrictedRole = `kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: default-psp-role
-rules:
-- apiGroups: ['policy']
-  resources: ['podsecuritypolicies']
-  verbs:     ['use']
-  resourceNames:
-  - default-psp
-`
-
-// globalUnrestrictedRoleBinding
-const globalUnrestrictedRoleBinding = `apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: default-psp-rolebinding
-  namespace: kube-system
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: default-psp-role
-subjects:
-- kind: Group
-  apiGroup: rbac.authorization.k8s.io
-  name: system:authenticated
-`
-
-// nodeClusterRoleBinding
-const nodeClusterRoleBinding = `apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: system-node-default-psp-rolebinding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: default-psp-role
-subjects:
-- kind: Group
-  apiGroup: rbac.authorization.k8s.io
-  name: system:nodes
-`
-
 const (
 	defaultRetries          = 5
 	defaultWaitSeconds      = 5
@@ -117,28 +43,51 @@ func setPSPs(ctx *cli.Context, k8sWrapTransport transport.WrapperFunc) {
 			time.Sleep(apiWaitDelay)
 			continue
 		}
+
 		if ctx.String("profile") == "" { // not in CIS mode
-			// check if global restricted PSP exists
-			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), "global-restricted-psp", metav1.GetOptions{}); err == nil {
-				// create PSP
-				// create role
-				// create roleBindings
+			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), globalUnrestrictedPSPName, metav1.GetOptions{}); err == nil {
+				// no error indicates the PSP exists.
+				return
 			}
-			// create all the things
+			tmpl := fmt.Sprintf(globalUnrestrictedPSP, globalUnrestrictedPSPName)
+			if err := deployPodSecurityPolicyFromYaml(cs, tmpl); err != nil {
+				logrus.Error(err)
+				return
+			}
+			tmpl = fmt.Sprintf(globalUnrestrictedRole, globalUnrestrictedRoleName)
+			if err := deployRoleFromYaml(cs, tmpl, "kube-system"); err != nil {
+				logrus.Error(err)
+				return
+			}
+			tmpl = fmt.Sprintf(globalUnrestrictedRoleBinding, globalUnrestrictedRoleBindingName)
+			if err := deployRoleBindingFromYaml(cs, tmpl, "kube-system"); err != nil {
+				logrus.Error(err)
+				return
+			}
+			return
 		} else { // we are in CIS mode
-			// check if global unrestricted PSP exists
-			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), "global-unrestricted-psp", metav1.GetOptions{}); err == nil {
-				if err := deployPodSecurityPolicyFromYaml(cs, globalUnrestrictedPSP); err != nil {
-					logrus.Error(err)
+			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), globalRestrictedPSPName, metav1.GetOptions{}); err == nil {
+				if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), globalUnrestrictedPSPName, metav1.GetOptions{}); err == nil {
+					// no error indicates the PSP exists.
+					return
 				}
-				if err := deployRoleFromYaml(cs, globalUnrestrictedRole, "kube-system"); err != nil {
+				tmpl := fmt.Sprintf(globalRestrictedPSP, globalRestrictedPSPName)
+				if err := deployPodSecurityPolicyFromYaml(cs, tmpl); err != nil {
 					logrus.Error(err)
+					return
 				}
-				if err := deployRoleBindingFromYaml(cs, globalUnrestrictedRoleBinding, "kube-system"); err != nil {
+				tmpl = fmt.Sprintf(globalRestrictedRole, globalRestrictedRoleName)
+				if err := deployRoleFromYaml(cs, tmpl, "kube-system"); err != nil {
 					logrus.Error(err)
+					return
+				}
+				tmpl = fmt.Sprintf(globalRestrictedRoleBinding, globalRestrictedRoleBindingName)
+				if err := deployRoleBindingFromYaml(cs, tmpl, "kube-system"); err != nil {
+					logrus.Error(err)
+					return
 				}
 			}
-			// create all the things
+			return
 		}
 	}
 }
