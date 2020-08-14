@@ -26,6 +26,8 @@ const (
 )
 
 const (
+	kubeSystemNamespace = "kube-system"
+
 	namespaceAnnotationBase               = "psp.rke2.io/"
 	namespaceAnnotationGlobalRestricted   = namespaceAnnotationBase + "global-restricted"
 	namespaceAnnotationGlobalUnrestricted = namespaceAnnotationBase + "global-unrestricted"
@@ -50,7 +52,7 @@ func setPSPs(ctx *cli.Context, k8sWrapTransport transport.WrapperFunc) {
 			continue
 		}
 
-		ns, err := cs.CoreV1().Namespaces().Get(context.TODO(), "kube-system", metav1.GetOptions{})
+		ns, err := cs.CoreV1().Namespaces().Get(context.TODO(), kubeSystemNamespace, metav1.GetOptions{})
 		if err != nil {
 			logrus.Error(err)
 			return
@@ -70,12 +72,12 @@ func setPSPs(ctx *cli.Context, k8sWrapTransport transport.WrapperFunc) {
 				return
 			}
 			tmpl = fmt.Sprintf(globalUnrestrictedRole, globalUnrestrictedRoleName)
-			if err := deployRoleFromYaml(cs, tmpl, "kube-system"); err != nil {
+			if err := deployRoleFromYaml(cs, tmpl, kubeSystemNamespace); err != nil {
 				logrus.Error(err)
 				return
 			}
 			tmpl = fmt.Sprintf(globalUnrestrictedRoleBinding, globalUnrestrictedRoleBindingName)
-			if err := deployRoleBindingFromYaml(cs, tmpl, "kube-system"); err != nil {
+			if err := deployRoleBindingFromYaml(cs, tmpl, kubeSystemNamespace); err != nil {
 				logrus.Error(err)
 				return
 			}
@@ -95,12 +97,12 @@ func setPSPs(ctx *cli.Context, k8sWrapTransport transport.WrapperFunc) {
 					return
 				}
 				tmpl = fmt.Sprintf(globalRestrictedRole, globalRestrictedRoleName)
-				if err := deployRoleFromYaml(cs, tmpl, "kube-system"); err != nil {
+				if err := deployRoleFromYaml(cs, tmpl, kubeSystemNamespace); err != nil {
 					logrus.Error(err)
 					return
 				}
 				tmpl = fmt.Sprintf(globalRestrictedRoleBinding, globalRestrictedRoleBindingName)
-				if err := deployRoleBindingFromYaml(cs, tmpl, "kube-system"); err != nil {
+				if err := deployRoleBindingFromYaml(cs, tmpl, kubeSystemNamespace); err != nil {
 					logrus.Error(err)
 					return
 				}
