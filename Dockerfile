@@ -41,6 +41,7 @@ COPY --from=k8s \
     /usr/local/bin/kubelet \
     /bin/
 COPY --from=k3s \
+    /bin/socat \
     /bin/runc \
     /bin/
 COPY --from=containerd \
