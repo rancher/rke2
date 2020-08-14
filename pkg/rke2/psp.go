@@ -25,6 +25,12 @@ const (
 	k8sWrapTransportTimeout = 30
 )
 
+const (
+	namespaceAnnotationBase               = "psp.rke2.io/"
+	namespaceAnnotationGlobalRestricted   = namespaceAnnotationBase + "global-restricted"
+	namespaceAnnotationGlobalUnrestricted = namespaceAnnotationBase + "global-unrestricted"
+)
+
 // setPSPs
 func setPSPs(ctx *cli.Context, k8sWrapTransport transport.WrapperFunc) {
 	const (
@@ -50,16 +56,12 @@ func setPSPs(ctx *cli.Context, k8sWrapTransport transport.WrapperFunc) {
 			return
 		}
 
-		if _, ok := ns.Annotations["psp.rke2.io/global-unrestricted"]; !ok {
-			_ = v
-		}
-
 		if ctx.String("profile") == "" { // not in CIS mode
 			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), globalUnrestrictedPSPName, metav1.GetOptions{}); err == nil {
 				// no error indicates the PSP exists.
 				return
 			}
-			if _, ok := ns.Annotations["psp.rke2.io/global-unrestricted"]; ok {
+			if _, ok := ns.Annotations[namespaceAnnotationGlobalUnrestricted]; ok {
 				return
 			}
 			tmpl := fmt.Sprintf(globalUnrestrictedPSP, globalUnrestrictedPSPName)
@@ -77,14 +79,14 @@ func setPSPs(ctx *cli.Context, k8sWrapTransport transport.WrapperFunc) {
 				logrus.Error(err)
 				return
 			}
-			ns.SetAnnotations(map[string]string{"psp.rke2.io/global-unrestricted": "resolved"})
+			ns.SetAnnotations(map[string]string{namespaceAnnotationGlobalUnrestricted: "resolved"})
 		} else { // we are in CIS mode
 			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), globalRestrictedPSPName, metav1.GetOptions{}); err == nil {
 				if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), globalUnrestrictedPSPName, metav1.GetOptions{}); err == nil {
 					// no error indicates the PSP exists.
 					return
 				}
-				if _, ok := ns.Annotations["psp.rke2.io/global-restricted"]; ok {
+				if _, ok := ns.Annotations[namespaceAnnotationGlobalRestricted]; ok {
 					return
 				}
 				tmpl := fmt.Sprintf(globalRestrictedPSP, globalRestrictedPSPName)
@@ -102,7 +104,7 @@ func setPSPs(ctx *cli.Context, k8sWrapTransport transport.WrapperFunc) {
 					logrus.Error(err)
 					return
 				}
-				ns.SetAnnotations(map[string]string{"psp.rke2.io/global-restricted": "resolved"})
+				ns.SetAnnotations(map[string]string{namespaceAnnotationGlobalRestricted: "resolved"})
 			}
 		}
 		// node policy
