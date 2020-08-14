@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/rancher/spur/cli"
+	"github.com/sirupsen/logrus"
 	"k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -20,7 +22,7 @@ import (
 const globalUnrestrictedPSP = `apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: default-psp
+  name: global-unrestricted-psp
   annotations:
     seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
 spec:
@@ -46,8 +48,8 @@ spec:
     rule: 'RunAsAny'
 `
 
-// defaultPSPClusterRole
-const defaultPSPClusterRole = `kind: ClusterRole
+// globalUnrestrictedRole
+const globalUnrestrictedRole = `kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: default-psp-role
@@ -72,11 +74,11 @@ roleRef:
 subjects:
 - kind: Group
   apiGroup: rbac.authorization.k8s.io
-  name: system:serviceaccounts
+  name: system:authenticated
 `
 
-// clusterRoleBinding
-const clusterRoleBinding = `apiVersion: rbac.authorization.k8s.io/v1
+// nodeClusterRoleBinding
+const nodeClusterRoleBinding = `apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: system-node-default-psp-rolebinding
@@ -97,11 +99,55 @@ const (
 	k8sWrapTransportTimeout = 30
 )
 
+// setPSPs
+func setPSPs(ctx *cli.Context, k8sWrapTransport transport.WrapperFunc) {
+	const (
+		kubeConfigPath = "/etc/rancher/rke2/rke2.yaml"
+		apiWaitDelay   = time.Second * 1
+	)
+
+	cs, err := newClient(kubeConfigPath, k8sWrapTransport)
+	if err != nil {
+		logrus.Error(err)
+	}
+
+	for {
+		if _, err := cs.Discovery().ServerVersion(); err != nil {
+			logrus.Info("waiting on API to become available")
+			time.Sleep(apiWaitDelay)
+			continue
+		}
+		if ctx.String("profile") == "" { // not in CIS mode
+			// check if global restricted PSP exists
+			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), "global-restricted-psp", metav1.GetOptions{}); err == nil {
+				// create PSP
+				// create role
+				// create roleBindings
+			}
+			// create all the things
+		} else { // we are in CIS mode
+			// check if global unrestricted PSP exists
+			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), "global-unrestricted-psp", metav1.GetOptions{}); err == nil {
+				if err := deployPodSecurityPolicyFromYaml(cs, globalUnrestrictedPSP); err != nil {
+					logrus.Error(err)
+				}
+				if err := deployRoleFromYaml(cs, globalUnrestrictedRole, "kube-system"); err != nil {
+					logrus.Error(err)
+				}
+				if err := deployRoleBindingFromYaml(cs, globalUnrestrictedRoleBinding, "kube-system"); err != nil {
+					logrus.Error(err)
+				}
+			}
+			// create all the things
+		}
+	}
+}
+
 // deployFn
 type deployFn func(*kubernetes.Clientset, interface{}) error
 
 // NewClient
-func NewClient(kubeConfigPath string, k8sWrapTransport transport.WrapperFunc) (*kubernetes.Clientset, error) {
+func newClient(kubeConfigPath string, k8sWrapTransport transport.WrapperFunc) (*kubernetes.Clientset, error) {
 	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
 	if err != nil {
 		return nil, err
@@ -113,8 +159,8 @@ func NewClient(kubeConfigPath string, k8sWrapTransport transport.WrapperFunc) (*
 	return kubernetes.NewForConfig(config)
 }
 
-// DecodeYamlResource
-func DecodeYamlResource(data interface{}, yaml string) error {
+// decodeYamlResource
+func decodeYamlResource(data interface{}, yaml string) error {
 	decoder := yamlutil.NewYAMLToJSONDecoder(bytes.NewReader([]byte(yaml)))
 	return decoder.Decode(data)
 }
@@ -153,10 +199,10 @@ func retryToWithTimeout(runFunc deployFn, cs *kubernetes.Clientset, resource int
 	return err
 }
 
-// DeployPodSecurityPolicyFromYaml
-func DeployPodSecurityPolicyFromYaml(cs *kubernetes.Clientset, pspYaml string) error {
+// deployPodSecurityPolicyFromYaml
+func deployPodSecurityPolicyFromYaml(cs *kubernetes.Clientset, pspYaml string) error {
 	var psp v1beta1.PodSecurityPolicy
-	if err := DecodeYamlResource(&psp, pspYaml); err != nil {
+	if err := decodeYamlResource(&psp, pspYaml); err != nil {
 		return err
 	}
 	return retryTo(deployPodSecurityPolicy, cs, psp, defaultRetries, defaultWaitSeconds)
@@ -179,10 +225,10 @@ func deployPodSecurityPolicy(cs *kubernetes.Clientset, p interface{}) error {
 	return nil
 }
 
-// DeployClusterRoleBindingFromYaml
-func DeployClusterRoleBindingFromYaml(cs *kubernetes.Clientset, clusterRoleBindingYaml string) error {
+// deployClusterRoleBindingFromYaml
+func deployClusterRoleBindingFromYaml(cs *kubernetes.Clientset, clusterRoleBindingYaml string) error {
 	var clusterRoleBinding rbacv1.ClusterRoleBinding
-	if err := DecodeYamlResource(&clusterRoleBinding, clusterRoleBindingYaml); err != nil {
+	if err := decodeYamlResource(&clusterRoleBinding, clusterRoleBindingYaml); err != nil {
 		return err
 	}
 	return retryTo(deployClusterRoleBinding, cs, clusterRoleBinding, defaultRetries, defaultWaitSeconds)
@@ -205,10 +251,10 @@ func deployClusterRoleBinding(cs *kubernetes.Clientset, crb interface{}) error {
 	return nil
 }
 
-// DeployClusterRoleFromYaml
-func DeployClusterRoleFromYaml(cs *kubernetes.Clientset, clusterRoleYaml string) error {
+// deployClusterRoleFromYaml
+func deployClusterRoleFromYaml(cs *kubernetes.Clientset, clusterRoleYaml string) error {
 	var clusterRole rbacv1.ClusterRole
-	if err := DecodeYamlResource(&clusterRole, clusterRoleYaml); err != nil {
+	if err := decodeYamlResource(&clusterRole, clusterRoleYaml); err != nil {
 		return err
 	}
 	return retryTo(deployClusterRole, cs, clusterRole, defaultRetries, defaultWaitSeconds)
@@ -231,10 +277,10 @@ func deployClusterRole(cs *kubernetes.Clientset, cr interface{}) error {
 	return nil
 }
 
-// DeployRoleBindingFromYaml
-func DeployRoleBindingFromYaml(cs *kubernetes.Clientset, roleBindingYaml, namespace string) error {
+// deployRoleBindingFromYaml
+func deployRoleBindingFromYaml(cs *kubernetes.Clientset, roleBindingYaml, namespace string) error {
 	var roleBinding rbacv1.RoleBinding
-	if err := DecodeYamlResource(&roleBinding, roleBindingYaml); err != nil {
+	if err := decodeYamlResource(&roleBinding, roleBindingYaml); err != nil {
 		return err
 	}
 	roleBinding.Namespace = namespace
@@ -258,10 +304,10 @@ func deployRoleBinding(cs *kubernetes.Clientset, rb interface{}) error {
 	return nil
 }
 
-// DeployRoleFromYaml
-func DeployRoleFromYaml(cs *kubernetes.Clientset, roleYaml, namespace string) error {
+// deployRoleFromYaml
+func deployRoleFromYaml(cs *kubernetes.Clientset, roleYaml, namespace string) error {
 	var role rbacv1.Role
-	if err := DecodeYamlResource(&role, roleYaml); err != nil {
+	if err := decodeYamlResource(&role, roleYaml); err != nil {
 		return err
 	}
 	role.Namespace = namespace
