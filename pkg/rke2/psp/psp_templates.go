@@ -9,12 +9,12 @@ const (
 	globalRestrictedRoleName        = "global-restricted-psp-role"
 	globalRestrictedRoleBindingName = "global-restricted-psp-rolebinding"
 
-	systemUnrestrictedPSPName         = "system-restricted-psp"
-	systemUnrestrictedRoleName        = "system-restricted-psp-role"
-	systemUnrestrictedRoleBindingName = "system-restricted-psp-rolebinding"
+	systemUnrestrictedPSPName                = "system-unrestricted-psp"
+	systemUnrestrictedRoleName               = "system-unrestricted-psp-role"
+	systemUnrestrictedRoleBindingName        = "system-unrestricted-node-psp-rolebinding"
+	systemUnrestrictedSvcAcctRoleBindingName = "system-unrestricted-svc-acct-psp-rolebinding"
 )
 
-// roleTemplate
 const roleTemplate = `kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -27,7 +27,163 @@ rules:
   - %s
 `
 
-// nodeClusterRoleBindingTemplate
+const globalRestrictedPSPTemplate = `apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: %s
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default,runtime/default'
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName: 'runtime/default'
+    apparmor.security.beta.kubernetes.io/defaultProfileName: 'runtime/default'
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1
+        max: 65535
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1
+        max: 65535
+  readOnlyRootFilesystem: false
+`
+
+const globalRestrictedRoleBindingTemplate = `apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: %s
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: %s
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: system:authenticated
+`
+
+const globalUnrestrictedPSPTemplate = `apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: %s
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+spec:
+  privileged: true
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - '*'
+  volumes:
+  - '*'
+  hostNetwork: true
+  hostPorts:
+  - min: 0
+    max: 65535
+  hostIPC: true
+  hostPID: true
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+`
+
+const globalUnrestrictedRoleBindingTemplate = `apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: %s
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: %s
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: system:authenticated
+`
+
+const systemUnrestrictedPSPTemplate = `
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: %s
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+spec:
+  privileged: true
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - '*'
+  volumes:
+  - '*'
+  hostNetwork: true
+  hostPorts:
+  - min: 0
+    max: 65535
+  hostIPC: true
+  hostPID: true
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+`
+
+const systemUnrestrictedNodesRoleBindingTemplate = `apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: %s
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: %s
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: system:nodes
+`
+
+const systemUnrestrictedServiceAcctRoleBindingTemplate = `apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: %s
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: %s
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: system:serviceaccounts
+`
+
 const nodeClusterRoleBindingTemplate = `apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
