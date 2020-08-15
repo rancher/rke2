@@ -36,8 +36,8 @@ const (
 	namespaceAnnotationSystemUnrestricted = namespaceAnnotationBase + "system-unrestricted"
 )
 
-// setGlobalUnrestricted sets the global unrestricted podSecurityPolicy as long
-// with the associated role and rolebinding.
+// setGlobalUnrestricted sets the global unrestricted podSecurityPolicy with
+// the associated role and rolebinding.
 func setGlobalUnrestricted(cs *kubernetes.Clientset, ns *v1.Namespace) error {
 	if _, ok := ns.Annotations[namespaceAnnotationGlobalUnrestricted]; !ok {
 		tmpl := fmt.Sprintf(globalUnrestrictedPSPTemplate, globalUnrestrictedPSPName)
@@ -57,8 +57,8 @@ func setGlobalUnrestricted(cs *kubernetes.Clientset, ns *v1.Namespace) error {
 	return nil
 }
 
-// setSystemUnrestricted sets the system unrestricted podSecurityPolicy as long
-// with the associated role and rolebinding.
+// setSystemUnrestricted sets the system unrestricted podSecurityPolicy as
+// the associated role and rolebinding.
 func setSystemUnrestricted(cs *kubernetes.Clientset, ns *v1.Namespace) error {
 	if _, ok := ns.Annotations[namespaceAnnotationSystemUnrestricted]; !ok {
 		tmpl := fmt.Sprintf(systemUnrestrictedPSPTemplate, systemUnrestrictedPSPName)
