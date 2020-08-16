@@ -4,6 +4,7 @@ set -e
 cd $(dirname $0)/..
 
 . ./scripts/version.sh
+
 docker build \
   --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
   -t ${REPO}/rke2-runtime:${VERSION}-${GOARCH} .

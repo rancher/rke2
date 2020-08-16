@@ -5,7 +5,9 @@ set -e -x
 cd $(dirname $0)/..
 
 . ./scripts/version.sh
-
+if [ -z "${SKIP_PRELOAD_IMAGE}" ]; then
+  BINDMOUNT_IMAGES='-v '"${PWD}"'/build/images:/var/lib/rancher/rke2/agent/images'
+fi
 IMAGES_DIR=/var/lib/rancher/rke2/agent/images
 docker run --rm --name ${PROG}-dev-shell \
   --hostname ${PROG}-server \
@@ -13,8 +15,6 @@ docker run --rm --name ${PROG}-dev-shell \
   -p 127.0.0.1:2345:2345 \
   -v ${HOME}:${HOME} \
   -v ${PROG} -w ${PWD} \
-  -v ${PWD}/build/images:/var/lib/rancher/rke2/agent/images \
   --privileged \
   -v ${PROG}-pkg:/go/pkg \
-  -v ${PROG}-cache:/root/.cache/go-build \
-  ${PROG}-dev bash
+  -v ${PROG}-cache:/root/.cache/go-build ${BINDMOUNT_IMAGES} ${PROG}-dev bash

@@ -175,6 +175,12 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 
 func preloadBootstrapImage(dataDir, runtimeImage string) (v1.Image, error) {
 	imagesDir := filepath.Join(dataDir, "agent", "images")
+	if _, err := os.Stat(imagesDir); err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
 	files := map[string]os.FileInfo{}
 	if err := filepath.Walk(imagesDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {

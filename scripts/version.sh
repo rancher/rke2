@@ -50,17 +50,10 @@ fi
 
 if [[ -n "$GIT_TAG" ]]; then
     VERSION=$GIT_TAG
+    KUBERNETES_VERSION=$GIT_TAG
 else
     VERSION="${KUBERNETES_VERSION}-dev+${COMMIT:0:8}$DIRTY"
 fi
+# Normalizing both version and k8s version
 VERSION="$(sed -e 's/+/-/g' <<< "$VERSION")"
-
-# Setting kubernetes version for rke2
-if [ -z "${KUBERNETES_VERSION}" ]; then
-    if [ -n "${GIT_TAG}" ]; then
-        if [[ ! "$GIT_TAG" =~ ^"${KUBERNETES_VERSION}"[+-] ]]; then
-            echo "Tagged version '$GIT_TAG' does not match expected version '${KUBERNETES_VERSION}[+-]*'" >&2
-            exit 1
-        fi
-    fi
-fi
+KUBERNETES_VERSION="$(sed -e 's/+/-/g' <<< "$KUBERNETES_VERSION")"
