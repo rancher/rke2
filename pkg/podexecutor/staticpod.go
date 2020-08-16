@@ -87,6 +87,7 @@ func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, ar
 		"--audit-log-maxbackup=10",
 		"--audit-log-maxsize=100",
 	)
+	auth, err := auth.FromArgs(args)
 	for i, arg := range args {
 		// This is an option k3s adds that does not exist upstream
 		if strings.HasPrefix(arg, "--advertise-port=") {
@@ -106,8 +107,6 @@ func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, ar
 			CPUMillis: 250,
 		})
 	})
-
-	auth, err := auth.FromArgs(args)
 	return auth, http.NotFoundHandler(), err
 }
 

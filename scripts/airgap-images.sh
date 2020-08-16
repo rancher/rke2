@@ -10,4 +10,4 @@ mkdir -p ./build/images/
 airgap_image_file='scripts/airgap/image-list.txt'
 images=$(cat "${airgap_image_file}")
 xargs -n1 docker pull <<< "${images}"
-docker save ${images} | gzip > ./build/images/airgap.tar.gz
+docker save -o ./build/images/airgap.tar ${images}

@@ -4,6 +4,11 @@ set -ex
 IMAGE_REPO=ranchertest
 SEVERITIES="HIGH,CRITICAL"
 
+if [ -z "${BUILD_K8S_IMAGE}" ]; then
+    echo "skipping building kubernetes image"
+    exit 0
+fi
+
 cd $(dirname $0)/..
 
 source ./scripts/version.sh

@@ -43,10 +43,10 @@ remote-debug: build-debug        		 ## Run with remote debugging listening on :2
 remote-debug-exit:              		 ## Kill dlv started with make remote-debug
 	./scripts/remote-debug-exit
 
-dev-shell-build: build/images/airgap.tar.gz
+dev-shell-build: build/images/airgap.tar
 	./scripts/dev-shell-build
 
-build/images/airgap.tar.gz:
+build/images/airgap.tar:
 	./scripts/airgap-images.sh
 
 clean-cache:                             ## Clean up docker base caches used for development
@@ -55,7 +55,7 @@ clean-cache:                             ## Clean up docker base caches used for
 clean:                                   ## Clean up workspace
 	./scripts/clean
 
-dev-shell: image k8s-image dev-shell-build              ## Launch a development shell to run test builds
+dev-shell: k8s-image download-charts image dev-shell-build              ## Launch a development shell to run test builds
 	./scripts/dev-shell
 
 dev-shell-enter:                       ## Enter the development shell on another terminal
@@ -82,7 +82,7 @@ download-charts: 						## Download packaged helm charts
 package: download-charts package-airgap ## Package the rke2 binary
 	./scripts/package
 
-package-airgap: build/images/airgap.tar.gz		## Package docker images for airgap environment
+package-airgap: build/images/airgap.tar		## Package docker images for airgap environment
 	./scripts/package-airgap
 
 ./.dapper:
