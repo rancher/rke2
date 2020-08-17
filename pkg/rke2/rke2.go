@@ -38,9 +38,12 @@ func Server(ctx *cli.Context, cfg Config) error {
 	if err := ctx.Set("secrets-encryption", "true"); err != nil {
 		return err
 	}
-	if err := psp.SetPSPs(ctx, nil); err != nil {
-		logrus.Fatal(err)
-	}
+	go func() {
+		if err := psp.SetPSPs(ctx, nil); err != nil {
+			logrus.Fatal(err)
+		}
+	}()
+
 	return server.Run(ctx)
 }
 

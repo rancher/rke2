@@ -2,11 +2,11 @@ package psp
 
 const (
 	globalUnrestrictedPSPName         = "global-unrestricted-psp"
-	globalUnrestrictedRoleName        = "global-unrestricted-psp-role"
+	globalUnrestrictedRoleName        = "global-unrestricted-psp-clusterrole"
 	globalUnrestrictedRoleBindingName = "global-unrestricted-psp-rolebinding"
 
 	globalRestrictedPSPName         = "global-restricted-psp"
-	globalRestrictedRoleName        = "global-restricted-psp-role"
+	globalRestrictedRoleName        = "global-restricted-psp-clusterrole"
 	globalRestrictedRoleBindingName = "global-restricted-psp-rolebinding"
 
 	systemUnrestrictedPSPName                = "system-unrestricted-psp"
