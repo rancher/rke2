@@ -439,6 +439,8 @@ github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ
 github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hashicorp/golang-lru v0.5.3 h1:YPkqC67at8FYaadspW/6uE0COsBxS2656RLEr8Bppgk=
 github.com/hashicorp/golang-lru v0.5.3/go.mod h1:iADmTwqILo4mZ8BN3D2Q6+9jd8WM5uGBxy+E8yxSoD4=
+github.com/hashicorp/golang-lru v0.5.4 h1:YDjusn29QI/Das2iO9M0BHnIbxPeyuCHsjMW+lJfyTc=
+github.com/hashicorp/golang-lru v0.5.4/go.mod h1:iADmTwqILo4mZ8BN3D2Q6+9jd8WM5uGBxy+E8yxSoD4=
 github.com/hashicorp/hcl v0.0.0-20180404174102-ef8a98b0bbce/go.mod h1:oZtUIOe8dh44I2q6ScRibXws4Ajl+d+nod3AaR9vL5w=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
 github.com/heketi/heketi v9.0.1-0.20190917153846-c2e2a4ab7ab9+incompatible/go.mod h1:bB9ly3RchcQqsQ9CpyaQwvva7RS5ytVoSoholZQON6o=
@@ -659,10 +661,10 @@ github.com/rancher/dynamiclistener v0.2.1-0.20200418023342-52ede5ec9234 h1:wZ1Zh
 github.com/rancher/dynamiclistener v0.2.1-0.20200418023342-52ede5ec9234/go.mod h1:9WusTANoiRr8cDWCTtf5txieulezHbpv4vhLADPp0zU=
 github.com/rancher/flannel v0.11.0-k3s.2 h1:0GVr5ORAIvcri1LYTE8eMQ+NrRbuPeIniPaW51IzLco=
 github.com/rancher/flannel v0.11.0-k3s.2/go.mod h1:Hn4ZV+eq0LhLZP63xZnxdGwXEoRSxs5sxELxu27M3UA=
-github.com/rancher/helm-controller v0.6.3 h1:tsqSXndQ7Ms8S0mBd2zWOcTV1tiZ4BUYkemYnijNXio=
-github.com/rancher/helm-controller v0.6.3/go.mod h1:ZylsxIMGNADRPRNW+NiBWhrwwks9vnKLQiCHYWb6Bi0=
-github.com/rancher/k3s v1.18.3-0.20200807184958-026584e1f72b h1:yZII7+CujAlMvNjQkfH9cWA+m20oxtpcrBV7+rCXm3s=
-github.com/rancher/k3s v1.18.3-0.20200807184958-026584e1f72b/go.mod h1:7hMbRoSumpe4oNnvdhdUeOHwVPCDLFa4JZvMfiSBrXE=
+github.com/rancher/helm-controller v0.6.5 h1:gL6R3fbsBFBnrp2Wc36zn0zLQ8q2ckbLpfaN2XkrLVE=
+github.com/rancher/helm-controller v0.6.5/go.mod h1:ZylsxIMGNADRPRNW+NiBWhrwwks9vnKLQiCHYWb6Bi0=
+github.com/rancher/k3s v1.18.3-0.20200816100636-4db417180866 h1:k4ZkAZCFKGGAN93FnCb9bWdLbfNmIsRHIQAYrRjfaac=
+github.com/rancher/k3s v1.18.3-0.20200816100636-4db417180866/go.mod h1:A/1SBqxwAxHk3OUxSlfDbd1a7phkam5chVWL0MXHTt0=
 github.com/rancher/kine v0.4.0 h1:1IhWy3TzjExG8xnj46eyUEWdzqNAD1WrgL4eEBKm6Uc=
 github.com/rancher/kine v0.4.0/go.mod h1:IImtCJ68AIkE+VY/kUI0NkyJL5q5WzO8QvMsSXqbrpA=
 github.com/rancher/kubernetes v1.18.4-k3s1 h1:eTwiRm2Gu8AUDgrda5FK8atZvkh6/3ZDoRFsxmnLvLc=

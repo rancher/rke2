@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cd $(dirname $0)/..
+
+. ./scripts/version.sh
+
+COMMAND="server"
+. ./scripts/build-debug
+
+./bin/${PROG} ${COMMAND} ${ARGS}

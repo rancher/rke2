@@ -89,16 +89,14 @@ func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, ar
 		"--audit-log-maxbackup=10",
 		"--audit-log-maxsize=100",
 	)
+	auth, err := auth.FromArgs(args)
 	for i, arg := range args {
 		// This is an option k3s adds that does not exist upstream
 		if strings.HasPrefix(arg, "--advertise-port=") {
 			args = append(args[:i], args[i+1:]...)
-			break
 		}
-		// This option conflicts with cis benchmark
-		if strings.HasPrefix(arg, "--basic-auth=") {
+		if strings.HasPrefix(arg, "--basic-auth-file=") {
 			args = append(args[:i], args[i+1:]...)
-			break
 		}
 	}
 
@@ -111,8 +109,6 @@ func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, ar
 			CPUMillis: 250,
 		})
 	})
-
-	auth, err := auth.FromArgs(args)
 	return auth, http.NotFoundHandler(), err
 }
 

@@ -17,11 +17,13 @@ VOLUME /var/lib/rancher/k3s
 
 # Dapper/Drone/CI environment
 FROM build AS dapper
-ENV DAPPER_ENV REPO TAG DRONE_TAG PAT_USERNAME PAT_TOKEN
+
+ENV DAPPER_ENV GODEBUG REPO TAG DRONE_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION
 ENV DAPPER_OUTPUT ./dist ./bin ./build
 ENV DAPPER_DOCKER_SOCKET true
 ENV DAPPER_TARGET dapper
 ENV DAPPER_RUN_ARGS "-v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build"
+RUN curl -sL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.27.0
 WORKDIR /source
 # End Dapper stuff
 
@@ -39,6 +41,7 @@ COPY --from=k8s \
     /usr/local/bin/kubelet \
     /bin/
 COPY --from=k3s \
+    /bin/socat \
     /bin/runc \
     /bin/
 COPY --from=containerd \

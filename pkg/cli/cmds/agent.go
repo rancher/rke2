@@ -43,6 +43,7 @@ var (
 		"cluster-secret":             drop,
 		"protect-kernel-defaults":    copy,
 		"snapshotter":                copy,
+		"selinux":                    copy,
 	})
 )
 

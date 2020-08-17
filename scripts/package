@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e -x
+
+cd $(dirname $0)/..
+
+. scripts/version.sh
+
+cp bin/${PROG} dist/artifacts/${RELEASE}

@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -16,13 +17,12 @@ import (
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/sirupsen/logrus"
 )
 
-var (
-	releasePattern = regexp.MustCompile("^v[0-9]")
-)
+var releasePattern = regexp.MustCompile("^v[0-9]")
 
 func dataDirFor(dataDir, dataName string) string {
 	return filepath.Join(dataDir, "data", dataName, "bin")
@@ -48,10 +48,17 @@ func Stage(dataDir string, images images.Images) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// downloading the image
-	img, err := remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+	// preload image from tarball
+	img, err := preloadBootstrapImage(dataDir, images.Runtime)
 	if err != nil {
 		return "", err
+	}
+	if img == nil {
+		// downloading the image
+		img, err = remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+		if err != nil {
+			return "", err
+		}
 	}
 
 	dataName := releaseName(ref)
@@ -164,4 +171,37 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 		return err
 	}
 	return os.Rename(tempDir, dir)
+}
+
+func preloadBootstrapImage(dataDir, runtimeImage string) (v1.Image, error) {
+	imagesDir := filepath.Join(dataDir, "agent", "images")
+	if _, err := os.Stat(imagesDir); err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	files := map[string]os.FileInfo{}
+	if err := filepath.Walk(imagesDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		files[path] = info
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	archTag, err := name.NewTag(runtimeImage+"-"+runtime.GOARCH, name.WeakValidation)
+	if err != nil {
+		return nil, err
+	}
+	for fileName := range files {
+		img, err := tarball.ImageFromPath(fileName, &archTag)
+		if err != nil {
+			continue
+		}
+		return img, nil
+
+	}
+	return nil, nil
 }

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e -x
+
+cd $(dirname $0)/..
+
+IMAGE_REPO=ranchertest
+
+. ./scripts/version.sh
+
+mkdir -p build/images
+
+docker save -o ./build/images/rke2-runtime-image-amd64.tar rancher/rke2-runtime:${VERSION}-${GOARCH}
+
+if [ -n "${BUILD_K8S_IMAGE}" ]; then
+  docker save -o ./build/images/k8s-image-amd64.tar ranchertest/kubernetes:${VERSION}
+fi
+
+# build the dev shell image
+docker build -t ${PROG}-dev --target shell .

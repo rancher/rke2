@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+cd $(dirname $0)/..
+
+. ./scripts/version.sh
+. ./scripts/image
+
+docker push ${REPO}/rke2-runtime:${VERSION}-${GOARCH}
