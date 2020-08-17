@@ -76,8 +76,7 @@ func Pull(dir, name, image string) error {
 }
 
 func checkPreloadedImages(dir string) (bool, error) {
-	_, err := os.Stat(dir)
-	if err != nil {
+	if _, err := os.Stat(dir); err != nil {
 		if os.IsNotExist(err) {
 			return false, nil
 		}

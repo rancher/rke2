@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e -x
 
-IMAGE_REPO=ranchertest
+IMAGE_REPO=rancher
 
 cd $(dirname $0)/..
 
