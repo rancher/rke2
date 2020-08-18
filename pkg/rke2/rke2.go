@@ -1,6 +1,7 @@
 package rke2
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -19,6 +20,7 @@ import (
 	"github.com/rancher/rke2/pkg/podexecutor"
 	"github.com/rancher/rke2/pkg/rke2/psp"
 	"github.com/rancher/spur/cli"
+	"github.com/rancher/wrangler/pkg/signals"
 	"github.com/sirupsen/logrus"
 )
 
@@ -38,8 +40,10 @@ func Server(ctx *cli.Context, cfg Config) error {
 	if err := ctx.Set("secrets-encryption", "true"); err != nil {
 		return err
 	}
+	sCtx := signals.SetupSignalHandler(context.Background())
+
 	go func() {
-		if err := psp.SetPSPs(ctx, nil); err != nil {
+		if err := psp.SetPSPs(sCtx, ctx, nil); err != nil {
 			logrus.Fatal(err)
 		}
 	}()
