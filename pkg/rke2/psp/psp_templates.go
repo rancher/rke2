@@ -13,6 +13,8 @@ const (
 	systemUnrestrictedRoleName               = "system-unrestricted-psp-role"
 	systemUnrestrictedRoleBindingName        = "system-unrestricted-node-psp-rolebinding"
 	systemUnrestrictedSvcAcctRoleBindingName = "system-unrestricted-svc-acct-psp-rolebinding"
+
+	nodeClusterRoleBindingName = "system-node-default-psp-rolebinding"
 )
 
 const roleTemplate = `kind: ClusterRole
