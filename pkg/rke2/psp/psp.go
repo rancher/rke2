@@ -125,8 +125,8 @@ func kubeConfigExists(kc string) bool {
 }
 
 // SetPSPs sets the default PSP's based on the mode that RKE2 is running in. There is either CIS or non
-// CIS mode. For CIS mode, the globalRestricted and systemUnrestructed polices and associated roles and
-// bindings are created. For non CIS mode, globalRestricted, system-unrestructed, and global-unrestricted
+// CIS mode. For CIS mode, the globalRestricted and systemUnrestricted polices and associated roles and
+// bindings are created. For non CIS mode, globalRestricted, system-unrestricted, and global-unrestricted
 // policies and associated roles and bindings are loaded, if applicable.
 //
 // Each PSP has an annotation associated with it that we check to see exists before performing any
@@ -142,7 +142,7 @@ func kubeConfigExists(kc string) bool {
 //
 // non-CIS:
 // - Check if the globalUnrestricted annotation does not exist, create PSP, role, binding.
-// - Check if the systemUnrestructed annotation does not exist, create PSP, role, binding.
+// - Check if the systemUnrestricted annotation does not exist, create PSP, role, binding.
 // - Check if the globalRestricted annotation does not exist, check if the PSP exists and
 //   if it doesn't, create it. Check to see if the associated role and bindings exist and
 //   if they do, delete them.
