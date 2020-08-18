@@ -23,12 +23,15 @@ dapper-ci: .ci                           ## Used by Drone CI, does the same as "
 build:                                   ## Build using host go tools
 	./scripts/build
 
+.PHONY: build-airgap
+build-airgap: | build image k8s-image build/images/airgap.tar	## Build all images for an airgapped installation
+
 .PHONY: build-debug
 build-debug:                             ## Debug build using host go tools
 	./scripts/build-debug
 
 .PHONY: image
-image:                                   ## Build final docker image for push
+image: download-charts					## Build final docker image for push
 	./scripts/image
 
 .PHONY: k8s-image
@@ -56,7 +59,7 @@ remote-debug-exit:              		 ## Kill dlv started with make remote-debug
 	./scripts/remote-debug-exit
 
 .PHONY: dev-shell-build
-dev-shell-build: build/images/airgap.tar
+dev-shell-build: build-airgap
 	./scripts/dev-shell-build
 
 build/images/airgap.tar:
