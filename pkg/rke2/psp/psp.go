@@ -28,8 +28,7 @@ const (
 )
 
 const (
-	kubeSystemNamespace = "kube-system"
-	cisAnnotationValue  = "resolved"
+	cisAnnotationValue = "resolved"
 
 	namespaceAnnotationBase               = "psp.rke2.io/"
 	namespaceAnnotationGlobalRestricted   = namespaceAnnotationBase + "global-restricted"
@@ -170,7 +169,7 @@ func SetPSPs(sCtx context.Context, ctx *cli.Context, k8sWrapTransport transport.
 		}
 
 		// wait until the kube-system namespace is created
-		ns, err := cs.CoreV1().Namespaces().Get(sCtx, kubeSystemNamespace, metav1.GetOptions{})
+		ns, err := cs.CoreV1().Namespaces().Get(sCtx, metav1.NamespaceSystem, metav1.GetOptions{})
 		if err != nil {
 			if apierrors.IsNotFound(err) {
 				time.Sleep(waitDelay)
