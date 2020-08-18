@@ -1,0 +1,41 @@
+#!/bin/bash
+set -e -x
+
+cd $(dirname $0)/..
+
+. scripts/version.sh
+
+if [ ! -d packaging/rpm ]; then
+    git submodule update --recursive --remote --init packaging
+fi
+
+find packaging
+mkdir -p dist/bundle/{bin,etc/rancher/${PROG},usr/share/${PROG}/rpm}
+
+### bin/rke2
+cp -f bin/${PROG} dist/bundle/bin/
+
+### etc/environment
+cat << EOF > dist/bundle/etc/environment
+KUBECONFIG=/etc/rancher/${PROG}/${PROG}.yaml
+EOF
+
+### etc/rancher/rke2/README.md
+cat << EOF > dist/bundle/etc/rancher/${PROG}/README.md
+# RKE2 FILES
+
+- **\`${PROG}.yaml\`**
+  \`${PROG} server\` will place this KUBECONFIG on successful start-up.
+
+- **\`registries.yaml\`**
+  The \`k3s\` subsystem embedded in \`${PROG}\` will look for this file on all agents (i.e. including servers) as configuration
+  for custom/private registries a la https://rancher.com/docs/k3s/latest/en/installation/private-registry/
+EOF
+
+### usr/share/rke2/rpm
+rsync -a packaging/rpm/ dist/bundle/usr/share/${PROG}/rpm/
+
+###
+
+mkdir -p dist/artifacts
+tar -cvzf dist/artifacts/${RELEASE}.tar.gz -C dist/bundle .

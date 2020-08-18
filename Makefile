@@ -106,12 +106,16 @@ download-charts: 						## Download packaged helm charts
 	./scripts/download-charts
 
 .PHONY: package
-package: download-charts package-airgap ## Package the rke2 binary
+package: | download-charts package-airgap package-bundle ## Package the rke2 binary
 	./scripts/package
 
 .PHONY: package-airgap
 package-airgap: build/images/airgap.tar		## Package docker images for airgap environment
 	./scripts/package-airgap
+
+.PHONY: package-bundle
+package-bundle: 						## Package the tarball bundle
+	./scripts/package-bundle
 
 ./.dapper:
 	@echo Downloading dapper
