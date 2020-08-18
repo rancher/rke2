@@ -285,7 +285,7 @@ func SetPSPs(sCtx context.Context, ctx *cli.Context, k8sWrapTransport transport.
 		}
 
 		// apply node cluster role binding regardless of whether we're in CIS mode or not
-		if _, err := cs.RbacV1().ClusterRoleBindings().Get(sCtx, globalUnrestrictedRoleName, metav1.GetOptions{}); err != nil {
+		if _, err := cs.RbacV1().ClusterRoleBindings().Get(sCtx, nodeClusterRoleBindingTemplate, metav1.GetOptions{}); err != nil {
 			if apierrors.IsAlreadyExists(err) {
 				logrus.Info(err)
 			} else {
