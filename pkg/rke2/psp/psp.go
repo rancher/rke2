@@ -160,8 +160,8 @@ func SetPSPs(sCtx context.Context, ctx *cli.Context, k8sWrapTransport transport.
 	if err != nil {
 		return err
 	}
-
-	for {
+	var complete bool
+	for complete {
 		// wait until kube-apiserver is running
 		if _, err := cs.Discovery().ServerVersion(); err != nil {
 			time.Sleep(waitDelay)
@@ -200,29 +200,26 @@ func SetPSPs(sCtx context.Context, ctx *cli.Context, k8sWrapTransport transport.
 
 				// check if role exists and delete it
 				role, err := cs.RbacV1().ClusterRoles().Get(sCtx, globalRestrictedRoleName, metav1.GetOptions{})
-				if err != nil {
-					if apierrors.IsNotFound(err) {
-						logrus.Info(err)
-					} else {
-						if err := cs.RbacV1().ClusterRoles().Delete(sCtx, role.Name, metav1.DeleteOptions{}); err != nil {
-							return err
-						}
-					}
+				if err != nil && !apierrors.IsNotFound(err) {
+					return err
+				}
+				if err := cs.RbacV1().ClusterRoles().Delete(sCtx, role.Name, metav1.DeleteOptions{}); err != nil {
+					return err
 				}
 
 				// check if role binding exists and delete it
 				roleBinding, err := cs.RbacV1().ClusterRoleBindings().Get(sCtx, globalRestrictedRoleBindingName, metav1.GetOptions{})
-				if err != nil {
-					if apierrors.IsNotFound(err) {
-						logrus.Info(err)
-					}
-				} else {
-					if err := cs.RbacV1().ClusterRoleBindings().Delete(sCtx, roleBinding.Name, metav1.DeleteOptions{}); err != nil {
-						return err
-					}
+				if err != nil && !apierrors.IsNotFound(err) {
+					logrus.Info(err)
+
 				}
+				if err := cs.RbacV1().ClusterRoleBindings().Delete(sCtx, roleBinding.Name, metav1.DeleteOptions{}); err != nil {
+					return err
+				}
+
 				ns.SetAnnotations(map[string]string{namespaceAnnotationGlobalRestricted: cisAnnotationValue})
 			}
+			complete = true
 		} else { // CIS mode
 			if _, ok := ns.Annotations[namespaceAnnotationGlobalRestricted]; !ok {
 				if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(sCtx, globalRestrictedPSPName, metav1.GetOptions{}); err != nil {
@@ -266,30 +263,25 @@ func SetPSPs(sCtx context.Context, ctx *cli.Context, k8sWrapTransport transport.
 
 				// check if role exists and if so, delete it
 				role, err := cs.RbacV1().ClusterRoles().Get(sCtx, globalRestrictedRoleName, metav1.GetOptions{})
-				if err != nil {
-					if apierrors.IsNotFound(err) {
-						logrus.Info(err)
-					}
-				} else {
-					if err := cs.RbacV1().ClusterRoles().Delete(sCtx, role.Name, metav1.DeleteOptions{}); err != nil {
-						return err
-					}
+				if err != nil && !apierrors.IsNotFound(err) {
+					return err
+				}
+				if err := cs.RbacV1().ClusterRoles().Delete(sCtx, role.Name, metav1.DeleteOptions{}); err != nil {
+					return err
 				}
 
 				// check if role binding exists and if so, delete it
 				roleBinding, err := cs.RbacV1().ClusterRoleBindings().Get(sCtx, globalUnrestrictedRoleName, metav1.GetOptions{})
-				if err != nil {
-					if apierrors.IsNotFound(err) {
-						logrus.Info(err)
-					} else {
-						if err := cs.RbacV1().ClusterRoleBindings().Delete(sCtx, roleBinding.Name, metav1.DeleteOptions{}); err != nil {
-							return err
-						}
-					}
+				if err != nil && !apierrors.IsNotFound(err) {
+					return err
+				}
+				if err := cs.RbacV1().ClusterRoleBindings().Delete(sCtx, roleBinding.Name, metav1.DeleteOptions{}); err != nil {
+					return err
 				}
 
 				ns.SetAnnotations(map[string]string{namespaceAnnotationGlobalUnrestricted: cisAnnotationValue})
 			}
+			complete = true
 		}
 
 		// apply node cluster role binding regardless of whether we're in CIS mode or not
@@ -303,8 +295,8 @@ func SetPSPs(sCtx context.Context, ctx *cli.Context, k8sWrapTransport transport.
 				}
 			}
 		}
-		return nil
 	}
+	return nil
 }
 
 type deployFn func(context.Context, *kubernetes.Clientset, interface{}) error
