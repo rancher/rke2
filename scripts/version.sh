@@ -50,7 +50,6 @@ fi
 
 if [[ -n "$GIT_TAG" ]]; then
     VERSION=$GIT_TAG
-    KUBERNETES_VERSION=$GIT_TAG
 else
     VERSION="${KUBERNETES_VERSION}-dev+${COMMIT:0:8}$DIRTY"
 fi
