@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/rancher/k3s/pkg/agent/config"
 	"github.com/rancher/k3s/pkg/cli/agent"
@@ -20,7 +22,6 @@ import (
 	"github.com/rancher/rke2/pkg/podexecutor"
 	"github.com/rancher/rke2/pkg/rke2/psp"
 	"github.com/rancher/spur/cli"
-	"github.com/rancher/wrangler/pkg/signals"
 	"github.com/sirupsen/logrus"
 )
 
@@ -40,7 +41,17 @@ func Server(ctx *cli.Context, cfg Config) error {
 	if err := ctx.Set("secrets-encryption", "true"); err != nil {
 		return err
 	}
-	sCtx := signals.SetupSignalHandler(context.Background())
+
+	sCtx, cancel := context.WithCancel(context.Background())
+	c := make(chan os.Signal, 2)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-c
+		cancel()
+		<-c
+		os.Exit(1)
+	}()
 
 	go func() {
 		if err := psp.SetPSPs(sCtx, ctx, nil); err != nil {
