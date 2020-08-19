@@ -1,0 +1,3 @@
+[submodule "packaging"]
+	path = packaging
+	url = https://github.com/rancher/rke2-packaging.git
