@@ -36,6 +36,22 @@ steps:
     event:
     - tag
 
+- name: docker-k8s-build
+  image: rancher/build-base:v1.14.2
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+  commands:
+  - DRONE_TAG=${DRONE_TAG} BUILD_K8S_IMAGE=true make k8s-image
+  environment:
+    DOCKER_USERNAME:
+      from_secret: docker_username
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+  when:
+    instance:
+    - drone-pr.rancher.io
+
 - name: docker-k8s-publish
   image: rancher/build-base:v1.14.2
   volumes:
