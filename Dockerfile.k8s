@@ -13,7 +13,7 @@ RUN apt update     && \
 
 RUN git clone -b ${KUBERNETES_VERSION} --depth=1 https://github.com/kubernetes/kubernetes.git && \
     cd /go/kubernetes   && \
-    KUBE_GIT_VERSION=${TAG} make all
+    KUBE_GIT_VERSION=${KUBERNETES_VERSION} make all
 
 FROM ubi
 RUN microdnf update -y           && \
