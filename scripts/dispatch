@@ -1,6 +1,5 @@
-#!/bin/sh
-set -e
-set -x
+#!/usr/bin/env bash
+set -ex
 
 REPO="https://api.github.com/repos/rancher/rke2-upgrade/dispatches"
 

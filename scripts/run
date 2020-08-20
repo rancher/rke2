@@ -1,10 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -ex
 
 cd $(dirname $0)/..
 
 . ./scripts/version.sh
 
 COMMAND="server"
-. ./scripts/build-debug
+GODEBUG="y"
 
 ./bin/${PROG} ${COMMAND} ${ARGS}

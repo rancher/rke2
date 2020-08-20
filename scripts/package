@@ -1,8 +1,10 @@
-#!/bin/bash
-set -e -x
+#!/usr/bin/env bash
+set -ex
 
 cd $(dirname $0)/..
 
-. scripts/version.sh
-
-cp bin/${PROG} dist/artifacts/${RELEASE}
+source ./scripts/version.sh
+mkdir -p dist/artifacts
+./scripts/package-binary
+./scripts/package-bundle
+./scripts/package-images

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -ex
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+export DOCKER_CLI_EXPERIMENTAL=enabled
+
+docker manifest create \
+    --amend ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH}
+
+docker manifest push ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}

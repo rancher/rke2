@@ -1,8 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -ex
 
 cd $(dirname $0)/..
-. ./scripts/version.sh
-./scripts/build-debug
+
+source ./scripts/version.sh
+
+GODEBUG=y ./scripts/build
 go build -o bin/dlv github.com/go-delve/delve/cmd/dlv
 
 CATTLE_DEV_MODE=true ./bin/dlv \
