@@ -40,8 +40,8 @@ has been bind-mounted into the container ready to be imported into containerd on
 To run the built artifact(s) locally or on a remote host:
 - install prerequisites mentioned above
 - copy `./bin/rke2` to the path on your host
-- copy `./build/images/rke2-runtime-image-$(go env GOARCH).tar` to `/var/lib/rancher/rke2/agent/images/` on your host
-- if testing airgap, also copy `./build/images/airgap.tar` to `/var/lib/rancher/rke2/agent/images/` on your host
+- copy `./build/images/rke2-runtime.tar` to `/var/lib/rancher/rke2/agent/images/` on your host
+- if testing airgap, also copy `./build/images/rke2-airgap.tar` to `/var/lib/rancher/rke2/agent/images/` on your host
 - run rke2 server: `rke2 server --token=test`
 
 ### kubectl

@@ -1,6 +1,5 @@
-#!/bin/bash
-
-set -e -x
+#!/usr/bin/env bash
+set -ex
 
 PEER=${PEER:-1}
 

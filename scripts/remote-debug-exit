@@ -1,6 +1,5 @@
-#!/bin/bash
-
-set -e -x
+#!/usr/bin/env bash
+set -ex
 
 cd $(dirname $0)/..
 

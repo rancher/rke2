@@ -5,4 +5,4 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-docker exec -it ${PROG}-dev-shell bash
+docker image push ${REPO}/kubernetes:${DOCKERIZED_VERSION}-${GOARCH}

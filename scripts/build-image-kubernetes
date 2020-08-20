@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -ex
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+
+DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
+    --build-arg TAG=${VERSION} \
+    --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
+    --tag ${REPO}/kubernetes:${DOCKERIZED_VERSION} \
+    --tag ${REPO}/kubernetes:${DOCKERIZED_VERSION}-${GOARCH} \
+    --target kubernetes \
+.
+
+mkdir -p build/images
+docker image save \
+    --output build/images/${PROG}-kubernetes.tar \
+    ${REPO}/kubernetes:${DOCKERIZED_VERSION} \
+    ${REPO}/kubernetes:${DOCKERIZED_VERSION}-${GOARCH}

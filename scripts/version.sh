@@ -3,7 +3,6 @@ set -x
 
 PROG=rke2
 REPO=${REPO:-rancher}
-IMAGE=${REPO}/rke2-runtime
 K3S_PKG=github.com/rancher/k3s
 RKE2_PKG=github.com/rancher/rke2
 GO=${GO-go}
@@ -24,12 +23,12 @@ if [ -z "$GOOS" ]; then
     fi
 fi
 
-SUFFIX="-${GOARCH}"
 GIT_TAG=$DRONE_TAG
 TREE_STATE=clean
 COMMIT=$DRONE_COMMIT
 REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
-RELEASE=${PROG}.${GOOS}${SUFFIX}
+PLATFORM=${GOOS}-${GOARCH}
+RELEASE=${PROG}.${PLATFORM}
 # hardcode k8s version unless its set specifically
 KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.18.4}
 
@@ -53,6 +52,5 @@ if [[ -n "$GIT_TAG" ]]; then
 else
     VERSION="${KUBERNETES_VERSION}-dev+${COMMIT:0:8}$DIRTY"
 fi
-# Normalizing both version and k8s version
-VERSION="$(sed -e 's/+/-/g' <<< "$VERSION")"
-KUBERNETES_VERSION="$(sed -e 's/+/-/g' <<< "$KUBERNETES_VERSION")"
+
+DOCKERIZED_VERSION="${VERSION/+/-}" # this mimics what kubernetes builds do

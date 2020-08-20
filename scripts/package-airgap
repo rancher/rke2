@@ -1,9 +1,0 @@
-#!/bin/bash
-set -e -x
-
-cd $(dirname $0)/..
-
-airgap_image_file='scripts/airgap/image-list.txt'
-mkdir -p dist/artifacts
-cp "${airgap_image_file}" dist/artifacts/rke2-images.txt
-gzip < build/images/airgap.tar > dist/artifacts/rke2-airgap-images-amd64.tar.gz

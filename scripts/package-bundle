@@ -1,9 +1,9 @@
-#!/bin/bash
-set -e -x
+#!/usr/bin/env bash
+set -ex
 
 cd $(dirname $0)/..
 
-. scripts/version.sh
+source ./scripts/version.sh
 
 if [ ! -d packaging/rpm ]; then
     git submodule update --recursive --remote --init packaging

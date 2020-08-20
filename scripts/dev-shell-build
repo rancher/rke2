@@ -1,15 +1,12 @@
-#!/bin/bash
-
-set -e -x
+#!/usr/bin/env bash
+set -ex
 
 cd $(dirname $0)/..
 
-IMAGE_REPO=rancher
-
-. ./scripts/version.sh
+source ./scripts/version.sh
 
 if [ ! -d build/images ]; then
-  ./scripts/image
+  ./scripts/build-images
 fi
 # build the dev shell image
-docker build -t ${PROG}-dev --target shell .
+DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build -t ${PROG}-dev --target shell .
