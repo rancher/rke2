@@ -1,7 +1,6 @@
 package rke2
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,7 +11,6 @@ import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/k3s/pkg/cli/server"
 	"github.com/rancher/k3s/pkg/cluster/managed"
-	"github.com/rancher/k3s/pkg/daemons/config"
 	"github.com/rancher/k3s/pkg/daemons/executor"
 	"github.com/rancher/k3s/pkg/etcd"
 	"github.com/rancher/rke2/pkg/bootstrap"
@@ -39,10 +37,10 @@ func Server(ctx *cli.Context, cfg Config) error {
 		return err
 	}
 
-	if cmds.ServerConfig.StartupHooks == nil {
-		cmds.ServerConfig.StartupHooks = make([]func(context.Context, config.Control) error, 0)
-	}
-	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks, setupPSPs(ctx))
+	// if cmds.ServerConfig.StartupHooks == nil {
+	// 	cmds.ServerConfig.StartupHooks = make([]func(context.Context, daemonsConfig.Control) error, 0)
+	// }
+	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks, setPSPs(ctx))
 
 	return server.Run(ctx)
 }

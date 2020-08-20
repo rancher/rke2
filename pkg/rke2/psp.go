@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rancher/k3s/pkg/daemons/config"
+	daemonsConfig "github.com/rancher/k3s/pkg/daemons/config"
 	"github.com/rancher/spur/cli"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -131,16 +131,6 @@ func setSystemUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1
 	return nil
 }
 
-// kubeConfigExists checks if the kubeconfig file
-// has been written.
-// func kubeConfigExists(kc string) bool {
-// 	info, err := os.Stat(kc)
-// 	if os.IsNotExist(err) {
-// 		return false
-// 	}
-// 	return !info.IsDir()
-// }
-
 // setPSPs sets the default PSP's based on the mode that RKE2 is running in. There is either CIS or non
 // CIS mode. For CIS mode, the globalRestricted and systemUnrestricted polices and associated roles and
 // bindings are created. For non CIS mode, globalRestricted, system-unrestricted, and global-unrestricted
@@ -163,179 +153,163 @@ func setSystemUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1
 // - If the globalRestricted annotation does not exist, then check if the PSP exists and
 //   if it doesn't, create it. Check if the associated role and bindings exist and
 //   if they do, delete them.
-func setPSPs(clx *cli.Context) func(context.Context, config.Control) error {
-	return func(ctx context.Context, cfg config.Control) error {
-		// wait for the API server to become available
-		<-cfg.Runtime.APIServerReady
-
-		cs, err := newClient(cfg.Runtime.KubeConfigAdmin, nil)
-		if err != nil {
-			return err
-		}
-
-		ns, err := cs.CoreV1().Namespaces().Get(ctx, metav1.NamespaceSystem, metav1.GetOptions{})
-		if err != nil {
-			return err
-		}
-
-		// wait until the kube-system namespace is created
-		// for {
-		// 	ns, err = cs.CoreV1().Namespaces().Get(sCtx, metav1.NamespaceSystem, metav1.GetOptions{})
-		// 	if err != nil {
-		// 		if apierrors.IsNotFound(err) || apierrors.IsInternalError(err) {
-		// 			time.Sleep(waitDelay)
-		// 			continue
-		// 		}
-		// 		return err
-		// 	}
-		// 	break
-		// }
-
-		annotations := make(map[string]string)
-
+func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) error {
+	return func(ctx context.Context, cfg daemonsConfig.Control) error {
 		logrus.Info("Applying PSP's...")
+		go func() {
+			<-cfg.Runtime.APIServerReady
 
-		// var complete uint8
-		// for complete != 1 {
-		if clx.String("profile") == "" { // non-CIS mode
-			if err := setGlobalUnrestricted(ctx, cs, ns, annotations); err != nil {
-				return err
+			cs, err := newClient(cfg.Runtime.KubeConfigAdmin, nil)
+			if err != nil {
+				logrus.Fatalf("psp: new k8s client: %s", err.Error())
 			}
 
-			if err := setSystemUnrestricted(ctx, cs, ns, annotations); err != nil {
-				return err
+			ns, err := cs.CoreV1().Namespaces().Get(ctx, metav1.NamespaceSystem, metav1.GetOptions{})
+			if err != nil {
+				logrus.Fatalf("psp: get kube-system namespace: %s", err.Error())
 			}
 
-			if _, ok := ns.Annotations[namespaceAnnotationGlobalRestricted]; !ok {
-				// check if the policy exists
-				if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(ctx, globalRestrictedPSPName, metav1.GetOptions{}); err != nil {
-					if apierrors.IsNotFound(err) {
+			annotations := make(map[string]string)
+
+			logrus.Info("Applying PSP's...")
+
+			if clx.String("profile") == "" { // non-CIS mode
+				if err := setGlobalUnrestricted(ctx, cs, ns, annotations); err != nil {
+					logrus.Fatalf("psp: set globalUnrestricted: %s", err.Error())
+				}
+
+				if err := setSystemUnrestricted(ctx, cs, ns, annotations); err != nil {
+					logrus.Fatalf("psp: set systemUnrestricted: %s", err.Error())
+				}
+
+				if _, ok := ns.Annotations[namespaceAnnotationGlobalRestricted]; !ok {
+					// check if the policy exists
+					if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(ctx, globalRestrictedPSPName, metav1.GetOptions{}); err != nil {
+						if apierrors.IsNotFound(err) {
+							tmpl := fmt.Sprintf(globalRestrictedPSPTemplate, globalRestrictedPSPName)
+							if err := deployPodSecurityPolicyFromYaml(ctx, cs, tmpl); err != nil {
+								logrus.Fatalf("psp: deploy psp: %s", err.Error())
+							}
+						} else {
+							logrus.Fatalf("psp: get psp: %s", err.Error())
+						}
+					}
+
+					// check if role exists and delete it
+					_, err := cs.RbacV1().ClusterRoles().Get(ctx, globalRestrictedRoleName, metav1.GetOptions{})
+					if err != nil && !apierrors.IsNotFound(err) {
+						logrus.Fatalf("psp: get clusterrole: %s", err.Error())
+					}
+					if err := cs.RbacV1().ClusterRoles().Delete(ctx, globalRestrictedRoleName, metav1.DeleteOptions{}); err != nil {
+						if !apierrors.IsNotFound(err) {
+							logrus.Fatalf("psp: delete clusterrole: %s", err.Error())
+						}
+					}
+
+					// check if role binding exists and delete it
+					_, err = cs.RbacV1().ClusterRoleBindings().Get(ctx, globalRestrictedRoleBindingName, metav1.GetOptions{})
+					if err != nil && !apierrors.IsNotFound(err) {
+						logrus.Fatalf("psp: get clusterrole: %s", err.Error())
+					}
+					if err := cs.RbacV1().ClusterRoleBindings().Delete(ctx, globalRestrictedRoleBindingName, metav1.DeleteOptions{}); err != nil {
+						if !apierrors.IsNotFound(err) {
+							logrus.Fatalf("psp: delete clusterrole bindings: %s", err.Error())
+						}
+					}
+
+					annotations[namespaceAnnotationGlobalRestricted] = cisAnnotationValue
+				}
+			} else { // CIS mode
+				if _, ok := ns.Annotations[namespaceAnnotationGlobalRestricted]; !ok {
+					if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(ctx, globalRestrictedPSPName, metav1.GetOptions{}); err != nil {
 						tmpl := fmt.Sprintf(globalRestrictedPSPTemplate, globalRestrictedPSPName)
 						if err := deployPodSecurityPolicyFromYaml(ctx, cs, tmpl); err != nil {
-							return err
+							logrus.Fatalf("psp: delete clusterrole: %s", err.Error())
 						}
-					} else {
-						return err
 					}
-				}
-
-				// check if role exists and delete it
-				_, err := cs.RbacV1().ClusterRoles().Get(ctx, globalRestrictedRoleName, metav1.GetOptions{})
-				if err != nil && !apierrors.IsNotFound(err) {
-					return err
-				}
-				if err := cs.RbacV1().ClusterRoles().Delete(ctx, globalRestrictedRoleName, metav1.DeleteOptions{}); err != nil {
-					if !apierrors.IsNotFound(err) {
-						return err
-					}
-				}
-
-				// check if role binding exists and delete it
-				_, err = cs.RbacV1().ClusterRoleBindings().Get(ctx, globalRestrictedRoleBindingName, metav1.GetOptions{})
-				if err != nil && !apierrors.IsNotFound(err) {
-					return err
-				}
-				if err := cs.RbacV1().ClusterRoleBindings().Delete(ctx, globalRestrictedRoleBindingName, metav1.DeleteOptions{}); err != nil {
-					if !apierrors.IsNotFound(err) {
-						return err
-					}
-				}
-
-				annotations[namespaceAnnotationGlobalRestricted] = cisAnnotationValue
-			}
-
-			//complete = 1
-		} else { // CIS mode
-			if _, ok := ns.Annotations[namespaceAnnotationGlobalRestricted]; !ok {
-				if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(ctx, globalRestrictedPSPName, metav1.GetOptions{}); err != nil {
-					tmpl := fmt.Sprintf(globalRestrictedPSPTemplate, globalRestrictedPSPName)
-					if err := deployPodSecurityPolicyFromYaml(ctx, cs, tmpl); err != nil {
-						return err
-					}
-				}
-				if _, err := cs.RbacV1().ClusterRoles().Get(ctx, globalRestrictedRoleName, metav1.GetOptions{}); err != nil {
-					if apierrors.IsNotFound(err) {
-						tmpl := fmt.Sprintf(roleTemplate, globalRestrictedRoleName, globalRestrictedPSPName)
-						if err := deployClusterRoleFromYaml(ctx, cs, tmpl); err != nil {
-							return err
+					if _, err := cs.RbacV1().ClusterRoles().Get(ctx, globalRestrictedRoleName, metav1.GetOptions{}); err != nil {
+						if apierrors.IsNotFound(err) {
+							tmpl := fmt.Sprintf(roleTemplate, globalRestrictedRoleName, globalRestrictedPSPName)
+							if err := deployClusterRoleFromYaml(ctx, cs, tmpl); err != nil {
+								logrus.Fatalf("psp: deploy clusterrole: %s", err.Error())
+							}
+						} else {
+							logrus.Fatalf("psp: get clusterrole: %s", err.Error())
+							// return err
 						}
-					} else {
-						return err
 					}
-				}
-				if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, globalRestrictedRoleBindingName, metav1.GetOptions{}); err != nil {
-					if apierrors.IsNotFound(err) {
-						tmpl := fmt.Sprintf(globalRestrictedRoleBindingTemplate, globalRestrictedRoleBindingName, globalRestrictedRoleName)
-						if err := deployClusterRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
-							return err
+					if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, globalRestrictedRoleBindingName, metav1.GetOptions{}); err != nil {
+						if apierrors.IsNotFound(err) {
+							tmpl := fmt.Sprintf(globalRestrictedRoleBindingTemplate, globalRestrictedRoleBindingName, globalRestrictedRoleName)
+							if err := deployClusterRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
+								logrus.Fatalf("psp: deploy clusterrole binding: %s", err.Error())
+							}
+						} else {
+							logrus.Fatalf("psp: get clusterrole binding: %s", err.Error())
 						}
-					} else {
-						return err
 					}
+
+					annotations[namespaceAnnotationGlobalRestricted] = cisAnnotationValue
 				}
 
-				annotations[namespaceAnnotationGlobalRestricted] = cisAnnotationValue
-			}
+				if err := setSystemUnrestricted(ctx, cs, ns, annotations); err != nil {
+					logrus.Fatalf("psp: set systemUnrestricted: %s", err.Error())
+				}
 
-			if err := setSystemUnrestricted(ctx, cs, ns, annotations); err != nil {
-				return err
-			}
-
-			if _, ok := ns.Annotations[namespaceAnnotationGlobalUnrestricted]; !ok {
-				if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(ctx, globalRestrictedPSPName, metav1.GetOptions{}); err != nil {
-					if apierrors.IsNotFound(err) {
-						tmpl := fmt.Sprintf(globalRestrictedPSPTemplate, globalRestrictedPSPName)
-						if err := deployPodSecurityPolicyFromYaml(ctx, cs, tmpl); err != nil {
-							return err
+				if _, ok := ns.Annotations[namespaceAnnotationGlobalUnrestricted]; !ok {
+					if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(ctx, globalRestrictedPSPName, metav1.GetOptions{}); err != nil {
+						if apierrors.IsNotFound(err) {
+							tmpl := fmt.Sprintf(globalRestrictedPSPTemplate, globalRestrictedPSPName)
+							if err := deployPodSecurityPolicyFromYaml(ctx, cs, tmpl); err != nil {
+								logrus.Fatalf("psp: deploy psp: %s", err.Error())
+							}
+						} else {
+							logrus.Fatalf("psp: get psp: %s", err.Error())
 						}
-					} else {
-						return err
 					}
-				}
 
-				// check if role exists and if so, delete it
-				role, err := cs.RbacV1().ClusterRoles().Get(ctx, globalRestrictedRoleName, metav1.GetOptions{})
-				if err != nil && !apierrors.IsNotFound(err) {
-					return err
-				}
-				if err := cs.RbacV1().ClusterRoles().Delete(ctx, role.Name, metav1.DeleteOptions{}); err != nil {
-					return err
-				}
+					// check if role exists and if so, delete it
+					_, err := cs.RbacV1().ClusterRoles().Get(ctx, globalUnrestrictedRoleName, metav1.GetOptions{})
+					if err != nil && !apierrors.IsNotFound(err) {
+						logrus.Fatalf("psp: get clusterrole: %s", err.Error())
+					}
+					if err := cs.RbacV1().ClusterRoles().Delete(ctx, globalUnrestrictedRoleName, metav1.DeleteOptions{}); err != nil {
+						logrus.Fatalf("psp: delete clusterrole: %s", err.Error())
+					}
 
-				// check if role binding exists and if so, delete it
-				roleBinding, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, globalUnrestrictedRoleName, metav1.GetOptions{})
-				if err != nil && !apierrors.IsNotFound(err) {
-					return err
-				}
-				if err := cs.RbacV1().ClusterRoleBindings().Delete(ctx, roleBinding.Name, metav1.DeleteOptions{}); err != nil {
-					return err
-				}
+					// check if role binding exists and if so, delete it
+					_, err = cs.RbacV1().ClusterRoleBindings().Get(ctx, globalUnrestrictedRoleBindingName, metav1.GetOptions{})
+					if err != nil && !apierrors.IsNotFound(err) {
+						logrus.Fatalf("psp: get clusterrole binding: %s", err.Error())
+					}
+					if err := cs.RbacV1().ClusterRoleBindings().Delete(ctx, globalUnrestrictedRoleBindingName, metav1.DeleteOptions{}); err != nil {
+						logrus.Fatalf("psp: delete clusterrole binding: %s", err.Error())
+					}
 
-				annotations[namespaceAnnotationGlobalUnrestricted] = cisAnnotationValue
+					annotations[namespaceAnnotationGlobalUnrestricted] = cisAnnotationValue
+				}
 			}
-			//complete = 1
-		}
-		//}
 
-		// apply node cluster role binding regardless of whether we're in CIS mode or not
-		if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, nodeClusterRoleBindingName, metav1.GetOptions{}); err != nil {
-			if !apierrors.IsAlreadyExists(err) {
-				tmpl := fmt.Sprintf(nodeClusterRoleBindingTemplate, globalUnrestrictedPSPName)
-				if err := deployClusterRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
-					return err
+			// apply node cluster role binding regardless of whether we're in CIS mode or not
+			if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, nodeClusterRoleBindingName, metav1.GetOptions{}); err != nil {
+				if !apierrors.IsAlreadyExists(err) {
+					tmpl := fmt.Sprintf(nodeClusterRoleBindingTemplate, globalUnrestrictedPSPName)
+					if err := deployClusterRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
+						logrus.Fatalf("psp: deploy psp: %s", err.Error())
+					}
+				} else {
+					logrus.Fatalf("psp: get clusterrole binding: %s", err.Error())
 				}
-			} else {
-				return err
 			}
-		}
 
-		ns.SetAnnotations(annotations)
-		if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
-			return err
-		}
+			ns.SetAnnotations(annotations)
+			if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
+				logrus.Fatalf("psp: update namespace annotation: %s", err.Error())
+			}
 
-		logrus.Info("Applying PSP's complete")
-
+			logrus.Info("Applying PSP's complete")
+			return
+		}()
 		return nil
 	}
 }
@@ -360,7 +334,7 @@ func decodeYamlResource(data interface{}, yaml string) error {
 	return decoder.Decode(data)
 }
 
-func retryTo(runFunc deployFn, ctx context.Context, cs *kubernetes.Clientset, resource interface{}, retries, wait int) error {
+func retryTo(ctx context.Context, runFunc deployFn, cs *kubernetes.Clientset, resource interface{}, retries, wait int) error {
 	var err error
 	if retries <= 0 {
 		retries = defaultRetries
@@ -383,7 +357,7 @@ func deployPodSecurityPolicyFromYaml(ctx context.Context, cs *kubernetes.Clients
 	if err := decodeYamlResource(&psp, pspYaml); err != nil {
 		return err
 	}
-	return retryTo(deployPodSecurityPolicy, ctx, cs, psp, defaultRetries, defaultWaitSeconds)
+	return retryTo(ctx, deployPodSecurityPolicy, cs, psp, defaultRetries, defaultWaitSeconds)
 }
 
 func deployPodSecurityPolicy(ctx context.Context, cs *kubernetes.Clientset, p interface{}) error {
@@ -407,7 +381,7 @@ func deployClusterRoleBindingFromYaml(ctx context.Context, cs *kubernetes.Client
 	if err := decodeYamlResource(&clusterRoleBinding, clusterRoleBindingYaml); err != nil {
 		return err
 	}
-	return retryTo(deployClusterRoleBinding, ctx, cs, clusterRoleBinding, defaultRetries, defaultWaitSeconds)
+	return retryTo(ctx, deployClusterRoleBinding, cs, clusterRoleBinding, defaultRetries, defaultWaitSeconds)
 }
 
 func deployClusterRoleBinding(ctx context.Context, cs *kubernetes.Clientset, crb interface{}) error {
@@ -431,7 +405,7 @@ func deployClusterRoleFromYaml(ctx context.Context, cs *kubernetes.Clientset, cl
 	if err := decodeYamlResource(&clusterRole, clusterRoleYaml); err != nil {
 		return err
 	}
-	return retryTo(deployClusterRole, ctx, cs, clusterRole, defaultRetries, defaultWaitSeconds)
+	return retryTo(ctx, deployClusterRole, cs, clusterRole, defaultRetries, defaultWaitSeconds)
 }
 
 func deployClusterRole(ctx context.Context, cs *kubernetes.Clientset, cr interface{}) error {
@@ -455,7 +429,7 @@ func deployRoleBindingFromYaml(ctx context.Context, cs *kubernetes.Clientset, ro
 	if err := decodeYamlResource(&roleBinding, roleBindingYaml); err != nil {
 		return err
 	}
-	return retryTo(deployRoleBinding, ctx, cs, roleBinding, defaultRetries, defaultWaitSeconds)
+	return retryTo(ctx, deployRoleBinding, cs, roleBinding, defaultRetries, defaultWaitSeconds)
 }
 
 func deployRoleBinding(ctx context.Context, cs *kubernetes.Clientset, rb interface{}) error {
