@@ -18,6 +18,6 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images.txt
     k8s.gcr.io/pause:3.2
     quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.30.0
 EOF
-echo "${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}" >> build/images.txt
-echo "${REPO}/kubernetes:${DOCKERIZED_VERSION}" >> build/images.txt
+echo "docker.io/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}" >> build/images.txt
+echo "docker.io/${REPO}/kubernetes:${DOCKERIZED_VERSION}" >> build/images.txt
 docker image save --output build/images/${PROG}-airgap.tar $(<build/images.txt)
