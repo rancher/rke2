@@ -67,7 +67,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rakelkar/gonetsh v0.0.0-20190719023240-501daadcadf8 // indirect
-	github.com/rancher/k3s v1.18.3-0.20200820024250-a2471a1f8a2a
+	github.com/rancher/k3s v1.18.3-0.20200820212350-c980fa68a097
 	github.com/rancher/spur v0.0.0-20200617165101-8702c8e4ce7a
 	github.com/rancher/wrangler v0.6.1
 	github.com/sirupsen/logrus v1.6.0
