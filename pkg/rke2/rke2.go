@@ -4,25 +4,22 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strings"
-	"syscall"
 
 	"github.com/rancher/k3s/pkg/agent/config"
 	"github.com/rancher/k3s/pkg/cli/agent"
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/k3s/pkg/cli/server"
 	"github.com/rancher/k3s/pkg/cluster/managed"
+	"github.com/rancher/k3s/pkg/daemons/config"
 	"github.com/rancher/k3s/pkg/daemons/executor"
 	"github.com/rancher/k3s/pkg/etcd"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
-	"github.com/rancher/rke2/pkg/rke2/psp"
 	"github.com/rancher/spur/cli"
-	"github.com/sirupsen/logrus"
 )
 
 type Config struct {
@@ -42,22 +39,10 @@ func Server(ctx *cli.Context, cfg Config) error {
 		return err
 	}
 
-	sCtx, cancel := context.WithCancel(context.Background())
-	c := make(chan os.Signal, 2)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-
-	go func() {
-		<-c
-		cancel()
-		<-c
-		os.Exit(1)
-	}()
-
-	go func() {
-		if err := psp.SetPSPs(sCtx, ctx, nil); err != nil {
-			logrus.Fatal(err)
-		}
-	}()
+	if cmds.ServerConfig.StartupHooks == nil {
+		cmds.ServerConfig.StartupHooks = make([]func(context.Context, config.Control) error, 0)
+	}
+	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks, setupPSPs(ctx))
 
 	return server.Run(ctx)
 }

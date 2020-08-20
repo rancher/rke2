@@ -1,4 +1,4 @@
-package psp
+package rke2
 
 const (
 	globalUnrestrictedPSPName         = "global-unrestricted-psp"

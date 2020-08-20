@@ -63,15 +63,24 @@ replace (
 require (
 	github.com/bhendo/go-powershell v0.0.0-20190719160123-219e7fb4e41e // indirect
 	github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23 // indirect
+	github.com/containerd/cgroups v0.0.0-20190923161937-abd0b19954a6 // indirect
+	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/google/go-containerregistry v0.0.0-20200424115305-087a4bdef7c4
+	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway v1.11.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
+	github.com/juju/errors v0.0.0-20190806202954-0232dcc7464d // indirect
+	github.com/juju/testing v0.0.0-20190723135506-ce30eb24acd2 // indirect
+	github.com/opencontainers/runc v1.0.0-rc2.0.20190611121236-6cc515888830 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rakelkar/gonetsh v0.0.0-20190719023240-501daadcadf8 // indirect
-	github.com/rancher/k3s v1.18.3-0.20200816100636-4db417180866
+	github.com/rancher/k3s v1.18.3-0.20200820024250-a2471a1f8a2a
 	github.com/rancher/spur v0.0.0-20200617165101-8702c8e4ce7a
 	github.com/rancher/wrangler v0.6.1
 	github.com/sirupsen/logrus v1.6.0
+	github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5 // indirect
 	google.golang.org/grpc v1.26.0
+	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22 // indirect
 	k8s.io/api v0.18.5
 	k8s.io/apimachinery v0.18.5
 	k8s.io/apiserver v0.0.0
