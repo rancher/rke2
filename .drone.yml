@@ -36,13 +36,13 @@ steps:
     event:
     - tag
 
-- name: docker-k8s-build
+- name: build-image-kubernetes
   image: rancher/build-base:v1.14.2
   volumes:
   - name: docker
     path: /var/run/docker.sock
   commands:
-  - DRONE_TAG=${DRONE_TAG} BUILD_K8S_IMAGE=true make k8s-image
+  - DRONE_TAG=${DRONE_TAG} BUILD_K8S_IMAGE=true make build-image-kubernetes
   environment:
     DOCKER_USERNAME:
       from_secret: docker_username
@@ -52,14 +52,14 @@ steps:
     instance:
     - drone-pr.rancher.io
 
-- name: docker-k8s-publish
+- name: publish-image-kubernetes
   image: rancher/build-base:v1.14.2
   volumes:
     - name: docker
       path: /var/run/docker.sock
   commands:
     - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-    - DRONE_TAG=${DRONE_TAG} BUILD_K8S_IMAGE=true make k8s-image-publish
+    - DRONE_TAG=${DRONE_TAG} make publish-image-kubernetes
   environment:
     DOCKER_USERNAME:
       from_secret: docker_username
@@ -74,7 +74,7 @@ steps:
     event:
     - tag
 
-- name: docker-publish
+- name: publish-image-runtime
   image: rancher/build-base:v1.14.2
   volumes:
     - name: docker
@@ -86,7 +86,7 @@ steps:
       from_secret: docker_password
   commands:
     - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-    - DRONE_TAG=${DRONE_TAG} make image-publish
+    - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
   when:
     instance:
     - drone-publish.rancher.io
@@ -110,7 +110,7 @@ platform:
   arch: amd64
 
 steps:
-- name: manifest
+- name: manifest-runtime
   image: rancher/build-base:v1.14.2
   volumes:
     - name: docker
@@ -122,7 +122,28 @@ steps:
       from_secret: docker_password
   commands:
     - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-    - DRONE_TAG=${DRONE_TAG} make image-manifest
+    - DRONE_TAG=${DRONE_TAG} make publish-manifest-runtime
+  when:
+    instance:
+    - drone-publish.rancher.io
+    ref:
+    - refs/head/master
+    - refs/tags/*
+    event:
+    - tag
+- name: manifest-kubernetes
+  image: rancher/build-base:v1.14.2
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+  environment:
+    DOCKER_USERNAME:
+      from_secret: docker_username
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+  commands:
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - DRONE_TAG=${DRONE_TAG} make publish-manifest-kubernetes
   when:
     instance:
     - drone-publish.rancher.io

@@ -23,24 +23,29 @@ dapper-ci: .ci                           ## Used by Drone CI, does the same as "
 build:                                   ## Build using host go tools
 	./scripts/build
 
-.PHONY: build-airgap
-build-airgap: | build image k8s-image build/images/airgap.tar	## Build all images for an airgapped installation
-
 .PHONY: build-debug
 build-debug:                             ## Debug build using host go tools
-	./scripts/build-debug
+	GODEBUG=y ./scripts/build
 
-.PHONY: image
-image: download-charts					## Build final docker image for push
-	./scripts/image
+.PHONY: build-images
+build-images:                             ## Build all images and image tarballs (including airgap)
+	./scripts/build-images
 
-.PHONY: k8s-image
-k8s-image:                               ## Build final docker image for kubernetes
-	./scripts/k8s-image
+.PHONY: build-image-kubernetes
+build-image-kubernetes:                               ## Build the kubernetes image
+	./scripts/build-image-kubernetes
 
-.PHONY: image-publish
-image-publish: image
-	./scripts/image-publish
+.PHONY: build-image-runtime
+build-image-runtime: build-charts					## Build the runtime image
+	./scripts/build-image-runtime
+
+.PHONY: publish-image-kubernetes
+publish-image-kubernetes: build-image-kubernetes
+	./scripts/publish-image-kubernetes
+
+.PHONY: publish-image-runtime
+publish-image-runtime: build-image-runtime
+	./scripts/publish-image-runtime
 
 .PHONY: validate
 validate:                                ## Run go fmt/vet
@@ -59,11 +64,8 @@ remote-debug-exit:              		 ## Kill dlv started with make remote-debug
 	./scripts/remote-debug-exit
 
 .PHONY: dev-shell-build
-dev-shell-build: build-airgap
+dev-shell-build: build
 	./scripts/dev-shell-build
-
-build/images/airgap.tar:
-	./scripts/airgap-images.sh
 
 .PHONY: clean-cache
 clean-cache:                             ## Clean up docker base caches used for development
@@ -74,7 +76,7 @@ clean:                                   ## Clean up workspace
 	./scripts/clean
 
 .PHONY: dev-shell
-dev-shell: k8s-image download-charts image dev-shell-build              ## Launch a development shell to run test builds
+dev-shell: dev-shell-build              ## Launch a development shell to run test builds
 	./scripts/dev-shell
 
 .PHONY: dev-shell-enter
@@ -89,32 +91,32 @@ dev-peer: dev-shell-build              ## Launch a server peer to run test build
 dev-peer-enter:                         ## Enter the peer shell on another terminal
 	./scripts/dev-peer-enter
 
-.PHONY: k8s-image-publish
-k8s-image-publish: k8s-image
-	./scripts/k8s-image-publish
+.PHONY: publish-manifest-runtime
+publish-manifest-runtime: build-image-runtime					## Create and push the rke2-runtime manifest
+	./scripts/publish-manifest-runtime
 
-.PHONY: image-manifest
-image-manifest:							## mainfest rke2-runtime image
-	./scripts/image-manifest
+.PHONY: publish-manifest-kubernetes
+publish-manifest-kubernetes: build-image-kubernetes						## Create and push the kubernetes manifest
+	./scripts/publish-manifest-kubernetes
 
 .PHONY: dispatch
 dispatch:								## Send dispatch event to rke2-upgrade repo
 	./scripts/dispatch
 
-.PHONY: download-charts
-download-charts: 						## Download packaged helm charts
-	./scripts/download-charts
+.PHONY: build-charts
+build-charts: 						## Download packaged helm charts
+	./scripts/build-charts
 
 .PHONY: package
-package: | download-charts package-airgap package-bundle ## Package the rke2 binary
+package: build 						## Package the rke2 binary
 	./scripts/package
 
-.PHONY: package-airgap
-package-airgap: build/images/airgap.tar		## Package docker images for airgap environment
-	./scripts/package-airgap
+.PHONY: package-images
+package-images: build-images		## Package docker images for airgap environment
+	./scripts/package-images
 
 .PHONY: package-bundle
-package-bundle: 						## Package the tarball bundle
+package-bundle: build						## Package the tarball bundle
 	./scripts/package-bundle
 
 ./.dapper:

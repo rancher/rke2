@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -ex
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+
+mkdir -p dist/artifacts
+
+cp -f build/images.txt dist/artifacts/${PROG}-images.${PLATFORM}.txt
+gzip < build/images/${PROG}-airgap.tar > dist/artifacts/${PROG}-images.${PLATFORM}.tar.gz
