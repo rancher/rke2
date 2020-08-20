@@ -20,7 +20,7 @@ docker build \
     	-t ${IMAGE_REPO}/kubernetes:${VERSION} .
 
 # scan kubernetes image
-docker run -v /var/run/docker.sock:/var/run/docker.sock --rm -it --name=scan-k8s docker.io/aquasec/trivy:0.10.2 i --severity ${SEVERITIES} \
+docker run -v /var/run/docker.sock:/var/run/docker.sock --rm --name=scan-k8s docker.io/aquasec/trivy:0.10.2 --quiet image --severity ${SEVERITIES} \
   --no-progress \
   --ignore-unfixed \
   ${IMAGE_REPO}/kubernetes:${VERSION}

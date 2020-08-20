@@ -2,7 +2,7 @@
 
 cd $(dirname $0)/..
 
-source . ./scripts/version.sh
+source ./scripts/version.sh
 
 docker rm -fv ${PROG}-dev-shell
 docker volume rm ${PROG}-cache ${PROG}-pkg

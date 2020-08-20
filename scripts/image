@@ -8,3 +8,9 @@ cd $(dirname $0)/..
 docker build \
   --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
   -t ${REPO}/rke2-runtime:${VERSION}-${GOARCH} .
+
+mkdir -p build/images
+docker save -o ./build/images/rke2-runtime-image-amd64.tar rancher/rke2-runtime:${VERSION}-${GOARCH}
+if [ -n "${BUILD_K8S_IMAGE}" ]; then
+  docker save -o ./build/images/k8s-image-amd64.tar rancher/kubernetes:${VERSION}
+fi
