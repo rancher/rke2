@@ -76,7 +76,7 @@ clean:                                   ## Clean up workspace
 	./scripts/clean
 
 .PHONY: dev-shell
-dev-shell: dev-shell-build              ## Launch a development shell to run test builds
+dev-shell: in-docker-dev-shell-build              ## Launch a development shell to run test builds
 	./scripts/dev-shell
 
 .PHONY: dev-shell-enter
