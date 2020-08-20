@@ -37,9 +37,6 @@ func Server(ctx *cli.Context, cfg Config) error {
 		return err
 	}
 
-	// if cmds.ServerConfig.StartupHooks == nil {
-	// 	cmds.ServerConfig.StartupHooks = make([]func(context.Context, daemonsConfig.Control) error, 0)
-	// }
 	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks, setPSPs(ctx))
 
 	return server.Run(ctx)
