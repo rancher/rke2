@@ -12,4 +12,4 @@ CATTLE_DEV_MODE=true ./bin/dlv \
   --listen=:2345 \
   --headless=true \
   --api-version=2 \
-  --accept-multigit client exec -- ./bin/${PROG} ${COMMAND} ${ARGS}
+  --accept-multiclient exec -- ./bin/${PROG} ${COMMAND} ${ARGS}
