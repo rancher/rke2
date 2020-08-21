@@ -196,14 +196,17 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 
 					// check if role exists and delete it
 					_, err := cs.RbacV1().ClusterRoles().Get(ctx, globalRestrictedRoleName, metav1.GetOptions{})
-					if err != nil && !apierrors.IsNotFound(err) {
-						logrus.Fatalf("psp: get clusterrole: %s", err.Error())
-					}
-
-					logrus.Infof("Deleting clusterRoleBinding: %s", globalRestrictedRoleName)
-					if err := cs.RbacV1().ClusterRoles().Delete(ctx, globalRestrictedRoleName, metav1.DeleteOptions{}); err != nil {
-						if !apierrors.IsNotFound(err) {
-							logrus.Fatalf("psp: delete clusterrole: %s", err.Error())
+					if err != nil {
+						switch {
+						case apierrors.IsAlreadyExists(err):
+							logrus.Infof("Deleting clusterRole: %s", globalRestrictedRoleName)
+							if err := cs.RbacV1().ClusterRoles().Delete(ctx, globalRestrictedRoleName, metav1.DeleteOptions{}); err != nil {
+								logrus.Fatalf("psp: delete clusterrole: %s", err.Error())
+							}
+						case apierrors.IsNotFound(err):
+							break
+						default:
+							logrus.Fatalf("psp: get clusterrole: %s", err.Error())
 						}
 					}
 
@@ -212,11 +215,17 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 					if err != nil && !apierrors.IsNotFound(err) {
 						logrus.Fatalf("psp: get clusterrole: %s", err.Error())
 					}
-
-					logrus.Infof("Deleting clusterRoleBinding: %s", globalRestrictedRoleBindingName)
-					if err := cs.RbacV1().ClusterRoleBindings().Delete(ctx, globalRestrictedRoleBindingName, metav1.DeleteOptions{}); err != nil {
-						if !apierrors.IsNotFound(err) {
-							logrus.Fatalf("psp: delete clusterrole bindings: %s", err.Error())
+					if err != nil {
+						switch {
+						case apierrors.IsAlreadyExists(err):
+							logrus.Infof("Deleting clusterRole binding: %s", globalRestrictedRoleBindingName)
+							if err := cs.RbacV1().ClusterRoleBindings().Delete(ctx, globalRestrictedRoleBindingName, metav1.DeleteOptions{}); err != nil {
+								logrus.Fatalf("psp: delete clusterrole binding: %s", err.Error())
+							}
+						case apierrors.IsNotFound(err):
+							break
+						default:
+							logrus.Fatalf("psp: get clusterrole binding: %s", err.Error())
 						}
 					}
 					ns.Annotations[namespaceAnnotationGlobalRestricted] = cisAnnotationValue
@@ -271,7 +280,6 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 					// check if role exists and if so, delete it
 					_, err := cs.RbacV1().ClusterRoles().Get(ctx, globalUnrestrictedRoleName, metav1.GetOptions{})
 					if err != nil {
-						fmt.Printf("XXX: %s\n", err.Error())
 						switch {
 						case apierrors.IsAlreadyExists(err):
 							logrus.Infof("Deleting clusterRole: %s", globalUnrestrictedRoleName)
