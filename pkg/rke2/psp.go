@@ -171,8 +171,6 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 
 			annotations := make(map[string]string)
 
-			logrus.Info("Applying PSP's...")
-
 			if clx.String("profile") == "" { // non-CIS mode
 				if err := setGlobalUnrestricted(ctx, cs, ns, annotations); err != nil {
 					logrus.Fatalf("psp: set globalUnrestricted: %s", err.Error())
