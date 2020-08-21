@@ -7,6 +7,18 @@ platform:
   arch: amd64
 
 steps:
+- name: go_mod_tidy
+  image: rancher/build-base:v1.14.2
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  commands:
+    - go mod tidy
+    - git diff --exit-code
+  when:
+    event:
+      - pull_request
+
 - name: build
   image: rancher/dapper:v0.5.0
   commands:
@@ -51,18 +63,6 @@ steps:
   when:
     instance:
     - drone-pr.rancher.io
-
-- name: go_mod_tidy
-  image: rancher/build-base:v1.14.2
-  volumes:
-    - name: docker
-      path: /var/run/docker.sock
-  commands:
-    - go mod tidy
-    - git diff --exit-code
-  when:
-    instance:
-    - drone-publish.rancher.io
 
 - name: publish-image-kubernetes
   image: rancher/build-base:v1.14.2
