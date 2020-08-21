@@ -52,6 +52,18 @@ steps:
     instance:
     - drone-pr.rancher.io
 
+- name: go_mod_tidy
+  image: rancher/build-base:v1.14.2
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  commands:
+    - go mod tidy
+    - git diff --exit-code
+  when:
+    instance:
+    - drone-publish.rancher.io
+
 - name: publish-image-kubernetes
   image: rancher/build-base:v1.14.2
   volumes:
@@ -87,23 +99,6 @@ steps:
   commands:
     - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
     - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
-  when:
-    instance:
-    - drone-publish.rancher.io
-    ref:
-    - refs/head/master
-    - refs/tags/*
-    event:
-    - tag
-
-- name: go_mod_tidy
-  image: rancher/build-base:v1.14.2
-  volumes:
-    - name: docker
-      path: /var/run/docker.sock
-  commands:
-    - go mod tidy
-    - git diff --exit-code
   when:
     instance:
     - drone-publish.rancher.io
