@@ -396,7 +396,7 @@ download_hash() {
     fi
     info "downloading hash ${HASH_URL}"
     download "${TMP_HASH}" "${HASH_URL}"
-    HASH_EXPECTED=$(grep -E 'rke2.linux-amd64' "${TMP_HASH}" | awk -F ' ' '{print $1}')
+    HASH_EXPECTED=$(grep -E 'rke2.linux-amd64' "${TMP_HASH}" | grep -v 'tar.gz' | awk -F ' ' '{print $1}')
 }
 
 # installed_hash_matches checks hash against 
