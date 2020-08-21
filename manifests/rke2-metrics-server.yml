@@ -1,7 +1,0 @@
-apiVersion: helm.cattle.io/v1
-kind: HelmChart
-metadata:
-  name: rke2-metrics-server
-  namespace: kube-system
-spec:
-  chartContent: %{CHART_CONTENT}%

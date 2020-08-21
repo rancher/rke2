@@ -6,5 +6,4 @@ cd $(dirname $0)/..
 source ./scripts/version.sh
 mkdir -p build/images
 ./scripts/build-binary
-./scripts/build-charts
 ./scripts/build-images

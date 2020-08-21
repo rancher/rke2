@@ -32,11 +32,11 @@ build-images:                             ## Build all images and image tarballs
 	./scripts/build-images
 
 .PHONY: build-image-kubernetes
-build-image-kubernetes:                               ## Build the kubernetes image
+build-image-kubernetes:                   ## Build the kubernetes image
 	./scripts/build-image-kubernetes
 
 .PHONY: build-image-runtime
-build-image-runtime: build-charts					## Build the runtime image
+build-image-runtime:                      ## Build the runtime image
 	./scripts/build-image-runtime
 
 .PHONY: publish-image-kubernetes
@@ -102,10 +102,6 @@ publish-manifest-kubernetes: build-image-kubernetes						## Create and push the 
 .PHONY: dispatch
 dispatch:								## Send dispatch event to rke2-upgrade repo
 	./scripts/dispatch
-
-.PHONY: build-charts
-build-charts: 						## Download packaged helm charts
-	./scripts/build-charts
 
 .PHONY: package
 package: build 						## Package the rke2 binary
