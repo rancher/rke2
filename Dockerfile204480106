@@ -1,2 +1,0 @@
-FROM rke2:issue-159-3
-COPY . /source/
