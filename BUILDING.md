@@ -17,10 +17,9 @@ When running RKE2 you will also need to install these packages:
 ## Building
 
 ```shell script
-# for non air-gap testing
-make build image
-# for air-gap testing
-make build-airgap
+# this will build inside of a container via dapper.
+# use `make build` to leverage host-local tooling
+make
 ```
 
 ## Running
