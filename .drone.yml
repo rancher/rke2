@@ -96,6 +96,23 @@ steps:
     event:
     - tag
 
+- name: go_mod_tidy
+  image: rancher/build-base:v1.14.2
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  commands:
+    - go mod tidy
+    - git diff --exit-code
+  when:
+    instance:
+    - drone-publish.rancher.io
+    ref:
+    - refs/head/master
+    - refs/tags/*
+    event:
+    - tag
+
 volumes:
 - name: docker
   host:
@@ -131,6 +148,7 @@ steps:
     - refs/tags/*
     event:
     - tag
+
 - name: manifest-kubernetes
   image: rancher/build-base:v1.14.2
   volumes:
