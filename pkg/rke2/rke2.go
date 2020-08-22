@@ -36,6 +36,9 @@ func Server(ctx *cli.Context, cfg Config) error {
 	if err := ctx.Set("secrets-encryption", "true"); err != nil {
 		return err
 	}
+
+	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks, setPSPs(ctx))
+
 	return server.Run(ctx)
 }
 
