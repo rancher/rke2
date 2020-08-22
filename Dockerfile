@@ -61,6 +61,16 @@ COPY --from=build-k8s \
     /kubernetes/_output/bin/ \
     /usr/local/bin/
 
+FROM build AS charts
+ARG CHARTS_REPO="https://rke2-charts.rancher.io"
+COPY charts/ /charts/
+RUN CHART_VERSION="v3.13.3"     CHART_FILE=/charts/rke2-canal-chart.yml             CHART_BOOTSTRAP=true    /charts/build-chart.sh
+RUN CHART_VERSION="1.10.101"    CHART_FILE=/charts/rke2-coredns-chart.yml           CHART_BOOTSTRAP=true    /charts/build-chart.sh
+RUN CHART_VERSION="1.36.300"    CHART_FILE=/charts/rke2-ingress-nginx-chart.yml     CHART_BOOTSTRAP=false   /charts/build-chart.sh
+RUN CHART_VERSION="v1.18.4"     CHART_FILE=/charts/rke2-kube-proxy-chart.yml        CHART_BOOTSTRAP=true    /charts/build-chart.sh
+RUN CHART_VERSION="2.11.100"    CHART_FILE=/charts/rke2-metrics-server-chart.yml    CHART_BOOTSTRAP=false   /charts/build-chart.sh
+RUN rm -vf /charts/*.{sh,md}
+
 # rke-runtime image
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
@@ -84,4 +94,6 @@ COPY --from=kubernetes \
     /usr/local/bin/kubectl \
     /usr/local/bin/kubelet \
     /bin/
-COPY ./build/static/charts /charts
+COPY --from=charts \
+    /charts/ \
+    /charts/
