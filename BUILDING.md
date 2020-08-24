@@ -39,8 +39,11 @@ has been bind-mounted into the container ready to be imported into containerd on
 To run the built artifact(s) locally or on a remote host:
 - install prerequisites mentioned above
 - copy `./bin/rke2` to the path on your host
-- copy `./build/images/rke2-runtime.tar` to `/var/lib/rancher/rke2/agent/images/` on your host
-- if testing airgap, also copy `./build/images/rke2-airgap.tar` to `/var/lib/rancher/rke2/agent/images/` on your host
+- if not testing air-gapped, copy these (local) image tarballs to `/var/lib/rancher/rke2/agent/images/`:
+  - `./build/images/rke2-runtime.tar`
+  - `./build/images/rke2-kubernetes.tar`
+- if testing air-gapped, copy this (local + remote) image tarball to `/var/lib/rancher/rke2/agent/images/`:
+  - `./build/images/rke2-airgap.tar`
 - run rke2 server: `rke2 server --token=test`
 
 ### kubectl
