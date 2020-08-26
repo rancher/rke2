@@ -150,10 +150,6 @@ func releaseName(ref name.Reference) string {
 }
 
 func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
-	if dirExists(dir) {
-		return nil
-	}
-
 	if err := os.MkdirAll(filepath.Dir(dir), 0755); err != nil {
 		return err
 	}
