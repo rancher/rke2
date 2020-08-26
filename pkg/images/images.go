@@ -21,7 +21,7 @@ var (
 
 	KubernetesVersion = "v1.18.4"
 	PauseVersion      = "3.2"
-	EtcdVersion       = "v3.4.3"
+	EtcdVersion       = "v3.4.13"
 	RuntimeImageName  = "rke2-runtime"
 )
 
