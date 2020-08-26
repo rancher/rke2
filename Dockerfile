@@ -63,12 +63,14 @@ COPY --from=build-k8s \
 
 FROM build AS charts
 ARG CHARTS_REPO="https://rke2-charts.rancher.io"
+ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
-RUN echo CACHEBUST>/dev/null; CHART_VERSION="v3.13.3"     CHART_FILE=/charts/rke2-canal-chart.yml             CHART_BOOTSTRAP=true    /charts/build-chart.sh
-RUN echo CACHEBUST>/dev/null; CHART_VERSION="1.10.101"    CHART_FILE=/charts/rke2-coredns-chart.yml           CHART_BOOTSTRAP=true    /charts/build-chart.sh
-RUN echo CACHEBUST>/dev/null; CHART_VERSION="1.36.300"    CHART_FILE=/charts/rke2-ingress-nginx-chart.yml     CHART_BOOTSTRAP=false   /charts/build-chart.sh
-RUN echo CACHEBUST>/dev/null; CHART_VERSION="v1.18.4"     CHART_FILE=/charts/rke2-kube-proxy-chart.yml        CHART_BOOTSTRAP=true    /charts/build-chart.sh
-RUN echo CACHEBUST>/dev/null; CHART_VERSION="2.11.100"    CHART_FILE=/charts/rke2-metrics-server-chart.yml    CHART_BOOTSTRAP=false   /charts/build-chart.sh
+RUN echo ${CACHEBUST}>/dev/null
+RUN CHART_VERSION="v3.13.3"     CHART_FILE=/charts/rke2-canal-chart.yml             CHART_BOOTSTRAP=true    /charts/build-chart.sh
+RUN CHART_VERSION="1.10.101"    CHART_FILE=/charts/rke2-coredns-chart.yml           CHART_BOOTSTRAP=true    /charts/build-chart.sh
+RUN CHART_VERSION="1.36.300"    CHART_FILE=/charts/rke2-ingress-nginx-chart.yml     CHART_BOOTSTRAP=false   /charts/build-chart.sh
+RUN CHART_VERSION="v1.18.4"     CHART_FILE=/charts/rke2-kube-proxy-chart.yml        CHART_BOOTSTRAP=true    /charts/build-chart.sh
+RUN CHART_VERSION="2.11.100"    CHART_FILE=/charts/rke2-metrics-server-chart.yml    CHART_BOOTSTRAP=false   /charts/build-chart.sh
 RUN rm -vf /charts/*.sh /charts/*.md
 
 # rke-runtime image
