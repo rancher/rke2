@@ -37,7 +37,10 @@ func Server(ctx *cli.Context, cfg Config) error {
 		return err
 	}
 
-	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks, setPSPs(ctx))
+	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
+		setPSPs(ctx),
+		setNetworkPolicies(ctx),
+	)
 
 	return server.Run(ctx)
 }
