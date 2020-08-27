@@ -103,12 +103,12 @@ The RPM will install a corresponding `rke2-server.service` or `rke2-agent.servic
 
 In addition to configuring RKE2 with environment variables and cli arguments, RKE2 can also use a config file.
 
-By default, values present in a `yaml` file located at `/etc/rancher/rke2/flags.conf` will be used on install.
+By default, values present in a `yaml` file located at `/etc/rancher/rke2/config.yaml` will be used on install.
 
 An example of a basic `server` config file is below:
 
 ```yaml
-# /etc/rancher/rke2/flags.conf
+# /etc/rancher/rke2/config.yaml
 write-kubeconfig-mode: "0644"
 tls-san:
   - "foo.local"
