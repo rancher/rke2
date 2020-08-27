@@ -15,7 +15,6 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	yamlutil "k8s.io/apimachinery/pkg/util/yaml"
-	"k8s.io/client-go/1.5/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/transport"
@@ -326,6 +325,10 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 				}
 			}
 
+			bo := retry.DefaultBackoff
+			bo.Steps = 10
+			bo.Duration = time.Second * 1
+
 			if err := retry.RetryOnConflict(bo, func() error {
 				if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
 					if apierrors.IsConflict(err) {
@@ -343,13 +346,6 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 		}()
 		return nil
 	}
-}
-
-var bo = wait.Backoff{
-	Steps:    10,
-	Duration: 1 * time.Second,
-	Factor:   5.0,
-	Jitter:   0.1,
 }
 
 // updateNamespace receives a value of type v1.Namespace pointer
