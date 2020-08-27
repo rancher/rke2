@@ -5,37 +5,37 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-if [ ! -d packaging/rpm ]; then
-    git submodule update --recursive --remote --init packaging
-fi
+mkdir -p dist/bundle/{bin,share}
 
-find packaging
-mkdir -p dist/bundle/{bin,etc/rancher/${PROG},usr/share/${PROG}/rpm}
+### bundle underlay
+rsync -a bundle/ dist/bundle/
 
 ### bin/rke2
 cp -f bin/${PROG} dist/bundle/bin/
 
-### etc/environment
-cat << EOF > dist/bundle/etc/environment
-KUBECONFIG=/etc/rancher/${PROG}/${PROG}.yaml
-EOF
+### share/rke2/LICENSE
+cp -vf LICENSE dist/bundle/share/${PROG}/LICENSE.txt
 
-### etc/rancher/rke2/README.md
-cat << EOF > dist/bundle/etc/rancher/${PROG}/README.md
-# RKE2 FILES
-
-- **\`${PROG}.yaml\`**
-  \`${PROG} server\` will place this KUBECONFIG on successful start-up.
-
-- **\`registries.yaml\`**
-  The \`k3s\` subsystem embedded in \`${PROG}\` will look for this file on all agents (i.e. including servers) as configuration
-  for custom/private registries a la https://rancher.com/docs/k3s/latest/en/installation/private-registry/
-EOF
-
-### usr/share/rke2/rpm
-rsync -a packaging/rpm/ dist/bundle/usr/share/${PROG}/rpm/
-
-###
-
+### (setup directory)
 mkdir -p dist/artifacts
-tar -cvzf dist/artifacts/${RELEASE}.tar.gz -C dist/bundle .
+
+### (make the tarball)
+if [ -z "${PACKAGE_SKIP_TARBALL}" ]; then
+  tar -czf dist/artifacts/${RELEASE}.tar.gz -C dist/bundle $(find dist/bundle -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
+fi
+
+### (make the self-installing tarball)
+if [ -z "${PACKAGE_SKIP_INSTALLER}" ]; then
+  ./scripts/install-makeself
+  ./build/makeself/makeself.sh \
+    --needroot \
+    --nox11 \
+    --sha256 \
+    --target /usr/local \
+    "dist/bundle" \
+    "dist/artifacts/rke2-installer.${PLATFORM}.run" \
+    "rke2 ${VERSION}" \
+    "env" \
+    INSTALL_RKE2_ROOT="." \
+    "sh" "./share/${PROG}/scripts/${PROG}-install.sh"
+fi

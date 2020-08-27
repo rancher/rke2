@@ -168,7 +168,7 @@ EOF
         echo 'RKE2_KUBECONFIG_MODE=0644' >> /etc/sysconfig/rke2-server
         systemctl enable --now rke2-server
         cat << 'EOF' > /etc/profile.d/rke2.sh
-export KUBECONFIG=/etc/rancher/rke2/rke2.yaml PATH=$(ls -td /var/lib/rancher/rke2/data/*/bin):$PATH
+export KUBECONFIG=/etc/rancher/rke2/rke2.yaml PATH=$PATH:/var/lib/rancher/rke2/bin
 EOF
     SHELL
   end

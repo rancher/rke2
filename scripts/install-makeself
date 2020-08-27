@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -ex
+
+: "${MAKESELF_VERSION:=2.4.2}"
+
+mkdir -p build/makeself
+if [ ! -e build/makeself/makeself.sh ]; then
+  curl -fsSL -o build/makeself.run https://github.com/megastep/makeself/releases/download/release-${MAKESELF_VERSION}/makeself-${MAKESELF_VERSION}.run
+  sh build/makeself.run --nox11 --target build/makeself
+fi

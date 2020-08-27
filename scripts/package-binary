@@ -5,4 +5,6 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-cp bin/${PROG} dist/artifacts/${RELEASE}
+mkdir -p dist/artifacts
+
+cp -f bin/${PROG} dist/artifacts/${RELEASE}
