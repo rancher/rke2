@@ -326,12 +326,12 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 			}
 
 			if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-				if apierrors.IsConflict(err) {
-					if err := updateNamespace(ctx, cs, ns); err != nil {
-						return err
-					}
-				}
 				if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
+					if apierrors.IsConflict(err) {
+						if err := updateNamespace(ctx, cs, ns); err != nil {
+							return err
+						}
+					}
 					return err
 				}
 				return nil
