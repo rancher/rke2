@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	cmds.ConfigFlag.Value = "/etc/rancher/rke2/flags.conf"
+	cmds.ConfigFlag.Value = "/etc/rancher/rke2/config.yaml"
 }
 
 var (
