@@ -365,7 +365,7 @@ func updateNamespace(ctx context.Context, cs *kubernetes.Clientset, ns *v1.Names
 	for k, v := range ns.Annotations {
 		newNS.Annotations[k] = v
 	}
-	ns = newNS
+	*ns = *newNS
 	return nil
 }
 
