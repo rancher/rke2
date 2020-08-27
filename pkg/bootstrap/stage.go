@@ -172,7 +172,7 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 			return err
 		}
 		for _, file := range fileInfo {
-			if err := os.Rename(tempDir+"/"+file.Name(), dir+"/"+file.Name()); err != nil {
+			if err := os.Rename(filepath.Join(tempDir, file.Name()), filepath.Join(dir, file.Name())); err != nil {
 				return err
 			}
 		}
