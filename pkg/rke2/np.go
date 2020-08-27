@@ -48,6 +48,9 @@ func setNetworkPolicy(ctx context.Context, namespace string, cs *kubernetes.Clie
 	if err != nil {
 		return fmt.Errorf("networkPolicy: get %s - %w", namespace, err)
 	}
+	if ns.Annotations == nil {
+		ns.Annotations = make(map[string]string)
+	}
 	if _, ok := ns.Annotations[namespaceAnnotationNetworkPolicy]; !ok {
 		_, err := cs.NetworkingV1().NetworkPolicies(namespace).Get(ctx, defaultNetworkPolicyName, metav1.GetOptions{})
 		if err != nil {
