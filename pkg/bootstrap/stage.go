@@ -166,7 +166,18 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 	if err := extract(imgName, tempDir, prefix, r); err != nil {
 		return err
 	}
-	return os.Rename(tempDir, dir)
+	if err := os.Rename(tempDir, dir); err != nil {
+		fileInfo, err := ioutil.ReadDir(tempDir)
+		if err != nil {
+			return err
+		}
+		for _, file := range fileInfo {
+			if err := os.Rename(tempDir+"/"+file.Name(), dir+"/"+file.Name()); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func preloadBootstrapImage(dataDir, runtimeImage string) (v1.Image, error) {
