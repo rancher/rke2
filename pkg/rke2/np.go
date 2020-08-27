@@ -67,13 +67,19 @@ func setNetworkPolicy(ctx context.Context, namespace string, cs *kubernetes.Clie
 			return err
 		}
 		ns.Annotations[namespaceAnnotationNetworkPolicy] = cisAnnotationValue
+
 		if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 			if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
-				return fmt.Errorf("networkPolicy: update namespace annotation: %w", err)
+				if apierrors.IsConflict(err) {
+					if err := updateNamespace(ctx, cs, ns); err != nil {
+						return err
+					}
+				}
+				return err
 			}
 			return nil
 		}); err != nil {
-			return err
+			logrus.Fatalf("networkPolicy: update namespace: %s - %s", ns.Name, err.Error())
 		}
 	}
 	return nil

@@ -325,11 +325,7 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 				}
 			}
 
-			bo := retry.DefaultBackoff
-			bo.Steps = 10
-			bo.Duration = time.Second * 1
-
-			if err := retry.RetryOnConflict(bo, func() error {
+			if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 				if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
 					if apierrors.IsConflict(err) {
 						if err := updateNamespace(ctx, cs, ns); err != nil {
@@ -366,19 +362,6 @@ func updateNamespace(ctx context.Context, cs *kubernetes.Clientset, ns *v1.Names
 		newNS.Annotations[k] = v
 	}
 	*ns = *newNS
-	return nil
-}
-
-// updateAnnotation
-func updateAnnotation(ctx context.Context, cs *kubernetes.Clientset, ns *v1.Namespace) error {
-	if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
-		if apierrors.IsConflict(err) {
-			if err := updateNamespace(ctx, cs, ns); err != nil {
-				logrus.Fatalf("psp: update namespace: %s", err.Error())
-			}
-		}
-		logrus.Fatalf("psp: update namespace annotation: %s", err.Error())
-	}
 	return nil
 }
 
