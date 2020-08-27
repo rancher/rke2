@@ -11,6 +11,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/util/retry"
 )
 
 const (
@@ -66,8 +67,13 @@ func setNetworkPolicy(ctx context.Context, namespace string, cs *kubernetes.Clie
 			return err
 		}
 		ns.Annotations[namespaceAnnotationNetworkPolicy] = cisAnnotationValue
-		if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
-			return fmt.Errorf("networkPolicy: update namespace annotation: %w", err)
+		if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+			if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
+				return fmt.Errorf("networkPolicy: update namespace annotation: %w", err)
+			}
+			return nil
+		}); err != nil {
+			return err
 		}
 	}
 	return nil
