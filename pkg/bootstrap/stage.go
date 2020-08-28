@@ -166,17 +166,22 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 	if err := extract(imgName, tempDir, prefix, r); err != nil {
 		return err
 	}
-	if err := os.Rename(tempDir, dir); err != nil {
+	if err := os.Rename(tempDir, dir); err == os.ErrExist {
+		logrus.Print(err)
 		files, err := ioutil.ReadDir(tempDir)
 		if err != nil {
 			return err
 		}
 		for _, file := range files {
-			if err := os.Rename(filepath.Join(tempDir, file.Name()), filepath.Join(dir, file.Name())); err != nil {
+			if err := os.Rename(filepath.Join(tempDir, file.Name()), filepath.Join(dir, file.Name())); err == os.ErrExist {
 				os.Remove(filepath.Join(dir, file.Name()))
 				os.Rename(filepath.Join(tempDir, file.Name()), filepath.Join(dir, file.Name()))
+			} else if err != nil {
+				return err
 			}
 		}
+	} else if err != nil {
+		return err
 	}
 	return nil
 }
