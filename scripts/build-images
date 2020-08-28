@@ -11,7 +11,7 @@ source ./scripts/version.sh
 xargs -n1 -t docker image pull --quiet << EOF > build/images.txt
     docker.io/rancher/calico:v3.13.3
     docker.io/rancher/coredns:v1.6.9
-    docker.io/rancher/etcd:v3.4.3
+    docker.io/rancher/etcd:v3.4.13
     docker.io/rancher/flannel:v0.13.0-rancher1-rc1
     docker.io/rancher/k8s-metrics-server:v0.3.6
     k8s.gcr.io/defaultbackend-amd64:1.5
