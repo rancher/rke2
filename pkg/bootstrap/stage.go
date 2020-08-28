@@ -12,6 +12,9 @@ import (
 	"runtime"
 	"strings"
 
+	errors2 "github.com/pkg/errors"
+	"github.com/rancher/wrangler/pkg/merr"
+
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -166,7 +169,36 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 	if err := extract(imgName, tempDir, prefix, r); err != nil {
 		return err
 	}
-	return os.Rename(tempDir, dir)
+	if err := os.Rename(tempDir, dir); err != nil && err != os.ErrExist {
+		return err
+	} else if err == nil {
+		return nil
+	}
+	//manifests dir exists:
+	files, err := ioutil.ReadDir(tempDir)
+	if err != nil {
+		return err
+	}
+	var errs []error
+	for _, file := range files {
+		src := filepath.Join(tempDir, file.Name())
+		dst := filepath.Join(dir, file.Name())
+		if err := os.Rename(src, dst); err == os.ErrExist {
+			if err = os.Remove(dst); err != nil {
+				errs = append(errs, errors2.Wrapf(err, "failed to remove file %s", dst))
+				continue
+			}
+			if err = os.Rename(src, dst); err != nil {
+				errs = append(errs, errors2.Wrapf(err, "failed to rename file %s to %s", src, dst))
+			}
+		} else if err != nil {
+			errs = append(errs, errors2.Wrapf(err, "failed to move file %s", src))
+		}
+	}
+	if len(errs) > 0 {
+		return merr.NewErrors(errs...)
+	}
+	return nil
 }
 
 func preloadBootstrapImage(dataDir, runtimeImage string) (v1.Image, error) {
