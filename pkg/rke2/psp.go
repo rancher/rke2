@@ -349,7 +349,7 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 // the event a conflict error is returned.
 func updateNamespaceRef(ctx context.Context, cs *kubernetes.Clientset, ns *v1.Namespace) error {
 	logrus.Info("updating namespace: " + ns.Name)
-	newNS, err := cs.CoreV1().Namespaces().Get(ctx, metav1.NamespaceSystem, metav1.GetOptions{})
+	newNS, err := cs.CoreV1().Namespaces().Get(ctx, ns.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
