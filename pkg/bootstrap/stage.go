@@ -167,7 +167,6 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 		return err
 	}
 	if err := os.Rename(tempDir, dir); err == os.ErrExist {
-		logrus.Print(err)
 		files, err := ioutil.ReadDir(tempDir)
 		if err != nil {
 			return err
