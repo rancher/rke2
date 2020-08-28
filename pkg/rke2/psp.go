@@ -18,6 +18,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/transport"
+	"k8s.io/client-go/util/retry"
 )
 
 const (
@@ -324,14 +325,44 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 				}
 			}
 
-			if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
-				logrus.Fatalf("psp: update namespace annotation: %s", err.Error())
+			if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+				if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
+					if apierrors.IsConflict(err) {
+						if err := updateNamespaceRef(ctx, cs, ns); err != nil {
+							return err
+						}
+					}
+					return err
+				}
+				return nil
+			}); err != nil {
+				logrus.Fatalf("psp: update namespace: %s - %s", ns.Name, err.Error())
 			}
-
 			logrus.Info("Applying PSP's complete")
 		}()
 		return nil
 	}
+}
+
+// updateNamespaceRef receives a value of type v1.Namespace pointer
+// and updates that value to point to a newly retrieve value in
+// the event a conflict error is returned.
+func updateNamespaceRef(ctx context.Context, cs *kubernetes.Clientset, ns *v1.Namespace) error {
+	logrus.Info("updating namespace: " + ns.Name)
+	newNS, err := cs.CoreV1().Namespaces().Get(ctx, ns.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if newNS.Annotations == nil {
+		newNS.Annotations = make(map[string]string, len(ns.Annotations))
+	}
+	// copy any annotations that need to be written that
+	// may not have been written yet.
+	for k, v := range ns.Annotations {
+		newNS.Annotations[k] = v
+	}
+	*ns = *newNS
+	return nil
 }
 
 type deployFn func(context.Context, *kubernetes.Clientset, interface{}) error
