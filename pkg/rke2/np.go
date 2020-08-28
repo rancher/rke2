@@ -59,9 +59,9 @@ func setNetworkPolicy(ctx context.Context, namespace string, cs *kubernetes.Clie
 			if !apierrors.IsNotFound(err) {
 				return err
 			}
-			if err := cs.NetworkingV1().NetworkPolicies(namespace).Delete(ctx, defaultNetworkPolicyName, metav1.DeleteOptions{}); err != nil {
-				return err
-			}
+		}
+		if err := cs.NetworkingV1().NetworkPolicies(namespace).Delete(ctx, defaultNetworkPolicyName, metav1.DeleteOptions{}); err != nil {
+			return err
 		}
 		if _, err := cs.NetworkingV1().NetworkPolicies(namespace).Create(ctx, &networkPolicy, metav1.CreateOptions{}); err != nil {
 			return err
