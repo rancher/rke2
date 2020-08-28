@@ -12,9 +12,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/rancher/wrangler/pkg/merr"
-
 	errors2 "github.com/pkg/errors"
+	"github.com/rancher/wrangler/pkg/merr"
 
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
