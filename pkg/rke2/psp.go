@@ -328,7 +328,7 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 			if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 				if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
 					if apierrors.IsConflict(err) {
-						if err := updateNamespace(ctx, cs, ns); err != nil {
+						if err := updateNamespaceRef(ctx, cs, ns); err != nil {
 							return err
 						}
 					}
@@ -344,10 +344,10 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 	}
 }
 
-// updateNamespace receives a value of type v1.Namespace pointer
+// updateNamespaceRef receives a value of type v1.Namespace pointer
 // and updates that value to point to a newly retrieve value in
 // the event a conflict error is returned.
-func updateNamespace(ctx context.Context, cs *kubernetes.Clientset, ns *v1.Namespace) error {
+func updateNamespaceRef(ctx context.Context, cs *kubernetes.Clientset, ns *v1.Namespace) error {
 	logrus.Info("updating namespace: " + ns.Name)
 	newNS, err := cs.CoreV1().Namespaces().Get(ctx, metav1.NamespaceSystem, metav1.GetOptions{})
 	if err != nil {

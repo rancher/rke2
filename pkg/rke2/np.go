@@ -21,8 +21,8 @@ const (
 )
 
 // networkPolicy specifies a base level network policy applied
-// to the 3 primary namespace: kube-system, default, and kube-public.
-// This policy only allows for all inter-namespace traffic.
+// to the 3 primary namespace: kube-system, kube-public, and default.
+// This policy only allows for intra-namespace traffic.
 var networkPolicy = v1.NetworkPolicy{
 	ObjectMeta: metav1.ObjectMeta{
 		Name: defaultNetworkPolicyName,
@@ -43,7 +43,9 @@ var networkPolicy = v1.NetworkPolicy{
 }
 
 // setNetworkPolicy applies the default network policy for the given namespace and updates
-// the given namespaces' annotation.
+// the given namespaces' annotation. First, the namespaces' annotation is checked for existence.
+// If the annotation exists, we move on. If the annoation doesnt' exist, we check to see if the
+// policy exists. If it does, we delete it, and create the new default policy.
 func setNetworkPolicy(ctx context.Context, namespace string, cs *kubernetes.Clientset) error {
 	ns, err := cs.CoreV1().Namespaces().Get(ctx, namespace, metav1.GetOptions{})
 	if err != nil {
@@ -53,13 +55,11 @@ func setNetworkPolicy(ctx context.Context, namespace string, cs *kubernetes.Clie
 		ns.Annotations = make(map[string]string)
 	}
 	if _, ok := ns.Annotations[namespaceAnnotationNetworkPolicy]; !ok {
-		_, err := cs.NetworkingV1().NetworkPolicies(namespace).Get(ctx, defaultNetworkPolicyName, metav1.GetOptions{})
-		if err != nil {
-			if apierrors.IsAlreadyExists(err) {
-				if err := cs.NetworkingV1().NetworkPolicies(namespace).Delete(ctx, defaultNetworkPolicyName, metav1.DeleteOptions{}); err != nil {
-					return err
-				}
-			} else if !apierrors.IsNotFound(err) {
+		if _, err := cs.NetworkingV1().NetworkPolicies(namespace).Get(ctx, defaultNetworkPolicyName, metav1.GetOptions{}); err != nil {
+			if !apierrors.IsNotFound(err) {
+				return err
+			}
+			if err := cs.NetworkingV1().NetworkPolicies(namespace).Delete(ctx, defaultNetworkPolicyName, metav1.DeleteOptions{}); err != nil {
 				return err
 			}
 		}
@@ -71,7 +71,7 @@ func setNetworkPolicy(ctx context.Context, namespace string, cs *kubernetes.Clie
 		if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 			if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
 				if apierrors.IsConflict(err) {
-					if err := updateNamespace(ctx, cs, ns); err != nil {
+					if err := updateNamespaceRef(ctx, cs, ns); err != nil {
 						return err
 					}
 				}
