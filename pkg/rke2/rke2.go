@@ -26,35 +26,35 @@ type Config struct {
 	CloudProviderConfig string
 }
 
-func Server(ctx *cli.Context, cfg Config) error {
-	if err := setup(ctx, cfg); err != nil {
+func Server(clx *cli.Context, cfg Config) error {
+	if err := setup(clx, cfg); err != nil {
 		return err
 	}
-	if err := ctx.Set("disable", cmds.DisableItems); err != nil {
+	if err := clx.Set("disable", cmds.DisableItems); err != nil {
 		return err
 	}
-	if err := ctx.Set("secrets-encryption", "true"); err != nil {
+	if err := clx.Set("secrets-encryption", "true"); err != nil {
 		return err
 	}
 
 	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
-		setPSPs(ctx),
-		setNetworkPolicies(ctx),
+		setPSPs(clx),
+		setNetworkPolicies(clx),
 	)
 
-	return server.Run(ctx)
+	return server.Run(clx)
 }
 
-func Agent(ctx *cli.Context, cfg Config) error {
-	if err := setup(ctx, cfg); err != nil {
+func Agent(clx *cli.Context, cfg Config) error {
+	if err := setup(clx, cfg); err != nil {
 		return err
 	}
-	return agent.Run(ctx)
+	return agent.Run(clx)
 }
 
-func setup(ctx *cli.Context, cfg Config) error {
+func setup(clx *cli.Context, cfg Config) error {
 	var dataDir string
-	for _, f := range ctx.Command.Flags {
+	for _, f := range clx.Command.Flags {
 		switch t := f.(type) {
 		case *cli.StringFlag:
 			if strings.Contains(t.Name, "data-dir") {
@@ -64,7 +64,7 @@ func setup(ctx *cli.Context, cfg Config) error {
 	}
 
 	images := images.New(cfg.Repo)
-	if err := defaults.Set(ctx, images, dataDir); err != nil {
+	if err := defaults.Set(clx, images, dataDir); err != nil {
 		return err
 	}
 
@@ -79,7 +79,7 @@ func setup(ctx *cli.Context, cfg Config) error {
 
 	manifests := filepath.Join(dataDir, "agent", config.DefaultPodManifestPath)
 	pullImages := filepath.Join(dataDir, "agent", "images")
-	cisMode := ctx.String("profile") != ""
+	cisMode := clx.String("profile") != ""
 
 	managed.RegisterDriver(&etcd.ETCD{})
 

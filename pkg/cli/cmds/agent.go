@@ -53,9 +53,9 @@ func NewAgentCommand() *cli.Command {
 	return cmd
 }
 
-func AgentRun(ctx *cli.Context) error {
-	if ctx.String("profile") == "" {
+func AgentRun(clx *cli.Context) error {
+	if clx.String("profile") == "" {
 		logrus.Warn("not running in CIS 1.5 mode")
 	}
-	return rke2.Agent(ctx, config)
+	return rke2.Agent(clx, config)
 }

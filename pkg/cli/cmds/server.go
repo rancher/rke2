@@ -95,9 +95,9 @@ func NewServerCommand() *cli.Command {
 	return cmd
 }
 
-func ServerRun(ctx *cli.Context) error {
-	if ctx.String("profile") == "" {
+func ServerRun(clx *cli.Context) error {
+	if clx.String("profile") == "" {
 		logrus.Warn("not running in CIS 1.5 mode")
 	}
-	return rke2.Server(ctx, config)
+	return rke2.Server(clx, config)
 }
