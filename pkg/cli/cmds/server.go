@@ -61,7 +61,6 @@ var (
 		"disable-cloud-controller":    drop,
 		"disable-network-policy":      drop,
 		"disable-kube-proxy":          drop,
-		"disable-snapshots":           copy,
 		"etcd-disable-snapshots":      copy,
 		"etcd-snapshot-schedule-cron": copy,
 		"etcd-snapshot-retention":     copy,
