@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/rancher/k3s/pkg/configfilearg"
 	"github.com/rancher/rke2/pkg/cli/cmds"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -15,7 +16,7 @@ func main() {
 		cmds.NewAgentCommand(),
 	}
 
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(configfilearg.MustParse(os.Args)); err != nil {
 		logrus.Fatal(err)
 	}
 }

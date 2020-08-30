@@ -28,13 +28,13 @@ var (
 		&cli.StringFlag{
 			Name:        "cloud-provider-name",
 			Usage:       "(cloud provider) Cloud provider name",
-			EnvVars:     []string{"RKE2_CLOUD_PROVIDER_NAME"},
+			EnvVar:      "RKE2_CLOUD_PROVIDER_NAME",
 			Destination: &config.CloudProviderName,
 		},
 		&cli.StringFlag{
 			Name:        "cloud-provider-config",
 			Usage:       "(cloud provider) Cloud provider configuration file path",
-			EnvVars:     []string{"RKE2_CLOUD_PROVIDER_CONFIG"},
+			EnvVar:      "RKE2_CLOUD_PROVIDER_CONFIG",
 			Destination: &config.CloudProviderConfig,
 		},
 	}
