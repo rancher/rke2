@@ -3,13 +3,13 @@ package auth
 import (
 	"strings"
 
+	"github.com/rancher/k3s/pkg/authenticator/basicauth"
+	"github.com/rancher/k3s/pkg/authenticator/passwordfile"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 	"k8s.io/apiserver/pkg/authentication/group"
 	"k8s.io/apiserver/pkg/authentication/request/union"
 	"k8s.io/apiserver/pkg/authentication/request/x509"
 	"k8s.io/apiserver/pkg/server/dynamiccertificates"
-	"k8s.io/apiserver/plugin/pkg/authenticator/password/passwordfile"
-	"k8s.io/apiserver/plugin/pkg/authenticator/request/basicauth"
 )
 
 func FromArgs(args []string) (authenticator.Request, error) {
