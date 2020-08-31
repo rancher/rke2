@@ -11,16 +11,15 @@ import (
 	"regexp"
 	"strings"
 
-	errors2 "github.com/pkg/errors"
-	"github.com/rancher/wrangler/pkg/merr"
-
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
+	errors2 "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/images"
+	"github.com/rancher/wrangler/pkg/merr"
 	"github.com/sirupsen/logrus"
 )
 
@@ -161,6 +160,7 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 		return err
 	}
 	defer os.RemoveAll(tempDir)
+
 	r := mutate.Extract(img)
 	defer r.Close()
 
@@ -168,16 +168,21 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 	if err := extract(imgName, tempDir, prefix, r); err != nil {
 		return err
 	}
-	if err := os.Rename(tempDir, dir); err != nil && err != os.ErrExist {
-		return err
-	} else if err == nil {
+
+	// we're ignoring any returned errors since the likelihood is that
+	// the error is that the new path already exists. That's indicative of a
+	// previously bootstrapped system. If it's a different error, it's indicative
+	// of an operating system or filesystem issue.
+	if err := os.Rename(tempDir, dir); err == nil {
 		return nil
 	}
-	//manifests dir exists:
+
+	// manifests dir exists
 	files, err := ioutil.ReadDir(tempDir)
 	if err != nil {
 		return err
 	}
+
 	var errs []error
 	for _, file := range files {
 		src := filepath.Join(tempDir, file.Name())
