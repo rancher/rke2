@@ -78,7 +78,7 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM rancher/k3s:v1.18.4-k3s1 AS k3s
 FROM rancher/containerd:v1.3.6-k3s2 AS containerd
-FROM rancher/crictl:v1.17.0 AS crictl
+FROM rancher/crictl:v1.18.0 AS crictl
 
 FROM scratch AS runtime
 COPY --from=k3s \
