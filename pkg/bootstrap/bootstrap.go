@@ -169,6 +169,10 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 		return err
 	}
 
+	// we're ignoring and returned errors since the likelihood here is that
+	// the error is that the new path already exists. That's indicative of a
+	// previously bootstrapped system. If it's a different error, it's indicative
+	// of an operating system or filesystem issue.
 	if err := os.Rename(tempDir, dir); err == nil {
 		return nil
 	}
