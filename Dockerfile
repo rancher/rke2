@@ -2,17 +2,17 @@ ARG KUBERNETES_VERSION=dev
 # Build environment
 FROM rancher/build-base:v1.14.2 AS build
 RUN set -x \
- && export DEBIAN_FRONTEND=noninteractive \
- && apt-get -y update \
- && apt-get -y install \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y update \
+    && apt-get -y install \
     libseccomp-dev \
     rsync
 # Shell used for debugging
 FROM build AS shell
 RUN set -x \
- && export DEBIAN_FRONTEND=noninteractive \
- && apt-get -y update \
- && apt-get -y install \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y update \
+    && apt-get -y install \
     bash \
     bash-completion \
     git \
@@ -77,7 +77,8 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM rancher/k3s:v1.18.4-k3s1 AS k3s
-FROM rancher/containerd:v1.3.6-k3s2 AS containerd 
+FROM rancher/containerd:v1.3.6-k3s2 AS containerd
+FROM rancher/crictl:v1.17.0 AS crictl
 
 FROM scratch AS runtime
 COPY --from=k3s \
@@ -98,3 +99,6 @@ COPY --from=kubernetes \
 COPY --from=charts \
     /charts/ \
     /charts/
+COPY --from=crictl \
+    /usr/local/bin/crictl \
+    /bin/
