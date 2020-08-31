@@ -17,8 +17,8 @@ REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code;
 RELEASE=${PROG}.${GOOS}-${GOARCH}
 
 
-BUILDTAGS=" netgo osusergo"
-GO_BUILDTAGS=${GO_BUILDTAGS}${BUILDTAGS}${DEBUG_TAGS}
+BUILDTAGS="selinux netgo osusergo"
+GO_BUILDTAGS="${GO_BUILDTAGS} ${BUILDTAGS} ${DEBUG_TAGS}"
 
 VERSION_FLAGS="
         -X ${RKE2_PKG}/pkg/images.KubernetesVersion=${DOCKERIZED_VERSION}
