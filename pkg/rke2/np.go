@@ -55,15 +55,13 @@ func setNetworkPolicy(ctx context.Context, namespace string, cs *kubernetes.Clie
 		ns.Annotations = make(map[string]string)
 	}
 	if _, ok := ns.Annotations[namespaceAnnotationNetworkPolicy]; !ok {
-		if _, err := cs.NetworkingV1().NetworkPolicies(namespace).Get(ctx, defaultNetworkPolicyName, metav1.GetOptions{}); err != nil {
-			if !apierrors.IsNotFound(err) {
-				if err := cs.NetworkingV1().NetworkPolicies(namespace).Delete(ctx, defaultNetworkPolicyName, metav1.DeleteOptions{}); err != nil {
-					return err
-				}
-			} else {
+		if _, err := cs.NetworkingV1().NetworkPolicies(namespace).Get(ctx, defaultNetworkPolicyName, metav1.GetOptions{}); err == nil {
+			if err := cs.NetworkingV1().NetworkPolicies(namespace).Delete(ctx, defaultNetworkPolicyName, metav1.DeleteOptions{}); err != nil {
 				return err
 			}
-			if _, err := cs.NetworkingV1().NetworkPolicies(namespace).Create(ctx, &networkPolicy, metav1.CreateOptions{}); err != nil {
+		}
+		if _, err := cs.NetworkingV1().NetworkPolicies(namespace).Create(ctx, &networkPolicy, metav1.CreateOptions{}); err != nil {
+			if !apierrors.IsAlreadyExists(err) {
 				return err
 			}
 		}
