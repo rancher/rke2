@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -ex
 
-if [ -n "${SKIP_VALIDATE}" ]; then
+if [ -z "${SKIP_VALIDATE}" ]; then
     echo "skipping validation. continuing..."
     exit 0
 fi
