@@ -170,9 +170,7 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 		return err
 	}
 
-	if err := os.Rename(tempDir, dir); err != nil {
-		logrus.Warn(err.Error())
-	} else {
+	if err := os.Rename(tempDir, dir); err == nil {
 		return nil
 	}
 
