@@ -35,6 +35,12 @@ fatal() {
 
 # setup_env defines needed environment variables.
 setup_env() {
+    # --- bail if we are not root ---
+    if [ ! $(id -u) -eq 0 ]; then
+        fatal "You need to be root to perform this install"
+    fi
+
+    # --- determine if we are installing an agent or a server ---
     if [ -z "${INSTALL_RKE2_TYPE}" ]; then
         if [ -z "${RKE2_URL}" ]; then
             INSTALL_RKE2_TYPE="server"
@@ -50,12 +56,6 @@ setup_env() {
         fatal "invalid characters for system name:
             ${INSTALL_RKE2_NAME}
             ${invalid_chars}"
-    fi
-
-    # --- use sudo if we are not already root ---
-    SUDO=sudo
-    if [ $(id -u) -eq 0 ]; then
-        SUDO=
     fi
 
     # --- use yum install method if available
@@ -172,7 +172,7 @@ download_checksums() {
     else
         CHECKSUMS_URL=${INSTALL_RKE2_GITHUB_URL}/releases/download/${INSTALL_RKE2_VERSION}/sha256sum-${ARCH}.txt
     fi
-    info "downloading checksums at  ${CHECKSUMS_URL}"
+    info "downloading checksums at ${CHECKSUMS_URL}"
     download "${TMP_CHECKSUMS}" "${CHECKSUMS_URL}"
     CHECKSUM_EXPECTED=$(grep "rke2-installer.${SUFFIX}.run" "${TMP_CHECKSUMS}" | awk '{print $1}')
 }
@@ -191,7 +191,7 @@ download_installer() {
 
 # verify_installer verifies the downloaded installer checksum.
 verify_installer() {
-    info "verifying binary download"
+    info "verifying installer"
     CHECKSUM_ACTUAL=$(sha256sum "${TMP_INSTALLER}" | awk '{print $1}')
     if [ "${CHECKSUM_EXPECTED}" != "${CHECKSUM_ACTUAL}" ]; then
         fatal "download sha256 does not match ${CHECKSUM_EXPECTED}, got ${CHECKSUM_ACTUAL}"
@@ -199,7 +199,7 @@ verify_installer() {
 }
 
 do_rpm() {
-    cat <<-EOF | ${SUDO} tee "/etc/yum.repos.d/rancher-rke2-${1}.repo" >/dev/null
+    cat <<-EOF > "/etc/yum.repos.d/rancher-rke2-${1}.repo"
 [rancher-rke2-common-${1}]
 name=Rancher RKE2 Common (${1})
 baseurl=https://rpm-${1}.rancher.io/rke2/${1}/common/centos/7/noarch
@@ -213,7 +213,7 @@ enabled=1
 gpgcheck=1
 gpgkey=https://rpm-${1}.rancher.io/public.key
 EOF
-    ${SUDO} yum -y install "rke2-${INSTALL_RKE2_TYPE}"
+    yum -y install "rke2-${INSTALL_RKE2_TYPE}"
 }
 
 do_installer() {
