@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -220,7 +219,7 @@ func preloadBootstrapImage(dataDir, runtimeImage string) (v1.Image, error) {
 	}); err != nil {
 		return nil, err
 	}
-	archTag, err := name.NewTag(runtimeImage+"-"+runtime.GOARCH, name.WeakValidation)
+	archTag, err := name.NewTag(runtimeImage, name.WeakValidation)
 	if err != nil {
 		return nil, err
 	}
