@@ -233,7 +233,7 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 
 				if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, nodeClusterRoleBindingName, metav1.GetOptions{}); err != nil {
 					if !apierrors.IsAlreadyExists(err) {
-						tmpl := fmt.Sprintf(nodeClusterRoleBindingTemplate, globalUnrestrictedRoleName) // <-- problem line
+						tmpl := fmt.Sprintf(nodeClusterRoleBindingTemplate, globalUnrestrictedRoleName)
 						if err := deployClusterRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
 							logrus.Fatalf("psp: deploy psp: %s", err.Error())
 						}
