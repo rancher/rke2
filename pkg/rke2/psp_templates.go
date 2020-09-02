@@ -174,12 +174,12 @@ subjects:
 const systemUnrestrictedServiceAcctRoleBindingTemplate = `apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: %s
+  name: system-unrestricted-svc-acct-psp-rolebinding
   namespace: kube-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: %s
+  name: system-unrestricted-psp-role
 subjects:
   - kind: Group
     apiGroup: rbac.authorization.k8s.io

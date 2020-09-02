@@ -119,8 +119,7 @@ func setSystemUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1
 		if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, systemUnrestrictedSvcAcctRoleBindingName, metav1.GetOptions{}); err != nil {
 			if apierrors.IsNotFound(err) {
 				logrus.Infof("Setting Cluster RoleBinding: %s", systemUnrestrictedSvcAcctRoleBindingName)
-				tmpl := fmt.Sprintf(systemUnrestrictedServiceAcctRoleBindingTemplate, systemUnrestrictedSvcAcctRoleBindingName, systemUnrestrictedRoleName)
-				if err := deployRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
+				if err := deployRoleBindingFromYaml(ctx, cs, systemUnrestrictedServiceAcctRoleBindingTemplate); err != nil {
 					return err
 				}
 			} else {
@@ -231,6 +230,17 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 					}
 					ns.Annotations[namespaceAnnotationGlobalRestricted] = cisAnnotationValue
 				}
+
+				if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, nodeClusterRoleBindingName, metav1.GetOptions{}); err != nil {
+					if apierrors.IsNotFound(err) {
+						tmpl := fmt.Sprintf(nodeClusterRoleBindingTemplate, globalUnrestrictedRoleName)
+						if err := deployClusterRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
+							logrus.Fatalf("psp: deploy psp: %s", err.Error())
+						}
+					} else {
+						logrus.Fatalf("psp: get clusterrole binding: %s", err.Error())
+					}
+				}
 			} else { // CIS mode
 				if _, ok := ns.Annotations[namespaceAnnotationGlobalRestricted]; !ok {
 					if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(ctx, globalRestrictedPSPName, metav1.GetOptions{}); err != nil {
@@ -311,17 +321,16 @@ func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) erro
 					}
 					ns.Annotations[namespaceAnnotationGlobalUnrestricted] = cisAnnotationValue
 				}
-			}
 
-			// apply node cluster role binding regardless of whether we're in CIS mode or not
-			if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, nodeClusterRoleBindingName, metav1.GetOptions{}); err != nil {
-				if !apierrors.IsAlreadyExists(err) {
-					tmpl := fmt.Sprintf(nodeClusterRoleBindingTemplate, globalUnrestrictedPSPName)
-					if err := deployClusterRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
-						logrus.Fatalf("psp: deploy psp: %s", err.Error())
+				if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, nodeClusterRoleBindingName, metav1.GetOptions{}); err != nil {
+					if apierrors.IsNotFound(err) {
+						tmpl := fmt.Sprintf(nodeClusterRoleBindingTemplate, globalRestrictedRoleName)
+						if err := deployClusterRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
+							logrus.Fatalf("psp: deploy psp: %s", err.Error())
+						}
+					} else {
+						logrus.Fatalf("psp: get clusterrole binding: %s", err.Error())
 					}
-				} else {
-					logrus.Fatalf("psp: get clusterrole binding: %s", err.Error())
 				}
 			}
 
