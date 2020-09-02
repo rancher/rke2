@@ -13,16 +13,15 @@ import (
 	"strings"
 	"time"
 
-	"sigs.k8s.io/yaml"
-
-	v1 "k8s.io/api/core/v1"
-
+	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/k3s/pkg/daemons/executor"
 	"github.com/rancher/rke2/pkg/auth"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/staticpod"
 	"github.com/sirupsen/logrus"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
+	"sigs.k8s.io/yaml"
 )
 
 var (
@@ -232,14 +231,26 @@ func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
 		if err != nil {
 			return err
 		}
-		spa.SecurityContext = &staticpod.SecurityContext{
-			UID: uid,
-			GID: gid,
+		if spa.SecurityContext == nil {
+			spa.SecurityContext = &v1.PodSecurityContext{}
 		}
+		spa.SecurityContext.RunAsUser = &uid
+		spa.SecurityContext.RunAsGroup = &gid
 
 		for _, p := range []string{args.DataDir, filepath.Dir(args.ServerTrust.CertFile)} {
 			if err := chownr(p, int(uid), int(gid)); err != nil {
 				return err
+			}
+		}
+	}
+
+	if cmds.AgentConfig.EnableSELinux {
+		if spa.SecurityContext == nil {
+			spa.SecurityContext = &v1.PodSecurityContext{}
+		}
+		if spa.SecurityContext.SELinuxOptions == nil {
+			spa.SecurityContext.SELinuxOptions = &v1.SELinuxOptions{
+				Type: "rke2_service_db_t",
 			}
 		}
 	}
