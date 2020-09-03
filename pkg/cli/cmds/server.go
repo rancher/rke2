@@ -3,8 +3,8 @@ package cmds
 import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/rke2/pkg/rke2"
-	"github.com/rancher/spur/cli"
 	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli"
 )
 
 const rke2Path = "/var/lib/rancher/rke2"
@@ -94,7 +94,7 @@ var (
 	})
 )
 
-func NewServerCommand() *cli.Command {
+func NewServerCommand() cli.Command {
 	cmd := k3sServerBase
 	cmd.Flags = append(cmd.Flags, commonFlag...)
 	return cmd

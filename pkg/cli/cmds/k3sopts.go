@@ -2,16 +2,11 @@ package cmds
 
 import (
 	"fmt"
-	"reflect"
+	"strings"
 
-	"github.com/rancher/k3s/pkg/cli/cmds"
-	"github.com/rancher/spur/cli"
 	"github.com/rancher/wrangler/pkg/merr"
+	"github.com/urfave/cli"
 )
-
-func init() {
-	cmds.ConfigFlag.Value = "/etc/rancher/rke2/config.yaml"
-}
 
 var (
 	drop = &K3SFlagOption{
@@ -30,7 +25,7 @@ type K3SFlagOption struct {
 	Default string
 }
 
-func mustCmdFromK3S(cmd *cli.Command, flagOpts map[string]*K3SFlagOption) *cli.Command {
+func mustCmdFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) cli.Command {
 	cmd, err := commandFromK3S(cmd, flagOpts)
 	if err != nil {
 		panic(err)
@@ -38,7 +33,7 @@ func mustCmdFromK3S(cmd *cli.Command, flagOpts map[string]*K3SFlagOption) *cli.C
 	return cmd
 }
 
-func commandFromK3S(cmd *cli.Command, flagOpts map[string]*K3SFlagOption) (*cli.Command, error) {
+func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Command, error) {
 	var (
 		newFlags []cli.Flag
 		seen     = map[string]bool{}
@@ -46,10 +41,10 @@ func commandFromK3S(cmd *cli.Command, flagOpts map[string]*K3SFlagOption) (*cli.
 	)
 
 	for _, flag := range cmd.Flags {
-		name := cli.FlagNames(flag)[0]
+		name := strings.SplitN(flag.GetName(), ",", 2)[0]
 		opt, ok := flagOpts[name]
 		if !ok {
-			errs = append(errs, fmt.Errorf("new unknown option from k3s %s", name))
+			errs = append(errs, fmt.Errorf("new unknown option from k3s %s", flag.GetName()))
 			continue
 		}
 		seen[name] = true
@@ -61,14 +56,33 @@ func commandFromK3S(cmd *cli.Command, flagOpts map[string]*K3SFlagOption) (*cli.
 			continue
 		}
 
-		if opt.Usage != "" {
-			flagSetUsage(flag, opt)
-		}
-		if opt.Default != "" {
-			flagSetDefault(flag, opt)
-		}
-		if opt.Hide {
-			flagSetHide(flag, opt)
+		if strFlag, ok := flag.(cli.StringFlag); ok {
+			if opt.Usage != "" {
+				strFlag.Usage = opt.Usage
+			}
+			if opt.Default != "" {
+				strFlag.Value = opt.Default
+			}
+			if opt.Hide {
+				strFlag.Hidden = true
+			}
+			flag = strFlag
+		} else if intFlag, ok := flag.(cli.IntFlag); ok {
+			if opt.Usage != "" {
+				intFlag.Usage = opt.Usage
+			}
+			if opt.Hide {
+				intFlag.Hidden = true
+			}
+			flag = intFlag
+		} else if boolFlag, ok := flag.(cli.BoolFlag); ok {
+			if opt.Usage != "" {
+				boolFlag.Usage = opt.Usage
+			}
+			if opt.Hide {
+				boolFlag.Hidden = true
+			}
+			flag = boolFlag
 		}
 		newFlags = append(newFlags, flag)
 	}
@@ -82,61 +96,4 @@ func commandFromK3S(cmd *cli.Command, flagOpts map[string]*K3SFlagOption) (*cli.
 
 	cmd.Flags = newFlags
 	return cmd, errs.Err()
-}
-
-// flagSetUsage receives a flag and a K3S flag option, parses
-// both and sets the necessary fields based on the underlying
-// flag type.
-func flagSetUsage(flag cli.Flag, opt *K3SFlagOption) {
-	v := reflect.ValueOf(flag).Elem()
-	if v.CanSet() {
-		switch t := flag.(type) {
-		case *cli.StringFlag:
-			t.Usage = opt.Usage
-		case *cli.StringSliceFlag:
-			t.Usage = opt.Usage
-		case *cli.BoolFlag:
-			t.Usage = opt.Usage
-		}
-	}
-}
-
-// flagSetDefault receives a flag and a K3S flag option, parses
-// both and sets the necessary fields based on the underlying
-// flag type.
-func flagSetDefault(flag cli.Flag, opt *K3SFlagOption) {
-	v := reflect.ValueOf(flag).Elem()
-	if v.CanSet() {
-		switch t := flag.(type) {
-		case *cli.StringFlag:
-			t.DefaultText = opt.Default
-			t.Destination = &opt.Default
-			t.Value = opt.Default
-		case *cli.StringSliceFlag:
-			t.DefaultText = opt.Default
-			t.Destination = &([]string{opt.Default})
-			t.Value = []string{opt.Default}
-		case *cli.BoolFlag:
-			t.DefaultText = opt.Default
-			t.Destination = &opt.Hide
-			t.Value = opt.Hide
-		}
-	}
-}
-
-// flagSetHide receives a flag and a K3S flag option, parses
-// both and sets the necessary fields based on the underlying
-// flag type.
-func flagSetHide(flag cli.Flag, opt *K3SFlagOption) {
-	v := reflect.ValueOf(flag).Elem()
-	if v.CanSet() {
-		switch t := flag.(type) {
-		case *cli.StringFlag:
-			t.Hidden = opt.Hide
-		case *cli.StringSliceFlag:
-			t.Hidden = opt.Hide
-		case *cli.BoolFlag:
-			t.Hidden = opt.Hide
-		}
-	}
 }

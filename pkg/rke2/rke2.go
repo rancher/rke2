@@ -17,7 +17,7 @@ import (
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
-	"github.com/rancher/spur/cli"
+	"github.com/urfave/cli"
 )
 
 type Config struct {
@@ -58,7 +58,7 @@ func setup(clx *cli.Context, cfg Config) error {
 		switch t := f.(type) {
 		case *cli.StringFlag:
 			if strings.Contains(t.Name, "data-dir") {
-				dataDir = t.DefaultText
+				dataDir = t.Value
 			}
 		}
 	}

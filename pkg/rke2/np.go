@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	daemonsConfig "github.com/rancher/k3s/pkg/daemons/config"
-	"github.com/rancher/spur/cli"
 	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli"
 	v1 "k8s.io/api/networking/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

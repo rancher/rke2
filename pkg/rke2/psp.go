@@ -7,8 +7,8 @@ import (
 	"time"
 
 	daemonsConfig "github.com/rancher/k3s/pkg/daemons/config"
-	"github.com/rancher/spur/cli"
 	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"

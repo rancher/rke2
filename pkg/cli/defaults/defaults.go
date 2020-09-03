@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/rke2/pkg/images"
-	"github.com/rancher/spur/cli"
+	"github.com/urfave/cli"
 	"google.golang.org/grpc/grpclog"
 )
 
