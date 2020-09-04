@@ -25,8 +25,9 @@ RUN set -x \
     socat \
     sudo \
     vim
+RUN GO111MODULE=off GOBIN=/usr/local/bin go get github.com/go-delve/delve/cmd/dlv
 RUN cp -f /etc/skel/.bashrc /etc/skel/.profile /root/ && \
-    echo 'alias abort="echo -e '\''q\ny\n'\'' | ./bin/dlv connect :2345"' >> /root/.bashrc
+    echo 'alias abort="echo -e '\''q\ny\n'\'' | dlv connect :2345"' >> /root/.bashrc
 ENV PATH=/var/lib/rancher/rke2/bin:$PATH
 ENV KUBECONFIG=/etc/rancher/rke2/rke2.yaml
 VOLUME /var/lib/rancher/rke2

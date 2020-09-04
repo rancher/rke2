@@ -228,6 +228,7 @@ func preloadBootstrapImage(dataDir, runtimeImage string) (v1.Image, error) {
 		return nil, err
 	}
 	for fileName := range files {
+		logrus.Infof("Attempting bootstrap from %s ...", fileName)
 		img, err := tarball.ImageFromPath(fileName, &archTag)
 		if err != nil {
 			continue

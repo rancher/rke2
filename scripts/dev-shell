@@ -5,16 +5,25 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
+set -- docker container run \
+    --env WORKSPACE=${PWD} \
+    --hostname ${PROG}-server \
+    --interactive \
+    --name ${PROG}-dev-shell \
+    --privileged \
+    --publish ":2345:2345" \
+    --rm \
+    --tty \
+    --volume "${HOME}:${HOME}:ro" \
+    --volume "${PROG}-pkg:/go/pkg" \
+    --volume "${PROG}-cache:/root/.cache/go-build" \
+    --volume "${PWD}:${PWD}" \
+    --volume "/run/k3s" \
+    --volume "/var/lib/rancher/rke2" \
+    --workdir "${PWD}"
+
 if [ -z "${SKIP_PRELOAD_IMAGE}" ]; then
-  BINDMOUNT_IMAGES='-v '"${PWD}"'/build/images:/var/lib/rancher/rke2/agent/images'
+    set -- "${@}" "--volume" "${PWD}/build/images:/var/lib/rancher/rke2/agent/images"
 fi
-IMAGES_DIR=/var/lib/rancher/rke2/agent/images
-docker container run --rm --name ${PROG}-dev-shell \
-  --hostname ${PROG}-server \
-  -ti -e WORKSPACE=${PWD} \
-  -p 127.0.0.1:2345:2345 \
-  -v ${HOME}:${HOME} \
-  -v ${PROG} -w ${PWD} \
-  --privileged \
-  -v ${PROG}-pkg:/go/pkg \
-  -v ${PROG}-cache:/root/.cache/go-build ${BINDMOUNT_IMAGES} ${PROG}-dev bash
+
+exec "${@}" "${PROG}-dev" "bash"

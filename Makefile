@@ -23,9 +23,13 @@ dapper-ci: .ci                           ## Used by Drone CI, does the same as "
 build:                                   ## Build using host go tools
 	./scripts/build
 
+.PHONY: binary
+binary:                             	## Build only the binary using host go tools
+	./scripts/build-binary
+
 .PHONY: build-debug
 build-debug:                             ## Debug build using host go tools
-	GODEBUG=y ./scripts/build
+	GODEBUG=y ./scripts/build-binary
 
 .PHONY: build-images
 build-images:                             ## Build all images and image tarballs (including airgap)
@@ -64,7 +68,7 @@ remote-debug-exit:              		 ## Kill dlv started with make remote-debug
 	./scripts/remote-debug-exit
 
 .PHONY: dev-shell-build
-dev-shell-build: build
+dev-shell-build: in-docker-build
 	./scripts/dev-shell-build
 
 .PHONY: clean-cache
@@ -76,7 +80,7 @@ clean:                                   ## Clean up workspace
 	./scripts/clean
 
 .PHONY: dev-shell
-dev-shell: in-docker-dev-shell-build              ## Launch a development shell to run test builds
+dev-shell: dev-shell-build              ## Launch a development shell to run test builds
 	./scripts/dev-shell
 
 .PHONY: dev-shell-enter

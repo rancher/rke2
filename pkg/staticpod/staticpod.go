@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/wrangler/pkg/yaml"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -19,13 +20,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/clientcmd"
 )
-
-// SecurityContext contains the relevant data
-// to setup a pod's security context for execution.
-type SecurityContext struct {
-	UID int64
-	GID int64
-}
 
 type Args struct {
 	Command         string
@@ -37,11 +31,21 @@ type Args struct {
 	HealthProto     string
 	HealthPath      string
 	CPUMillis       int64
-	SecurityContext *SecurityContext
+	SecurityContext *v1.PodSecurityContext
 	Annotations     map[string]string
 }
 
 func Run(dir string, args Args) error {
+	if cmds.AgentConfig.EnableSELinux {
+		if args.SecurityContext == nil {
+			args.SecurityContext = &v1.PodSecurityContext{}
+		}
+		if args.SecurityContext.SELinuxOptions == nil {
+			args.SecurityContext.SELinuxOptions = &v1.SELinuxOptions{
+				Type: "rke2_service_t",
+			}
+		}
+	}
 	files, err := readFiles(args.Args)
 	if err != nil {
 		return err
@@ -130,6 +134,7 @@ func pod(args Args) (*v1.Pod, error) {
 			},
 			HostNetwork:       true,
 			PriorityClassName: "system-cluster-critical",
+			SecurityContext:   args.SecurityContext,
 		},
 	}
 
@@ -181,13 +186,6 @@ func pod(args Args) (*v1.Pod, error) {
 				Name:  parts[0],
 				Value: parts[1],
 			})
-		}
-	}
-
-	if args.SecurityContext != nil {
-		p.Spec.SecurityContext = &v1.PodSecurityContext{
-			RunAsUser:  &args.SecurityContext.UID,
-			RunAsGroup: &args.SecurityContext.GID,
 		}
 	}
 

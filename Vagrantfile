@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
     v.cpus = 2
   end
 
-  config.vm.hostname = "rke2-server"
+  config.vm.hostname = "rke2-test"
 
   # Disabled by default. To run:
   #   vagrant up --provision-with=upgrade-packages
@@ -46,14 +46,19 @@ Vagrant.configure("2") do |config|
         #!/usr/bin/env bash
         set -eux -o pipefail
         yum -y install \
+            container-selinux \
             curl \
             gcc \
             git \
             iptables \
             libseccomp-devel \
             libselinux-devel \
+            less \
             lsof \
             make \
+            selinux-policy-devel \
+            setools-console \
+            vim \
             ${INSTALL_PACKAGES}
     SHELL
   end
@@ -61,7 +66,7 @@ Vagrant.configure("2") do |config|
   # To re-run this provisioner, installing a different version of go:
   #   GO_VERSION="1.15rc2" vagrant up --provision-with=install-golang
   #
-  config.vm.provision "install-golang", type: "shell", run: "once" do |sh|
+  config.vm.provision "install-golang", type: "shell", run: "never" do |sh|
     sh.upload_path = "/tmp/vagrant-install-golang"
     sh.env = {
         'GO_VERSION': ENV['GO_VERSION'] || "1.14.7",
@@ -74,7 +79,7 @@ Vagrant.configure("2") do |config|
     SHELL
   end
 
-  config.vm.provision "install-cri-tools", type: "shell", run: "once" do |sh|
+  config.vm.provision "install-cri-tools", type: "shell", run: "never" do |sh|
     sh.upload_path = "/tmp/vagrant-install-cri-tools"
     sh.env = {
         'CRI_TOOLS_VERSION': ENV['CRI_TOOLS_VERSION'] || 'master',
@@ -146,29 +151,33 @@ EOF
 
   config.vm.provision "install-rke2", type: "shell", run: "once" do |sh|
     sh.upload_path = "/tmp/vagrant-install-rke2"
+    sh.env = {
+        'INSTALL_RKE2_SKIP_ENABLE': ENV['INSTALL_RKE2_SKIP_ENABLE'] || "false",
+        'INSTALL_RKE2_SKIP_START': ENV['INSTALL_RKE2_SKIP_START'] || "true",
+        'RKE2_KUBECONFIG_MODE': ENV['RKE2_KUBECONFIG_MODE'] || "0644",
+        'RKE2_SELINUX': ENV['RKE2_SELINUX'] || "true",
+        'SELINUX_POLICY_REPO': ENV['SELINUX_POLICY_REPO'] || "github.com/rancher/rke2-selinux",
+        'SELINUX_POLICY_BRANCH': ENV['SELINUX_POLICY_BRANCH'] || "master",
+    }
     sh.inline = <<~SHELL
         #!/usr/bin/env bash
         set -eux -o pipefail
-        cat << EOF >>/etc/yum.repos.d/rpm-rancher-io.repo
-[rancher-rke2-common-testing]
-name=Rancher RKE2 Common Testing
-baseurl=https://rpm-testing.rancher.io/rke2/testing/common/centos/7/noarch
-enabled=1
-gpgcheck=1
-gpgkey=https://rpm-testing.rancher.io/public.key
-[rancher-rke2-1-18-testing]
-name=Rancher RKE2 1.18 Testing
-baseurl=https://rpm-testing.rancher.io/rke2/testing/1.18/centos/7/x86_64
-enabled=1
-gpgcheck=1
-gpgkey=https://rpm-testing.rancher.io/public.key
-EOF
-        yum -y install rke2-server
-        echo >> /etc/sysconfig/rke2-server
-        echo 'RKE2_KUBECONFIG_MODE=0644' >> /etc/sysconfig/rke2-server
-        systemctl enable --now rke2-server
-        cat << 'EOF' > /etc/profile.d/rke2.sh
-export KUBECONFIG=/etc/rancher/rke2/rke2.yaml PATH=$PATH:/var/lib/rancher/rke2/bin
+        if [ ! -d /vagrant/rke2-policy ]; then
+            git clone --branch ${SELINUX_POLICY_BRANCH} https://${SELINUX_POLICY_REPO}.git /vagrant/rke2-policy
+            pushd /vagrant/rke2-policy
+            make -f /usr/share/selinux/devel/Makefile rke2.pp
+            semodule -i rke2.pp
+            popd
+        fi
+        if [ -e /vagrant/dist/artifacts/rke2-images.linux-amd64.tar.gz ]; then
+            mkdir -vp /var/lib/rancher/rke2/agent/images
+            gzip -d < /vagrant/dist/artifacts/rke2-images.linux-amd64.tar.gz > /var/lib/rancher/rke2/agent/images/rke2.tar
+            /vagrant/dist/artifacts/rke2-installer.linux-amd64.run --noprogress
+            restorecon -vr /var/lib/rancher/rke2 /usr/local
+        fi
+        cat <<-EOF > /etc/profile.d/rke2.sh
+source /usr/local/etc/profile.d/rke2.sh
+export KUBECONFIG PATH
 EOF
     SHELL
   end
