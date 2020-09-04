@@ -69,3 +69,5 @@ require (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	sigs.k8s.io/yaml v1.2.0
 )
+
+replace github.com/rancher/k3s => github.com/briandowns/k3s v1.18.2-rc4.0.20200904214142-15d7b6193981
