@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	daemonsConfig "github.com/rancher/k3s/pkg/daemons/config"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	v1 "k8s.io/api/core/v1"
@@ -153,13 +152,13 @@ func setSystemUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1
 // - If the globalRestricted annotation does not exist, then check if the PSP exists and
 //   if it doesn't, create it. Check if the associated role and bindings exist and
 //   if they do, delete them.
-func setPSPs(clx *cli.Context) func(context.Context, daemonsConfig.Control) error {
-	return func(ctx context.Context, cfg daemonsConfig.Control) error {
+func setPSPs(clx *cli.Context) func(context.Context, <-chan struct{}, string) error {
+	return func(ctx context.Context, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
 		logrus.Info("Applying PSP's...")
 		go func() {
-			<-cfg.Runtime.APIServerReady
+			<-apiServerReady
 
-			cs, err := newClient(cfg.Runtime.KubeConfigAdmin, nil)
+			cs, err := newClient(kubeConfigAdmin, nil)
 			if err != nil {
 				logrus.Fatalf("psp: new k8s client: %s", err.Error())
 			}

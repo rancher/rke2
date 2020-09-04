@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	daemonsConfig "github.com/rancher/k3s/pkg/daemons/config"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	v1 "k8s.io/api/networking/v1"
@@ -87,13 +86,13 @@ func setNetworkPolicy(ctx context.Context, namespace string, cs *kubernetes.Clie
 }
 
 // setNetworkPolicies applies a default network policy across the 3 primary namespaces.
-func setNetworkPolicies(clx *cli.Context) func(context.Context, daemonsConfig.Control) error {
-	return func(ctx context.Context, cfg daemonsConfig.Control) error {
+func setNetworkPolicies(clx *cli.Context) func(context.Context, <-chan struct{}, string) error {
+	return func(ctx context.Context, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
 		logrus.Info("Applying network policies...")
 		go func() {
-			<-cfg.Runtime.APIServerReady
+			<-apiServerReady
 
-			cs, err := newClient(cfg.Runtime.KubeConfigAdmin, nil)
+			cs, err := newClient(kubeConfigAdmin, nil)
 			if err != nil {
 				logrus.Fatalf("networkPolicy: new k8s client: %s", err.Error())
 			}
