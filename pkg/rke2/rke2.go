@@ -56,7 +56,7 @@ func setup(clx *cli.Context, cfg Config) error {
 	var dataDir string
 	for _, f := range clx.Command.Flags {
 		switch t := f.(type) {
-		case *cli.StringFlag:
+		case cli.StringFlag:
 			if strings.Contains(t.Name, "data-dir") {
 				dataDir = t.Value
 			}

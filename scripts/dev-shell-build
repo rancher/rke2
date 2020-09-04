@@ -8,5 +8,6 @@ source ./scripts/version.sh
 if [ ! -d build/images ]; then
   ./scripts/build-images
 fi
+
 # build the dev shell image
 DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build -t ${PROG}-dev --target shell .

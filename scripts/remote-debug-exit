@@ -3,6 +3,7 @@ set -ex
 
 cd $(dirname $0)/..
 
-go build -o bin/dlv github.com/go-delve/delve/cmd/dlv
-
-echo exit | ./bin/dlv connect :2345 --init /dev/stdin
+dlv connect :2345 <<< '
+q
+y
+'
