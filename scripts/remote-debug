@@ -5,11 +5,10 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-GODEBUG=y ./scripts/build
-go build -o bin/dlv github.com/go-delve/delve/cmd/dlv
-
-CATTLE_DEV_MODE=true ./bin/dlv \
+GODEBUG=y ./scripts/build-binary
+CATTLE_DEV_MODE=true dlv \
   --listen=:2345 \
   --headless=true \
   --api-version=2 \
+  --check-go-version=false \
   --accept-multiclient exec -- ./bin/${PROG} ${COMMAND} ${ARGS}
