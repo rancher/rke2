@@ -58,7 +58,7 @@ replace (
 require (
 	github.com/google/go-containerregistry v0.0.0-20190617215043-876b8855d23c
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.18.3-0.20200904171715-495492309760
+	github.com/rancher/k3s v1.18.3-0.20200908183520-077bacc9fcbf
 	github.com/rancher/wrangler v0.6.1
 	github.com/sirupsen/logrus v1.6.0
 	github.com/urfave/cli v1.22.2
@@ -69,5 +69,3 @@ require (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	sigs.k8s.io/yaml v1.2.0
 )
-
-replace github.com/rancher/k3s => github.com/briandowns/k3s v1.18.2-rc4.0.20200904214142-15d7b6193981

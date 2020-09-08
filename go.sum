@@ -106,8 +106,6 @@ github.com/blang/semver v3.1.0+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnweb
 github.com/blang/semver v3.5.0+incompatible h1:CGxCgetQ64DKk7rdZ++Vfnb1+ogGNnB17OJKJXD2Cfs=
 github.com/blang/semver v3.5.0+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnwebNt5EWlYSAyrTnjyyk=
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
-github.com/briandowns/k3s v1.18.2-rc4.0.20200904214142-15d7b6193981 h1:a2L95Qr0jJwIGElF28DgmGdjA/jpfuG4qvDbxfeU0eU=
-github.com/briandowns/k3s v1.18.2-rc4.0.20200904214142-15d7b6193981/go.mod h1:50CuyXUMHa9iwB3uYlMt67DaaO3yCzAkUsrwHnv3mnM=
 github.com/bronze1man/goStrongswanVici v0.0.0-20171013065002-4d72634a2f11/go.mod h1:c+n7HXa5FxzR8GDsmu773UtbtrmKvMVerLVQeEbnzAE=
 github.com/bronze1man/goStrongswanVici v0.0.0-20190828090544-27d02f80ba40 h1:udTfdeYqe866Z5mxTaEm5irSJK2vupyxwBOHAYEVtJo=
 github.com/bronze1man/goStrongswanVici v0.0.0-20190828090544-27d02f80ba40/go.mod h1:fWUtBEPt2yjrr3WFhOqvajM8JSEU8bEeBcoeSCsKRpc=
@@ -694,6 +692,8 @@ github.com/rancher/go-powershell v0.0.0-20200701184732-233247d45373 h1:BePi97poJ
 github.com/rancher/go-powershell v0.0.0-20200701184732-233247d45373/go.mod h1:Vz8oLnHgttpo/aZrTpjbcpZEDzzElqNau2zmorToY0E=
 github.com/rancher/helm-controller v0.7.3 h1:WTQHcNF2vl9w6Xd1eBtXDe0JUsYMFFstqX9ghGhI5Ac=
 github.com/rancher/helm-controller v0.7.3/go.mod h1:ZylsxIMGNADRPRNW+NiBWhrwwks9vnKLQiCHYWb6Bi0=
+github.com/rancher/k3s v1.18.3-0.20200908183520-077bacc9fcbf h1:Y9vu7YmgrEm0snOvo9WvNP8nqtLRVPxGrK7FFwQkqmQ=
+github.com/rancher/k3s v1.18.3-0.20200908183520-077bacc9fcbf/go.mod h1:50CuyXUMHa9iwB3uYlMt67DaaO3yCzAkUsrwHnv3mnM=
 github.com/rancher/kine v0.4.0 h1:1IhWy3TzjExG8xnj46eyUEWdzqNAD1WrgL4eEBKm6Uc=
 github.com/rancher/kine v0.4.0/go.mod h1:IImtCJ68AIkE+VY/kUI0NkyJL5q5WzO8QvMsSXqbrpA=
 github.com/rancher/kubernetes v1.19.0-k3s1 h1:TPFj4qlQgZ2E9xE/ScFLtBQoymxPNCXAYHJpSZYRW3o=
