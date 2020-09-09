@@ -88,26 +88,30 @@ func setNetworkPolicy(ctx context.Context, namespace string, cs *kubernetes.Clie
 // setNetworkPolicies applies a default network policy across the 3 primary namespaces.
 func setNetworkPolicies(clx *cli.Context) func(context.Context, <-chan struct{}, string) error {
 	return func(ctx context.Context, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
-		logrus.Info("Applying network policies...")
-		go func() {
-			<-apiServerReady
+		// check if we're running in CIS mode and if so,
+		// apply the network policy.
+		if clx.String("profile") != "" {
+			logrus.Info("Applying network policies...")
+			go func() {
+				<-apiServerReady
 
-			cs, err := newClient(kubeConfigAdmin, nil)
-			if err != nil {
-				logrus.Fatalf("networkPolicy: new k8s client: %s", err.Error())
-			}
-			var namespaces = []string{
-				metav1.NamespaceSystem,
-				metav1.NamespaceDefault,
-				metav1.NamespacePublic,
-			}
-			for _, namespace := range namespaces {
-				if err := setNetworkPolicy(ctx, namespace, cs); err != nil {
-					logrus.Fatal(err)
+				cs, err := newClient(kubeConfigAdmin, nil)
+				if err != nil {
+					logrus.Fatalf("networkPolicy: new k8s client: %s", err.Error())
 				}
-			}
-			logrus.Info("Applying network policies complete")
-		}()
+				var namespaces = []string{
+					metav1.NamespaceSystem,
+					metav1.NamespaceDefault,
+					metav1.NamespacePublic,
+				}
+				for _, namespace := range namespaces {
+					if err := setNetworkPolicy(ctx, namespace, cs); err != nil {
+						logrus.Fatal(err)
+					}
+				}
+				logrus.Info("Applying network policies complete")
+			}()
+		}
 		return nil
 	}
 }
