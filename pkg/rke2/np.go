@@ -133,8 +133,9 @@ func setNetworkPolicy(ctx context.Context, namespace string, cs *kubernetes.Clie
 	return nil
 }
 
-// setDNSPolicy
-func setDNSPolicy(ctx context.Context, cs *kubernetes.Clientset) error {
+// setNetworkDNSPolicy sets the default DNS policy allowing the
+// required DNS traffic.
+func setNetworkDNSPolicy(ctx context.Context, cs *kubernetes.Clientset) error {
 	ns, err := cs.CoreV1().Namespaces().Get(ctx, metav1.NamespaceSystem, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("networkPolicy: get %s - %w", metav1.NamespaceSystem, err)
