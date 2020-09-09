@@ -17,7 +17,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images.txt
     docker.io/rancher/klipper-helm:v0.3.0
     docker.io/rancher/kube-proxy:${KUBERNETES_VERSION}
     k8s.gcr.io/defaultbackend-amd64:1.5
-    k8s.gcr.io/pause:3.2
+    rancher/pause:3.2
     quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.30.0
 EOF
 echo "docker.io/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}" >> build/images.txt
