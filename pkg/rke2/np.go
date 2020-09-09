@@ -199,7 +199,7 @@ func setNetworkPolicies(clx *cli.Context) func(context.Context, <-chan struct{},
 						logrus.Fatal(err)
 					}
 				}
-				if err := setDNSPolicy(ctx, cs); err != nil {
+				if err := setNetworkDNSPolicy(ctx, cs); err != nil {
 					logrus.Fatal(err)
 				}
 				logrus.Info("Applying network policies complete")
