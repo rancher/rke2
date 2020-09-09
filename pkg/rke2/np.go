@@ -119,9 +119,7 @@ func setNetworkPolicy(ctx context.Context, namespace string, cs *kubernetes.Clie
 		if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 			if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
 				if apierrors.IsConflict(err) {
-					if err := updateNamespaceRef(ctx, cs, ns); err != nil {
-						return err
-					}
+					return updateNamespaceRef(ctx, cs, ns)
 				}
 				return err
 			}
@@ -161,9 +159,7 @@ func setNetworkDNSPolicy(ctx context.Context, cs *kubernetes.Clientset) error {
 		if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
 			if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
 				if apierrors.IsConflict(err) {
-					if err := updateNamespaceRef(ctx, cs, ns); err != nil {
-						return err
-					}
+					return updateNamespaceRef(ctx, cs, ns)
 				}
 				return err
 			}
