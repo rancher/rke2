@@ -46,7 +46,7 @@ func New(repo string) Images {
 		KubeAPIServer:       override(override("rancher", repo)+"/kubernetes:"+KubernetesVersion, apiServer),
 		KubeControllManager: override(override("rancher", repo)+"/kubernetes:"+KubernetesVersion, controllerManager),
 		KubeScheduler:       override(override("rancher", repo)+"/kubernetes:"+KubernetesVersion, scheduler),
-		Pause:               override(override("k8s.gcr.io", repo)+"/pause:"+PauseVersion, pause),
+		Pause:               override(override("rancher", repo)+"/pause:"+PauseVersion, pause),
 		Runtime:             override(override("rancher", repo)+"/"+RuntimeImageName+":"+strings.ReplaceAll(version.Version, "+", "-"), runtime),
 		ETCD:                override(override("rancher", repo)+"/etcd:"+EtcdVersion, etcd),
 	}
