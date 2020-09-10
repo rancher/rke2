@@ -33,9 +33,9 @@ var (
 	}
 )
 
-type StaticPod struct {
-	Manifests     string
-	PullImages    string
+type StaticPodConfig struct {
+	ManifestsDir  string
+	ImagesDir     string
 	Images        images.Images
 	CloudProvider *CloudProviderConfig
 	CISMode       bool
@@ -46,7 +46,8 @@ type CloudProviderConfig struct {
 	Path string
 }
 
-func (s *StaticPod) Kubelet(args []string) error {
+// Kubelet starts the kubelet in a subprocess with watching goroutine.
+func (s *StaticPodConfig) Kubelet(args []string) error {
 	if s.CloudProvider != nil {
 		args = append(args,
 			"--cloud-provider="+s.CloudProvider.Name,
@@ -69,17 +70,19 @@ func (s *StaticPod) Kubelet(args []string) error {
 	return nil
 }
 
-func (s *StaticPod) KubeProxy(args []string) error {
+// KubeProxy panics if used. KubeProxy is not supported in RKE2.
+func (s *StaticPodConfig) KubeProxy(args []string) error {
 	panic("kube-proxy unsupported")
 }
 
-func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) (authenticator.Request, http.Handler, error) {
+// APIServer sets up the apiserver static pod once etcd is available, returning the authenticator and request handler.
+func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) (authenticator.Request, http.Handler, error) {
 	if s.CloudProvider != nil {
 		args = append(args,
 			"--cloud-provider="+s.CloudProvider.Name,
 			"--cloud-config="+s.CloudProvider.Path)
 	}
-	if err := images.Pull(s.PullImages, "kube-apiserver", s.Images.KubeAPIServer); err != nil {
+	if err := images.Pull(s.ImagesDir, "kube-apiserver", s.Images.KubeAPIServer); err != nil {
 		return nil, nil, err
 	}
 	args = append(args,
@@ -100,7 +103,7 @@ func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, ar
 	}
 
 	after(etcdReady, func() error {
-		return staticpod.Run(s.Manifests, staticpod.Args{
+		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:   "kube-apiserver",
 			Args:      args,
 			Image:     s.Images.KubeAPIServer,
@@ -111,12 +114,13 @@ func (s *StaticPod) APIServer(ctx context.Context, etcdReady <-chan struct{}, ar
 	return auth, http.NotFoundHandler(), err
 }
 
-func (s *StaticPod) Scheduler(apiReady <-chan struct{}, args []string) error {
-	if err := images.Pull(s.PullImages, "kube-scheduler", s.Images.KubeScheduler); err != nil {
+// Scheduler starts the kube-scheduler static pod, once the apiserver is available.
+func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) error {
+	if err := images.Pull(s.ImagesDir, "kube-scheduler", s.Images.KubeScheduler); err != nil {
 		return err
 	}
 	return after(apiReady, func() error {
-		return staticpod.Run(s.Manifests, staticpod.Args{
+		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:     "kube-scheduler",
 			Args:        args,
 			Image:       s.Images.KubeScheduler,
@@ -127,6 +131,7 @@ func (s *StaticPod) Scheduler(apiReady <-chan struct{}, args []string) error {
 	})
 }
 
+// after calls a function after a message is received from a channel.
 func after(after <-chan struct{}, f func() error) error {
 	go func() {
 		<-after
@@ -137,17 +142,18 @@ func after(after <-chan struct{}, f func() error) error {
 	return nil
 }
 
-func (s *StaticPod) ControllerManager(apiReady <-chan struct{}, args []string) error {
+// ControllerManager starts the kube-controller-manager static pod, once the apiserver is available.
+func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []string) error {
 	if s.CloudProvider != nil {
 		args = append(args,
 			"--cloud-provider="+s.CloudProvider.Name,
 			"--cloud-config="+s.CloudProvider.Path)
 	}
-	if err := images.Pull(s.PullImages, "kube-controller-manager", s.Images.KubeControllManager); err != nil {
+	if err := images.Pull(s.ImagesDir, "kube-controller-manager", s.Images.KubeControllManager); err != nil {
 		return err
 	}
 	return after(apiReady, func() error {
-		return staticpod.Run(s.Manifests, staticpod.Args{
+		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command: "kube-controller-manager",
 			Args: append(args,
 				"--flex-volume-plugin-dir=/usr/libexec/kubernetes/kubelet-plugins/volume/exec",
@@ -161,8 +167,10 @@ func (s *StaticPod) ControllerManager(apiReady <-chan struct{}, args []string) e
 	})
 }
 
-func (s *StaticPod) CurrentETCDOptions() (opts executor.InitialOptions, err error) {
-	bytes, err := ioutil.ReadFile(filepath.Join(s.Manifests, "etcd.yaml"))
+// CurrentETCDOptions retrieves the etcd configuration from the static pod definition at etcd.yaml
+// in the manifests directory, if it exists.
+func (s *StaticPodConfig) CurrentETCDOptions() (opts executor.InitialOptions, err error) {
+	bytes, err := ioutil.ReadFile(filepath.Join(s.ManifestsDir, "etcd.yaml"))
 	if os.IsNotExist(err) {
 		return
 	}
@@ -180,8 +188,9 @@ func (s *StaticPod) CurrentETCDOptions() (opts executor.InitialOptions, err erro
 	return
 }
 
-func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
-	if err := images.Pull(s.PullImages, "etcd", s.Images.ETCD); err != nil {
+// ETCD starts the etcd static pod.
+func (s *StaticPodConfig) ETCD(args executor.ETCDConfig) error {
+	if err := images.Pull(s.ImagesDir, "etcd", s.Images.ETCD); err != nil {
 		return err
 	}
 
@@ -255,7 +264,7 @@ func (s *StaticPod) ETCD(args executor.ETCDConfig) error {
 		}
 	}
 
-	return staticpod.Run(s.Manifests, spa)
+	return staticpod.Run(s.ManifestsDir, spa)
 }
 
 // chownr recursively changes the ownership of the given

@@ -19,11 +19,11 @@ var (
 	profile    string
 	appName    = filepath.Base(os.Args[0])
 	commonFlag = []cli.Flag{
-		cli.StringFlag{
-			Name:        "repo",
-			Usage:       "(image) Image repository override for for RKE2 images",
-			EnvVar:      "RKE2_REPO",
-			Destination: &config.Repo,
+		&cli.StringFlag{
+			Name:        "system-default-registry",
+			Usage:       "(image) Private registry to be used for all system Docker images",
+			EnvVar:      "RKE2_SYSTEM_DEFAULT_REGISTRY",
+			Destination: &config.SystemDefaultRegistry,
 		},
 		&cli.StringFlag{
 			Name:        "cloud-provider-name",

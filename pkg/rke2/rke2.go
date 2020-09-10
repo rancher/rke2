@@ -21,9 +21,9 @@ import (
 )
 
 type Config struct {
-	Repo                string
-	CloudProviderName   string
-	CloudProviderConfig string
+	SystemDefaultRegistry string
+	CloudProviderName     string
+	CloudProviderConfig   string
 }
 
 func Server(clx *cli.Context, cfg Config) error {
@@ -63,7 +63,7 @@ func setup(clx *cli.Context, cfg Config) error {
 		}
 	}
 
-	images := images.New(cfg.Repo)
+	images := images.New(cfg.SystemDefaultRegistry)
 	if err := defaults.Set(clx, images, dataDir); err != nil {
 		return err
 	}
@@ -77,8 +77,8 @@ func setup(clx *cli.Context, cfg Config) error {
 		return err
 	}
 
-	manifests := filepath.Join(dataDir, "agent", config.DefaultPodManifestPath)
-	pullImages := filepath.Join(dataDir, "agent", "images")
+	agentManifestsDir := filepath.Join(dataDir, "agent", config.DefaultPodManifestPath)
+	agentImagesDir := filepath.Join(dataDir, "agent", "images")
 	cisMode := clx.String("profile") != ""
 
 	managed.RegisterDriver(&etcd.ETCD{})
@@ -94,10 +94,10 @@ func setup(clx *cli.Context, cfg Config) error {
 		}
 	}
 
-	sp := podexecutor.StaticPod{
+	sp := podexecutor.StaticPodConfig{
 		Images:        images,
-		PullImages:    pullImages,
-		Manifests:     manifests,
+		ImagesDir:     agentImagesDir,
+		ManifestsDir:  agentManifestsDir,
 		CISMode:       cisMode,
 		CloudProvider: cpConfig,
 	}
