@@ -26,6 +26,8 @@ type Config struct {
 	CloudProviderConfig   string
 }
 
+var cisMode bool
+
 func Server(clx *cli.Context, cfg Config) error {
 	if err := setup(clx, cfg); err != nil {
 		return err
@@ -38,8 +40,8 @@ func Server(clx *cli.Context, cfg Config) error {
 	}
 
 	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
-		setPSPs(clx),
-		setNetworkPolicies(clx),
+		setPSPs(),
+		setNetworkPolicies(),
 	)
 
 	return server.Run(clx)
@@ -60,11 +62,14 @@ func setup(clx *cli.Context, cfg Config) error {
 			if strings.Contains(t.Name, "data-dir") {
 				dataDir = t.Value
 			}
+			if t.Name == "profile" && t.Destination != nil && *t.Destination != "" {
+				cisMode = true
+			}
 		}
 	}
 
 	images := images.New(cfg.SystemDefaultRegistry)
-	if err := defaults.Set(clx, images, dataDir); err != nil {
+	if err := defaults.Set(clx, images, dataDir, cisMode); err != nil {
 		return err
 	}
 
