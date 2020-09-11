@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -152,7 +151,7 @@ func setSystemUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1
 // - If the globalRestricted annotation does not exist, then check if the PSP exists and
 //   if it doesn't, create it. Check if the associated role and bindings exist and
 //   if they do, delete them.
-func setPSPs(clx *cli.Context) func(context.Context, <-chan struct{}, string) error {
+func setPSPs() func(context.Context, <-chan struct{}, string) error {
 	return func(ctx context.Context, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
 		logrus.Info("Applying PSP's...")
 		go func() {
@@ -171,7 +170,7 @@ func setPSPs(clx *cli.Context) func(context.Context, <-chan struct{}, string) er
 				ns.Annotations = make(map[string]string)
 			}
 
-			if clx.String("profile") == "" { // non-CIS mode
+			if !cisMode { // non-CIS mode
 				if err := setGlobalUnrestricted(ctx, cs, ns); err != nil {
 					logrus.Fatalf("psp: set globalUnrestricted: %s", err.Error())
 				}

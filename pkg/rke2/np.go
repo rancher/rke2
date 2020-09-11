@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/networking/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -172,11 +171,11 @@ func setNetworkDNSPolicy(ctx context.Context, cs *kubernetes.Clientset) error {
 }
 
 // setNetworkPolicies applies a default network policy across the 3 primary namespaces.
-func setNetworkPolicies(clx *cli.Context) func(context.Context, <-chan struct{}, string) error {
+func setNetworkPolicies() func(context.Context, <-chan struct{}, string) error {
 	return func(ctx context.Context, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
 		// check if we're running in CIS mode and if so,
 		// apply the network policy.
-		if clx.String("profile") != "" {
+		if cisMode {
 			logrus.Info("Applying network policies...")
 			go func() {
 				<-apiServerReady
