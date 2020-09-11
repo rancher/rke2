@@ -21,9 +21,9 @@ import (
 )
 
 type Config struct {
-	Repo                string
-	CloudProviderName   string
-	CloudProviderConfig string
+	SystemDefaultRegistry string
+	CloudProviderName     string
+	CloudProviderConfig   string
 }
 
 var cisMode bool
@@ -78,6 +78,7 @@ func setup(clx *cli.Context, cfg Config) error {
 
 	images := images.New(cfg.Repo)
 	if err := defaults.Set(clx, images, dataDir, cisMode); err != nil {
+
 		return err
 	}
 
@@ -106,10 +107,10 @@ func setup(clx *cli.Context, cfg Config) error {
 		}
 	}
 
-	sp := podexecutor.StaticPod{
+	sp := podexecutor.StaticPodConfig{
 		Images:        images,
-		PullImages:    pullImages,
-		Manifests:     manifests,
+		ImagesDir:     agentImagesDir,
+		ManifestsDir:  agentManifestsDir,
 		CISMode:       cisMode,
 		CloudProvider: cpConfig,
 	}

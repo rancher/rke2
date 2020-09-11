@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -18,25 +19,42 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	errors2 "github.com/pkg/errors"
+	helmv1 "github.com/rancher/helm-controller/pkg/apis/helm.cattle.io/v1"
+	"github.com/rancher/helm-controller/pkg/helm"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/wrangler/pkg/merr"
+	"github.com/rancher/wrangler/pkg/schemes"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/runtime/serializer/json"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 var releasePattern = regexp.MustCompile("^v[0-9]")
 
-func dataDirFor(dataDir, dataName string) string {
-	return filepath.Join(dataDir, "data", dataName, "bin")
+const bufferSize = 4096
+
+// binDirForDigest returns the path to dataDir/data/refDigest/bin.
+func binDirForDigest(dataDir string, refDigest string) string {
+	return filepath.Join(dataDir, "data", refDigest, "bin")
 }
 
+// manifestsDir returns the path to dataDir/server/manifests.
 func manifestsDir(dataDir string) string {
 	return filepath.Join(dataDir, "server", "manifests")
 }
 
+// imagesDir returns the path to dataDir/agent/images.
+func imagesDir(dataDir string) string {
+	return filepath.Join(dataDir, "agent", "images")
+}
+
+// symlinkBinDir returns the path to dataDir/bin.
+// This will be symlinked to the current runtime bin dir.
 func symlinkBinDir(dataDir string) string {
 	return filepath.Join(dataDir, "bin")
 }
 
+// dirExists returns true if a directory exists at the given path.
 func dirExists(dir string) bool {
 	if s, err := os.Stat(dir); err == nil && s.IsDir() {
 		return true
@@ -44,57 +62,85 @@ func dirExists(dir string) bool {
 	return false
 }
 
-func Stage(dataDir string, images images.Images) (string, error) {
-	ref, err := name.ParseReference(images.Runtime)
+// Stage extracts binaries and manifests from the runtime image specified in imageConf into the directory
+// at dataDir. It attempts to load the runtime image from a tarball at dataDir/agent/images,
+// falling back to a remote image pull if the image is not found within a tarball.
+// Extraction is skipped if a bin directory for the specified image already exists. It also rewrites
+// any HelmCharts to pass through the --system-default-registry value.
+// Unique image detection is accomplished by hashing the image name and tag, or the image digest,
+// depending on what the runtime image reference points at.
+// If the bin directory already exists, or content is successfully extracted, the bin directory path is returned.
+func Stage(dataDir string, imageConf images.Images) (string, error) {
+	var img v1.Image
+	ref, err := name.ParseReference(imageConf.Runtime)
 	if err != nil {
 		return "", err
 	}
-	// preload image from tarball
-	img, err := preloadBootstrapImage(dataDir, images.Runtime)
+
+	refDigest, err := releaseRefDigest(ref)
 	if err != nil {
 		return "", err
 	}
-	if img == nil {
-		// downloading the image
-		img, err = remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
-		if err != nil {
+
+	refBinDir := binDirForDigest(dataDir, refDigest)
+	manifestsDir := manifestsDir(dataDir)
+
+	// Skip content extraction if the bin dir for this runtime image already exists
+	if dirExists(refBinDir) {
+		logrus.Infof("Runtime image %q bin dir already exists at %q; skipping extract", ref, refBinDir)
+	} else {
+		// Try to use configured runtime image from an airgap tarball, unless we're using a
+		// private registry in which case it's not supported since the images won't have the correct name.
+		if imageConf.SystemDefaultRegistry == "" {
+			img, err = preloadBootstrapImage(dataDir, ref.String())
+			if err != nil {
+				return "", err
+			}
+		} else {
+			logrus.Infof("Runtime image tarball preload disabled by --system-default-registry=%s", imageConf.SystemDefaultRegistry)
+		}
+
+		// If we didn't find the requested image in a tarball, pull it from the remote registry.
+		// Note that this will fail (potentially after a long delay) if the registry cannot be reached.
+		if img == nil {
+			logrus.Infof("Pulling runtime image %q", ref)
+			img, err = remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+			if err != nil {
+				return "", errors2.Wrapf(err, "Failed to pull runtime image %q", ref)
+			}
+		}
+
+		// Extract binaries
+		if err := extractToDir(refBinDir, "/bin/", img, ref.String()); err != nil {
+			return "", err
+		}
+		if err := os.Chmod(refBinDir, 0755); err != nil {
+			return "", err
+		}
+
+		// Extract charts to manifests dir
+		if err := extractToDir(manifestsDir, "/charts/", img, ref.String()); err != nil {
 			return "", err
 		}
 	}
 
-	dataName := releaseName(ref)
-	if dataName != "" {
-		if dir := dataDirFor(dataDir, dataName); dirExists(dir) {
-			return dir, nil
-		}
-	}
-	if dataName == "" {
-		digest, err := img.Digest()
-		if err != nil {
-			return "", err
-		}
-		dataName = digest.Hex
-	}
-
-	binDir := dataDirFor(dataDir, dataName)
-	if err := extractFromDir(binDir, "/bin/", img, images.Runtime); err != nil {
-		return "", err
-	}
-	if err := os.Chmod(binDir, 0755); err != nil {
+	// Fix up HelmCharts to set default registry
+	// This needs to be done every time in order to sync values from the CLI
+	if err := setSystemDefaultRegistry(manifestsDir, imageConf.SystemDefaultRegistry); err != nil {
 		return "", err
 	}
 
-	manifestDir := manifestsDir(dataDir)
-	err = extractFromDir(manifestDir, "/charts/", img, images.Runtime)
-
-	// ignore errors
+	// ignore errors on symlink rewrite
 	_ = os.RemoveAll(symlinkBinDir(dataDir))
-	_ = os.Symlink(binDir, symlinkBinDir(dataDir))
+	_ = os.Symlink(refBinDir, symlinkBinDir(dataDir))
 
-	return binDir, err
+	return refBinDir, nil
 }
 
-func extract(image, targetDir, prefix string, reader io.Reader) error {
+// extract extracts image content to targetDir all content from reader where the filename is prefixed with prefix.
+// The imageName argument is used solely for logging.
+// The destination directory is expected to be nonexistent or empty.
+func extract(imageName string, targetDir string, prefix string, reader io.Reader) error {
 	if err := os.MkdirAll(targetDir, 0755); err != nil {
 		return err
 	}
@@ -103,7 +149,7 @@ func extract(image, targetDir, prefix string, reader io.Reader) error {
 	for {
 		h, err := t.Next()
 		if err == io.EOF {
-			logrus.Infof("Extracting %s done", image)
+			logrus.Infof("Done extracting %q", imageName)
 			return nil
 		} else if err != nil {
 			return err
@@ -118,13 +164,15 @@ func extract(image, targetDir, prefix string, reader io.Reader) error {
 			continue
 		}
 
+		logrus.Infof("Extracting file %q", h.Name)
+
 		targetName := filepath.Join(targetDir, filepath.Base(n))
 		mode := h.FileInfo().Mode() & 0755
 		f, err := os.OpenFile(targetName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
 		if err != nil {
-			return nil
+			return err
 		}
-		logrus.Infof("Extracting %s %s...", image, h.Name)
+
 		if _, err = io.Copy(f, t); err != nil {
 			f.Close()
 			return err
@@ -135,22 +183,30 @@ func extract(image, targetDir, prefix string, reader io.Reader) error {
 	}
 }
 
-func releaseName(ref name.Reference) string {
-	if t, ok := ref.(*name.Tag); ok && releasePattern.MatchString(t.TagStr()) {
+// releaseRefDigest returns a unique name for an image reference.
+// If the image refers to a tag that appears to be a version string, it returns the tag + the first 12 bytes of the SHA256 hash of the reference string.
+// If the image refers to a digest, it returns the digest, without the alg prefix ("sha256:", etc).
+// If neither of the above conditions are met (semver tag or digest), an error is raised.
+func releaseRefDigest(ref name.Reference) (string, error) {
+	if t, ok := ref.(name.Tag); ok && releasePattern.MatchString(t.TagStr()) {
 		hash := sha256.Sum256([]byte(ref.String()))
-		return t.TagStr() + "-" + hex.EncodeToString(hash[:])[:12]
-	} else if d, ok := ref.(*name.Digest); ok {
+		return t.TagStr() + "-" + hex.EncodeToString(hash[:])[:12], nil
+	} else if d, ok := ref.(name.Digest); ok {
 		str := d.DigestStr()
 		parts := strings.SplitN(str, ":", 2)
 		if len(parts) == 2 {
-			return parts[1]
+			return parts[1], nil
 		}
-		return parts[0]
+		return parts[0], nil
 	}
-	return ""
+	return "", fmt.Errorf("Bootstrap image %q is not a not a reference to a digest or version tag (%q)", ref, releasePattern)
 }
 
-func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
+// extractToDir extracts to targetDir all content from img where the filename is prefixed with prefix.
+// The imageName argument is used solely for logging.
+// Extracted content is staged through a temporary directory and moved into place, overwriting any existing files.
+func extractToDir(dir, prefix string, img v1.Image, imageName string) error {
+	logrus.Infof("Extracting %q %q to %q", imageName, prefix, dir)
 	if err := os.MkdirAll(filepath.Dir(dir), 0755); err != nil {
 		return err
 	}
@@ -161,23 +217,24 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 	}
 	defer os.RemoveAll(tempDir)
 
-	r := mutate.Extract(img)
-	defer r.Close()
+	imageReader := mutate.Extract(img)
+	defer imageReader.Close()
 
-	// extracting manifests
-	if err := extract(imgName, tempDir, prefix, r); err != nil {
+	// Extract content to temporary directory.
+	if err := extract(imageName, tempDir, prefix, imageReader); err != nil {
 		return err
 	}
 
-	// we're ignoring any returned errors since the likelihood is that
-	// the error is that the new path already exists. That's indicative of a
-	// previously bootstrapped system. If it's a different error, it's indicative
-	// of an operating system or filesystem issue.
+	// Try to rename the temp dir into its target location.
 	if err := os.Rename(tempDir, dir); err == nil {
+		// Successfully renamed into place, nothing else to do.
 		return nil
+	} else if !os.IsExist(err) {
+		// Failed to rename, but not because the destination already exists.
+		return err
 	}
 
-	// manifests dir exists
+	// Target directory already exists (got ErrExist above), fall back list/rename files into place.
 	files, err := ioutil.ReadDir(tempDir)
 	if err != nil {
 		return err
@@ -187,54 +244,167 @@ func extractFromDir(dir, prefix string, img v1.Image, imgName string) error {
 	for _, file := range files {
 		src := filepath.Join(tempDir, file.Name())
 		dst := filepath.Join(dir, file.Name())
-		if err := os.Rename(src, dst); err == os.ErrExist {
-			if err = os.Remove(dst); err != nil {
-				errs = append(errs, errors2.Wrapf(err, "failed to remove file %s", dst))
+		if err := os.Rename(src, dst); os.IsExist(err) {
+			// Can't rename because dst already exists, remove it...
+			if err = os.RemoveAll(dst); err != nil {
+				errs = append(errs, errors2.Wrapf(err, "failed to remove %q", dst))
 				continue
 			}
+			// ...then try renaming again
 			if err = os.Rename(src, dst); err != nil {
-				errs = append(errs, errors2.Wrapf(err, "failed to rename file %s to %s", src, dst))
+				errs = append(errs, errors2.Wrapf(err, "failed to rename %q to %q", src, dst))
 			}
 		} else if err != nil {
-			errs = append(errs, errors2.Wrapf(err, "failed to move file %s", src))
+			// Other error while renaming src to dst.
+			errs = append(errs, errors2.Wrapf(err, "failed to rename %q to %q", src, dst))
 		}
 	}
-	if len(errs) > 0 {
-		return merr.NewErrors(errs...)
-	}
-	return nil
+	return merr.NewErrors(errs...)
 }
 
-func preloadBootstrapImage(dataDir, runtimeImage string) (v1.Image, error) {
-	imagesDir := filepath.Join(dataDir, "agent", "images")
+// preloadBootstrapImage attempts return an image named imageName from a tarball
+// within imagesDir.
+func preloadBootstrapImage(dataDir string, imageName string) (v1.Image, error) {
+	imagesDir := imagesDir(dataDir)
 	if _, err := os.Stat(imagesDir); err != nil {
 		if os.IsNotExist(err) {
+			logrus.Debugf("No local image available for %q: dir %q does not exist", imageName, imagesDir)
 			return nil, nil
 		}
 		return nil, err
 	}
+
+	// Walk the images dir to get a list of tar files
 	files := map[string]os.FileInfo{}
 	if err := filepath.Walk(imagesDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		files[path] = info
+		if !info.IsDir() && strings.HasSuffix(path, ".tar") {
+			files[path] = info
+		}
 		return nil
 	}); err != nil {
 		return nil, err
 	}
-	archTag, err := name.NewTag(runtimeImage, name.WeakValidation)
+
+	imageTag, err := name.NewTag(imageName, name.WeakValidation)
 	if err != nil {
 		return nil, err
 	}
+
+	// Try to find the requested tag in each file, moving on to the next if there's an error
 	for fileName := range files {
-		logrus.Infof("Attempting bootstrap from %s ...", fileName)
-		img, err := tarball.ImageFromPath(fileName, &archTag)
+		img, err := tarball.ImageFromPath(fileName, &imageTag)
 		if err != nil {
+			logrus.Debugf("Did not find %q in %q: %s", imageName, fileName, err)
 			continue
 		}
+		logrus.Debugf("Found %q in %q", imageName, fileName)
 		return img, nil
-
 	}
+	logrus.Debugf("No local image available for %q: not found in any file in %q", imageName, imagesDir)
 	return nil, nil
+}
+
+// setSystemDefaultRegistry scans the directory at manifestDir. It attempts to load all manifests
+// in that directory as HelmCharts. Any manifests that contain a HelmChart are modified to
+// pass through the systemDefaultRegistry setting to both the Helm job and the chart values.
+// NOTE: This will probably fail if any manifest contains multiple documents. This should
+// not matter for any of our packaged components, but may prevent this from working on user manifests.
+func setSystemDefaultRegistry(manifestsDir string, systemDefaultRegistry string) error {
+	serializer := json.NewSerializerWithOptions(json.DefaultMetaFactory, schemes.All, schemes.All, json.SerializerOptions{Yaml: true, Pretty: true, Strict: true})
+
+	files := map[string]os.FileInfo{}
+	if err := filepath.Walk(manifestsDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		switch {
+		case info.IsDir():
+			return nil
+		case strings.HasSuffix(path, ".yml"):
+		case strings.HasSuffix(path, ".yaml"):
+		default:
+			return nil
+		}
+		files[path] = info
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	var errs []error
+	for fileName, info := range files {
+		if err := rewriteChart(fileName, info, systemDefaultRegistry, serializer); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return merr.NewErrors(errs...)
+}
+
+// rewriteChart applies systemDefaultRegistry settings to the file at fileName with associated info.
+// If the file cannot be decoded as a HelmChart, it is silently skipped. Any other IO error is considered
+// a failure.
+func rewriteChart(fileName string, info os.FileInfo, systemDefaultRegistry string, serializer *json.Serializer) error {
+	chartChanged := false
+
+	bytes, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return errors2.Wrapf(err, "Failed to read manifest %q", fileName)
+	}
+
+	// Ignore manifest if it cannot be decoded
+	obj, _, err := serializer.Decode(bytes, nil, nil)
+	if err != nil {
+		logrus.Debugf("Failed to decode manifest %q: %s", fileName, err)
+		return nil
+	}
+
+	// Ignore manifest if it is not a HelmChart
+	chart, ok := obj.(*helmv1.HelmChart)
+	if !ok {
+		logrus.Debugf("Manifest %q is not a HelmChart", fileName)
+		return nil
+	}
+
+	// Generally we should avoid using Set on HelmCharts since it cannot be overridden by HelmChartConfig,
+	// but in this case we need to do it in order to avoid potentially mangling the ValuesContent field by
+	// blindly appending content to it in order to set the global.systemDefaultRegistry value.
+	if chart.Spec.Set == nil {
+		chart.Spec.Set = map[string]intstr.IntOrString{}
+	}
+	if chart.Spec.Set["global.systemDefaultRegistry"].StrVal != systemDefaultRegistry {
+		chart.Spec.Set["global.systemDefaultRegistry"] = intstr.FromString(systemDefaultRegistry)
+		chartChanged = true
+	}
+
+	jobImage := helm.DefaultJobImage
+	if systemDefaultRegistry != "" {
+		jobImage = systemDefaultRegistry + "/" + helm.DefaultJobImage
+	}
+
+	if chart.Spec.JobImage != jobImage {
+		chart.Spec.JobImage = jobImage
+		chartChanged = true
+	}
+
+	if chartChanged {
+		f, err := os.OpenFile(fileName, os.O_RDWR|os.O_TRUNC, info.Mode())
+		if err != nil {
+			return errors2.Wrapf(err, "Unable to open HelmChart %q", fileName)
+		}
+
+		if err := serializer.Encode(chart, f); err != nil {
+			_ = f.Close()
+			return errors2.Wrapf(err, "Failed to serialize modified HelmChart %q", fileName)
+		}
+
+		if err := f.Close(); err != nil {
+			return errors2.Wrapf(err, "Failed to write modified HelmChart %q", fileName)
+		}
+
+		logrus.Infof("Updated HelmChart %q to apply --system-default-registry modifications", fileName)
+	}
+	return nil
 }
