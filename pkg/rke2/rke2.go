@@ -62,9 +62,17 @@ func setup(clx *cli.Context, cfg Config) error {
 			if strings.Contains(t.Name, "data-dir") {
 				dataDir = t.Value
 			}
+		}
+	}
+
+	for _, f := range clx.App.Flags {
+		switch t := f.(type) {
+		case cli.StringFlag:
 			if t.Name == "profile" && t.Destination != nil && *t.Destination != "" {
 				cisMode = true
 			}
+		default:
+			// nothing to do. Keep moving.
 		}
 	}
 
