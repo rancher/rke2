@@ -8,7 +8,7 @@ platform:
 
 steps:
 - name: go_mod_tidy
-  image: rancher/build-base:v1.14.2
+  image: rancher/hardened-build-base:v1.14.2-amd64
   volumes:
     - name: docker
       path: /var/run/docker.sock
@@ -49,7 +49,7 @@ steps:
     - tag
 
 - name: build-image-kubernetes
-  image: rancher/build-base:v1.14.2
+  image: rancher/hardened-build-base:v1.14.2-amd64
   volumes:
   - name: docker
     path: /var/run/docker.sock
@@ -65,7 +65,7 @@ steps:
     - drone-pr.rancher.io
 
 - name: publish-image-kubernetes
-  image: rancher/build-base:v1.14.2
+  image: rancher/hardened-build-base:v1.14.2-amd64
   volumes:
     - name: docker
       path: /var/run/docker.sock
@@ -87,7 +87,7 @@ steps:
     - tag
 
 - name: publish-image-runtime
-  image: rancher/build-base:v1.14.2
+  image: rancher/hardened-build-base:v1.14.2-amd64
   volumes:
     - name: docker
       path: /var/run/docker.sock
@@ -123,7 +123,7 @@ platform:
 
 steps:
 - name: manifest-runtime
-  image: rancher/build-base:v1.14.2
+  image: rancher/hardened-build-base:v1.14.2-amd64
   volumes:
     - name: docker
       path: /var/run/docker.sock
@@ -145,7 +145,7 @@ steps:
     - tag
 
 - name: manifest-kubernetes
-  image: rancher/build-base:v1.14.2
+  image: rancher/hardened-build-base:v1.14.2-amd64
   volumes:
   - name: docker
     path: /var/run/docker.sock
