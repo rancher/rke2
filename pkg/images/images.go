@@ -53,10 +53,10 @@ func New(systemDefaultRegistry string) Images {
 	return Images{
 		SystemDefaultRegistry: systemDefaultRegistry,
 		Runtime:               override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/"+RuntimeImageName+":"+strings.ReplaceAll(version.Version, "+", "-"), runtime),
-		KubeAPIServer:         override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/kubernetes:"+KubernetesVersion, apiServer),
-		KubeControllManager:   override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/kubernetes:"+KubernetesVersion, controllerManager),
-		KubeScheduler:         override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/kubernetes:"+KubernetesVersion, scheduler),
-		ETCD:                  override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/etcd:"+EtcdVersion, etcd),
+		KubeAPIServer:         override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/hardened-kubernetes:"+KubernetesVersion, apiServer),
+		KubeControllManager:   override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/hardened-kubernetes:"+KubernetesVersion, controllerManager),
+		KubeScheduler:         override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/hardened-kubernetes:"+KubernetesVersion, scheduler),
+		ETCD:                  override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/hardened-etcd:"+EtcdVersion, etcd),
 		Pause:                 override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/pause:"+PauseVersion, pause),
 	}
 }

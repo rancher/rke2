@@ -10,5 +10,5 @@ Create a new release in the [image-build-etcd](github.com/rancher/image-build-et
 
 The following files have references that will need to be updated in the respective locations. Replace the found version with the desired version.
 
-* build-images: `docker.io/rancher/etcd:v3.4.13-k3s1`
+* build-images: `docker.io/rancher/hardened-etcd:v3.4.13-k3s1`
 * images.go:    `EtcdVersion       = "v3.4.13-k3s1"`
