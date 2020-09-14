@@ -7,7 +7,7 @@ source ./scripts/version.sh
 export DOCKER_CLI_EXPERIMENTAL=enabled
 
 docker manifest create \
-    --amend ${REPO}/kubernetes:${DOCKERIZED_VERSION} \
-    ${REPO}/kubernetes:${DOCKERIZED_VERSION}-${GOARCH}
+    --amend ${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION} \
+    ${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}-${GOARCH}
 
-docker manifest push ${REPO}/kubernetes:${DOCKERIZED_VERSION}
+docker manifest push ${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}

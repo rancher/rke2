@@ -13,4 +13,4 @@ docker.io/aquasec/trivy:0.10.2 --quiet image \
     --severity ${SEVERITIES="HIGH,CRITICAL"} \
     --no-progress \
     --ignore-unfixed \
-    ${REPO}/kubernetes:${DOCKERIZED_VERSION}-${GOARCH}
+    ${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}-${GOARCH}
