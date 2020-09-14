@@ -19,37 +19,54 @@ RKE2 is a fully compliant Kubernetes distribution, with the following changes:
 
 ## Installation
 
-RKE2 comes with a convenient and configurable installation script that handles OS configuration, binary release download, and installation of an openrc init script or systemd unit file. 
+RKE2 comes with a convenient installation script that will, by default, install via `yum` on RPM-based systems while unpacking the tarball bundle to `/usr/local` on all others.
 
 ### Quick Start
 
-The `install.sh` script provides a convenient way for installing rke2 server and agent, to install rke2 service:
+To install via the default mechanism for your system:
 
 ```sh
-INSTALL_RKE2_VERSION=v0.0.1-alpha.7 ./install.sh
+curl -fsSL https://raw.githubusercontent.com/rancher/rke2/master/install.sh | sudo sh -
 ```
+
+To install via unpacking the tarball on an RPM-based system:
+```sh
+curl -fsSL https://raw.githubusercontent.com/rancher/rke2/master/install.sh --output install.sh
+sudo INSTALL_RKE2_METHOD=tar sh ./install.sh
+```
+
+To install a specific version:
+```sh
+sudo INSTALL_RKE2_METHOD=tar INSTALL_RKE2_VERSION='v1.18.8-beta19+rke2' sh ./install.sh
+```
+
+## Configuration
 
 ### CIS Mode
 
-If you plan to run your RKE2 cluster in CIS mode, the installation script offers the ability to install RKE2 in preparation for this. Use the `INSTALL_RKE2_CIS_MODE` environment variable. This will configure the system for RKE2 to run in CIS compliant mode. This includes the creation of a user "etcd", updates a number of kernel parameters, and installs a systemd or openrc unit file that passes the CIS mode flag to the binary (`--profile=cis-1.5`). Please reference the installation script (`install.sh`) for CIS specifics.
+If you plan to run your RKE2 cluster in CIS mode you will want to:
 
-```sh
-INSTALL_RKE2_CIS_MODE=true INSTALL_RKE2_VERSION=v0.0.1-alpha.7 ./install.sh
+- apply these sysctls (at [/usr/local/share/rke2/rke2-cis-sysctl.conf](bundle/share/rke2/rke2-cis-sysctl.conf) for tar installations):
 ```
-
-*NOTE*
-RKE2 can be run in CIS mode without running the install script in CIS mode however the remediations will need to be done manually. 
-
-### Post Installation
-
-A kubeconfig is written to `/etc/rancher/rke2/rke2.yaml`, the install script will install rke2 and additional binaries such as `kubectl`, `ctr`, `rke2-uninstall.sh`.
+vm.panic_on_oom=0
+vm.overcommit_memory=1
+kernel.keys.root_maxbytes=25000000
+kernel.panic=10
+kernel.panic_on_oops=1
+```
+- create an `rke2` and `etcd` user
+```
+useradd -d /var/lib/rancher/rke2 -r -s /bin/false rke2
+useradd -d /var/lib/rancher/rke2/server/db -r -s /bin/false etcd
+usermod -aG etcd rke2
+```
 
 ## Operation
 
 To start using the rke2 cluster:
 
 ```sh
-export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+export KUBECONFIG=/etc/rancher/rke2/rke2.yaml PATH=$PATH:/var/lib/rancher/rke2/bin
 kubectl get nodes
 ```
 
@@ -63,22 +80,22 @@ RKE2_URL=https://myserver:6443 RKE2_TOKEN=XXX ./install.sh
 
 We provide a simple automated way to install RKE2 on AWS via terraform scripts, this method requires terraform to be installed and access to AWS cloud, to get started please checkout the [rke2-build](https://github.com/rancher/rke2-build) repo.
 
-## CentOS/RHEL 7 RPM Installation
+## RPM Repositories
 
 Signed RPMs are published for RKE2 within the `rpm.rancher.io` RPM repository. In order to use the RPM repository, on a CentOS 7 or RHEL 7 system, run the following bash snippet:
 
 ```bash
-cat << EOF > /etc/yum.repos.d/rancher-rke2-1-18-latest.repo
-[rancher-rke2-common-latest]
+cat << EOF > /etc/yum.repos.d/rancher-rke2-1-18-testing.repo
+[rancher-rke2-common-testing]
 name=Rancher RKE2 Common Latest
-baseurl=https://rpm.rancher.io/rke2/latest/common/centos/7/noarch
+baseurl=https://rpm.rancher.io/rke2/testing/common/centos/7/noarch
 enabled=1
 gpgcheck=1
 gpgkey=https://rpm.rancher.io/public.key
 
-[rancher-rke2-1-18-latest]
+[rancher-rke2-1-18-testing]
 name=Rancher RKE2 1.18 Latest
-baseurl=https://rpm.rancher.io/rke2/latest/1.18/centos/7/x86_64
+baseurl=https://rpm.rancher.io/rke2/testing/1.18/centos/7/x86_64
 enabled=1
 gpgcheck=1
 gpgkey=https://rpm.rancher.io/public.key

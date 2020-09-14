@@ -5,7 +5,7 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-mkdir -p dist/bundle/{bin,share}
+mkdir -p dist/bundle/share/${PROG}
 
 ### bundle underlay
 rsync -a bundle/ dist/bundle/
@@ -22,20 +22,4 @@ mkdir -p dist/artifacts
 ### (make the tarball)
 if [ -z "${PACKAGE_SKIP_TARBALL}" ]; then
   tar -czf dist/artifacts/${RELEASE}.tar.gz -C dist/bundle $(find dist/bundle -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
-fi
-
-### (make the self-installing tarball)
-if [ -z "${PACKAGE_SKIP_INSTALLER}" ]; then
-  ./scripts/install-makeself
-  ./build/makeself/makeself.sh \
-    --needroot \
-    --nox11 \
-    --sha256 \
-    --target /usr/local \
-    "dist/bundle" \
-    "dist/artifacts/rke2-installer.${PLATFORM}.run" \
-    "rke2 ${VERSION}" \
-    "env" \
-    INSTALL_RKE2_ROOT="." \
-    "sh" "./share/${PROG}/scripts/${PROG}-install.sh"
 fi

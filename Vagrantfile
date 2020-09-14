@@ -113,7 +113,7 @@ EOF
   config.vm.provision "selinux", type: "shell", run: "once" do |sh|
     sh.upload_path = "/tmp/vagrant-selinux"
     sh.env = {
-        'SELINUX': ENV['SELINUX'] || "Enforcing"
+        'SELINUX': ENV['SELINUX'] || "Permissive"
     }
     sh.inline = <<~SHELL
         #!/usr/bin/env bash
@@ -149,13 +149,9 @@ EOF
     SHELL
   end
 
-  config.vm.provision "install-rke2", type: "shell", run: "once" do |sh|
-    sh.upload_path = "/tmp/vagrant-install-rke2"
+  config.vm.provision "install-rke2-policy", type: "shell", run: "never" do |sh|
+    sh.upload_path = "/tmp/vagrant-install-rke2-policy"
     sh.env = {
-        'INSTALL_RKE2_SKIP_ENABLE': ENV['INSTALL_RKE2_SKIP_ENABLE'] || "false",
-        'INSTALL_RKE2_SKIP_START': ENV['INSTALL_RKE2_SKIP_START'] || "true",
-        'RKE2_KUBECONFIG_MODE': ENV['RKE2_KUBECONFIG_MODE'] || "0644",
-        'RKE2_SELINUX': ENV['RKE2_SELINUX'] || "true",
         'SELINUX_POLICY_REPO': ENV['SELINUX_POLICY_REPO'] || "github.com/rancher/rke2-selinux",
         'SELINUX_POLICY_BRANCH': ENV['SELINUX_POLICY_BRANCH'] || "master",
     }
@@ -163,21 +159,34 @@ EOF
         #!/usr/bin/env bash
         set -eux -o pipefail
         if [ ! -d /vagrant/rke2-policy ]; then
-            git clone --branch ${SELINUX_POLICY_BRANCH} https://${SELINUX_POLICY_REPO}.git /vagrant/rke2-policy
-            pushd /vagrant/rke2-policy
-            make -f /usr/share/selinux/devel/Makefile rke2.pp
-            semodule -i rke2.pp
-            popd
+            git clone https://${SELINUX_POLICY_REPO}.git /vagrant/rke2-policy
         fi
-        if [ -e /vagrant/dist/artifacts/rke2-images.linux-amd64.tar.gz ]; then
-            mkdir -vp /var/lib/rancher/rke2/agent/images
+        pushd /vagrant/rke2-policy
+        git checkout ${SELINUX_POLICY_BRANCH}
+        make -f /usr/share/selinux/devel/Makefile rke2.pp
+        semodule -i rke2.pp
+    SHELL
+  end
+
+  config.vm.provision "install-rke2", type: "shell", run: "once" do |sh|
+    sh.upload_path = "/tmp/vagrant-install-rke2"
+    sh.inline = <<~SHELL
+        #!/usr/bin/env bash
+        set -eux -o pipefail
+        mkdir -vp /usr/local
+        if [ -e /vagrant/dist/artifacts/rke2.linux-amd64.tar.gz ]; then
+            tar xz -f /vagrant/dist/artifacts/rke2.linux-amd64.tar.gz -C /usr/local
+        fi
+
+        mkdir -vp /var/lib/rancher/rke2/agent/images
+        if [ -e /vagrant/build/images/rke2-airgap.tar ]; then
+            cp -vf /vagrant/build/images/rke2-airgap.tar /var/lib/rancher/rke2/agent/images/rke2.tar
+        elif [ -e /vagrant/dist/artifacts/rke2-images.linux-amd64.tar.gz ]; then
             gzip -d < /vagrant/dist/artifacts/rke2-images.linux-amd64.tar.gz > /var/lib/rancher/rke2/agent/images/rke2.tar
-            /vagrant/dist/artifacts/rke2-installer.linux-amd64.run --noprogress
-            restorecon -vr /var/lib/rancher/rke2 /usr/local
         fi
+        restorecon -r /var/lib/rancher/rke2 /usr/local || true
         cat <<-EOF > /etc/profile.d/rke2.sh
-source /usr/local/etc/profile.d/rke2.sh
-export KUBECONFIG PATH
+export KUBECONFIG=/etc/rancher/rke2/rke2.yaml PATH=/usr/local/bin:$PATH:/var/lib/rancher/rke2/bin
 EOF
     SHELL
   end
