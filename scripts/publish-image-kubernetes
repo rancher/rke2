@@ -5,4 +5,4 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-docker image push ${REPO}/kubernetes:${DOCKERIZED_VERSION}-${GOARCH}
+docker image push ${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}-${GOARCH}
