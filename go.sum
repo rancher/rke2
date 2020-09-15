@@ -439,9 +439,11 @@ github.com/grpc-ecosystem/grpc-gateway v1.9.5 h1:UImYN5qQ8tuGpGE16ZmjvcTtTw24zw1
 github.com/grpc-ecosystem/grpc-gateway v1.9.5/go.mod h1:vNeuVxBJEsws4ogUvrchl83t/GYV9WGTSLVdBhOQFDY=
 github.com/hashicorp/errwrap v0.0.0-20141028054710-7554cd9344ce h1:prjrVgOk2Yg6w+PflHoszQNLTUh4kaByUcEWM/9uin4=
 github.com/hashicorp/errwrap v0.0.0-20141028054710-7554cd9344ce/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
+github.com/hashicorp/errwrap v1.0.0 h1:hLrqtEDnRye3+sgx6z4qVLNuviH3MR5aQ0ykNJa/UYA=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
 github.com/hashicorp/go-multierror v0.0.0-20161216184304-ed905158d874 h1:cAv7ZbSmyb1wjn6T4TIiyFCkpcfgpbcNNC3bM2srLaI=
 github.com/hashicorp/go-multierror v0.0.0-20161216184304-ed905158d874/go.mod h1:JMRHfdO9jKNzS/+BTlxCjKNQHg/jZAft8U7LloJvN7I=
+github.com/hashicorp/go-multierror v1.0.0 h1:iVjPR7a6H0tWELX5NxNe7bYopibicUzc7uPribsnS6o=
 github.com/hashicorp/go-multierror v1.0.0/go.mod h1:dHtQlpGsu+cZNNAkkCN/P3hoUDHhCYQXV3UM06sGGrk=
 github.com/hashicorp/go-syslog v1.0.0/go.mod h1:qPfqrKkXGihmCqbJM2mZgkZGvKG1dFdvsLplgctolz4=
 github.com/hashicorp/golang-lru v0.0.0-20180201235237-0fb14efe8c47/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
@@ -681,6 +683,7 @@ github.com/rakelkar/gonetsh v0.0.0-20190930180311-e5c5ffe4bdf0 h1:iXE9kmlAqhusXx
 github.com/rakelkar/gonetsh v0.0.0-20190930180311-e5c5ffe4bdf0/go.mod h1:4XHkfaUj+URzGO9sohoAgt2V9Y8nIW7fugpu0E6gShk=
 github.com/rancher/containerd v1.4.0-k3s1 h1:3ZiF3vYP7sAuH3fTVa1P1tmUETKPpRw0rAAH3wB6xFs=
 github.com/rancher/containerd v1.4.0-k3s1/go.mod h1:9GDw4Y295rEr7u9UZVleiAbsZM/d34thMi018FZStd4=
+github.com/rancher/cri-tools v1.19.0-k3s1 h1:c6lqNWyoAB5+NaUREbpZxKXCuYl9he24/DZEgHywg+A=
 github.com/rancher/cri-tools v1.19.0-k3s1/go.mod h1:bitvtZRi5F7t505Yw3zPzp22LOao1lqJKHfx6x0hnpw=
 github.com/rancher/dynamiclistener v0.2.1 h1:QiY1jxs2TOLrKB04G36vE2ehEvPMPGiWp8zEHLKB1nE=
 github.com/rancher/dynamiclistener v0.2.1/go.mod h1:9WusTANoiRr8cDWCTtf5txieulezHbpv4vhLADPp0zU=
@@ -694,6 +697,8 @@ github.com/rancher/helm-controller v0.7.3 h1:WTQHcNF2vl9w6Xd1eBtXDe0JUsYMFFstqX9
 github.com/rancher/helm-controller v0.7.3/go.mod h1:ZylsxIMGNADRPRNW+NiBWhrwwks9vnKLQiCHYWb6Bi0=
 github.com/rancher/k3s v1.18.3-0.20200908183520-077bacc9fcbf h1:Y9vu7YmgrEm0snOvo9WvNP8nqtLRVPxGrK7FFwQkqmQ=
 github.com/rancher/k3s v1.18.3-0.20200908183520-077bacc9fcbf/go.mod h1:50CuyXUMHa9iwB3uYlMt67DaaO3yCzAkUsrwHnv3mnM=
+github.com/rancher/k3s v1.19.1-rc1.0.20200915034458-a08e998bc5dd h1:LG+mI6JH7AC/AdX39B5hNn7amjiBMU/xvry+ev2Y9jo=
+github.com/rancher/k3s v1.19.1-rc1.0.20200915034458-a08e998bc5dd/go.mod h1:KZ7cVGFco3Q8FfQGynHIZZ7MYVE+yPdk6TZB9s9YqWk=
 github.com/rancher/kine v0.4.0 h1:1IhWy3TzjExG8xnj46eyUEWdzqNAD1WrgL4eEBKm6Uc=
 github.com/rancher/kine v0.4.0/go.mod h1:IImtCJ68AIkE+VY/kUI0NkyJL5q5WzO8QvMsSXqbrpA=
 github.com/rancher/kubernetes v1.19.0-k3s1 h1:TPFj4qlQgZ2E9xE/ScFLtBQoymxPNCXAYHJpSZYRW3o=
@@ -706,6 +711,7 @@ github.com/rancher/kubernetes/staging/src/k8s.io/apimachinery v1.19.0-k3s1 h1:n8
 github.com/rancher/kubernetes/staging/src/k8s.io/apimachinery v1.19.0-k3s1/go.mod h1:4qgwPPTQvmc3E4Ub+c6I9LSsdbujYP3pIQEGuIVy8oQ=
 github.com/rancher/kubernetes/staging/src/k8s.io/apiserver v1.19.0-k3s1 h1:HGOnHB7mi4OvLC1vsnSzv1q33k1r1+fCTp123fZKPT8=
 github.com/rancher/kubernetes/staging/src/k8s.io/apiserver v1.19.0-k3s1/go.mod h1:lpK+uXhJTVOwW6SDiSQiL0LaQaBktrM23VG489uC/U0=
+github.com/rancher/kubernetes/staging/src/k8s.io/cli-runtime v1.19.0-k3s1 h1:f5rpFUnvjmnpbOEfMKLo/eFBEwpRDO/xPqKVJmRL1IU=
 github.com/rancher/kubernetes/staging/src/k8s.io/cli-runtime v1.19.0-k3s1/go.mod h1:twd45pbv7psOvyGxI8eABhpeoXWW3bCX6aB5NVS6TXs=
 github.com/rancher/kubernetes/staging/src/k8s.io/client-go v1.19.0-k3s1 h1:SBTEEfzGC+zn2JLVisqjxuedrCZcZRLPiLaVi+in5I4=
 github.com/rancher/kubernetes/staging/src/k8s.io/client-go v1.19.0-k3s1/go.mod h1:RHmuC9yMUmS4ypsaBCH2s9PoG2BD29/60QU9yywYWPo=

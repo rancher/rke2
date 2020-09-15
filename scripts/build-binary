@@ -6,18 +6,17 @@ cd $(dirname $0)/..
 source ./scripts/version.sh
 
 if [ -z "${GODEBUG}" ]; then
-    EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -s -w"
-	DEBUG_GO_GCFLAGS=""
-    DEBUG_TAGS=""
+  EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -s -w"
+  DEBUG_GO_GCFLAGS=""
+  DEBUG_TAGS=""
 else
-    DEBUG_GO_GCFLAGS='-gcflags=all=-N -l'
+  DEBUG_GO_GCFLAGS='-gcflags=all=-N -l'
 fi
 
 REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
 RELEASE=${PROG}.${GOOS}-${GOARCH}
 
-
-BUILDTAGS="selinux netgo osusergo"
+BUILDTAGS="selinux netgo osusergo no_stage"
 GO_BUILDTAGS="${GO_BUILDTAGS} ${BUILDTAGS} ${DEBUG_TAGS}"
 
 VERSION_FLAGS="
