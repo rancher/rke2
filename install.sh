@@ -52,6 +52,7 @@ fatal() {
 
 # setup_env defines needed environment variables.
 setup_env() {
+    INSTALL_RKE2_GITHUB_URL="https://github.com/rancher/rke2"
     # --- bail if we are not root ---
     if [ ! $(id -u) -eq 0 ]; then
         fatal "You need to be root to perform this install"
@@ -205,6 +206,11 @@ verify_tarball() {
     if [ "${CHECKSUM_EXPECTED}" != "${CHECKSUM_ACTUAL}" ]; then
         fatal "download sha256 does not match ${CHECKSUM_EXPECTED}, got ${CHECKSUM_ACTUAL}"
     fi
+}
+unpack_tarball() {
+  info "unpacking tarball file"
+  mkdir -p /usr/local
+  tar xzf $TMP_TARBALL -C /usr/local
 }
 
 do_install_rpm() {
