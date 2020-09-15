@@ -49,19 +49,12 @@ do_unmount() {
     fi
 }
 
-for bin in /var/lib/rancher/rke2/data/**/bin/; do
-    [ -d $bin ] && export PATH=$PATH:$bin:$bin/aux
-done
+export PATH=$PATH:/var/lib/rancher/rke2/bin
 
 set -x
 
-for service in /etc/systemd/system/rke2*.service; do
-    [ -s ${service} ] && systemctl stop $(basename ${service})
-done
-
-for service in /etc/init.d/rke2*; do
-    [ -x ${service} ] && ${service} stop
-done
+systemctl stop rke2-server.service || true
+systemctl stop rke2-agent.service || true
 
 killtree $({ set +x; } 2>/dev/null; getshims; set -x)
 

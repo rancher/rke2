@@ -695,8 +695,6 @@ github.com/rancher/go-powershell v0.0.0-20200701184732-233247d45373 h1:BePi97poJ
 github.com/rancher/go-powershell v0.0.0-20200701184732-233247d45373/go.mod h1:Vz8oLnHgttpo/aZrTpjbcpZEDzzElqNau2zmorToY0E=
 github.com/rancher/helm-controller v0.7.3 h1:WTQHcNF2vl9w6Xd1eBtXDe0JUsYMFFstqX9ghGhI5Ac=
 github.com/rancher/helm-controller v0.7.3/go.mod h1:ZylsxIMGNADRPRNW+NiBWhrwwks9vnKLQiCHYWb6Bi0=
-github.com/rancher/k3s v1.18.3-0.20200908183520-077bacc9fcbf h1:Y9vu7YmgrEm0snOvo9WvNP8nqtLRVPxGrK7FFwQkqmQ=
-github.com/rancher/k3s v1.18.3-0.20200908183520-077bacc9fcbf/go.mod h1:50CuyXUMHa9iwB3uYlMt67DaaO3yCzAkUsrwHnv3mnM=
 github.com/rancher/k3s v1.19.1-rc1.0.20200915034458-a08e998bc5dd h1:LG+mI6JH7AC/AdX39B5hNn7amjiBMU/xvry+ev2Y9jo=
 github.com/rancher/k3s v1.19.1-rc1.0.20200915034458-a08e998bc5dd/go.mod h1:KZ7cVGFco3Q8FfQGynHIZZ7MYVE+yPdk6TZB9s9YqWk=
 github.com/rancher/kine v0.4.0 h1:1IhWy3TzjExG8xnj46eyUEWdzqNAD1WrgL4eEBKm6Uc=
