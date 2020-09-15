@@ -1,18 +1,19 @@
 [Unit]
-Description=Rancher Kubernetes Engine v2
+Description=Rancher Kubernetes Engine v2 (server)
 Documentation=https://github.com/rancher/rke2#readme
 Wants=network-online.target
 After=network-online.target
+Conflicts=rke2-agent.service
 
 [Install]
 WantedBy=multi-user.target
 
 [Service]
-EnvironmentFile=-/etc/systemd/system/rke2.env
+EnvironmentFile=-/etc/default/rke2-server
+EnvironmentFile=-/etc/sysconfig/rke2-server
+EnvironmentFile=-/usr/local/lib/systemd/system/rke2-server.env
 KillMode=process
 Delegate=yes
-# Having non-zero Limit*s causes performance problems due to accounting overhead
-# in the kernel. We recommend using cgroups to do container-local accounting.
 LimitNOFILE=1048576
 LimitNPROC=infinity
 LimitCORE=infinity
@@ -22,4 +23,4 @@ Restart=always
 RestartSec=5s
 ExecStartPre=-/sbin/modprobe br_netfilter
 ExecStartPre=-/sbin/modprobe overlay
-ExecStart=rke2 server
+ExecStart=/usr/local/bin/rke2 server

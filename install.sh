@@ -12,7 +12,24 @@ fi
 #   ENV_VAR=... ./install.sh
 #
 
-: "${INSTALL_RKE2_GITHUB_URL:="https://github.com/rancher/rke2"}"
+# Environment variables:
+#
+#   - INSTALL_RKE2_CHANNEL
+#     Channel to use for fetching rke2 download URL.
+#     Defaults to 'testing'.
+#
+#   - INSTALL_RKE2_METHOD
+#     The installation method to use.
+#     Default is on RPM-based systems is "rpm", all else "tar".
+#
+#   - INSTALL_RKE2_TYPE
+#     Type of rke2 service. Can be either "server" or "agent".
+#     Default is "server".
+#
+#   - INSTALL_RKE2_VERSION
+#     Version of rke2 to download from github.
+#
+
 
 # info logs the given argument at info log level.
 info() {
@@ -40,25 +57,17 @@ setup_env() {
         fatal "You need to be root to perform this install"
     fi
 
-    # --- determine if we are installing an agent or a server ---
+    # --- make sure install channel has a value
+    if [ -z "${INSTALL_RKE2_CHANNEL}" ]; then
+        INSTALL_RKE2_CHANNEL="testing"
+    fi
+
+    # --- make sure install type has a value
     if [ -z "${INSTALL_RKE2_TYPE}" ]; then
-        if [ -z "${RKE2_URL}" ]; then
-            INSTALL_RKE2_TYPE="server"
-        else
-            INSTALL_RKE2_TYPE="agent"
-        fi
+        INSTALL_RKE2_TYPE="server"
     fi
 
-    # --- check for invalid characters in system name ---
-    valid_chars=$(printf '%s' "${INSTALL_RKE2_NAME}" | sed -e 's/[][!#$%&()*;<=>?\_`{|}/[:space:]]/^/g;')
-    if [ "${INSTALL_RKE2_NAME}" != "${valid_chars}" ]; then
-        invalid_chars=$(printf '%s' "${valid_chars}" | sed -e 's/[^^]/ /g')
-        fatal "invalid characters for system name:
-            ${INSTALL_RKE2_NAME}
-            ${invalid_chars}"
-    fi
-
-    # --- use yum install method if available
+    # --- use yum install method if available by default
     if [ -z "${INSTALL_RKE2_METHOD}" ] && command -v yum >/dev/null 2>&1; then
         INSTALL_RKE2_METHOD=yum
     fi
@@ -103,7 +112,7 @@ verify_downloader() {
 setup_tmp() {
     TMP_DIR=$(mktemp -d -t rke2-install.XXXXXXXXXX)
     TMP_CHECKSUMS=${TMP_DIR}/rke2.checksums
-    TMP_INSTALLER=${TMP_DIR}/rke2.installer
+    TMP_TARBALL=${TMP_DIR}/rke2.tarball
     cleanup() {
         code=$?
         set +e
@@ -174,32 +183,32 @@ download_checksums() {
     fi
     info "downloading checksums at ${CHECKSUMS_URL}"
     download "${TMP_CHECKSUMS}" "${CHECKSUMS_URL}"
-    CHECKSUM_EXPECTED=$(grep "rke2-installer.${SUFFIX}.run" "${TMP_CHECKSUMS}" | awk '{print $1}')
+    CHECKSUM_EXPECTED=$(grep "rke2.${SUFFIX}.tar.gz" "${TMP_CHECKSUMS}" | awk '{print $1}')
 }
 
-# download_installer downloads binary from github url.
-download_installer() {
+# download_tarball downloads binary from github url.
+download_tarball() {
     if [ -n "${INSTALL_RKE2_COMMIT}" ]; then
         fatal "downloading by commit is currently not supported"
-        # INSTALLER_URL=${STORAGE_URL}/rke2-installer.${SUFFIX}-${INSTALL_RKE2_COMMIT}.run
+        # TARBALL_URL=${STORAGE_URL}/rke2-installer.${SUFFIX}-${INSTALL_RKE2_COMMIT}.run
     else
-        INSTALLER_URL=${INSTALL_RKE2_GITHUB_URL}/releases/download/${INSTALL_RKE2_VERSION}/rke2-installer.${SUFFIX}.run
+        TARBALL_URL=${INSTALL_RKE2_GITHUB_URL}/releases/download/${INSTALL_RKE2_VERSION}/rke2.${SUFFIX}.tar.gz
     fi
-    info "downloading installer at ${INSTALLER_URL}"
-    download "${TMP_INSTALLER}" "${INSTALLER_URL}"
+    info "downloading tarball at ${TARBALL_URL}"
+    download "${TMP_TARBALL}" "${TARBALL_URL}"
 }
 
-# verify_installer verifies the downloaded installer checksum.
-verify_installer() {
+# verify_tarball verifies the downloaded installer checksum.
+verify_tarball() {
     info "verifying installer"
-    CHECKSUM_ACTUAL=$(sha256sum "${TMP_INSTALLER}" | awk '{print $1}')
+    CHECKSUM_ACTUAL=$(sha256sum "${TMP_TARBALL}" | awk '{print $1}')
     if [ "${CHECKSUM_EXPECTED}" != "${CHECKSUM_ACTUAL}" ]; then
         fatal "download sha256 does not match ${CHECKSUM_EXPECTED}, got ${CHECKSUM_ACTUAL}"
     fi
 }
 
-do_rpm() {
-    cat <<-EOF > "/etc/yum.repos.d/rancher-rke2-${1}.repo"
+do_install_rpm() {
+    cat <<-EOF >"/etc/yum.repos.d/rancher-rke2-${1}.repo"
 [rancher-rke2-common-${1}]
 name=Rancher RKE2 Common (${1})
 baseurl=https://rpm-${1}.rancher.io/rke2/${1}/common/centos/7/noarch
@@ -216,29 +225,30 @@ EOF
     yum -y install "rke2-${INSTALL_RKE2_TYPE}"
 }
 
-do_installer() {
+do_install_tar() {
     verify_downloader curl || verify_downloader wget || fatal "can not find curl or wget for downloading files"
     setup_tmp
     get_release_version
     download_checksums
-    download_installer
-    verify_installer
-    sh "${TMP_INSTALLER}"
+    download_tarball
+    verify_tarball
+    unpack_tarball
 }
 
 do_install() {
     setup_env
     setup_arch
 
-    case ${INSTALL_RKE2_METHOD-"installer"} in
+    case ${INSTALL_RKE2_METHOD} in
     yum | rpm | dnf)
-        do_rpm "${INSTALL_RKE2_CHANNEL-"testing"}"
+        do_install_rpm "${INSTALL_RKE2_CHANNEL}"
         ;;
-    installer)
-        do_installer "${INSTALL_RKE2_CHANNEL-"testing"}"
+    tar | tarball)
+        do_install_tar "${INSTALL_RKE2_CHANNEL}"
         ;;
     *)
-        fatal "unknown installation method: ${INSTALL_RKE2_METHOD}"
+        warn "unknown installation method, '${INSTALL_RKE2_METHOD}', assuming you meant 'tar'"
+        do_install_tar "${INSTALL_RKE2_CHANNEL}"
         ;;
     esac
 }
