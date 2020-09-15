@@ -208,9 +208,9 @@ verify_tarball() {
     fi
 }
 unpack_tarball() {
-  info "unpacking tarball file"
-  mkdir -p /usr/local
-  tar xzf $TMP_TARBALL -C /usr/local
+    info "unpacking tarball file"
+    mkdir -p /usr/local
+    tar xzf $TMP_TARBALL -C /usr/local
 }
 
 do_install_rpm() {
