@@ -253,7 +253,6 @@ do_install() {
         do_install_tar "${INSTALL_RKE2_CHANNEL}"
         ;;
     *)
-        info "unknown installation method, '${INSTALL_RKE2_METHOD}', assuming you meant 'tar'"
         do_install_tar "${INSTALL_RKE2_CHANNEL}"
         ;;
     esac
