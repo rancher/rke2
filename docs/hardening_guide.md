@@ -115,7 +115,7 @@ for namespace in $(kubectl get namespaces -A -o json | jq -r '.items[].metadata.
 done
 ```
 
-Execute this script to apply the default-allow-all.yaml the permissive NetworkPolicy to all namespaces.
+Execute this script to apply the default-allow-all.yaml permissive NetworkPolicy to all namespaces.
 
 ## Reference Hardened RKE2 cluster.yml configuration
 
