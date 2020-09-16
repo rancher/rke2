@@ -2,11 +2,9 @@
 
 This document provides prescriptive guidance for hardening a production installation of RKE2. It outlines the configurations and controls required to address Kubernetes benchmark controls from the Center for Information Security (CIS).
 
-If RKE2 is run in CIS mode, RKE2 applies a restrictive NetworkPolicy and PodSecurityPolicy. The restrictice NetworkPolicy allows for only namespace traffic wit the exception of DNS and applies to `kube-system`, `kube-public`, and `default` namespaces. The restrictive PodSecurityPolicy addresses CIS controls defined in section 5.2. More details can be found below.
+If RKE2 is run in CIS mode, RKE2 applies a restrictive NetworkPolicy and PodSecurityPolicy. The restrictive NetworkPolicy allows for only namespace traffic with the exception of DNS and applies to `kube-system`, `kube-public`, and `default` namespaces. The restrictive PodSecurityPolicy addresses CIS controls defined in section 5.2. More details can be found below.
 
 ## Overview
-
-This document provides prescriptive guidance for hardening a production installation of RKE2 with Kubernetes v1.18. It outlines the configurations required to address Kubernetes benchmark controls from the Center for Information Security (CIS).
 
 For more detail about evaluating a hardened cluster against the official CIS benchmark, refer to the [CIS Benchmark Rancher Self-Assessment Guide](security_self_assessment.md).
 
@@ -39,7 +37,7 @@ groupadd --gid 52034 etcd
 useradd --comment "etcd service account" --uid 52034 --gid 52034 etcd
 ```
 
-Update the RKE config.yml with the uid and gid of the etcd user:
+Update the RKE2 config.yml with the uid and gid of the etcd user:
 
 ```yaml
 services:
@@ -52,7 +50,7 @@ services:
 
 Kubernetes provides a default service account which is used by cluster workloads where no specific service account is assigned to the pod. Where access to the Kubernetes API from a pod is required, a specific service account should be created for that pod, and rights granted to that service account. The default service account should be configured such that it does not provide a service account token and does not have any explicit rights assignments.
 
-For each namespace including default and kube-system on a standard RKE install the default service account must include this value:
+For each namespace including default and kube-system on a standard RKE2 install the default service account must include this value:
 
 ```yaml
 automountServiceAccountToken: false
@@ -82,9 +80,9 @@ done
 
 Running different applications on the same Kubernetes cluster creates a risk of one compromised application attacking a neighboring application. Network segmentation is important to ensure that containers can communicate only with those they are supposed to. A network policy is a specification of how selections of pods are allowed to communicate with each other and other network endpoints.
 
-Network Policies are namespace scoped. When a network policy is introduced to a given namespace, all traffic not allowed by the policy is denied. However, if there are no network policies in a namespace all traffic will be allowed into and out of the pods in that namespace. To enforce network policies, a CNI (container network interface) plugin must be enabled. This guide uses canal to provide the policy enforcement. Additional information about CNI providers can be found here
+Network Policies are namespace scoped. When a network policy is introduced to a given namespace, all traffic not allowed by the policy is denied. However, if there are no network policies in a namespace all traffic will be allowed into and out of the pods in that namespace. To enforce network policies, a CNI (container network interface) plugin must be enabled. This guide uses canal to provide the policy enforcement. Additional information about CNI providers can be found [here](https://rancher.com/blog/2019/2019-03-21-comparing-kubernetes-cni-providers-flannel-calico-canal-and-weave/).
 
-Once a CNI provider is enabled on a cluster a default network policy can be applied. For reference purposes a permissive example is provide below. If you want to allow all traffic to all pods in a namespace (even if policies are added that cause some pods to be treated as “isolated”), you can create a policy that explicitly allows all traffic in that namespace. Save the following yaml as default-allow-all.yaml. Additional documentation about network policies can be found on the Kubernetes site.
+Once a CNI provider is enabled on a cluster a default network policy can be applied. For reference purposes a permissive example is provided below. If you want to allow all traffic to all pods in a namespace (even if policies are added that cause some pods to be treated as “isolated”), you can create a policy that explicitly allows all traffic in that namespace. Save the following yaml as default-allow-all.yaml. Additional documentation about network policies can be found on the Kubernetes site.
 
 For a secured RKE2 cluster, run a RKE2 in CIS Mode by issuing the `--profile=cis-1.5` flag.
 
@@ -121,7 +119,7 @@ Execute this script to apply the default-allow-all.yaml the permissive NetworkPo
 
 ## Reference Hardened RKE2 cluster.yml configuration
 
-The reference RKE2 Template provides the configuration needed to achieve a hardened install of Kubenetes. RKE2 Templates are used to provision Kubernetes and define Rancher settings. Follow the Rancher documentaion for additional installation and RKE2 Template details.
+The reference RKE2 Template provides the configuration needed to achieve a hardened install of Kubenetes. RKE2 Templates are used to provision Kubernetes and define Rancher settings. Follow the Rancher documentation for additional installation and RKE2 Template details.
 
 ```yaml
 # 
@@ -373,7 +371,7 @@ rancher_kubernetes_engine_config:
         address: 127.0.0.1
         profiling: 'false'
   ssh_agent_auth: false
-windows_prefered_cluster: false
+windows_preferred_cluster: false
 ```
 
 ## Hardened Reference Ubuntu 18.04 LTS cloud-config
