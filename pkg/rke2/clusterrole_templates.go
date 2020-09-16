@@ -2,7 +2,7 @@ package rke2
 
 const (
 	kubeletAPIServerRoleBindingName = "kube-apiserver-kubelet-admin"
-	tunnelControllerRoleName        = "system:k3s-controller"
+	tunnelControllerRoleName        = "system:rke2-controller"
 )
 
 const kubeletAPIServerRoleBindingTemplate = `apiVersion: rbac.authorization.k8s.io/v1
