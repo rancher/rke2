@@ -10,13 +10,13 @@ For more detail about each audit, including rationales and remediations for fail
 
 ## Testing Controls Methodology
 
-Rancher and RKE install Kubernetes services via static pods. Configuration is defined by arguments passed to the pod at the time of initialization.
+RKE2 installs Kubernetes services via static pods. Configuration is defined by arguments passed to the pod at the time of initialization.
 
-Where control audits differ from the original CIS benchmark, the audit commands specific to RKE2 are provided for testing. When performing the tests, you will need access to the command line on the hosts of the RKE nodes. The commands also make use of the the `jq` and `kubectl` (with valid config) tools to and are required in the testing and evaluation of test results.
+Where control audits differ from the original CIS benchmark, the audit commands specific to RKE2 are provided for testing. When performing the tests, you will need access to the command line on the hosts of the RKE2 nodes. The commands also make use of the the `jq` and `kubectl` (with valid config) tools to and are required in the testing and evaluation of test results.
 
 ## Controls
 
-### 1 Master Node Security Configurationlink
+### 1 Master Node Security Configuration
 
 #### 1.1 Master Node Configuration Files
 
