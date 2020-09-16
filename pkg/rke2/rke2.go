@@ -42,6 +42,7 @@ func Server(clx *cli.Context, cfg Config) error {
 	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
 		setPSPs(),
 		setNetworkPolicies(),
+		setClusterRoles(),
 	)
 
 	return server.Run(clx)
