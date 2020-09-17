@@ -57,7 +57,7 @@ func (s *StaticPodConfig) Kubelet(args []string) error {
 		for {
 			cmd := exec.Command("kubelet", args...)
 			cmd.Stdout = os.Stdout
-			//cmd.Stderr = os.Stderr
+			cmd.Stderr = os.Stderr
 			addDeathSig(cmd)
 
 			err := cmd.Run()
