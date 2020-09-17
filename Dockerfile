@@ -1,6 +1,6 @@
 ARG KUBERNETES_VERSION=dev
 # Build environment
-FROM rancher/hardened-build-base:v1.14.2-amd64 AS build
+FROM rancher/hardened-build-base:v1.13.15-amd64 AS build
 RUN set -x \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y update \
@@ -51,7 +51,7 @@ ARG TAG
 WORKDIR /
 RUN git clone -b ${KUBERNETES_VERSION} --depth=1 https://github.com/kubernetes/kubernetes.git
 WORKDIR /kubernetes
-RUN make KUBE_GIT_VERSION=${TAG} GOLDFLAGS='-extldflags "-static"' WHAT='cmd/kube-apiserver cmd/kube-controller-manager cmd/kube-proxy cmd/kube-scheduler cmd/kubeadm cmd/kubectl cmd/kubelet vendor/k8s.io/apiextensions-apiserver'
+RUN make KUBE_GIT_VERSION=${TAG} GOLDFLAGS='-extldflags "-static"' GOFLAGS='-tags=netgo,osusergo' WHAT='cmd/kube-apiserver cmd/kube-controller-manager cmd/kube-proxy cmd/kube-scheduler cmd/kubeadm cmd/kubectl cmd/kubelet vendor/k8s.io/apiextensions-apiserver'
 
 FROM registry.access.redhat.com/ubi7/ubi-minimal:latest AS kubernetes
 RUN microdnf update -y           && \
