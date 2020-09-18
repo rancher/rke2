@@ -73,7 +73,7 @@ kubectl get nodes
 `RKE2_TOKEN` is created at `/var/lib/rancher/rke2/server/node-token` on your server. To install on worker nodes we should pass `RKE2_URL` along with `RKE2_TOKEN` or `RKE2_CLUSTER_SECRET` environment variables, for example:
 
 ```sh
-RKE2_URL=https://myserver:6443 RKE2_TOKEN=XXX ./install.sh
+RKE2_URL=https://myserver:9345 RKE2_TOKEN=XXX ./install.sh
 ```
 
 ## Automated deployment
