@@ -132,7 +132,7 @@ func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) err
 			HealthPort:  10251,
 			HealthProto: "HTTP",
 			CPUMillis:   100,
-			Files: []string{etcdNameFile},
+			Files:       []string{etcdNameFile},
 		})
 	})
 }
@@ -171,7 +171,7 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 			HealthPort:  10252,
 			HealthProto: "HTTP",
 			CPUMillis:   200,
-			Files: []string{etcdNameFile},
+			Files:       []string{etcdNameFile},
 		})
 	})
 }
