@@ -103,16 +103,13 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 		}
 	}
 	after(etcdReady, func() error {
-		etcdNameFile := filepath.Join(s.DataDir, "server", "db", "etcd", "name")
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:   "kube-apiserver",
 			Args:      args,
 			Image:     s.Images.KubeAPIServer,
 			Dirs:      ssldirs,
 			CPUMillis: 250,
-			Files: []string{
-				etcdNameFile,
-			},
+			Files:       []string{etcdNameFile(s.DataDir)},
 		})
 	})
 	return auth, http.NotFoundHandler(), err
@@ -124,7 +121,6 @@ func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) err
 		return err
 	}
 	return after(apiReady, func() error {
-		etcdNameFile := filepath.Join(s.DataDir, "server", "db", "etcd", "name")
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:     "kube-scheduler",
 			Args:        args,
@@ -132,7 +128,7 @@ func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) err
 			HealthPort:  10251,
 			HealthProto: "HTTP",
 			CPUMillis:   100,
-			Files:       []string{etcdNameFile},
+			Files:       []string{etcdNameFile(s.DataDir)},
 		})
 	})
 }
@@ -160,7 +156,6 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 		return err
 	}
 	return after(apiReady, func() error {
-		etcdNameFile := filepath.Join(s.DataDir, "server", "db", "etcd", "name")
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command: "kube-controller-manager",
 			Args: append(args,
@@ -171,7 +166,7 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 			HealthPort:  10252,
 			HealthProto: "HTTP",
 			CPUMillis:   200,
-			Files:       []string{etcdNameFile},
+			Files:       []string{etcdNameFile(s.DataDir)},
 		})
 	})
 }
@@ -285,4 +280,8 @@ func chownr(path string, uid, gid int) error {
 		}
 		return err
 	})
+}
+
+func etcdNameFile(dataDir string) string {
+	return filepath.Join(dataDir, "server", "db", "etcd", "name")
 }
