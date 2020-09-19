@@ -39,6 +39,7 @@ type StaticPodConfig struct {
 	Images        images.Images
 	CloudProvider *CloudProviderConfig
 	CISMode       bool
+	DataDir       string
 }
 
 type CloudProviderConfig struct {
@@ -101,7 +102,6 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 			args = append(args[:i], args[i+1:]...)
 		}
 	}
-
 	after(etcdReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:   "kube-apiserver",
@@ -109,6 +109,7 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 			Image:     s.Images.KubeAPIServer,
 			Dirs:      ssldirs,
 			CPUMillis: 250,
+			Files:       []string{etcdNameFile(s.DataDir)},
 		})
 	})
 	return auth, http.NotFoundHandler(), err
@@ -127,6 +128,7 @@ func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) err
 			HealthPort:  10251,
 			HealthProto: "HTTP",
 			CPUMillis:   100,
+			Files:       []string{etcdNameFile(s.DataDir)},
 		})
 	})
 }
@@ -149,6 +151,7 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 			"--cloud-provider="+s.CloudProvider.Name,
 			"--cloud-config="+s.CloudProvider.Path)
 	}
+
 	if err := images.Pull(s.ImagesDir, "kube-controller-manager", s.Images.KubeControllManager); err != nil {
 		return err
 	}
@@ -163,6 +166,7 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 			HealthPort:  10252,
 			HealthProto: "HTTP",
 			CPUMillis:   200,
+			Files:       []string{etcdNameFile(s.DataDir)},
 		})
 	})
 }
@@ -276,4 +280,8 @@ func chownr(path string, uid, gid int) error {
 		}
 		return err
 	})
+}
+
+func etcdNameFile(dataDir string) string {
+	return filepath.Join(dataDir, "server", "db", "etcd", "name")
 }

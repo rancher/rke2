@@ -114,6 +114,7 @@ func setup(clx *cli.Context, cfg Config) error {
 		ManifestsDir:  agentManifestsDir,
 		CISMode:       cisMode,
 		CloudProvider: cpConfig,
+		DataDir:       dataDir,
 	}
 	executor.Set(&sp)
 
