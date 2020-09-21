@@ -26,7 +26,7 @@ fetch-kubeconfig() {(
     local num=${1:-1}
     local name=$(cat $TEST_DIR/servers/$num/metadata/name)
     local port=$(cat $TEST_DIR/servers/$num/metadata/port)
-    docker cp $name:/etc/rancher/k3s/k3s.yaml - 2>/dev/null | tar -xO 2>/dev/null | sed -e "s/:6443/:$port/g" >$TEST_DIR/servers/$num/kubeconfig.yaml
+    docker cp $name:/etc/rancher/rke2/rke2.yaml - 2>/dev/null | tar -xO 2>/dev/null | sed -e "s/:6443/:$port/g" >$TEST_DIR/servers/$num/kubeconfig.yaml
 )}
 export -f fetch-kubeconfig
 
@@ -64,7 +64,7 @@ export -f wait-for-nodes
 
 pod-ready() {
     kubectl get pods -n kube-system -o json \
-        | jq ".items[].status.containerStatuses[] | select(.name == \"$1\") | .ready" 2>/dev/null
+        | jq ".items[].status | select(.containerStatuses != null) | .containerStatuses[] | select(.name == \"$1\") | .ready" 2>/dev/null
 }
 export -f pod-ready
 
@@ -72,7 +72,7 @@ export -f pod-ready
 
 wait-for-services() {
     for service in $@; do
-        while [[ "$(pod-ready $service)" != 'true' ]]; do
+        while [[ "$(pod-ready $service | sort -u)" != 'true' ]]; do
             echo "Waiting for service $service to be ready..." >&2
             sleep 5
         done
@@ -100,7 +100,7 @@ export -f wait-for-db-connection
 verify-valid-version() {
     docker exec $@ 2>&1 | tee .version.tmp
     # check for bad strings in the version output, including '.' in the build metadata
-    if grep -oiE '.*(dev|head|unknown|fail|refuse|\+[^"]*\.).*' .version.tmp; then
+    if grep -oiE '.*(head|unknown|fail|refuse|\+[^"]*\.).*' .version.tmp; then
         return 1
     fi
 }
@@ -122,13 +122,27 @@ dump-logs() {
     echo "#---------------------------------"
     echo "#- Begin: logs for run ($testID)"
     echo
+    local server=$(cat $TEST_DIR/servers/1/metadata/name)
+    docker exec $server kubectl get pods -A -o wide >$TEST_DIR/logs/kubectl-get-pods.txt
+    docker exec $server kubectl get nodes -o wide >$TEST_DIR/logs/kubectl-get-nodes.txt
+    docker exec $server kubectl describe pods -A >$TEST_DIR/logs/kubectl-describe-pods.txt
+
     for node in $TEST_DIR/*/*; do
         [ -d "$node" ] || continue
         local name=$(cat $node/metadata/name 2>/dev/null)
         [ "$name" ] || continue
         mkdir -p $node/logs
-        docker cp $name:/var/lib/rancher/k3s/agent/containerd/containerd.log $node/logs/containerd.log 2>/dev/null
+        local hostname=$(docker exec $name hostname)
+        docker exec $server kubectl describe node/$hostname >$node/logs/kubectl-describe-node.txt
+        docker cp $name:/var/lib/rancher/rke2/agent/containerd/containerd.log $node/logs/containerd.log 2>/dev/null
         docker logs $name >$node/logs/system.log 2>&1
+        docker exec $name crictl pods >$node/logs/crictl-pods.txt
+        docker exec $name crictl ps -a >$node/logs/crictl-ps.txt
+        docker exec $name crictl ps -a -o json >$node/metadata/crictl-ps.json
+        for container in $(jq -r '.containers[].id' <$node/metadata/crictl-ps.json); do
+            local cname=$(jq -r '.containers[] | select(.id == "'$container'") | .metadata.name' <$node/metadata/crictl-ps.json)
+            docker exec $name crictl logs $container >$node/logs/$cname-$container.log 2>&1
+        done
         for log in $node/logs/*.log; do
             echo
             echo "#- Tail: $log"
@@ -136,6 +150,13 @@ dump-logs() {
             echo "#- Done: $log"
             echo
         done
+    done
+    for txt in $TEST_DIR/logs/*.txt $TEST_DIR/*/*/logs/*.txt; do
+        echo
+        echo "#- Cat: $txt"
+        cat $txt
+        echo "#- Done: $txt"
+        echo
     done
     echo
     echo "#- Finish: logs for run ($testID)"
@@ -176,10 +197,28 @@ retrieve-sonobuoy-logs() {
     if [ -n "$LOG_OUTPUT" ]; then
         cp $e2eLog $(sed -e "s/-STATUS-/-$status-/g" <<< "$LOG_OUTPUT")
     fi
+    tail -11 $e2eLog
     awk '/^Summarizing .* Failures?:$/,0' $e2eLog
     return $code
 }
 export -f retrieve-sonobuoy-logs
+
+# ---
+
+test-wait() {
+    wait $1 || echo "test wait exit code $?"
+    local delay=15
+    sleep $delay
+    while sonobuoy status | grep -q -E ' +e2e +running +'; do
+        sleep $delay
+    done
+    sleep $delay
+    if sonobuoy status | grep -q -E ' +e2e +complete +passed +'; then
+        return 0
+    fi
+    return 1
+}
+export -f test-wait
 
 # ---
 
@@ -193,14 +232,14 @@ sonobuoy-test() {
     sonobuoy run \
         --config=scripts/sonobuoy-config.json \
         --plugin-env=e2e.E2E_USE_GO_RUNNER=true \
-        --kube-conformance-image-version=${VERSION_K8S} \
+        --kube-conformance-image-version=${KUBERNETES_VERSION} \
         --wait=30 \
         $@ &
 
     local sonobuoyPID=$!
     local code=0
-    time wait $sonobuoyPID || code=$?
-
+    time timeout --foreground 30m bash -c test-wait $sonobuoyPID || code=$?
+    echo "Sonobuoy finished with code $code"
     retrieve-sonobuoy-logs
     return $code
 }
@@ -246,8 +285,8 @@ test-setup() {
 
     mkdir -p $TEST_DIR/metadata
     if [ "$LABEL" ]; then
-        exec > >(awk "{ printf \"[\033[36m${LABEL}\033[m] %s\n\", \$0 }") \
-            2> >(awk "{ printf \"[\033[35m${LABEL}\033[m] %s\n\", \$0 }" >&2)
+        exec > >(awk -W interactive "{ printf \"[\033[36m${LABEL}\033[m] %s\n\", \$0 }") \
+            2> >(awk -W interactive "{ printf \"[\033[35m${LABEL}\033[m] %s\n\", \$0 }" >&2)
         echo "$LABEL" >$TEST_DIR/metadata/label
     fi
 
@@ -255,16 +294,17 @@ test-setup() {
     exec > >(tee -a $TEST_DIR/logs/test.log) \
         2> >(tee -a $TEST_DIR/logs/test.log >&2)
 
-    if [ -z "$K3S_IMAGE" ]; then
+    if [ -z "$RKE2_IMAGE" ]; then
         . ./scripts/version.sh
-        TAG=${TAG:-${VERSION_TAG}${SUFFIX}}
-        REPO=${REPO:-rancher}
-        IMAGE_NAME=${IMAGE_NAME:-k3s}
-        export K3S_IMAGE=${REPO}/${IMAGE_NAME}:${TAG}
+        #TAG=${TAG:-${VERSION_TAG}${SUFFIX}}
+        #REPO=${REPO:-rancher}
+        #IMAGE_NAME=${IMAGE_NAME:-rke2}
+        export RKE2_IMAGE=${REPO}/${PROG}-test:${DOCKERIZED_VERSION}-${GOARCH}
+        #export RKE2_IMAGE=${REPO}/${IMAGE_NAME}:${TAG}
     fi
 
-    if [ -z "$K3S_IMAGE" ]; then
-        echo 'K3S_IMAGE environment variable should be defined'
+    if [ -z "$RKE2_IMAGE" ]; then
+        echo 'RKE2_IMAGE environment variable should be defined'
         return 1
     fi
 
@@ -361,7 +401,7 @@ export -f run-function
 provision-server() {
     local count=$(inc-count servers)
     local testID=$(basename $TEST_DIR)
-    local name=$(echo "k3s-server-$count-$testID" | tee $TEST_DIR/servers/$count/metadata/name)
+    local name=$(echo "rke2-server-$count-$testID" | tee $TEST_DIR/servers/$count/metadata/name)
     #local args=$(cat $TEST_DIR/args $TEST_DIR/servers/args $TEST_DIR/servers/$count/args 2>/dev/null)
     local port=$(timeout --foreground 5s bash -c get-port | tee $TEST_DIR/servers/$count/metadata/port)
     local SERVER_INSTANCE_ARGS="SERVER_${count}_ARGS"
@@ -373,13 +413,12 @@ provision-server() {
         --privileged \
         -v $TEST_DIR/db-ca/:/db-ca \
         -p 127.0.0.1:$port:6443 \
-        -p 6443 \
-        -e K3S_TOKEN=$(cat $TEST_DIR/metadata/secret) \
-        -e K3S_DEBUG=true \
-        $K3S_IMAGE server $ARGS $SERVER_ARGS ${!SERVER_INSTANCE_ARGS}
+        -e RKE2_TOKEN=$(cat $TEST_DIR/metadata/secret) \
+        -e RKE2_DEBUG=true \
+        $RKE2_IMAGE server $ARGS $SERVER_ARGS ${!SERVER_INSTANCE_ARGS}
 
     local ip=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $name | tee $TEST_DIR/servers/$count/metadata/ip)
-    local url=$(echo "https://$ip:6443" | tee $TEST_DIR/servers/$count/metadata/url)
+    local url=$(echo "https://$ip:9345" | tee $TEST_DIR/servers/$count/metadata/url)
 
     echo "Started $name @ $url"
     run-function server-post-hook $count
@@ -389,10 +428,10 @@ export -f provision-server
 # ---
 
 provision-agent() {
-    local K3S_URL=${K3S_URL:-"$(cat $TEST_DIR/servers/1/metadata/url)"}
+    local RKE2_URL=${RKE2_URL:-"$(cat $TEST_DIR/servers/1/metadata/url)"}
     local count=$(inc-count agents)
     local testID=$(basename $TEST_DIR)
-    local name=$(echo "k3s-agent-$count-$testID" | tee $TEST_DIR/agents/$count/metadata/name)
+    local name=$(echo "rke2-agent-$count-$testID" | tee $TEST_DIR/agents/$count/metadata/name)
     #local args=$(cat $TEST_DIR/args $TEST_DIR/agents/args $TEST_DIR/agents/$count/args 2>/dev/null)
     local AGENT_INSTANCE_ARGS="AGENT_${count}_ARGS"
 
@@ -400,9 +439,9 @@ provision-agent() {
     docker run \
         -d --name $name \
         --privileged \
-        -e K3S_TOKEN=$(cat $TEST_DIR/metadata/secret) \
-        -e K3S_URL=$K3S_URL \
-        $K3S_IMAGE agent $ARGS $AGENT_ARGS ${!AGENT_INSTANCE_ARGS}
+        -e RKE2_TOKEN=$(cat $TEST_DIR/metadata/secret) \
+        -e RKE2_URL=$RKE2_URL \
+        $RKE2_IMAGE agent $ARGS $AGENT_ARGS ${!AGENT_INSTANCE_ARGS}
 
     echo "Started $name"
     run-function agent-post-hook $count
@@ -416,7 +455,7 @@ provision-cluster() {
 
     for i in $(seq 1 $NUM_SERVERS); do
         provision-server
-        timeout --foreground 30s bash -c "wait-for-kubeconfig $i"
+        timeout --foreground 120s bash -c "wait-for-kubeconfig $i"
     done
     export KUBECONFIG=$TEST_DIR/servers/1/kubeconfig.yaml
 
@@ -426,8 +465,8 @@ provision-cluster() {
         done
     fi
 
-    timeout --foreground 1m bash -c "wait-for-nodes $(( NUM_SERVERS + NUM_AGENTS ))"
-    timeout --foreground 3m bash -c "wait-for-services $WAIT_SERVICES"
+    timeout --foreground 4m bash -c "wait-for-nodes $(( NUM_SERVERS + NUM_AGENTS ))"
+    timeout --foreground 8m bash -c "wait-for-services $WAIT_SERVICES"
 
     run-function cluster-post-hook
 
@@ -479,10 +518,12 @@ run-e2e-tests() {
     label=PARALLEL \
         logName=e2e-STATUS-${ARCH}-parallel.log \
         e2e-test ${sonobuoyParallelArgs[@]}
+    echo "Exit code $? for parallel start"
 
     label=SERIAL \
         logName=e2e-STATUS-${ARCH}-serial.log \
         e2e-test ${sonobuoySerialArgs[@]}
+    echo "Exit code $? for serial start"
 }
 export -f run-e2e-tests
 

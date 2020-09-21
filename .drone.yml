@@ -17,6 +17,18 @@ steps:
   - name: docker
     path: /var/run/docker.sock
 
+- name: test
+  image: rancher/dapper:v0.5.0
+  secrets: [ gcloud_auth ]
+  environment:
+    GCLOUD_AUTH:
+      from_secret: gcloud_auth
+  commands:
+  - dapper -f Dockerfile --target dapper make test
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+
 - name: publish-dist-artifacts
   image: plugins/github-release
   settings:

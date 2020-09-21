@@ -12,12 +12,28 @@ RUN set -x \
 
 # Dapper/Drone/CI environment
 FROM build AS dapper
-ENV DAPPER_ENV GODEBUG REPO TAG DRONE_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT
+ENV DAPPER_ENV GODEBUG REPO TAG DRONE_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME GCLOUD_AUTH
+ARG DAPPER_HOST_ARCH
+ENV ARCH $DAPPER_HOST_ARCH
 ENV DAPPER_OUTPUT ./dist ./bin ./build
 ENV DAPPER_DOCKER_SOCKET true
 ENV DAPPER_TARGET dapper
-ENV DAPPER_RUN_ARGS "-v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build"
+ENV DAPPER_RUN_ARGS "--privileged --network host -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build"
+RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
+        VERSION=0.19.0 OS=linux && \
+        curl -sL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
+        tar -xzf - -C /usr/local/bin; \
+   fi
+RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
+            curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+        )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
+    chmod a+x /usr/local/bin/kubectl
+
 RUN curl -sL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.27.0
+RUN set -x \
+ && apk --no-cache add \
+    jq \
+    python2
 WORKDIR /source
 # End Dapper stuff
 
@@ -134,3 +150,46 @@ COPY --from=kubernetes \
 COPY --from=charts \
     /charts/ \
     /charts/
+
+FROM ubuntu:18.04 AS test
+ARG TARGETARCH
+VOLUME /var/lib/rancher/rke2
+VOLUME /var/lib/kubelet
+VOLUME /var/lib/cni
+VOLUME /var/log
+COPY bin/rke2 /bin/
+# use built air-gap images
+COPY build/images/rke2-airgap.tar /var/lib/rancher/rke2/agent/images/
+COPY build/images.txt /airgap-images.txt
+# use rke2 bundled binaries
+ENV PATH=/var/lib/rancher/rke2/bin:$PATH
+# for kubectl
+ENV KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+# for crictl
+ENV CONTAINER_RUNTIME_ENDPOINT="unix:///run/k3s/containerd/containerd.sock"
+# for ctr
+RUN mkdir -p /run/containerd \
+    &&  ln -s /run/k3s/containerd/containerd.sock /run/containerd/containerd.sock
+# for go dns bug
+RUN mkdir -p /etc && \
+    echo 'hosts: files dns' > /etc/nsswitch.conf
+# for conformance testing
+RUN chmod 1777 /tmp
+RUN set -x \
+ && export DEBIAN_FRONTEND=noninteractive \
+ && apt-get -y update \
+ && apt-get -y upgrade \
+ && apt-get -y install \
+    bash \
+    bash-completion \
+    ca-certificates \
+    conntrack \
+    ebtables \
+    ethtool \
+    iptables \
+    jq \
+    less \
+    socat \
+    vim
+ENTRYPOINT ["/bin/rke2"]
+CMD ["server"]

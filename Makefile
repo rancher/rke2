@@ -119,6 +119,10 @@ package-images: build-images		## Package docker images for airgap environment
 package-bundle: build						## Package the tarball bundle
 	./scripts/package-bundle
 
+.PHONY: test
+test:
+	./scripts/test
+
 ./.dapper:
 	@echo Downloading dapper
 	@curl -sL https://releases.rancher.com/dapper/v0.5.0/dapper-$$(uname -s)-$$(uname -m) > .dapper.tmp
