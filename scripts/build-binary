@@ -6,17 +6,17 @@ cd $(dirname $0)/..
 source ./scripts/version.sh
 
 if [ -z "${GODEBUG}" ]; then
-  EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -s -w"
-  DEBUG_GO_GCFLAGS=""
-  DEBUG_TAGS=""
+    EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -w"
+    DEBUG_GO_GCFLAGS=""
+    DEBUG_TAGS=""
 else
-  DEBUG_GO_GCFLAGS='-gcflags=all=-N -l'
+    DEBUG_GO_GCFLAGS='-gcflags=all=-N -l'
 fi
 
 REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
 RELEASE=${PROG}.${GOOS}-${GOARCH}
 
-BUILDTAGS="selinux netgo osusergo no_stage"
+BUILDTAGS="selinux netgo osusergo no_stage static_build sqlite_omit_load_extension"
 GO_BUILDTAGS="${GO_BUILDTAGS} ${BUILDTAGS} ${DEBUG_TAGS}"
 
 VERSION_FLAGS="
@@ -25,13 +25,31 @@ VERSION_FLAGS="
         -X ${K3S_PKG}/pkg/version.Version=${VERSION}
         -X ${K3S_PKG}/pkg/version.GitCommit=${REVISION}
 "
+
+#STATIC_FLAGS='-extldflags "-static -Wl,--fatal-warnings"'
+### ON GLIBC SYSTEMS YOU WILL SEE LINKER WARNINGS #####################################################################
+# github.com/rancher/rke2
+#/usr/bin/ld: /tmp/go-link-743463534/000027.o: in function `nvmlInit_dl':
+#/home/jacob/go/pkg/mod/github.com/mindprince/gonvml@v0.0.0-20190828220739-9ebdce4bb989/bindings.go:152: warning: Using 'dlopen' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+### THESE CAN BE SAFELY IGNORED UNLESS YOU ARE TRYING TO LEVERAGE NVIDIA METRICS FROM CADVISOR AND YOU HAPPEN TO BE ###
+### RUNNING RKE2 ON A SYSTEM OTHER THAN THE ONE WHICH IS WAS BUILT THAT ALSO HAS AN INCOMPATIBLE GLIBC ################
 STATIC_FLAGS='-extldflags "-static"'
 
 GO_LDFLAGS="${STATIC_FLAGS} ${EXTRA_LDFLAGS}"
 echo ${DEBUG_GO_GCFLAGS}
 go build \
-         -tags "${GO_BUILDTAGS}" \
-         ${GO_GCFLAGS} ${GO_BUILD_FLAGS} \
-         -o bin/${PROG} \
-         -ldflags "${GO_LDFLAGS} ${VERSION_FLAGS}" \
-         ${GO_TAGS}
+    -tags "${GO_BUILDTAGS}" \
+    ${GO_GCFLAGS} ${GO_BUILD_FLAGS} \
+    -o bin/${PROG} \
+    -ldflags "${GO_LDFLAGS} ${VERSION_FLAGS}" \
+    ${GO_TAGS}
+
+# assert that rke2 is fully statically linked
+if type -a go-assert-static.sh >/dev/null 2>&1; then
+    go-assert-static.sh bin/${PROG}
+fi
+
+# assert that rke2 is linked to goboring
+if type -a go-assert-boring.sh >/dev/null 2>&1; then
+    go-assert-boring.sh bin/${PROG}
+fi

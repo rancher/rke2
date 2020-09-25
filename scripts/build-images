@@ -14,8 +14,8 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images.txt
     docker.io/rancher/hardened-etcd:v3.4.13-k3s1
     docker.io/rancher/hardened-flannel:v0.13.0-rancher1-rc1
     docker.io/rancher/hardened-k8s-metrics-server:v0.3.6
-    docker.io/rancher/klipper-helm:v0.3.0
     docker.io/rancher/hardened-kube-proxy:${KUBERNETES_VERSION}
+    docker.io/rancher/klipper-helm:v0.3.0
     docker.io/rancher/pause:3.2
     docker.io/rancher/nginx-ingress-controller-defaultbackend:1.5-rancher1
     docker.io/rancher/nginx-ingress-controller:nginx-0.30.0-rancher1

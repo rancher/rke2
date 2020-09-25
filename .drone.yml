@@ -1,112 +1,86 @@
 ---
 kind: pipeline
-name: amd64
+type: docker
+name: build-amd64
 
 platform:
   os: linux
   arch: amd64
 
 steps:
-- name: go_mod_tidy
-  image: rancher/hardened-build-base:v1.14.2-amd64
-  volumes:
-    - name: docker
-      path: /var/run/docker.sock
+- name: build-and-package
+  image: rancher/dapper:v0.5.3
   commands:
-    - go mod tidy
-    - git diff --exit-code
-  when:
-    event:
-      - pull_request
-
-- name: build
-  image: rancher/dapper:v0.5.0
-  commands:
+  - docker pull --quiet rancher/hardened-build-base:v1.13.15b4
   - dapper -f Dockerfile --target dapper make dapper-ci
   volumes:
   - name: docker
     path: /var/run/docker.sock
 
-- name: github_binary_release
+- name: publish-dist-artifacts
   image: plugins/github-release
   settings:
     api_key:
       from_secret: github_token
-    prerelease: true
     checksum:
     - sha256
     checksum_file: CHECKSUMsum-amd64.txt
     checksum_flatten: true
     files:
-    - "dist/artifacts/*"
+    - dist/artifacts/*
+    prerelease: true
   when:
+    event:
+    - tag
     instance:
     - drone-publish.rancher.io
     ref:
     - refs/head/master
     - refs/tags/*
-    event:
-    - tag
 
-- name: build-image-kubernetes
-  image: rancher/hardened-build-base:v1.14.2-amd64
+- name: publish-image-kubernetes
+  image: rancher/hardened-build-base:v1.13.15b4
+  commands:
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - DRONE_TAG=${DRONE_TAG} make publish-image-kubernetes
+  environment:
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+    DOCKER_USERNAME:
+      from_secret: docker_username
   volumes:
   - name: docker
     path: /var/run/docker.sock
-  commands:
-  - DRONE_TAG=${DRONE_TAG} BUILD_K8S_IMAGE=true make build-image-kubernetes
-  environment:
-    DOCKER_USERNAME:
-      from_secret: docker_username
-    DOCKER_PASSWORD:
-      from_secret: docker_password
   when:
-    instance:
-    - drone-pr.rancher.io
-
-- name: publish-image-kubernetes
-  image: rancher/hardened-build-base:v1.14.2-amd64
-  volumes:
-    - name: docker
-      path: /var/run/docker.sock
-  commands:
-    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-    - DRONE_TAG=${DRONE_TAG} make publish-image-kubernetes
-  environment:
-    DOCKER_USERNAME:
-      from_secret: docker_username
-    DOCKER_PASSWORD:
-      from_secret: docker_password
-  when:
+    event:
+    - tag
     instance:
     - drone-publish.rancher.io
     ref:
     - refs/head/master
     - refs/tags/*
-    event:
-    - tag
 
 - name: publish-image-runtime
-  image: rancher/hardened-build-base:v1.14.2-amd64
-  volumes:
-    - name: docker
-      path: /var/run/docker.sock
+  image: rancher/hardened-build-base:v1.13.15b4
+  commands:
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
   environment:
-    DOCKER_USERNAME:
-      from_secret: docker_username
     DOCKER_PASSWORD:
       from_secret: docker_password
-  commands:
-    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-    - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
+    DOCKER_USERNAME:
+      from_secret: docker_username
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
   when:
+    event:
+    - tag
     instance:
     - drone-publish.rancher.io
     ref:
     - refs/head/master
     - refs/tags/*
-    event:
-    - tag
 
 volumes:
 - name: docker
@@ -115,6 +89,31 @@ volumes:
 
 ---
 kind: pipeline
+type: docker
+name: check
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: go-mod-tidy
+  image: rancher/hardened-build-base:v1.13.15b4
+  commands:
+  - go mod tidy
+  - git diff --exit-code
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+
+volumes:
+- name: docker
+  host:
+    path: /var/run/docker.sock
+
+---
+kind: pipeline
+type: docker
 name: manifest
 
 platform:
@@ -123,59 +122,61 @@ platform:
 
 steps:
 - name: manifest-runtime
-  image: rancher/hardened-build-base:v1.14.2-amd64
-  volumes:
-    - name: docker
-      path: /var/run/docker.sock
+  image: rancher/hardened-build-base:v1.13.15b4
+  commands:
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - DRONE_TAG=${DRONE_TAG} make publish-manifest-runtime
   environment:
-    DOCKER_USERNAME:
-      from_secret: docker_username
     DOCKER_PASSWORD:
       from_secret: docker_password
-  commands:
-    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-    - DRONE_TAG=${DRONE_TAG} make publish-manifest-runtime
-  when:
-    instance:
-    - drone-publish.rancher.io
-    ref:
-    - refs/head/master
-    - refs/tags/*
-    event:
-    - tag
-
-- name: manifest-kubernetes
-  image: rancher/hardened-build-base:v1.14.2-amd64
+    DOCKER_USERNAME:
+      from_secret: docker_username
   volumes:
   - name: docker
     path: /var/run/docker.sock
-  environment:
-    DOCKER_USERNAME:
-      from_secret: docker_username
-    DOCKER_PASSWORD:
-      from_secret: docker_password
-  commands:
-  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-  - DRONE_TAG=${DRONE_TAG} make publish-manifest-kubernetes
   when:
+    event:
+    - tag
     instance:
     - drone-publish.rancher.io
     ref:
     - refs/head/master
     - refs/tags/*
+
+- name: manifest-kubernetes
+  image: rancher/hardened-build-base:v1.13.15b4
+  commands:
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - DRONE_TAG=${DRONE_TAG} make publish-manifest-kubernetes
+  environment:
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+    DOCKER_USERNAME:
+      from_secret: docker_username
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+  when:
     event:
     - tag
-
-depends_on:
-- amd64
+    instance:
+    - drone-publish.rancher.io
+    ref:
+    - refs/head/master
+    - refs/tags/*
 
 volumes:
 - name: docker
   host:
     path: /var/run/docker.sock
 
+depends_on:
+- build-amd64
+- check
+
 ---
 kind: pipeline
+type: docker
 name: dispatch
 
 platform:
@@ -183,32 +184,33 @@ platform:
   arch: amd64
 
 steps:
-  - name: dispatch
-    image: rancher/dapper:v0.5.0
-    volumes:
-      - name: docker
-        path: /var/run/docker.sock
-    environment:
-      PAT_USERNAME:
-        from_secret: pat_username
-      PAT_TOKEN:
-        from_secret: github_token
-    commands:
-      - dapper -f Dockerfile --target dapper make dispatch
-    when:
-      instance:
-        - drone-publish.rancher.io
-      ref:
-        - refs/head/master
-        - refs/tags/*
-      event:
-        - tag
+- name: dispatch
+  image: rancher/dapper:v0.5.0
+  commands:
+  - dapper -f Dockerfile --target dapper make dispatch
+  environment:
+    PAT_TOKEN:
+      from_secret: github_token
+    PAT_USERNAME:
+      from_secret: pat_username
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+  when:
+    event:
+    - tag
+    instance:
+    - drone-publish.rancher.io
+    ref:
+    - refs/head/master
+    - refs/tags/*
 
 volumes:
-  - name: docker
-    host:
-      path: /var/run/docker.sock
+- name: docker
+  host:
+    path: /var/run/docker.sock
 
 depends_on:
-  - manifest
+- manifest
 
+...
