@@ -11,7 +11,6 @@ By default, RKE2 is built with Dapper which uses Docker. To build RKE2 you will 
 
 ### Required for Running
 When running RKE2 you will also need to install these packages:
-- libseccomp (libseccomp2 on Debian/Ubuntu)
 - ca-certificates
 
 ## Building
@@ -50,4 +49,4 @@ To run the built artifact(s) locally or on a remote host:
 
 It isn't obvious but `kubectl` will be installed and ready to use after starting up `rke2`. To use it you will need to:
 - `export KUBECONFIG=/etc/rancher/rke2/rke2.yaml`
-- `export PATH=/var/lib/rancher/rke2/bin:$PATH"`
+- `export PATH=/var/lib/rancher/rke2/bin:$PATH`
