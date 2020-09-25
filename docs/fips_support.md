@@ -13,8 +13,6 @@ The Go compiler in use can be found [here](https://hub.docker.com/u/goboring). E
 
 Most of the components of the RKE2 system are statically compiled with the GoBoring Go compiler implementation that takes advantage of the BoringSSL library. RKE2, from a component perspective, is broken up in a number of sections. The list below contains the sections and associated components.
 
-* etcd
-
 * Kubernetes
   * API Server
   * Controller Manager
@@ -24,7 +22,7 @@ Most of the components of the RKE2 system are statically compiled with the GoBor
   * MetricsServer
   * Kubectl
 
-* Helm
+* Helm Charts (bootstrap)
   * Flannel
   * Calico
   * CoreDNS
@@ -33,13 +31,14 @@ Most of the components of the RKE2 system are statically compiled with the GoBor
 
 To ensure that all aspects of the system architecture are using FIPS 140-2 compliant algorithm implementations, the RKE2 runtime contains utilities statically compiled with the customized Go compiler for FIPS 140-2 compliance. This ensures that all levels of the stack are compliant from Kubernetes daemons to container orchestration mechanics.
 
+* etcd
 * containerd
   * containerd-shim
   * containerd-shim-runc-v1
   * containerd-shim-runc-v2
-* ctr
-* runc
+  * ctr
 * crictl
+* runc
 
 ## Ingress
 
