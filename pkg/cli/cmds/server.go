@@ -71,7 +71,7 @@ var (
 		"with-node-id":                drop,
 		"node-label":                  copy,
 		"node-taint":                  copy,
-		"docker":                      copy,
+		"docker":                      drop,
 		"container-runtime-endpoint":  copy,
 		"pause-image":                 drop,
 		"private-registry":            copy,
