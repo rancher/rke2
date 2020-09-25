@@ -50,4 +50,4 @@ To run the built artifact(s) locally or on a remote host:
 
 It isn't obvious but `kubectl` will be installed and ready to use after starting up `rke2`. To use it you will need to:
 - `export KUBECONFIG=/etc/rancher/rke2/rke2.yaml`
-- `export PATH="$(ls -td /var/lib/rancher/rke2/data/*/bin | head -n 1):$PATH"`
+- `export PATH=/var/lib/rancher/rke2/bin:$PATH"`
