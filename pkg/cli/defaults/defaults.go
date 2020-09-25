@@ -30,17 +30,27 @@ func Set(clx *cli.Context, images images.Images, dataDir string, cisMode bool) e
 	cmds.ServerConfig.DisableKubeProxy = true
 	cmds.AgentConfig.PauseImage = images.Pause
 	cmds.AgentConfig.NoFlannel = true
-	cmds.ServerConfig.ExtraAPIArgs = append(cmds.ServerConfig.ExtraAPIArgs,
-		"enable-admission-plugins=NodeRestriction,PodSecurityPolicy")
-	cmds.AgentConfig.ExtraKubeletArgs = append(cmds.AgentConfig.ExtraKubeletArgs,
-		"stderrthreshold=FATAL",
-		"log-file-max-size=50",
-		"alsologtostderr=false",
-		"logtostderr=false",
-		"log-file="+filepath.Join(logsDir, "kubelet.log"))
+	cmds.ServerConfig.ExtraAPIArgs = append(
+		[]string{
+			"enable-admission-plugins=NodeRestriction,PodSecurityPolicy",
+		},
+		cmds.ServerConfig.ExtraAPIArgs...)
+	cmds.AgentConfig.ExtraKubeletArgs = append(
+		[]string{
+			"stderrthreshold=FATAL",
+			"log-file-max-size=50",
+			"alsologtostderr=false",
+			"logtostderr=false",
+			"log-file=" + filepath.Join(logsDir, "kubelet.log"),
+		},
+		cmds.AgentConfig.ExtraKubeletArgs...)
+
 	if cisMode {
-		cmds.AgentConfig.ExtraKubeletArgs = append(cmds.AgentConfig.ExtraKubeletArgs,
-			"protect-kernel-defaults=true")
+		cmds.AgentConfig.ExtraKubeletArgs = append(
+			[]string{
+				"--protect-kernel-defaults=true",
+			},
+			cmds.AgentConfig.ExtraKubeletArgs...)
 	}
 
 	if !cmds.Debug {
