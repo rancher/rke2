@@ -67,7 +67,42 @@ func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Co
 				strFlag.Hidden = true
 			}
 			flag = strFlag
+		} else if strFlag, ok := flag.(*cli.StringFlag); ok {
+			if opt.Usage != "" {
+				strFlag.Usage = opt.Usage
+			}
+			if opt.Default != "" {
+				strFlag.Value = opt.Default
+			}
+			if opt.Hide {
+				strFlag.Hidden = true
+			}
+			flag = strFlag
+		} else if strSliceFlag, ok := flag.(cli.StringSliceFlag); ok {
+			if opt.Usage != "" {
+				strSliceFlag.Usage = opt.Usage
+			}
+			if opt.Default != "" {
+				slice := &cli.StringSlice{}
+				parts := strings.Split(opt.Default, ",")
+				for _, val := range parts {
+					slice.Set(val)
+				}
+				strSliceFlag.Value = slice
+			}
+			if opt.Hide {
+				strSliceFlag.Hidden = true
+			}
+			flag = strSliceFlag
 		} else if intFlag, ok := flag.(cli.IntFlag); ok {
+			if opt.Usage != "" {
+				intFlag.Usage = opt.Usage
+			}
+			if opt.Hide {
+				intFlag.Hidden = true
+			}
+			flag = intFlag
+		} else if intFlag, ok := flag.(*cli.IntFlag); ok {
 			if opt.Usage != "" {
 				intFlag.Usage = opt.Usage
 			}
@@ -83,7 +118,18 @@ func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Co
 				boolFlag.Hidden = true
 			}
 			flag = boolFlag
+		} else if boolFlag, ok := flag.(*cli.BoolFlag); ok {
+			if opt.Usage != "" {
+				boolFlag.Usage = opt.Usage
+			}
+			if opt.Hide {
+				boolFlag.Hidden = true
+			}
+			flag = boolFlag
+		} else {
+			errs = append(errs, fmt.Errorf("unsupported type %T for flag %s", flag, name))
 		}
+
 		newFlags = append(newFlags, flag)
 	}
 

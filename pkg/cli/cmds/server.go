@@ -7,7 +7,10 @@ import (
 	"github.com/urfave/cli"
 )
 
-const rke2Path = "/var/lib/rancher/rke2"
+const (
+	DisableItems = "rke2-canal, rke2-coredns, rke2-ingress, rke2-kube-proxy, rke2-metrics-server"
+	rke2Path     = "/var/lib/rancher/rke2"
+)
 
 var (
 	config rke2.Config
@@ -53,8 +56,7 @@ var (
 		"datastore-keyfile":                 drop,
 		"default-local-storage-path":        drop,
 		"disable": {
-			Hide:    true,
-			Default: cmds.DisableItems,
+			Usage: "(components) Do not deploy packaged components and delete any deployed components (valid items: " + DisableItems + ")",
 		},
 		"disable-selinux":             drop,
 		"disable-scheduler":           drop,
