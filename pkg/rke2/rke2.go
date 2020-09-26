@@ -32,9 +32,6 @@ func Server(clx *cli.Context, cfg Config) error {
 	if err := setup(clx, cfg); err != nil {
 		return err
 	}
-	if err := clx.Set("disable", cmds.DisableItems); err != nil {
-		return err
-	}
 	if err := clx.Set("secrets-encryption", "true"); err != nil {
 		return err
 	}
@@ -57,11 +54,12 @@ func Agent(clx *cli.Context, cfg Config) error {
 
 func setup(clx *cli.Context, cfg Config) error {
 	var dataDir string
+
 	for _, f := range clx.Command.Flags {
 		switch t := f.(type) {
 		case cli.StringFlag:
 			if strings.Contains(t.Name, "data-dir") {
-				dataDir = t.Value
+				dataDir = *t.Destination
 			}
 		}
 	}
