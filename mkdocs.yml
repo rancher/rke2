@@ -1,0 +1,24 @@
+site_name: RKE2 - Rancher's Next Generation Kubernetes Distribution
+repo_url: https://github.com/rancher/rke2
+strict: false
+theme:
+  name: material
+  palette:
+    primary: blue
+  font:
+    text: 'Work Sans'
+    #  logo: 'assets/logo.svg'
+  #favicon: 'assets/favicon-32x32.png'
+#google_analytics:
+plugins:
+  - search
+  - markdownextradata: {}
+markdown_extensions:
+- codehilite
+- admonition
+- toc:
+    permalink: true
+nav:
+  - index.md
+  - Security:
+    - cis_self_assessment.md
