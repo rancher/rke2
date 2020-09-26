@@ -4,7 +4,7 @@
 
 This document is a companion to the security [hardening guide](hardening_guide.md). The hardening guide provides prescriptive guidance for hardening a production installation of RKE2, and this benchmark guide is meant to help you evaluate the level of security of the hardened cluster against each control in the benchmark.
 
-This document is to be used by Rancher operators, security teams, auditors and decision makers.
+This document is to be used by RKE2 operators, security teams, auditors and decision makers.
 
 For more detail about each audit, including rationales and remediations for failing tests, you can refer to the corresponding section of the CIS Kubernetes Benchmark v1.5. You can download the benchmark after logging in to [CISecurity.org](https://www.cisecurity.org/benchmark/kubernetes/).
 
