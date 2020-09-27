@@ -91,7 +91,6 @@ func setup(clx *cli.Context, cfg Config) error {
 
 	agentManifestsDir := filepath.Join(dataDir, "agent", config.DefaultPodManifestPath)
 	agentImagesDir := filepath.Join(dataDir, "agent", "images")
-	cisMode := clx.String("profile") != ""
 
 	managed.RegisterDriver(&etcd.ETCD{})
 
