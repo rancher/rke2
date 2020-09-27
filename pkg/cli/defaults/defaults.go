@@ -48,7 +48,7 @@ func Set(clx *cli.Context, images images.Images, dataDir string, cisMode bool) e
 	if cisMode {
 		cmds.AgentConfig.ExtraKubeletArgs = append(
 			[]string{
-				"--protect-kernel-defaults=true",
+				"protect-kernel-defaults=true",
 			},
 			cmds.AgentConfig.ExtraKubeletArgs...)
 	}
