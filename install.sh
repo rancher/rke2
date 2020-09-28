@@ -132,8 +132,9 @@ get_release_version() {
         version=${INSTALL_RKE2_VERSION}
     else
         info "finding release for channel ${INSTALL_RKE2_CHANNEL}"
-        # version_url="${INSTALL_RKE2_CHANNEL_URL}/${INSTALL_RKE2_CHANNEL}"
-        version_url="${INSTALL_RKE2_GITHUB_URL}/releases/latest"
+        INSTALL_RKE2_CHANNEL_URL=${INSTALL_RKE2_CHANNEL_URL:-'https://update.rke2.io/v1-release/channels'}
+        INSTALL_RKE2_CHANNEL=${INSTALL_RKE2_CHANNEL:-'stable'}
+        version_url="${INSTALL_RKE2_CHANNEL_URL}/${INSTALL_RKE2_CHANNEL}"
         case ${DOWNLOADER} in
         *curl)
             version=$(${DOWNLOADER} -w "%{url_effective}" -L -s -S ${version_url} -o /dev/null | sed -e 's|.*/||')
