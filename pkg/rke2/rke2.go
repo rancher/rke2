@@ -32,8 +32,18 @@ func Server(clx *cli.Context, cfg Config) error {
 	if err := setup(clx, cfg); err != nil {
 		return err
 	}
+
 	if err := clx.Set("secrets-encryption", "true"); err != nil {
 		return err
+	}
+
+	// Disable all disableable k3s packaged components. In addition to manifests,
+	// this also disables several integrated controllers.
+	disableItems := strings.Split(cmds.DisableItems, ",")
+	for _, item := range disableItems {
+		if err := clx.Set("disable", strings.TrimSpace(item)); err != nil {
+			return err
+		}
 	}
 
 	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
