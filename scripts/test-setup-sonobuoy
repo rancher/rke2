@@ -1,0 +1,26 @@
+#!/bin/bash
+
+all_services=(
+    calico-node
+    coredns
+    etcd
+    kube-apiserver
+    kube-controller-manager
+    kube-flannel
+    kube-proxy
+    kube-scheduler
+    metrics-server
+)
+export SERVER_ARGS='--disable=rke2-ingress-nginx-chart --kube-apiserver-arg=kubelet-preferred-address-types=InternalIP'
+
+export NUM_SERVERS=1
+export NUM_AGENTS=1
+export WAIT_SERVICES="${all_services[@]}"
+
+export sonobuoyParallelArgs=(--e2e-focus='\[Conformance\]' --e2e-skip='\[Serial\]' --e2e-parallel=y)
+export sonobuoySerialArgs=(--e2e-focus='\[Serial\].*\[Conformance\]')
+
+start-test() {
+  sonobuoy-test $@
+}
+export -f start-test

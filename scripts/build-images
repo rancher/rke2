@@ -23,3 +23,5 @@ EOF
 echo "docker.io/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}" >> build/images.txt
 echo "docker.io/${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}" >> build/images.txt
 docker image save --output build/images/${PROG}-airgap.tar $(<build/images.txt)
+
+./scripts/build-image-test
