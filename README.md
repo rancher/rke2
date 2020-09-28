@@ -82,25 +82,53 @@ We provide a simple automated way to install RKE2 on AWS via terraform scripts, 
 
 ## RPM Repositories
 
-Signed RPMs are published for RKE2 within the `rpm.rancher.io` RPM repository. In order to use the RPM repository, on a CentOS 7 or RHEL 7 system, run the following bash snippet:
+Signed RPMs are published for RKE2 within the `rpm-testing.rancher.io` and `rpm.rancher.io` RPM repositories. The RPMs can be installed and will provide `systemd` units for managing `rke2`, but will need to be configured via configuration file before starting the services for the first time. 
+
+### Enterprise Linux 7
+
+In order to use the RPM repository, on a CentOS 7 or RHEL 7 system, run the following bash snippet:
 
 ```bash
 cat << EOF > /etc/yum.repos.d/rancher-rke2-1-18-testing.repo
 [rancher-rke2-common-testing]
-name=Rancher RKE2 Common Latest
-baseurl=https://rpm.rancher.io/rke2/testing/common/centos/7/noarch
+name=Rancher RKE2 Common Testing
+baseurl=https://rpm-testing.rancher.io/rke2/testing/common/centos/7/noarch
 enabled=1
 gpgcheck=1
-gpgkey=https://rpm.rancher.io/public.key
+gpgkey=https://rpm-testing.rancher.io/public.key
 
 [rancher-rke2-1-18-testing]
-name=Rancher RKE2 1.18 Latest
-baseurl=https://rpm.rancher.io/rke2/testing/1.18/centos/7/x86_64
+name=Rancher RKE2 1.18 Testing
+baseurl=https://rpm-testing.rancher.io/rke2/testing/1.18/centos/7/x86_64
 enabled=1
 gpgcheck=1
-gpgkey=https://rpm.rancher.io/public.key
+gpgkey=https://rpm-testing.rancher.io/public.key
 EOF
 ```
+
+### Enterprise Linux 8
+
+In order to use the RPM repository, on a CentOS 8 or RHEL 8 system, run the following bash snippet:
+
+```bash
+cat << EOF > /etc/yum.repos.d/rancher-rke2-1-18-testing.repo
+[rancher-rke2-common-testing]
+name=Rancher RKE2 Common Testing
+baseurl=https://rpm-testing.rancher.io/rke2/testing/common/centos/8/noarch
+enabled=1
+gpgcheck=1
+gpgkey=https://rpm-testing.rancher.io/public.key
+
+[rancher-rke2-1-18-testing]
+name=Rancher RKE2 1.18 Testing
+baseurl=https://rpm-testing.rancher.io/rke2/testing/1.18/centos/8/x86_64
+enabled=1
+gpgcheck=1
+gpgkey=https://rpm-testing.rancher.io/public.key
+EOF
+```
+
+### Installing
 
 After this, you can either run:
 
