@@ -697,22 +697,18 @@ The AlwaysAdmit admission controller was deprecated in Kubernetes v1.13. Its beh
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and either remove the `--enable-admission-plugins` parameter, or set it to a
-value that does not include `AlwaysAdmit`.
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that if the `--enable-admission-plugins` argument is set, its value does not include `AlwaysAdmit`.
 
-```
-'NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,NodeRestriction,Priority,TaintNodesByCondition,PersistentVolumeClaimResize,PodSecurityPolicy,EventRateLimit' not have 'AlwaysAdmit' OR '--enable-admission-plugins' is not present
-```
+**Remediation:**
+By default, RKE2 only sets `NodeRestriction,PodSecurityPolicy` as the parameter to the `--enable-admission-plugins` argument.
+To configure this, follow the Kubernetes documentation and set the desired limits in a configuration file. Then refer to RKE2's documentation to see how to supply additional api server configuration via the kube-apiserver-arg parameter.
 
 
 #### 1.2.12
@@ -723,10 +719,20 @@ Setting admission control policy to `AlwaysPullImages` forces every new pod to p
 
 </details>
 
-**Result:** Pass
+**Result:** **Not Scored - Operator Dependent**
+
+**Audit:**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kube-apiserver | grep -v grep
+```
+
+Verify that the `--enable-admission-plugins` argument is set to a value that includes `AlwaysPullImages`.
 
 **Remediation:**
-
+By default, RKE2 only sets `NodeRestriction,PodSecurityPolicy` as the parameter to the `--enable-admission-plugins` argument.
+To configure this, follow the Kubernetes documentation and set the desired limits in a configuration file. Then refer to RKE2's documentation to see how to supply additional api server configuration via the kube-apiserver-arg parameter.
 
 #### 1.2.13
 Ensure that the admission control plugin SecurityContextDeny is set if PodSecurityPolicy is not used (Not Scored)
@@ -735,9 +741,20 @@ Ensure that the admission control plugin SecurityContextDeny is set if PodSecuri
 SecurityContextDeny can be used to provide a layer of security for clusters which do not have PodSecurityPolicies enabled.
 </details>
 
-**Result:** Pass
+**Result:** **Not Scored - Operator Dependent**
+
+**Audit:**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kube-apiserver | grep -v grep
+```
+
+Verify that the `--enable-admission-plugins` argument is set to a value that includes `SecurityContextDeny`, if `PodSecurityPolicy` is not included.
 
 **Remediation:**
+By default, RKE2 only sets `NodeRestriction,PodSecurityPolicy` as the parameter to the `--enable-admission-plugins` argument.
+To configure this, follow the Kubernetes documentation and set the desired limits in a configuration file. Then refer to RKE2's documentation to see how to supply additional api server configuration via the kube-apiserver-arg parameter.
 
 
 #### 1.2.14
@@ -749,23 +766,20 @@ When you create a pod, if you do not specify a service account, it is automatica
 
 **Result:** Pass
 
-**Remediation:**
-Follow the documentation and create ServiceAccount objects as per your environment.
-Then, edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and ensure that the `--disable-admission-plugins` parameter is set to a
-value that does not include `ServiceAccount`.
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--disable-admission-plugins` argument is set to a value that does not includes `ServiceAccount`.
 
-```
-'NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,NodeRestriction,Priority,TaintNodesByCondition,PersistentVolumeClaimResize,PodSecurityPolicy,EventRateLimit' has 'ServiceAccount' OR '--enable-admission-plugins' is not present
-```
+
+**Remediation:**
+By default, RKE2 does not use this argument. If there's a desire to use this argument, follow the documentation and create ServiceAccount objects as per your environment. Then, edit the API server pod specification file `/var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml`
+on the master node and ensure that the `--disable-admission-plugins` parameter is set to a
+value that does not include `ServiceAccount`.
 
 
 #### 1.2.15
@@ -777,22 +791,19 @@ Setting admission control policy to `NamespaceLifecycle` ensures that objects ca
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the `--disable-admission-plugins` parameter to
-ensure it does not include `NamespaceLifecycle`.
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--disable-admission-plugins` argument is set to a value that does not include `NamespaceLifecycle`.
 
-```
-'--disable-admission-plugins' is present OR '--disable-admission-plugins' is not present
-```
+**Remediation:**
+By default, RKE2 does not use this argument. If there's a desire to use this argument, follow the documentation and create ServiceAccount objects as per your environment. Then, edit the API server pod specification file `/var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml`
+on the master node and ensure that the `--disable-admission-plugins` parameter is set to a
+value that does not include `ServiceAccount`.
 
 
 #### 1.2.16
@@ -806,29 +817,18 @@ A Pod Security Policy is a cluster-level resource that controls the actions that
 
 **Result:** Pass
 
-**Remediation:**
-Follow the documentation and create Pod Security Policy objects as per your environment.
-Then, edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the `--enable-admission-plugins` parameter to a
-value that includes `PodSecurityPolicy`:
-
-``` bash
---enable-admission-plugins=...,PodSecurityPolicy,...
-```
-
-Then restart the API Server.
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--enable-admission-plugins` argument is set to a value that includes `PodSecurityPolicy`.
 
-```
-'NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,NodeRestriction,Priority,TaintNodesByCondition,PersistentVolumeClaimResize,PodSecurityPolicy,EventRateLimit' has 'PodSecurityPolicy'
-```
+**Remediation:**
+By default, RKE2 only sets `NodeRestriction,PodSecurityPolicy` as the parameter to the `--enable-admission-plugins` argument.
+To configure this, follow the Kubernetes documentation and set the desired limits in a configuration file. Then refer to RKE2's documentation to see how to supply additional api server configuration via the kube-apiserver-arg parameter.
 
 
 #### 1.2.17
@@ -841,27 +841,16 @@ Using the `NodeRestriction` plug-in ensures that the kubelet is restricted to th
 
 **Result:** Pass
 
-**Remediation:**
-Follow the Kubernetes documentation and configure `NodeRestriction` plug-in on kubelets.
-Then, edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the `--enable-admission-plugins` parameter to a
-value that includes `NodeRestriction`.
-
-``` bash
---enable-admission-plugins=...,NodeRestriction,...
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
-
-```
-'NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota,NodeRestriction,Priority,TaintNodesByCondition,PersistentVolumeClaimResize,PodSecurityPolicy,EventRateLimit' has 'NodeRestriction'
-```
+**Remediation:**
+By default, RKE2 only sets `NodeRestriction,PodSecurityPolicy` as the parameter to the `--enable-admission-plugins` argument.
+To configure this, follow the Kubernetes documentation and set the desired limits in a configuration file. Then refer to RKE2's documentation to see how to supply additional api server configuration via the kube-apiserver-arg parameter.
 
 
 #### 1.2.18
@@ -873,21 +862,17 @@ If you bind the apiserver to an insecure address, basically anyone who could con
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and remove the `--insecure-bind-address` parameter.
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--insecure-bind-address` argument does not exist.
 
-```
-'--insecure-bind-address' is not present
-```
+**Remediation:**
+By default, RKE2 explicitly excludes the use of the `--insecure-bind-address` parameter. No manual remediation is needed.
 
 
 #### 1.2.19
@@ -899,25 +884,17 @@ Setting up the apiserver to serve on an insecure port would allow unauthenticate
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the below parameter.
-
-``` bash
---insecure-port=0
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--insecure-port` argument is set to 0.
 
-```
-'0' is equal to '0'
-```
+**Remediation:**
+By default, RKE2 starts the kube-apiserver process with this argument's parameter set to 0. No manual remediation is needed.
 
 
 #### 1.2.20
@@ -929,22 +906,17 @@ The secure port is used to serve https with authentication and authorization. If
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and either remove the `--secure-port` parameter or
-set it to a different **(non-zero)** desired port.
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--secure-port` argument is either not set or is set to an integer value between 1 and 65535.
 
-```
-6443 is greater than 0 OR '--secure-port' is not present
-```
+**Remediation:**
+By default, RKE2 sets the parameter of 6443 for the `--secure-port` argument. No manual remediation is needed.
 
 
 #### 1.2.21
