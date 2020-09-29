@@ -594,7 +594,7 @@ Run the below command on the master node.
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-Verify that the argument is present.
+Verify that the `--kubelet-certificate-authority` argument exists and is set as appropriate.
 
 
 #### 1.2.7
