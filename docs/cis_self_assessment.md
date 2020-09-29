@@ -672,6 +672,15 @@ Note: This is an Alpha feature in the Kubernetes 1.15 release.
 
 **Result:** **Not Scored - Operator Dependent**
 
+**Audit:**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kube-apiserver | grep -v grep
+```
+
+Verify that the `--enable-admission-pluginsargument` is set to a value that includes EventRateLimit.
+
 **Remediation:**
 By default, RKE2 only sets `NodeRestriction,PodSecurityPolicy` as the parameter to the `--enable-admission-plugins` argument.
 To configure this, follow the Kubernetes documentation and set the desired limits in a configuration file. Then refer to RKE2's documentation for supply additional api server configuration via the `kube-apiserver-arg` parameter.
