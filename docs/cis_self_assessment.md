@@ -752,8 +752,7 @@ Run the below command on the master node.
 Verify that the `--enable-admission-plugins` argument is set to a value that includes `SecurityContextDeny`, if `PodSecurityPolicy` is not included.
 
 **Remediation:**
-By default, RKE2 only sets `NodeRestriction,PodSecurityPolicy` as the parameter to the `--enable-admission-plugins` argument.
-To configure this, follow the Kubernetes documentation and set the desired limits in a configuration file. Then refer to RKE2's documentation to see how to supply additional api server configuration via the kube-apiserver-arg parameter.
+By default, RKE2 automatically enables the PodSecurityPolicy admission plugin. Therefore, the `SecurityContextDeny` plugin need not be enabled. No manual remediation needed.
 
 
 #### 1.2.14
