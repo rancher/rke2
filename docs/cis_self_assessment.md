@@ -549,7 +549,7 @@ Run the below command on the master node.
 /bin/ps -ef | grep kube-apiserver | grep -v grep 
 ```
 
-Verify that the result is empty.
+Verify that the `--kubelet-https` argument does not exist.
 
 
 #### 1.2.5
