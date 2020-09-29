@@ -2,7 +2,11 @@
 
 This document provides prescriptive guidance for hardening a production installation of RKE2. It outlines the configurations and controls required to address Kubernetes benchmark controls from the Center for Information Security (CIS).
 
-If RKE2 is run in CIS mode, RKE2 applies a restrictive NetworkPolicy and PodSecurityPolicy. The restrictive NetworkPolicy allows for only namespace traffic with the exception of DNS and applies to `kube-system`, `kube-public`, and `default` namespaces. The restrictive PodSecurityPolicy addresses CIS controls defined in section 5.2. More details can be found below.
+If RKE2 is run with the profile flag set to "cis-1.5", performs a number of system checks and applies a restrictive NetworkPolicy and PodSecurityPolicy. 
+
+RKE2 checks for 5 sysctl kernel parameters (see below) as well as the existence of the "etcd" user. If any of the sysctl kernel parameters aren't set to the expected value or the "etcd" users doesn't exist, RKE2 will immediately cease operation. 
+
+The restrictive NetworkPolicy allows for only namespace traffic with the exception of DNS and applies to `kube-system`, `kube-public`, and `default` namespaces. The restrictive PodSecurityPolicy addresses CIS controls defined in section 5.2. More details can be found below.
 
 ## Overview
 
@@ -44,36 +48,6 @@ services:
   etcd:
     gid: 52034
     uid: 52034
-```
-
-## Set automountServiceAccountToken to false for Default Service Accounts
-
-Kubernetes provides a default service account which is used by cluster workloads where no specific service account is assigned to the pod. Where access to the Kubernetes API from a pod is required, a specific service account should be created for that pod, and rights granted to that service account. The default service account should be configured such that it does not provide a service account token and does not have any explicit rights assignments.
-
-For each namespace including default and kube-system on a standard RKE2 install the default service account must include this value:
-
-```yaml
-automountServiceAccountToken: false
-```
-
-Save the following yaml to a file called account_update.yaml
-
-```yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: default
-automountServiceAccountToken: false
-```
-
-Create a bash script file called account_update.sh. Be sure to chmod +x account_update.sh so the script has execute permissions.
-
-```sh
-#!/bin/bash -e
-
-for namespace in $(kubectl get namespaces -A -o json | jq -r '.items[].metadata.name'); do
-    kubectl patch serviceaccount default -n ${namespace} -p "$(cat account_update.yaml)"
-done
 ```
 
 ### Ensure that all Namespaces have Network Policies defined
