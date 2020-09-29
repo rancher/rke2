@@ -59,6 +59,9 @@ func AgentRun(clx *cli.Context) error {
 		if err := validateCISReqs("agent"); err != nil {
 			logrus.Fatal(err)
 		}
+		if err := setCISFlags(clx); err != nil {
+			logrus.Fatal(err)
+		}
 	case "":
 		logrus.Warn("not running in CIS 1.5 mode")
 	default:
