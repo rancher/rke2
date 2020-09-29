@@ -707,8 +707,7 @@ Run the below command on the master node.
 Verify that if the `--enable-admission-plugins` argument is set, its value does not include `AlwaysAdmit`.
 
 **Remediation:**
-By default, RKE2 only sets `NodeRestriction,PodSecurityPolicy` as the parameter to the `--enable-admission-plugins` argument.
-To configure this, follow the Kubernetes documentation and set the desired limits in a configuration file. Then refer to RKE2's documentation to see how to supply additional api server configuration via the kube-apiserver-arg parameter.
+By default, RKE2 only sets `NodeRestriction,PodSecurityPolicy` as the parameter to the `--enable-admission-plugins` argument. No manual remediation needed.
 
 
 #### 1.2.12
