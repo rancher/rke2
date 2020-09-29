@@ -569,7 +569,7 @@ Run the below command on the master node.
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-Verify the output contains these 2 arguments.
+Verify that the --kubelet-client-certificate and --kubelet-client-key arguments exist and they are set as appropriate.
 
 **Remediation:**
 By default, RKE2 kube-apiserver is ran with these arguments for secure communication with kubelet. No manual remediation is needed.
