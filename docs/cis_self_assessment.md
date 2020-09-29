@@ -515,9 +515,6 @@ The token-based authentication utilizes static tokens to authenticate requests t
 
 **Result:** Pass
 
-**Remediation:**
-By default, RKE2 does not run with basic authentication enabled. No manual remediation is needed.
-
 **Audit:**
 Run the below command on the master node.
 
@@ -527,6 +524,8 @@ Run the below command on the master node.
 
 Verify that the --basic-auth-file argument does not exist.
 
+**Remediation:**
+By default, RKE2 does not run with basic authentication enabled. No manual remediation is needed.
 
 #### 1.2.4
 Ensure that the `--kubelet-https` argument is set to true (Scored)
@@ -538,9 +537,6 @@ Connections from apiserver to kubelets could potentially carry sensitive data su
 
 **Result:** Pass
 
-**Remediation:**
-By default, RKE2 kube-apiserver doesn't run with the `--kubelet-https` parameter as it runs with TLS. No manual remediation is needed.
-
 
 **Audit:**
 Run the below command on the master node.
@@ -551,6 +547,8 @@ Run the below command on the master node.
 
 Verify that the `--kubelet-https` argument does not exist.
 
+**Remediation:**
+By default, RKE2 kube-apiserver doesn't run with the `--kubelet-https` parameter as it runs with TLS. No manual remediation is needed.
 
 #### 1.2.5
 Ensure that the `--kubelet-client-certificate` and `--kubelet-client-key` arguments are set as appropriate (Scored)
@@ -584,9 +582,6 @@ The connections from the apiserver to the kubelet are used for fetching logs for
 
 **Result:** Pass
 
-**Remediation:**
-By default, RKE2 kube-apiserver is ran with this argument for secure communication with kubelet. No manual remediation is needed.
-
 **Audit:**
 Run the below command on the master node.
 
@@ -595,6 +590,9 @@ Run the below command on the master node.
 ```
 
 Verify that the `--kubelet-certificate-authority` argument exists and is set as appropriate.
+
+**Remediation:**
+By default, RKE2 kube-apiserver is ran with this argument for secure communication with kubelet. No manual remediation is needed.
 
 
 #### 1.2.7
@@ -606,10 +604,6 @@ The API Server, can be configured to allow all requests. This mode should not be
 
 **Result:** Pass
 
-**Remediation:**
-By default, RKE2 sets `Node,RBAC` as the parameter to the `--authorization-mode` argument. No manual remediation is needed.
-
-
 **Audit:**
 Run the below command on the master node.
 
@@ -618,6 +612,9 @@ Run the below command on the master node.
 ```
 
 Verify that the argument value doesn't contain `AlwaysAllow`.
+
+**Remediation:**
+By default, RKE2 sets `Node,RBAC` as the parameter to the `--authorization-mode` argument. No manual remediation is needed.
 
 
 #### 1.2.8
