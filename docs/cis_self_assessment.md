@@ -50,11 +50,12 @@ The API server pod specification file controls various parameters that set the b
 
 **Audit:**
 ```bash
-ls -l /var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml
--rw-r--r-- 1 root root 6548 Sep 25 02:22 /var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml
+stat -c %a /var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml
+644
 ```
 
-**Remediation:** By default, RKE2 creates these files with `644` permissions. No manual remediation needed.
+**Remediation:** 
+By default, RKE2 creates these files with `644` permissions. No manual remediation needed.
 
 
 #### 1.1.2
@@ -68,14 +69,10 @@ The API server pod specification file controls various parameters that set the b
 
 **Audit:**
 ```bash
-ls -l /var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml
--rw-r--r-- 1 root root 6548 Sep 25 02:22 /var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml
+stat -c %U:%G /var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml
+root:root
 ```
-<!--
-**Audit Result:**
-```console
-```
--->
+
 **Remediation:**
 By default, RKE2 creates these files with `root:root` ownership. No manual remediation needed.
 
@@ -91,8 +88,8 @@ The controller manager pod specification file controls various parameters that s
 
 **Audit:**
 ```bash
-ls -l /var/lib/rancher/rke2/agent/pod-manifests/kube-controller-manager.yaml
--rw-r--r-- 1 root root 3131 Sep 25 02:22 /var/lib/rancher/rke2/agent/pod-manifests/kube-controller-manager.yaml
+stat -c %a /var/lib/rancher/rke2/agent/pod-manifests/kube-controller-manager.yaml
+644
 ```
 
 **Remediation:**
@@ -110,8 +107,8 @@ The controller manager pod specification file controls various parameters that s
 
 **Audit:**
 ```bash
-ls -l /var/lib/rancher/rke2/agent/pod-manifests/kube-controller-manager.yaml
--rw-r--r-- 1 root root 3131 Sep 25 02:22 /var/lib/rancher/rke2/agent/pod-manifests/kube-controller-manager.yaml
+stat -c %U:%G /var/lib/rancher/rke2/agent/pod-manifests/kube-controller-manager.yaml
+root:root
 ```
 
 **Remediation:**
@@ -129,8 +126,8 @@ The scheduler pod specification file controls various parameters that set the be
 
 **Audit:**
 ```bash
-ls -l /var/lib/rancher/rke2/agent/pod-manifests/kube-scheduler.yaml
--rw-r--r-- 1 root root 1914 Sep 25 02:22 /var/lib/rancher/rke2/agent/pod-manifests/kube-scheduler.yaml
+stat -c %a /var/lib/rancher/rke2/agent/pod-manifests/kube-scheduler.yaml
+644
 ```
 
 **Remediation:**
@@ -148,8 +145,8 @@ The scheduler pod specification file controls various parameters that set the be
 
 **Audit:**
 ```bash
-ls -l /var/lib/rancher/rke2/agent/pod-manifests/kube-scheduler.yaml
--rw-r--r-- 1 root root 1914 Sep 25 02:22 /var/lib/rancher/rke2/agent/pod-manifests/kube-scheduler.yaml
+stat -c %U:%G /var/lib/rancher/rke2/agent/pod-manifests/kube-scheduler.yaml
+root:root
 ```
 
 **Remediation:**
@@ -160,15 +157,15 @@ By default, RKE2 creates these files with `root:root` ownership. No manual remed
 Ensure that the etcd pod specification file permissions are set to `644` or more restrictive (Scored)
 <details>
 <summary>Rationale</summary>
-The etcd pod specification file /etc/kubernetes/manifests/etcd.yaml controls various parameters that set the behavior of the etcd service in the master node. etcd is a highly- available key-value store which Kubernetes uses for persistent storage of all of its REST API object. You should restrict its file permissions to maintain the integrity of the file. The file should be writable by only the administrators on the system.
+The etcd pod specification file /var/lib/rancher/rke2/agent/pod-manifests/etcd.yaml controls various parameters that set the behavior of the etcd service in the master node. etcd is a highly- available key-value store which Kubernetes uses for persistent storage of all of its REST API object. You should restrict its file permissions to maintain the integrity of the file. The file should be writable by only the administrators on the system.
 </details>
 
 **Result:** Pass
 
 **Audit:**
 ```bash
-ls -l /var/lib/rancher/rke2/agent/pod-manifests/etcd.yaml
--rw-r--r-- 1 root root 2762 Sep 25 02:22 /var/lib/rancher/rke2/agent/pod-manifests/etcd.yaml
+stat -c %a /var/lib/rancher/rke2/agent/pod-manifests/etcd.yaml
+644
 ```
 
 **Remediation:**
@@ -179,15 +176,15 @@ By default, RKE2 creates these files with `644` permissions. No manual remediati
 Ensure that the etcd pod specification file ownership is set to `root:root` (Scored)
 <details>
 <summary>Rationale</summary>
-The etcd pod specification file /etc/kubernetes/manifests/etcd.yaml controls various parameters that set the behavior of the etcd service in the master node. etcd is a highly- available key-value store which Kubernetes uses for persistent storage of all of its REST API object. You should set its file ownership to maintain the integrity of the file. The file should be owned by root:root.
+The etcd pod specification file /var/lib/rancher/rke2/agent/pod-manifests/etcd.yaml controls various parameters that set the behavior of the etcd service in the master node. etcd is a highly- available key-value store which Kubernetes uses for persistent storage of all of its REST API object. You should set its file ownership to maintain the integrity of the file. The file should be owned by root:root.
 </details>
 
 **Result:** Pass
 
 **Audit:**
 ```bash
-ls -l /var/lib/rancher/rke2/agent/pod-manifests/etcd.yaml
--rw-r--r-- 1 root root 2762 Sep 25 02:22 /var/lib/rancher/rke2/agent/pod-manifests/etcd.yaml
+stat -c %U:%G /var/lib/rancher/rke2/agent/pod-manifests/etcd.yaml
+root:root
 ```
 
 **Remediation:**
@@ -205,8 +202,8 @@ Container Network Interface provides various networking options for overlay netw
 
 **Audit:**
 ```bash
-ls -l /var/lib/rancher/rke2/server/manifests/rke2-canal-chart.yml
--rw-r--r-- 1 root root 8147 Sep 25 02:22 /var/lib/rancher/rke2/server/manifests/rke2-canal-chart.yml
+stat -c %a /var/lib/rancher/rke2/server/manifests/rke2-canal.yml
+644
 ```
 
 **Remediation:**
@@ -224,8 +221,8 @@ Container Network Interface provides various networking options for overlay netw
 
 **Audit:**
 ```bash
-ls -l /var/lib/rancher/rke2/server/manifests/rke2-canal-chart.yml
--rw-r--r-- 1 root root 8147 Sep 25 02:22 /var/lib/rancher/rke2/server/manifests/rke2-canal-chart.yml
+stat -c %U:%G /var/lib/rancher/rke2/server/manifests/rke2-canal.yml
+root:root
 ```
 
 **Remediation:**
@@ -244,7 +241,7 @@ etcd is a highly-available key-value store used by Kubernetes deployments for pe
 **Audit:**
 ```bash
 stat -c %a /var/lib/rancher/rke2/server/db/etcd
-755
+700
 ```
 
 **Remediation:**
@@ -288,7 +285,7 @@ stat -c %a /var/lib/rancher/rke2/server/cred/admin.kubeconfig
 ```
 
 **Remediation:**
-RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/admin.kubeconfig` and automatically sets its permissions to `644`. No manual remediation needed.
+By default, RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/admin.kubeconfig` and automatically sets its permissions to `644`. No manual remediation needed.
 
 
 #### 1.1.14
@@ -309,7 +306,7 @@ root:root
 ```
 
 **Remediation:**
-RKE2 creates this file at `stat -c %U:%G /var/lib/rancher/rke2/server/cred/admin.kubeconfig` and automatically sets its ownership to `root:root`.
+By default, RKE2 creates this file at `stat -c %U:%G /var/lib/rancher/rke2/server/cred/admin.kubeconfig` and automatically sets its ownership to `root:root`.
 
 
 #### 1.1.15
@@ -331,7 +328,7 @@ stat -c %a /var/lib/rancher/rke2/server/cred/scheduler.kubeconfig
 ```
 
 **Remediation:**
-RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/scheduler.kubeconfig` and automatically sets its permissions to `644`. No manual remediation needed.
+By default, RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/scheduler.kubeconfig` and automatically sets its permissions to `644`. No manual remediation needed.
 
 
 #### 1.1.16
@@ -352,177 +349,88 @@ root:root
 ```
 
 **Remediation:**
-RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/scheduler.kubeconfig` and automatically sets its ownership to `root:root`.
-
-
-<!-- TODO THIS IS WHERE I STOPPED
-From here down, the controls need tweaks to match the patter established above, which is:
-### {control id}
-{title from the cis 1.5.1 guide. This should already be there}
-<details>
-<summary>Rationale</summary>
-{Rationale copied from the guide}
-
-{Any notes explaining how it differs for rke2, like calling out a different file location}
-</details>
-
-**Result:** {Pass, Not Applicable, Not Scored - Operator Dependent, FAIL TODO!!!}
-
-**Audit:**
-{Some script or commands to prove we passed the audit. When possible, copy the audit from the CIS doc as much as you can. The Rancher2 self-assessment guide has way fancier scripts. I thin, we can keep ours simplier as long as they actually pass.}
--->
+By default, RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/scheduler.kubeconfig` and automatically sets its ownership to `root:root`.
 
 
 #### 1.1.17
-Ensure that the `controller-manager.conf` file permissions are set to `644` or more restrictive (Scored)
+Ensure that the `controller.kubeconfig` file permissions are set to `644` or more restrictive (Scored)
 <details>
 <summary>Rationale</summary>
-The controller-manager.conf file is the kubeconfig file for the Controller Manager. You should restrict its file permissions to maintain the integrity of the file. The file should be writable by only the administrators on the system.
+The controller.kubeconfig file is the kubeconfig file for the Scheduler. You should restrict its file permissions to maintain the integrity of the file. The file should be writable by only the administrators on the system.
+
+In RKE2, this file is located at `/var/lib/rancher/rke2/server/cred/controller.kubeconfig`.
 </details>
 
-**Result:** Not Applicable
+**Result:** Pass
+
+**Audit:**
+```bash
+stat -c %a /var/lib/rancher/rke2/server/cred/controller.kubeconfig
+644
+```
 
 **Remediation:**
-RKE doesn’t require or maintain a configuration file for the controller manager. All configuration is passed in as arguments at container run time.
-
+By default, RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/controller.kubeconfig` and automatically sets its permissions to `644`. No manual remediation needed.
 
 #### 1.1.18
-Ensure that the `controller-manager.conf` file ownership is set to `root:root` (Scored)
+Ensure that the `controller.kubeconfig` file ownership is set to `root:root` (Scored)
 <details>
 <summary>Rationale</summary>
-The controller-manager.conf file is the kubeconfig file for the Controller Manager. You should set its file ownership to maintain the integrity of the file. The file should be owned by root:root.
+The controller.kubeconfig file is the kubeconfig file for the Scheduler. You should set its file ownership to maintain the integrity of the file. The file should be owned by root:root.
+
+In RKE2, this file is located at `/var/lib/rancher/rke2/server/cred/controller.kubeconfig`.
 </details>
 
-**Result:** Not Applicable
+**Result:** Pass
+
+**Audit:**
+```bash
+stat -c %U:%G /var/lib/rancher/rke2/server/cred/controller.kubeconfig
+root:root
+```
 
 **Remediation:**
-RKE doesn’t require or maintain a configuration file for the controller manager. All configuration is passed in as arguments at container run time.
-
+By default, RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/controller.kubeconfig` and automatically sets its ownership to `root:root`.
 
 #### 1.1.19
 Ensure that the Kubernetes PKI directory and file ownership is set to `root:root` (Scored)
 <details>
 <summary>Rationale</summary>
-Kubernetes makes use of a number of certificates as part of its operation. You should set the ownership of the directory containing the PKI information and all files in that directory to maintain their integrity. The directory and files should be owned by root:root.
+Kubernetes makes use of a number of certificates as part of its operation. You should set the ownership of the directory containing the PKI information and all files in that directory to maintain their integrity. The directory and files should be owned by root:root. 
 </details>
 
 **Result:** Pass
 
-**Remediation:**
-Run the below command (based on the file location on your system) on the master node.
-For example,
-
-``` bash
-chown -R root:root /etc/kubernetes/ssl
-```
-
 **Audit:**
+```bash
+stat -c %U:%G /var/lib/rancher/rke2/server/tls
+root:root
+```
 
-```
-stat -c %U:%G /etc/kubernetes/ssl
-```
-
-**Expected result**:
-
-```
-'root:root' is present
-```
+**Remediation:**
+By default, RKE2 creates the directory and files with the expected ownership of `root:root`. No manual remediation should be necessary.
 
 
 #### 1.1.20
 Ensure that the Kubernetes PKI certificate file permissions are set to `644` or more restrictive (Scored)
 <details>
 <summary>Rationale</summary>
-Kubernetes makes use of a number of certificate files as part of the operation of its components. The permissions on these files should be set to 644 or more restrictive to protect their integrity.
+Kubernetes makes use of a number of certificate files as part of the operation of its components. The permissions on these files should be set to 644 or more restrictive to protect their integrity. 
 </details>
 
 **Result:** Pass
 
+**Audit:** 
+Run the below command on the master node.
+
+```bash
+stat -c %n\ %a /var/lib/rancher/rke2/server/tls/*.crt
+```
+
+Verify that the permissions are `644` or more restrictive.
+
 **Remediation:**
-Run the below command (based on the file location on your system) on the master node.
-For example,
-
-``` bash
-chmod -R 644 /etc/kubernetes/ssl
-```
-
-**Audit Script:** check_files_permissions.sh
-
-```
-#!/usr/bin/env bash
-
-# This script is used to ensure the file permissions are set to 644 or
-# more restrictive for all files in a given directory or a wildcard
-# selection of files
-#
-# inputs:
-#   $1 = /full/path/to/directory or /path/to/fileswithpattern
-#                                   ex: !(*key).pem
-#
-#   $2 (optional) = permission (ex: 600)
-#
-# outputs:
-#   true/false
-
-# Turn on "extended glob" for use of '!' in wildcard
-shopt -s extglob
-
-# Turn off history to avoid surprises when using '!'
-set -H
-
-USER_INPUT=$1
-
-if [[ "${USER_INPUT}" == "" ]]; then
-  echo "false"
-  exit
-fi
-
-
-if [[ -d ${USER_INPUT} ]]; then
-  PATTERN="${USER_INPUT}/*"
-else
-  PATTERN="${USER_INPUT}"
-fi
-
-PERMISSION=""
-if [[ "$2" != "" ]]; then
-  PERMISSION=$2
-fi
-
-FILES_PERMISSIONS=$(stat -c %n\ %a ${PATTERN})
-
-while read -r fileInfo; do
-  p=$(echo ${fileInfo} | cut -d' ' -f2)
-
-  if [[ "${PERMISSION}" != "" ]]; then
-    if [[ "$p" != "${PERMISSION}" ]]; then
-      echo "false"
-      exit
-    fi
-  else
-    if [[ "$p" != "644" && "$p" != "640" && "$p" != "600" ]]; then
-      echo "false"
-      exit
-    fi
-  fi
-done <<< "${FILES_PERMISSIONS}"
-
-
-echo "true"
-exit
-```
-
-**Audit Execution:**
-
-```
-./check_files_permissions.sh '/etc/kubernetes/ssl/\*.pem'
-```
-<!-- TODO escaped asterisk -->
-**Expected result**:
-
-```
-'true' is present
-```
+By default, RKE2 creates the files with the expected permissions of `644`. No manual remediation is needed.
 
 
 #### 1.1.21
@@ -534,45 +442,17 @@ Kubernetes makes use of a number of key files as part of the operation of its co
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node. 
+
+```bash
+stat -c %n\ %a /var/lib/rancher/rke2/server/tls/*.key
+```
+
+Verify that the permissions are `600` or more restrictive.
+
 **Remediation:**
-Run the below command (based on the file location on your system) on the master node.
-For example,
-
-``` bash
-chmod -R 600 /etc/kubernetes/ssl/certs/serverca
-```
-
-**Audit Script:** 1.1.21.sh
-<!-- TODO escaped asterisk -->
-```
-#!/bin/bash -e
-check_dir=${1:-/etc/kubernetes/ssl}
-
-for file in $(find ${check_dir} -name "\*key.pem"); do
-file_permission=$(stat -c %a ${file})
-if [[ "${file_permission}" == "600" ]]; then
-continue
-else
-echo "FAIL: ${file} ${file_permission}"
-exit 1
-fi
-done
-
-echo "pass"
-```
-
-**Audit Execution:**
-
-```
-./1.1.21.sh /etc/kubernetes/ssl
-```
-
-**Expected result**:
-
-```
-'pass' is present
-```
-
+By default, RKE2 creates the files with the expected permissions of `600`. No manual remediation is needed.
 
 ### 1.2 API Server
 This section contains recommendations relating to API server configuration flags
@@ -753,7 +633,7 @@ on the master node and set the `--authorization-mode` parameter to values other 
 One such example could be as below.
 
 ``` bash
---authorization-mode=RBAC
+--authorization-mode=Node,RBAC
 ```
 
 **Audit:**
