@@ -54,7 +54,8 @@ stat -c %a /var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml
 644
 ```
 
-**Remediation:** By default, RKE2 creates these files with `644` permissions. No manual remediation needed.
+**Remediation:** 
+By default, RKE2 creates these files with `644` permissions. No manual remediation needed.
 
 
 #### 1.1.2
@@ -284,7 +285,7 @@ stat -c %a /var/lib/rancher/rke2/server/cred/admin.kubeconfig
 ```
 
 **Remediation:**
-RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/admin.kubeconfig` and automatically sets its permissions to `644`. No manual remediation needed.
+By default, RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/admin.kubeconfig` and automatically sets its permissions to `644`. No manual remediation needed.
 
 
 #### 1.1.14
@@ -305,7 +306,7 @@ root:root
 ```
 
 **Remediation:**
-RKE2 creates this file at `stat -c %U:%G /var/lib/rancher/rke2/server/cred/admin.kubeconfig` and automatically sets its ownership to `root:root`.
+By default, RKE2 creates this file at `stat -c %U:%G /var/lib/rancher/rke2/server/cred/admin.kubeconfig` and automatically sets its ownership to `root:root`.
 
 
 #### 1.1.15
@@ -327,7 +328,7 @@ stat -c %a /var/lib/rancher/rke2/server/cred/scheduler.kubeconfig
 ```
 
 **Remediation:**
-RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/scheduler.kubeconfig` and automatically sets its permissions to `644`. No manual remediation needed.
+By default, RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/scheduler.kubeconfig` and automatically sets its permissions to `644`. No manual remediation needed.
 
 
 #### 1.1.16
@@ -348,7 +349,7 @@ root:root
 ```
 
 **Remediation:**
-RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/scheduler.kubeconfig` and automatically sets its ownership to `root:root`.
+By default, RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/scheduler.kubeconfig` and automatically sets its ownership to `root:root`.
 
 
 #### 1.1.17
@@ -369,7 +370,7 @@ stat -c %a /var/lib/rancher/rke2/server/cred/controller.kubeconfig
 ```
 
 **Remediation:**
-RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/controller.kubeconfig` and automatically sets its permissions to `644`. No manual remediation needed.
+By default, RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/controller.kubeconfig` and automatically sets its permissions to `644`. No manual remediation needed.
 
 #### 1.1.18
 Ensure that the `controller.kubeconfig` file ownership is set to `root:root` (Scored)
@@ -389,7 +390,7 @@ root:root
 ```
 
 **Remediation:**
-RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/controller.kubeconfig` and automatically sets its ownership to `root:root`.
+By default, RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/controller.kubeconfig` and automatically sets its ownership to `root:root`.
 
 #### 1.1.19
 Ensure that the Kubernetes PKI directory and file ownership is set to `root:root` (Scored)
@@ -407,7 +408,7 @@ root:root
 ```
 
 **Remediation:**
-RKE2 creates the directory and files with the expected ownership of `root:root` out-of-the-box and no manual remediation should be necessary.
+By default, RKE2 creates the directory and files with the expected ownership of `root:root`. No manual remediation should be necessary.
 
 ```bash
 chown -R root:root /var/lib/rancher/rke2/server/tls
@@ -418,18 +419,24 @@ chown -R root:root /var/lib/rancher/rke2/server/tls
 Ensure that the Kubernetes PKI certificate file permissions are set to `644` or more restrictive (Scored)
 <details>
 <summary>Rationale</summary>
-Kubernetes makes use of a number of certificate files as part of the operation of its components. The permissions on these files should be set to 644 or more restrictive to protect their integrity. This is a manual check and each file in the output will need to be verified.
+Kubernetes makes use of a number of certificate files as part of the operation of its components. The permissions on these files should be set to 644 or more restrictive to protect their integrity. 
 </details>
 
 **Result:** Pass
 
 **Audit:** 
+Run the below command on the master node.
+
+For example, 
+
 ```bash
 stat -c %n\ %a /var/lib/rancher/rke2/server/tls/*.crt
+
+Verify that the permissions are `644`.
 ```
 
 **Remediation:**
-RKE2 creates the directory and files with the expected permissions of `644` out-of-the-box and no manual remediation should be necessary.
+By default, RKE2 creates the directory and files with the expected permissions of `644`.
 
 ```bash
 chmod -R 644 /var/lib/rancher/rke2/server/tls
@@ -440,12 +447,16 @@ chmod -R 644 /var/lib/rancher/rke2/server/tls
 Ensure that the Kubernetes PKI key file permissions are set to `600` (Scored)
 <details>
 <summary>Rationale</summary>
-Kubernetes makes use of a number of key files as part of the operation of its components. The permissions on these files should be set to 600 to protect their integrity and confidentiality. This is a manual check and each file in the output will need to be verified.
+Kubernetes makes use of a number of key files as part of the operation of its components. The permissions on these files should be set to 600 to protect their integrity and confidentiality.
 </details>
 
 **Result:** Pass
 
 **Audit**
+Run the below command on the master node.
+
+For example, 
+
 ```bash
 stat -c %n\ %a /var/lib/rancher/rke2/server/tls/*.key
 ```
