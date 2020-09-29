@@ -425,9 +425,9 @@ Run the below command on the master node.
 
 ```bash
 stat -c %n\ %a /var/lib/rancher/rke2/server/tls/*.crt
+```
 
 Verify that the permissions are `644` or more restrictive.
-```
 
 **Remediation:**
 By default, RKE2 creates the directory and files with the expected permissions of `644`.
@@ -443,16 +443,16 @@ Kubernetes makes use of a number of key files as part of the operation of its co
 **Result:** Pass
 
 **Audit**
-Run the below command on the master node.
-
-For example, 
+Run the below command on the master node. 
 
 ```bash
 stat -c %n\ %a /var/lib/rancher/rke2/server/tls/*.key
 ```
 
+Verify that the permissions are `600` or more restrictive.
+
 **Remediation:**
-By default, RKE2 creates the directory and files with the expected permissions of `600`.`
+By default, RKE2 creates the directory and files with the expected permissions of `600`.
 
 ### 1.2 API Server
 This section contains recommendations relating to API server configuration flags
