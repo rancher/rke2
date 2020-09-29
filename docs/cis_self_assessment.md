@@ -426,7 +426,7 @@ Run the below command on the master node.
 ```bash
 stat -c %n\ %a /var/lib/rancher/rke2/server/tls/*.crt
 
-Verify that the permissions are `644`.
+Verify that the permissions are `644` or more restrictive.
 ```
 
 **Remediation:**
