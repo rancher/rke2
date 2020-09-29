@@ -740,7 +740,7 @@ Ensure that the admission control plugin SecurityContextDeny is set if PodSecuri
 SecurityContextDeny can be used to provide a layer of security for clusters which do not have PodSecurityPolicies enabled.
 </details>
 
-**Result:** **Not Scored - Operator Dependent**
+**Result:** Pass
 
 **Audit:**
 Run the below command on the master node.
