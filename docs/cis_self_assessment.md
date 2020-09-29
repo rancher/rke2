@@ -679,7 +679,7 @@ Run the below command on the master node.
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-Verify that the `--enable-admission-pluginsargument` is set to a value that includes EventRateLimit.
+Verify that the `--enable-admission-plugins` argument is set to a value that includes EventRateLimit.
 
 **Remediation:**
 By default, RKE2 only sets `NodeRestriction,PodSecurityPolicy` as the parameter to the `--enable-admission-plugins` argument.
