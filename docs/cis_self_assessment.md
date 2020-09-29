@@ -395,7 +395,7 @@ RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/controller.kubeconf
 Ensure that the Kubernetes PKI directory and file ownership is set to `root:root` (Scored)
 <details>
 <summary>Rationale</summary>
-RKE2 makes use of a number of certificates as part of its operation. You should set the ownership of the directory containing the PKI information and all files in that directory to maintain their integrity. The directory and files should be owned by root:root.
+Kubernetes makes use of a number of certificates as part of its operation. You should set the ownership of the directory containing the PKI information and all files in that directory to maintain their integrity. The directory and files should be owned by root:root. 
 </details>
 
 **Result:** Pass
@@ -407,6 +407,8 @@ root:root
 ```
 
 **Remediation:**
+RKE2 creates the directory and files with the expected ownership of `root:root` out-of-the-box and no manual remediation should be necessary.
+
 ```bash
 chown -R root:root /var/lib/rancher/rke2/server/tls
 ```
@@ -416,7 +418,7 @@ chown -R root:root /var/lib/rancher/rke2/server/tls
 Ensure that the Kubernetes PKI certificate file permissions are set to `644` or more restrictive (Scored)
 <details>
 <summary>Rationale</summary>
-RKE2 makes use of a number of certificate files as part of the operation of its components. The permissions on these files should be set to 644 or more restrictive to protect their integrity. This is a manual check and each file in the output will need to be verified.
+Kubernetes makes use of a number of certificate files as part of the operation of its components. The permissions on these files should be set to 644 or more restrictive to protect their integrity. This is a manual check and each file in the output will need to be verified.
 </details>
 
 **Result:** Pass
@@ -427,6 +429,8 @@ stat -c %n\ %a /var/lib/rancher/rke2/server/tls/*.crt
 ```
 
 **Remediation:**
+RKE2 creates the directory and files with the expected permissions of `644` out-of-the-box and no manual remediation should be necessary.
+
 ```bash
 chmod -R 644 /var/lib/rancher/rke2/server/tls
 ```
