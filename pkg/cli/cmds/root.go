@@ -37,6 +37,12 @@ var (
 			EnvVar:      "RKE2_CLOUD_PROVIDER_CONFIG",
 			Destination: &config.CloudProviderConfig,
 		},
+		&cli.StringFlag{
+			Name:        "profile",
+			Usage:       "(security) Validate system configuration against the selected benchmark (valid items: cis-1.5)",
+			EnvVar:      "RKE2_CIS_PROFILE",
+			Destination: &profile,
+		},
 	}
 )
 
@@ -133,27 +139,11 @@ func NewApp() *cli.App {
 			Destination: &debug,
 			EnvVar:      "RKE2_DEBUG",
 		},
-		cli.StringFlag{
-			Name:        "profile",
-			Usage:       "Indicate we need to run in CIS 1.5 mode",
-			Destination: &profile,
-			EnvVar:      "RKE2_CIS_PROFILE",
-		},
 	}
 
 	app.Before = func(clx *cli.Context) error {
 		if debug {
 			logrus.SetLevel(logrus.DebugLevel)
-		}
-		switch profile {
-		case "cis-1.5":
-			if err := validateCISreqs(); err != nil {
-				logrus.Fatal(err)
-			}
-		case "":
-			// continue. warning output another layer down.
-		default:
-			logrus.Fatal("invalid value provided for --profile flag")
 		}
 		return nil
 	}
