@@ -430,7 +430,7 @@ stat -c %n\ %a /var/lib/rancher/rke2/server/tls/*.crt
 Verify that the permissions are `644` or more restrictive.
 
 **Remediation:**
-By default, RKE2 creates the files with the expected permissions of `644`.
+By default, RKE2 creates the files with the expected permissions of `644`. No manual remediation is needed.
 
 
 #### 1.1.21
@@ -452,7 +452,7 @@ stat -c %n\ %a /var/lib/rancher/rke2/server/tls/*.key
 Verify that the permissions are `600` or more restrictive.
 
 **Remediation:**
-By default, RKE2 creates the files with the expected permissions of `600`.
+By default, RKE2 creates the files with the expected permissions of `600`. No manual remediation is needed.
 
 ### 1.2 API Server
 This section contains recommendations relating to API server configuration flags
