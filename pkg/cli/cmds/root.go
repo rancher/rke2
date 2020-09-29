@@ -97,25 +97,30 @@ func (c cisErrors) Error() string {
 	return err.String()
 }
 
-// validateCISreqs checks if the system is in compliance
-// with CIS 1.5 benchmark requirements.
-func validateCISreqs() error {
+// validateCISReqs checks if the system is in compliance
+// with CIS 1.5 benchmark requirements. The nodeType string
+// is used to filter out tests that may only be relevant to servers
+// or agents.
+func validateCISReqs(nodeType string) error {
 	ce := make(cisErrors, 0)
 
-	// get nonexistent user information
-	if _, err := user.Lookup("etcd"); err != nil {
-		ce = append(ce, err)
+	// etcd user only needs to exist on servers
+	if nodeType == "server" {
+		if _, err := user.Lookup("etcd"); err != nil {
+			ce = append(ce, fmt.Errorf("missing required %w", err))
+		}
 	}
+
 	for kp, pv := range kernelRuntimeParameters {
 		cv, err := sysctl(kp)
 		if err != nil {
-			// failing since we can't process
-			// further whether the flag was
-			// called or not.
+			// Fail immediately if we cannot retrieve the current value,
+			// since it is unlikely that we will be able to retrieve others
+			// if this one failed.
 			logrus.Fatal(err)
 		}
 		if cv != pv {
-			ce = append(ce, fmt.Errorf("%s=%d - expected %d", kp, cv, pv))
+			ce = append(ce, fmt.Errorf("invalid kernel parameter value %s=%d - expected %d", kp, cv, pv))
 		}
 	}
 	if len(ce) != 0 {
