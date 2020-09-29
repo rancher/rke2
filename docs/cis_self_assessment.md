@@ -410,10 +410,6 @@ root:root
 **Remediation:**
 By default, RKE2 creates the directory and files with the expected ownership of `root:root`. No manual remediation should be necessary.
 
-```bash
-chown -R root:root /var/lib/rancher/rke2/server/tls
-```
-
 
 #### 1.1.20
 Ensure that the Kubernetes PKI certificate file permissions are set to `644` or more restrictive (Scored)
@@ -438,10 +434,6 @@ Verify that the permissions are `644`.
 **Remediation:**
 By default, RKE2 creates the directory and files with the expected permissions of `644`.
 
-```bash
-chmod -R 644 /var/lib/rancher/rke2/server/tls
-```
-
 
 #### 1.1.21
 Ensure that the Kubernetes PKI key file permissions are set to `600` (Scored)
@@ -462,9 +454,7 @@ stat -c %n\ %a /var/lib/rancher/rke2/server/tls/*.key
 ```
 
 **Remediation:**
-```bash
-chmod -R 600 /var/lib/rancher/rke2/server/tls/*.key
-```
+By default, RKE2 creates the directory and files with the expected permissions of `600`.`
 
 ### 1.2 API Server
 This section contains recommendations relating to API server configuration flags
