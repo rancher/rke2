@@ -499,7 +499,7 @@ Run the below command on the master node.
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-Verify that the result is empty.
+Verify that the `--basic-auth-file` argument does not exist.
 
 **Remediation:**
 By default, RKE2 does not run with basic authentication enabled. No manual remediation is needed.
