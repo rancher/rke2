@@ -423,8 +423,6 @@ Kubernetes makes use of a number of certificate files as part of the operation o
 **Audit:** 
 Run the below command on the master node.
 
-For example, 
-
 ```bash
 stat -c %n\ %a /var/lib/rancher/rke2/server/tls/*.crt
 
