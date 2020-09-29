@@ -454,6 +454,7 @@ Verify that the permissions are `600` or more restrictive.
 **Remediation:**
 By default, RKE2 creates the files with the expected permissions of `600`. No manual remediation is needed.
 
+
 ### 1.2 API Server
 This section contains recommendations relating to API server configuration flags
 
@@ -470,8 +471,17 @@ If you are using RBAC authorization, it is generally considered reasonable to al
 
 **Result:** Pass
 
-**Remediation:**
+**Audit:**
+Run the below command on the master node.
 
+```bash
+/bin/ps -ef | grep kube-apiserver | grep -v grep 
+```
+
+Verify that `--anonymous-auth=false` is present.
+
+**Remediation:**
+By default, RKE2 kube-apiserver is configured to run with this flag and value. No manual remediation is needed.
 
 #### 1.2.2
 Ensure that the `--basic-auth-file` argument is not set (Scored)
@@ -482,22 +492,17 @@ Basic authentication uses plaintext credentials for authentication. Currently, t
 
 **Result:** Pass
 
-**Remediation:**
-Follow the documentation and configure alternate mechanisms for authentication. Then,
-edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and remove the `--basic-auth-file=<filename>` parameter.
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--basic-auth-file` argument does not exist.
 
-```
-'--basic-auth-file' is not present
-```
+**Remediation:**
+By default, RKE2 does not run with basic authentication enabled. No manual remediation is needed.
 
 
 #### 1.2.3
@@ -510,23 +515,17 @@ The token-based authentication utilizes static tokens to authenticate requests t
 
 **Result:** Pass
 
-**Remediation:**
-Follow the documentation and configure alternate mechanisms for authentication. Then,
-edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and remove the `--token-auth-file=<filename>` parameter.
-
 **Audit:**
+Run the below command on the master node.
 
-```
-/bin/ps -ef | grep kube-apiserver | grep -v grep
-```
-
-**Expected result**:
-
-```
-'--token-auth-file' is not present
+```bash
+/bin/ps -ef | grep kube-apiserver | grep -v grep 
 ```
 
+Verify that the --basic-auth-file argument does not exist.
+
+**Remediation:**
+By default, RKE2 does not run with basic authentication enabled. No manual remediation is needed.
 
 #### 1.2.4
 Ensure that the `--kubelet-https` argument is set to true (Scored)
@@ -538,22 +537,18 @@ Connections from apiserver to kubelets could potentially carry sensitive data su
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file /etc/kubernetes/manifests/kube-apiserver.yaml
-on the master node and remove the `--kubelet-https` parameter.
 
 **Audit:**
+Run the below command on the master node.
 
-```
-/bin/ps -ef | grep kube-apiserver | grep -v grep
-```
-
-**Expected result**:
-
-```
-'--kubelet-https' is present OR '--kubelet-https' is not present
+```bash
+/bin/ps -ef | grep kube-apiserver | grep -v grep 
 ```
 
+Verify that the `--kubelet-https` argument does not exist.
+
+**Remediation:**
+By default, RKE2 kube-apiserver doesn't run with the `--kubelet-https` parameter as it runs with TLS. No manual remediation is needed.
 
 #### 1.2.5
 Ensure that the `--kubelet-client-certificate` and `--kubelet-client-key` arguments are set as appropriate (Scored)
@@ -565,28 +560,17 @@ The apiserver, by default, does not authenticate itself to the kubelet's HTTPS e
 
 **Result:** Pass
 
-**Remediation:**
-Follow the Kubernetes documentation and set up the TLS connection between the
-apiserver and kubelets. Then, edit API server pod specification file
-`/etc/kubernetes/manifests/kube-apiserver.yaml` on the master node and set the
-kubelet client certificate and key parameters as below.
-
-``` bash
---kubelet-client-certificate=<path/to/client-certificate-file>
---kubelet-client-key=<path/to/client-key-file>
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the --kubelet-client-certificate and --kubelet-client-key arguments exist and they are set as appropriate.
 
-```
-'--kubelet-client-certificate' is present AND '--kubelet-client-key' is present
-```
+**Remediation:**
+By default, RKE2 kube-apiserver is ran with these arguments for secure communication with kubelet. No manual remediation is needed.
 
 
 #### 1.2.6
@@ -598,24 +582,17 @@ The connections from the apiserver to the kubelet are used for fetching logs for
 
 **Result:** Pass
 
-**Remediation:**
-Follow the Kubernetes documentation and setup the TLS connection between
-the apiserver and kubelets. Then, edit the API server pod specification file
-`/etc/kubernetes/manifests/kube-apiserver.yaml` on the master node and set the
-`--kubelet-certificate-authority` parameter to the path to the cert file for the certificate authority.
-`--kubelet-certificate-authority=<ca-string>`
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--kubelet-certificate-authority` argument exists and is set as appropriate.
 
-```
-'--kubelet-certificate-authority' is present
-```
+**Remediation:**
+By default, RKE2 kube-apiserver is ran with this argument for secure communication with kubelet. No manual remediation is needed.
 
 
 #### 1.2.7
@@ -627,26 +604,17 @@ The API Server, can be configured to allow all requests. This mode should not be
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the `--authorization-mode` parameter to values other than `AlwaysAllow`.
-One such example could be as below.
-
-``` bash
---authorization-mode=Node,RBAC
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the argument value doesn't contain `AlwaysAllow`.
 
-```
-'Node,RBAC' not have 'AlwaysAllow'
-```
+**Remediation:**
+By default, RKE2 sets `Node,RBAC` as the parameter to the `--authorization-mode` argument. No manual remediation is needed.
 
 
 #### 1.2.8
@@ -658,25 +626,17 @@ The Node authorization mode only allows kubelets to read Secret, ConfigMap, Pers
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the `--authorization-mode` parameter to a value that includes `Node`.
-
-``` bash
---authorization-mode=Node,RBAC
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify `Node` exists as a parameter to the argument.
 
-```
-'Node,RBAC' has 'Node'
-```
+**Remediation:**
+By default, RKE2 sets `Node,RBAC` as the parameter to the `--authorization-mode` argument. No manual remediation is needed.
 
 
 #### 1.2.9
@@ -688,26 +648,17 @@ Role Based Access Control (RBAC) allows fine-grained control over the operations
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the `--authorization-mode` parameter to a value that includes RBAC,
-for example:
-
-``` bash
---authorization-mode=Node,RBAC
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify `RBAC` exists as a parameter to the argument.
 
-```
-'Node,RBAC' has 'RBAC'
-```
+**Remediation:**
+By default, RKE2 sets `Node,RBAC` as the parameter to the `--authorization-mode` argument. No manual remediation is needed.
 
 
 #### 1.2.10
@@ -719,9 +670,20 @@ Using `EventRateLimit` admission control enforces a limit on the number of event
 Note: This is an Alpha feature in the Kubernetes 1.15 release.
 </details>
 
-**Result:** Pass
+**Result:** **Not Scored - Operator Dependent**
+
+**Audit:**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kube-apiserver | grep -v grep
+```
+
+Verify that the `--enable-admission-plugins` argument is set to a value that includes EventRateLimit.
 
 **Remediation:**
+By default, RKE2 only sets `NodeRestriction,PodSecurityPolicy` as the parameter to the `--enable-admission-plugins` argument.
+To configure this, follow the Kubernetes documentation and set the desired limits in a configuration file. Then refer to RKE2's documentation to see how to supply additional api server configuration via the kube-apiserver-arg parameter.
 
 
 #### 1.2.11
