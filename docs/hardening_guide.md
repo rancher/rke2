@@ -30,7 +30,7 @@ A user account and group for the etcd service is required to be setup prior to i
 
 To create the etcd group run the following console commands.
 
-The commands below use 52034 for uid and gid are for example purposes. Any valid unused uid or gid could also be used in lieu of 52034.
+The commands below use 52034 for uid and gid are for example purposes. Any valid unused uid or gid could also be used in lieu of 52034 as well as letting the system auto-assign the uid and gid. As an added level of security, using `/sbin/nologin` is preferred for the shell and also use the `-r` flag to create the user as a system user.
 
 ```sh
 groupadd --gid 52034 etcd
