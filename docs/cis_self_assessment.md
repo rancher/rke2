@@ -775,9 +775,7 @@ Verify that the `--disable-admission-plugins` argument is set to a value that do
 
 
 **Remediation:**
-By default, RKE2 does not use this argument. If there's a desire to use this argument, follow the documentation and create ServiceAccount objects as per your environment. Then, edit the API server pod specification file `/var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml`
-on the master node and ensure that the `--disable-admission-plugins` parameter is set to a
-value that does not include `ServiceAccount`.
+By default, RKE2 does not use this argument. If there's a desire to use this argument, follow the documentation and create ServiceAccount objects as per your environment. Then refer to RKE2's documentation to see how to supply additional api server configuration via the kube-apiserver-arg parameter.
 
 
 #### 1.2.15
