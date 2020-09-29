@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/grpclog"
 )
 
-func Set(clx *cli.Context, images images.Images, dataDir string, cisMode bool) error {
+func Set(clx *cli.Context, images images.Images, dataDir string) error {
 	logsDir := filepath.Join(dataDir, "agent", "logs")
 	if err := os.MkdirAll(logsDir, 0755); err != nil {
 		return errors.Wrapf(err, "failed to create directory %s", logsDir)
@@ -44,14 +44,6 @@ func Set(clx *cli.Context, images images.Images, dataDir string, cisMode bool) e
 			"log-file=" + filepath.Join(logsDir, "kubelet.log"),
 		},
 		cmds.AgentConfig.ExtraKubeletArgs...)
-
-	if cisMode {
-		cmds.AgentConfig.ExtraKubeletArgs = append(
-			[]string{
-				"protect-kernel-defaults=true",
-			},
-			cmds.AgentConfig.ExtraKubeletArgs...)
-	}
 
 	if !cmds.Debug {
 		l := grpclog.NewLoggerV2(ioutil.Discard, ioutil.Discard, os.Stderr)

@@ -68,7 +68,7 @@ func setup(clx *cli.Context, cfg Config) error {
 	}
 
 	images := images.New(cfg.SystemDefaultRegistry)
-	if err := defaults.Set(clx, images, dataDir, cisMode); err != nil {
+	if err := defaults.Set(clx, images, dataDir); err != nil {
 		return err
 	}
 

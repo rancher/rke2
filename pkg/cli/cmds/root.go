@@ -46,6 +46,8 @@ var (
 	}
 )
 
+const pkdFlagName = "protect-kernel-defaults"
+
 func init() {
 	// hack - force "file,dns" lookup order if go dns is used
 	if os.Getenv("RES_OPTIONS") == "" {
@@ -56,17 +58,11 @@ func init() {
 // kernelRuntimeParameters contains the names and values
 // of the expected values from the Rancher Hardening guide
 // for CIS 1.5 compliance.
-//
-// vm.panic_on_oom=0
-// kernel.panic=10
-// kernel.panic_on_oops=1
-// kernel.keys.root_maxbytes=25000000
 var kernelRuntimeParameters = map[string]int{
-	"vm.overcommit_memory":      1,
-	"vm.panic_on_oom":           0,
-	"kernel.panic":              10,
-	"kernel.panic_on_oops":      1,
-	"kernel.keys.root_maxbytes": 25000000,
+	"vm.overcommit_memory": 1,
+	"vm.panic_on_oom":      0,
+	"kernel.panic":         10,
+	"kernel.panic_on_oops": 1,
 }
 
 // sysctl retrieves the value of the given sysctl.
@@ -122,6 +118,16 @@ func validateCISreqs() error {
 		return ce
 	}
 	return nil
+}
+
+// setCISFlags validates and sets any CLI flags necessary to ensure
+// compliance with the profile.
+func setCISFlags(clx *cli.Context) error {
+	// If the user has specifically set this to false, raise an error
+	if clx.IsSet(pkdFlagName) && !clx.Bool(pkdFlagName) {
+		return fmt.Errorf("--%s must be true when using --profile=%s", pkdFlagName, profile)
+	}
+	return clx.Set(pkdFlagName, "true")
 }
 
 func NewApp() *cli.App {
