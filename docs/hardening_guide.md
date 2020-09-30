@@ -6,7 +6,9 @@ If RKE2 is run with the `profile` flag set to "cis-1.5", it performs a number of
 
 RKE2 checks for 5 sysctl kernel parameters (see below) as well as the existence of the "etcd" user. If any of the sysctl kernel parameters aren't set to the expected value or the "etcd" users doesn't exist, RKE2 will immediately cease operation. 
 
-The restrictive NetworkPolicy allows for only namespace traffic with the exception of DNS and applies to `kube-system`, `kube-public`, and `default` namespaces. The restrictive PodSecurityPolicy addresses CIS controls defined in section 5.2. More details can be found below.
+The restrictive NetworkPolicy allows for only traffic between pods in the same namespace with the exception of DNS. This restrictive policy only applies to the built-in namespaces: `kube-system`, `kube-public`, and `default` namespaces. Operators must manage network policies as normal for additional namespace.
+
+The restrictive PodSecurityPolicy addresses CIS controls defined in section 5.2. More details can be found below.
 
 ## Overview
 
