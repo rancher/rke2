@@ -2,7 +2,7 @@
 
 This document provides prescriptive guidance for hardening a production installation of RKE2. It outlines the configurations and controls required to address Kubernetes benchmark controls from the Center for Information Security (CIS).
 
-If RKE2 is run with the profile flag set to "cis-1.5", it performs a number of system checks and applies a restrictive NetworkPolicy and PodSecurityPolicy. 
+If RKE2 is run with the `profile` flag set to "cis-1.5", it performs a number of system checks and applies a restrictive NetworkPolicy and PodSecurityPolicy. 
 
 RKE2 checks for 5 sysctl kernel parameters (see below) as well as the existence of the "etcd" user. If any of the sysctl kernel parameters aren't set to the expected value or the "etcd" users doesn't exist, RKE2 will immediately cease operation. 
 
