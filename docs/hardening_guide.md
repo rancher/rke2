@@ -4,7 +4,7 @@ This document provides prescriptive guidance for hardening a production installa
 
 If RKE2 is run with the profile flag set to "cis-1.5", it performs a number of system checks and applies a restrictive NetworkPolicy and PodSecurityPolicy. 
 
-RKE2 checks for 5 sysctl kernel parameters (see below) as well as the existence of the "etcd" user. If any of the sysctl kernel parameters aren't set to the expected value or the "etcd" users doesn't exist, RKE2 will immediately cease operation. 
+RKE2 checks for 4 sysctl kernel parameters (see below) as well as the existence of the "etcd" user. If any of the sysctl kernel parameters aren't set to the expected value or the "etcd" users doesn't exist, RKE2 will immediately cease operation. The kubelet flag `protect-kernel-parameters` is also set.
 
 The restrictive NetworkPolicy allows for only namespace traffic with the exception of DNS and applies to `kube-system`, `kube-public`, and `default` namespaces. The restrictive PodSecurityPolicy addresses CIS controls defined in section 5.2. More details can be found below.
 
@@ -21,12 +21,15 @@ vm.overcommit_memory=1
 vm.panic_on_oom=0
 kernel.panic=10
 kernel.panic_on_oops=1
-kernel.keys.root_maxbytes=25000000
 ```
 
-Run sysctl -p `/etc/sysctl.d/90-kubelet.conf` to enable the settings.
+If tarball installation method used, run:
 
-Here is a simple shell script that will configure your system so RKE2 can run with the `--profile=cis-1.5`.
+`sysctl -p /usr/local/share/rke2/rke2-cis-sysctl.conf`
+
+This file should be copied to `/etc/sysctl.d`.
+
+Here is a simple shell script that will configure your system so RKE2 will run with the `--profile=cis-1.5` argument.
 
 ```bash
 #!/bin/sh
@@ -42,7 +45,6 @@ echo "Setting kernel parameters..."
 
 sysctl -w vm.panic_on_oom=0
 sysctl -w vm.overcommit_memory=1
-sysctl -w kernel.keys.root_maxbytes=25000000
 sysctl -w kernel.panic=10
 sysctl -w kernel.panic_on_oops=1
 
