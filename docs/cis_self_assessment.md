@@ -920,25 +920,17 @@ Profiling allows for the identification of specific performance bottlenecks. It 
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the below parameter.
-
-``` bash
---profiling=false
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--profiling` argument is set to false.
 
-```
-'false' is equal to 'false'
-```
+**Remediation:**
+By default, RKE2 sets the `--profiling` flag parameter to false. No manual remediation needed.
 
 
 #### 1.2.22
@@ -950,26 +942,17 @@ Auditing the Kubernetes API Server provides a security-relevant chronological se
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the `--audit-log-path` parameter to a suitable path and
-file where you would like audit logs to be written, for example:
-
-``` bash
---audit-log-path=/var/log/apiserver/audit.log
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--audit-log-path` argument is set as appropriate.
 
-```
-'--audit-log-path' is present
-```
+**Remediation:**
+By default, RKE2 sets the `--audit-log-path` argument and parameter. No manual remediation needed.
 
 
 #### 1.2.23
@@ -981,25 +964,17 @@ Retaining logs for at least 30 days ensures that you can go back in time and inv
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the `--audit-log-maxage` parameter to `30` or as an appropriate number of days:
-
-``` bash
---audit-log-maxage=30
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--audit-log-maxage` argument is set to 30 or as appropriate.
 
-```
-30 is greater or equal to 30
-```
+**Remediation:**
+By default, RKE2 sets the `--audit-log-maxage` argument parameter to 30. No manual remediation needed.
 
 
 #### 1.2.24
@@ -1011,26 +986,17 @@ Kubernetes automatically rotates the log files. Retaining old log files ensures 
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the `--audit-log-maxbackup` parameter to `10` or to an appropriate
-value.
-
-``` bash
---audit-log-maxbackup=10
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--audit-log-maxbackup` argument is set to 10 or as appropriate.
 
-```
-10 is greater or equal to 10
-```
+**Remediation:**
+By default, RKE2 sets the `--audit-log-maxbackup` argument parameter to 10. No manual remediation needed.
 
 
 #### 1.2.25
@@ -1042,26 +1008,17 @@ Kubernetes automatically rotates the log files. Retaining old log files ensures 
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the `--audit-log-maxsize` parameter to an appropriate size in **MB**.
-For example, to set it as `100` **MB**:
-
-``` bash
---audit-log-maxsize=100
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--audit-log-maxsize` argument is set to 100 or as appropriate.
 
-```
-100 is greater or equal to 100
-```
+**Remediation:**
+By default, RKE2 sets the `--audit-log-maxsize` argument parameter to 100. No manual remediation needed.
 
 
 #### 1.2.26
@@ -1073,26 +1030,17 @@ Setting global request timeout allows extending the API server request timeout l
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-and set the below parameter as appropriate and if needed.
-For example,
-
-``` bash
---request-timeout=300s
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--request-timeout` argument is either not set or set to an appropriate value.
 
-```
-'--request-timeout' is not present OR '--request-timeout' is present
-```
+**Remediation:**
+By default, RKE2 does not set the `--request-timeout` argument. No manual remediation needed.
 
 
 #### 1.2.27
@@ -1104,28 +1052,17 @@ If `--service-account-lookup` is not enabled, the apiserver only verifies that t
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the below parameter.
-
-``` bash
---service-account-lookup=true
-```
-
-Alternatively, you can delete the `--service-account-lookup` parameter from this file so
-that the default takes effect.
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that if the `--service-account-lookup` argument exists it is set to true.
 
-```
-'--service-account-lookup' is not present OR 'true' is equal to 'true'
-```
+**Remediation:**
+By default, RKE2 doesn't set this argument in favor of taking the default effect. No manual remediation needed.
 
 
 #### 1.2.28
@@ -1137,26 +1074,17 @@ By default, if no `--service-account-key-file` is specified to the apiserver, it
 
 **Result:** Pass
 
-**Remediation:**
-Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the `--service-account-key-file` parameter
-to the public key file for service accounts:
-
-``` bash
---service-account-key-file=<filename>
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--service-account-key-file` argument exists and is set as appropriate.
 
-```
-'--service-account-key-file' is present
-```
+**Remediation:**
+By default, RKE2 sets the `--service-account-key-file` explicitly. No manual remediation needed.
 
 
 #### 1.2.29
@@ -1168,27 +1096,17 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 
 **Result:** Pass
 
-**Remediation:**
-Follow the Kubernetes documentation and set up the TLS connection between the apiserver and etcd.
-Then, edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the **etcd** certificate and **key** file parameters.
-
-``` bash
---etcd-certfile=<path/to/client-certificate-file>
---etcd-keyfile=<path/to/client-key-file>
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--etcd-certfile` and `--etcd-keyfile` arguments exist and they are set as appropriate.
 
-```
-'--etcd-certfile' is present AND '--etcd-keyfile' is present
-```
+**Remediation:**
+By default, RKE2 sets the `--etcd-certfile` and `--etcd-keyfile` arguments explicitly. No manual remediation needed.
 
 
 #### 1.2.30
@@ -1200,27 +1118,17 @@ API server communication contains sensitive parameters that should remain encryp
 
 **Result:** Pass
 
-**Remediation:**
-Follow the Kubernetes documentation and set up the TLS connection on the apiserver.
-Then, edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the TLS certificate and private key file parameters.
-
-``` bash
---tls-cert-file=<path/to/tls-certificate-file>
---tls-private-key-file=<path/to/tls-key-file>
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--tls-cert-file` and `--tls-private-key-file` arguments exist and they are set as appropriate.
 
-```
-'--tls-cert-file' is present AND '--tls-private-key-file' is present
-```
+**Remediation:**
+By default, RKE2 sets the `--tls-cert-file` and `--tls-private-key-file` arguments explicitly. No manual remediation needed.
 
 
 #### 1.2.31
@@ -1232,26 +1140,17 @@ API server communication contains sensitive parameters that should remain encryp
 
 **Result:** Pass
 
-**Remediation:**
-Follow the Kubernetes documentation and set up the TLS connection on the apiserver.
-Then, edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the client certificate authority file.
-
-``` bash
---client-ca-file=<path/to/client-ca-file>
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--client-ca-file` argument exists and it is set as appropriate.
 
-```
-'--client-ca-file' is present
-```
+**Remediation:**
+By default, RKE2 sets the `--client-ca-file` argument explicitly. No manual remediation needed.
 
 
 #### 1.2.32
@@ -1263,26 +1162,17 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 
 **Result:** Pass
 
-**Remediation:**
-Follow the Kubernetes documentation and set up the TLS connection between the apiserver and etcd.
-Then, edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the etcd certificate authority file parameter.
-
-``` bash
---etcd-cafile=<path/to/ca-file>
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--etcd-cafile` argument exists and it is set as appropriate.
 
-```
-'--etcd-cafile' is present
-```
+**Remediation:**
+By default, RKE2 sets the `--etcd-cafile` argument explicitly. No manual remediation needed.
 
 
 #### 1.2.33
@@ -1294,26 +1184,17 @@ etcd is a highly available key-value store used by Kubernetes deployments for pe
 
 **Result:** Pass
 
-**Remediation:**
-Follow the Kubernetes documentation and configure a EncryptionConfig file.
-Then, edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml`
-on the master node and set the `--encryption-provider-config` parameter to the path of that file:
-
-``` bash
---encryption-provider-config=</path/to/EncryptionConfig/File>
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--encryption-provider-config` argument is set to a EncryptionConfigfile. Additionally, ensure that the `EncryptionConfigfile` has all the desired resources covered especially any secrets.
 
-```
-'--encryption-provider-config' is present
-```
+**Remediation:**
+By default, RKE2 sets the `--encryption-provider-config` argument explicitly. No manual remediation needed. RKE2's default encryption provider config file is located at `/var/lib/rancher/rke2/server/cred/encryption-config.json` and is configured to encrypt secrets.
 
 
 #### 1.2.34
@@ -1329,34 +1210,19 @@ Where `etcd` encryption is used, it is important to ensure that the appropriate 
 Follow the Kubernetes documentation and configure a `EncryptionConfig` file.
 In this file, choose **aescbc**, **kms** or **secretbox** as the encryption provider.
 
-**Audit Script:** 1.2.34.sh
+**Audit:** 
+Run the below command on the master node.
 
-```
-#!/bin/bash -e
-
-check_file=${1}
-
-grep -q -E 'aescbc|kms|secretbox' ${check_file}
-if [ $? -eq 0 ]; then
-echo "--pass"
-exit 0
-else
-echo "fail: encryption provider found in ${check_file}"
-exit 1
-fi
+```bash
+grep aescbc /var/lib/rancher/rke2/server/cred/encryption-config.json
 ```
 
-**Audit Execution:**
+Run the below command on the master node.
 
-```
-./1.2.34.sh /etc/kubernetes/ssl/encryption.yaml
-```
+Verify that aescbc is set as the encryption provider for all the desired resources.
 
-**Expected result**:
-
-```
-'--pass' is present
-```
+**Remediation**
+By default, RKE2 sets the argument `--encryption-provider-config` and parameter. The contents of the config file indicates the use of aescbc. No manual remediation needed.
 
 
 #### 1.2.35
@@ -1367,10 +1233,19 @@ Ensure that the API Server only makes use of Strong Cryptographic Ciphers (Not S
 TLS ciphers have had a number of known vulnerabilities and weaknesses, which can reduce the protection provided by them. By default Kubernetes supports a number of TLS ciphersuites including some that have security concerns, weakening the protection provided.
 </details>
 
-**Result:** Pass
+**Result:** **Not Scored - Operator Dependent**
+
+**Audit:**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kube-apiserver | grep -v grep
+```
+
+Verify that the `--tls-cipher-suites` argument is set as outlined in the remediation procedure below.
 
 **Remediation:**
-
+By default, RKE2 explicitly doesn't set this flag. No manual remediation needed.
 
 ### 1.3 Controller Manager
 
