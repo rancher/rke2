@@ -1251,13 +1251,13 @@ By default, RKE2 explicitly doesn't set this flag. No manual remediation needed.
 ### 1.3 Controller Manager
 
 #### 1.3.1
-Ensure that the `--terminated-pod-gc-threshold` argument is set as appropriate (Scored)
+Ensure that the `--terminated-pod-gc-threshold` argument is set as appropriate (Not Scored)
 <details>
 <summary>Rationale</summary>
 Garbage collection is important to ensure sufficient resource availability and avoiding degraded performance and availability. In the worst case, the system might crash or just be unusable for a long period of time. The current setting for garbage collection is 12,500 terminated pods which might be too high for your system to sustain. Based on your system resources and tests, choose an appropriate threshold value to activate garbage collection.
 </details>
 
-**Result:** Pass
+**Result:** **Not Scored - Operator Dependent**
 
 **Audit:**
 Run the below command on the master node.
