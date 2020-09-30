@@ -1194,7 +1194,7 @@ Run the below command on the master node.
 Verify that the `--encryption-provider-config` argument is set to a EncryptionConfigfile. Additionally, ensure that the `EncryptionConfigfile` has all the desired resources covered especially any secrets.
 
 **Remediation:**
-By default, RKE2 sets the `--encryption-provider-config` argument explicitly. No manual remediation needed.
+By default, RKE2 sets the `--encryption-provider-config` argument explicitly. No manual remediation needed. RKE2's default encryption provider config file is located at `/var/lib/rancher/rke2/server/cred/encryption-config.json` and is configured to encrypt secrets.
 
 
 #### 1.2.34
