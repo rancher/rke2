@@ -1371,7 +1371,7 @@ Ensure that the `RotateKubeletServerCertificate` argument is set to `true` (Scor
 Note: This recommendation only applies if you let kubelets get their certificates from the API server. In case your kubelet certificates come from an outside authority/tool (e.g. Vault) then you need to take care of rotation yourself.
 </details>
 
-**Result:** Pass
+**Result:** **Not Applicable**
 
 **Audit:**
 Run the below command on the master node.
