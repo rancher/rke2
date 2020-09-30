@@ -1210,30 +1210,16 @@ Where `etcd` encryption is used, it is important to ensure that the appropriate 
 Follow the Kubernetes documentation and configure a `EncryptionConfig` file.
 In this file, choose **aescbc**, **kms** or **secretbox** as the encryption provider.
 
-**Audit Script:** 1.2.34.sh
+**Audit:** 
+Run the below command on the master node.
 
-```
-#!/bin/bash -e
-
-check_file=${1}
-
-grep -q -E 'aescbc|kms|secretbox' ${check_file}
-if [ $? -eq 0 ]; then
-echo "--pass"
-exit 0
-else
-echo "fail: encryption provider found in ${check_file}"
-exit 1
-fi
+```bash
+grep aescbc /var/lib/rancher/rke2/server/cred/encryption-config.json
 ```
 
-**Audit Execution:**
+Run the below command on the master node.
 
-```
-./1.2.34.sh /var/lib/rancher/rke2/server/cred/encryption-config.json
-```
-
-Get the EncryptionConfigfile set for `--encryption-provider-config` argument. Verify that aescbc, kmsor secretbox is set as the encryption provider for all the desired resources.
+Verify that aescbc is set as the encryption provider for all the desired resources.
 
 **Remediation**
 By default, RKE2 sets the argument `--encryption-provider-config` and parameter. The contents of the config file indicates the use of aescbc. No manual remediation needed.
