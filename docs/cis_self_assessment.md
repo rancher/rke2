@@ -1461,95 +1461,95 @@ By default, RKE2 sets the `--bind-address` argument to `127.0.0.1`. No manual re
 This section covers recommendations for etcd configuration.
 
 #### 2.1
-Ensure that the `--cert-file` and `--key-file` arguments are set as appropriate (Scored)
+Ensure that the `cert-file` and `key-file` fields are set as appropriate (Scored)
 <details>
 <summary>Rationale</summary>
 etcd is a highly-available key value store used by Kubernetes deployments for persistent storage of all of its REST API objects. These objects are sensitive in nature and should be encrypted in transit.
 </details>
 
-**Result:** **Not Applicable**
+**Result:** Pass
 
 **Audit:**
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | /bin/grep etcd | /bin/grep -v grep
+grep -E 'cert-file|key-file' /var/lib/rancher/rke2/server/db/etcd/config
 ```
 
-Verify that the	`--cert-file` and the `--key-file` arguments are set as appropriate.
+Verify that the	`cert-file` and the `key-file` fields are set as appropriate.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, it specifies paths to certs, ca's, and keys for secure communication. No manual remediation needed. 
+By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config`. Server and peer cert and key files are specified. No manual remediation needed. 
 
 
 #### 2.2
-Ensure that the `--client-cert-auth` argument is set to `true` (Scored)
+Ensure that the `client-cert-auth` field is set to `true` (Scored)
 <details>
 <summary>Rationale</summary>
 etcd is a highly-available key value store used by Kubernetes deployments for persistent storage of all of its REST API objects. These objects are sensitive in nature and should not be available to unauthenticated clients. You should enable the client authentication via valid certificates to secure the access to the etcd service.
 </details>
 
-**Result:** **Not Applicable**
+**Result:** Pass
 
 **Audit**
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | /bin/grep etcd | /bin/grep -v grep
+grep 'client-cert-auth' /var/lib/rancher/rke2/server/db/etcd/config
 ```
 
-Verify that the `--client-cert-auth` argument is set to true.
+Verify that the `client-cert-auth` field is set to true.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, it specifies paths to certs, ca's, and keys for secure communication. No manual remediation needed.
+By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config`. `client-cert-auth` is set to true. No manual remediation needed. 
 
 
 #### 2.3
-Ensure that the `--auto-tls` argument is not set to `true` (Scored)
+Ensure that the `auto-tls` field is not set to `true` (Scored)
 <details>
 <summary>Rationale</summary>
 etcd is a highly-available key value store used by Kubernetes deployments for persistent storage of all of its REST API objects. These objects are sensitive in nature and should not be available to unauthenticated clients. You should enable the client authentication via valid certificates to secure the access to the etcd service.
 </details>
 
-**Result:** **Not Applicable**
+**Result:** Pass
 
 **Audit**
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | /bin/grep etcd | /bin/grep -v grep
+grep 'auto-tls' /var/lib/rancher/rke2/server/db/etcd/config
 ```
 
-Verify that if the `--auto-tls` argument exists, it is not set to true.
+Verify that if the `auto-tls` field does not exist.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, it does not contain the `--auto-tls` argument. No manual remediation needed.
+By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, it does not contain the `auto-tls` argument. No manual remediation needed.
 
 
 #### 2.4
-Ensure that the `--peer-cert-file` and `--peer-key-file` arguments are set as appropriate (Scored)
+Ensure that the `peer-cert-file` and `peer-key-file` fields are set as appropriate (Scored)
 <details>
 <summary>Rationale</summary>
 etcd is a highly-available key value store used by Kubernetes deployments for persistent storage of all of its REST API objects. These objects are sensitive in nature and should be encrypted in transit and also amongst peers in the etcd clusters.
 </details>
 
-**Result:** **Not Applicable**
+**Result:** *Pass
 
 **Audit**
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | /bin/grep etcd | /bin/grep -v grep
+grep -E 'peer-server-client.crt|peer-server-client.key' /var/lib/rancher/rke2/server/db/etcd/config
 ```
 
-Verify that the `--peer-cert-file` and `--peer-key-file` arguments are set as appropriate.
+Verify that the `peer-server-client.crt` and `peer-server-client.key` fields are set as appropriate.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, it sets the `peer-transport-security` section with the relevant peer cert and key files. No manual remediation needed.
+By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, the `peer-server-client.crt` and `peer-server-client.key` fields are set. No manual remediation needed.
 
 
 #### 2.5
-Ensure that the `--peer-client-cert-auth` argument is set to `true` (Scored)
+Ensure that the `client-cert-auth` field is set to `true` (Scored)
 <details>
 <summary>Rationale</summary>
 etcd is a highly-available key value store used by Kubernetes deployments for persistent storage of all of its REST API objects. These objects are sensitive in nature and should be accessible only by authenticated etcd peers in the etcd cluster.
@@ -1561,35 +1561,35 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | /bin/grep etcd | /bin/grep -v grep
+grep 'client-cert-auth' /var/lib/rancher/rke2/server/db/etcd/config
 ```
 
-Verify that the `--peer-client-cert-auth` argument is set to true.
+Verify that the `client-cert-auth` field in the peer section is set to true.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. This field is set in the file. No manual remediation needed.
+By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, the `client-cert-auth` field is set. No manual remediation needed.
 
 
 #### 2.6
-Ensure that the `--peer-auto-tls` argument is not set to `true` (Scored)
+Ensure that the `peer-auto-tls` field is not set to `true` (Scored)
 <details>
 <summary>Rationale</summary>
 etcd is a highly-available key value store used by Kubernetes deployments for persistent storage of all of its REST API objects. These objects are sensitive in nature and should be accessible only by authenticated etcd peers in the etcd cluster. Hence, do not use self- signed certificates for authentication.
 </details>
 
-**Result:** **Not Applicable**
+**Result:** Pass
 
 **Audit**
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | /bin/grep etcd | /bin/grep -v grep
+grep 'peer-auto-tls' /var/lib/rancher/rke2/server/db/etcd/config
 ```
 
-Verify that if the `--peer-auto-tls` argument exists, it is not set to true.
+Verify that if the `peer-auto-tls` field does not exist.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, it does not contain the `--peer-auto-tls` argument. No manual remediation needed.
+By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, it does not contain the `peer-auto-tls` field. No manual remediation needed.
 
 
 #### 2.7
@@ -1607,13 +1607,13 @@ Authentication to etcd is based on whether the certificate presented was issued 
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | /bin/grep etcd | /bin/grep -v grep
+grep 'trusted-ca-file' /var/lib/rancher/rke2/server/db/etcd/config
 ```
 
-Verify that the file referenced by the `--client-ca-file` forapiserver is different from the `--trusted-ca-file` used by etcd.
+Verify that the file referenced by the `client-ca-file` for apiserver is different from the `trusted-ca-file` used by etcd.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, it sets the `client-transport-security` section with the relevant peer cert and key files. No manual remediation needed.
+By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. The `server-client.crt` field is set. No manual remediation needed.
 
 
 
