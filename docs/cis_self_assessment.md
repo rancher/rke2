@@ -1247,38 +1247,29 @@ Verify that the `--tls-cipher-suites` argument is set as outlined in the remedia
 **Remediation:**
 By default, RKE2 explicitly doesn't set this flag. No manual remediation needed.
 
+
 ### 1.3 Controller Manager
 
-
 #### 1.3.1
-Ensure that the `--terminated-pod-gc-threshold` argument is set as appropriate (Scored)
+Ensure that the `--terminated-pod-gc-threshold` argument is set as appropriate (Not Scored)
 <details>
 <summary>Rationale</summary>
 Garbage collection is important to ensure sufficient resource availability and avoiding degraded performance and availability. In the worst case, the system might crash or just be unusable for a long period of time. The current setting for garbage collection is 12,500 terminated pods which might be too high for your system to sustain. Based on your system resources and tests, choose an appropriate threshold value to activate garbage collection.
 </details>
 
-**Result:** Pass
-
-**Remediation:**
-Edit the Controller Manager pod specification file `/etc/kubernetes/manifests/kube-controller-manager.yaml`
-on the master node and set the `--terminated-pod-gc-threshold` to an appropriate threshold,
-for example:
-
-``` bash
---terminated-pod-gc-threshold=10
-```
+**Result:** **Not Scored - Operator Dependent**
 
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-controller-manager | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--terminated-pod-gc-threshold` argument is set as appropriate.
 
-```
-'--terminated-pod-gc-threshold' is present
-```
+**Remediation:**
+By default, RKE2 sets the `--terminated-pod-gc-threshold` argument with a value of 1000. No manual remediation needed.
 
 
 #### 1.3.2
@@ -1290,25 +1281,17 @@ Profiling allows for the identification of specific performance bottlenecks. It 
 
 **Result:** Pass
 
-**Remediation:**
-Edit the Controller Manager pod specification file `/etc/kubernetes/manifests/kube-controller-manager.yaml`
-on the master node and set the below parameter.
-
-``` bash
---profiling=false
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-controller-manager | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--profiling` argument is set to false.
 
-```
-'false' is equal to 'false'
-```
+**Remediation:**
+By default, RKE2 sets the `--profiling` flag parameter to false. No manual remediation needed.
 
 
 #### 1.3.3
@@ -1320,25 +1303,17 @@ The controller manager creates a service account per controller in the `kube-sys
 
 **Result:** Pass
 
-**Remediation:**
-Edit the Controller Manager pod specification file `/etc/kubernetes/manifests/kube-controller-manager.yaml`
-on the master node to set the below parameter.
-
-``` bash
---use-service-account-credentials=true
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-controller-manager | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--use-service-account-credentials` argument is set to true.
 
-```
-'true' is not equal to 'false'
-```
+**Remediation:**
+By default, RKE2 sets the `--use-service-account-credentials` argument to true. No manual remediation needed.
 
 
 #### 1.3.4
@@ -1350,26 +1325,17 @@ To ensure that keys for service account tokens can be rotated as needed, a separ
 
 **Result:** Pass
 
-**Remediation:**
-Edit the Controller Manager pod specification file `/etc/kubernetes/manifests/kube-controller-manager.yaml`
-on the master node and set the `--service-account-private-key-file` parameter
-to the private key file for service accounts.
-
-``` bash
---service-account-private-key-file=<filename>
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-controller-manager | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--service-account-private-key-file` argument is set as appropriate.
 
-```
-'--service-account-private-key-file' is present
-```
+**Remediation:**
+By default, RKE2 sets the `--service-account-private-key-file` argument with the service account key file. No manual remediation needed.
 
 
 #### 1.3.5
@@ -1383,25 +1349,17 @@ Providing the root certificate for the API server's serving certificate to the c
 
 **Result:** Pass
 
-**Remediation:**
-Edit the Controller Manager pod specification file `/etc/kubernetes/manifests/kube-controller-manager.yaml`
-on the master node and set the `--root-ca-file` parameter to the certificate bundle file.
-
-``` bash
---root-ca-file=<path/to/file>
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-controller-manager | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--root-ca-file` argument exists and is set to a certificate bundle file containing the root certificate for the API server's serving certificate
 
-```
-'--root-ca-file' is present
-```
+**Remediation:**
+By default, RKE2 sets the `--root-ca-file` argument with the root ca file. No manual remediation needed.
 
 
 #### 1.3.6
@@ -1413,31 +1371,23 @@ Ensure that the `RotateKubeletServerCertificate` argument is set to `true` (Scor
 Note: This recommendation only applies if you let kubelets get their certificates from the API server. In case your kubelet certificates come from an outside authority/tool (e.g. Vault) then you need to take care of rotation yourself.
 </details>
 
-**Result:** Pass
-
-**Remediation:**
-Edit the Controller Manager pod specification file `/etc/kubernetes/manifests/kube-controller-manager.yaml`
-on the master node and set the `--feature-gates` parameter to include `RotateKubeletServerCertificate=true`.
-
-``` bash
---feature-gates=RotateKubeletServerCertificate=true
-```
+**Result:** **Not Applicable**
 
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-controller-manager | grep -v grep
 ```
 
-**Expected result**:
+Verify that RotateKubeletServerCertificateargument exists and is set to true.
 
-```
-'RotateKubeletServerCertificate=true' is equal to 'RotateKubeletServerCertificate=true'
-```
+**Remediation:**
+By default, RKE2 implements it's own logic for certificate generation and rotation.
 
 
 #### 1.3.7
-Ensure that the `--bind-address argument` is set to `127.0.0.1` (Scored)
+Ensure that the `--bind-address` argument is set to `127.0.0.1` (Scored)
 <details>
 <summary>Rationale</summary>
 The Controller Manager API service which runs on port 10252/TCP by default is used for health and metrics information and is available without authentication or encryption. As such it should only be bound to a localhost interface, to minimize the cluster's attack surface.
@@ -1445,21 +1395,17 @@ The Controller Manager API service which runs on port 10252/TCP by default is us
 
 **Result:** Pass
 
-**Remediation:**
-Edit the Controller Manager pod specification file `/etc/kubernetes/manifests/kube-controller-manager.yaml`
-on the master node and ensure the correct value for the `--bind-address` parameter.
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-controller-manager | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--bind-address` argument is set to 127.0.0.1.
 
-```
-'--bind-address' is present OR '--bind-address' is not present
-```
+**Remediation:**
+By default, RKE2 sets the `--bind-address` argument to `127.0.0.1`. No manual remediation needed.
 
 
 ### 1.4 Scheduler
@@ -1475,25 +1421,17 @@ Profiling allows for the identification of specific performance bottlenecks. It 
 
 **Result:** Pass
 
-**Remediation:**
-Edit the Scheduler pod specification file `/etc/kubernetes/manifests/kube-scheduler.yaml` file
-on the master node and set the below parameter.
-
-``` bash
---profiling=false
-```
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-scheduler | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--profiling` argument is set to false.
 
-```
-'false' is equal to 'false'
-```
+**Remediation:**
+By default, RKE2 sets the `--profiling` flag parameter to false. No manual remediation needed.
 
 
 #### 1.4.2
@@ -1506,25 +1444,21 @@ The Scheduler API service which runs on port 10251/TCP by default is used for he
 
 **Result:** Pass
 
-**Remediation:**
-Edit the Scheduler pod specification file `/etc/kubernetes/manifests/kube-scheduler.yaml`
-on the master node and ensure the correct value for the `--bind-address` parameter.
-
 **Audit:**
+Run the below command on the master node.
 
-```
+```bash
 /bin/ps -ef | grep kube-scheduler | grep -v grep
 ```
 
-**Expected result**:
+Verify that the `--bind-address` argument is set to 127.0.0.1.
 
-```
-'--bind-address' is present OR '--bind-address' is not present
-```
+**Remediation:**
+By default, RKE2 sets the `--bind-address` argument to `127.0.0.1`. No manual remediation needed.
+
 
 ## 2 Etcd Node Configuration
 This section covers recommendations for etcd configuration.
-
 
 #### 2.1
 Ensure that the `--cert-file` and `--key-file` arguments are set as appropriate (Scored)
