@@ -1616,7 +1616,7 @@ ps -ef | grep kube-apiserver | grep -v grep
 Verify that the file referenced by the `client-ca-file` flag in the apiserver process is different from the file referenced by the `trusted-ca-file` parameter in the etcd configuration file.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. The `server-client.crt` field is set. No manual remediation needed.
+By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config` and the `trusted-ca-file` parameters in it are set to unique values specific to etcd. No manual remediation needed.
 
 
 
