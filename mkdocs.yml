@@ -22,3 +22,4 @@ nav:
   - index.md
   - Security:
     - cis_self_assessment.md
+    - hardening_guide.md
