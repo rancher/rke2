@@ -1633,7 +1633,7 @@ Client certificate authentication should not be used for users (Not Scored)
 With any authentication mechanism the ability to revoke credentials if they are compromised or no longer required, is a key control. Kubernetes client certificate authentication does not allow for this due to a lack of support for certificate revocation.
 </details>
 
-**Result:** Not Applicable
+**Result:** Not Scored - Operator Dependent
 
 **Audit:**
 Review user access to the cluster and ensure that users are not making use of Kubernetes client certificate authentication.
@@ -1651,7 +1651,7 @@ Ensure that a minimal audit policy is created (Scored)
 Logging is an important detective control for all systems, to detect potential unauthorised access.
 </details>
 
-**Result:** Not Applicable
+**Result:** FAIL TODO!!!
 
 **Audit:**
 Run the below command on the master node.
@@ -1673,7 +1673,7 @@ Ensure that the audit policy covers key security concerns (Not Scored)
 Security audit logs should cover access and modification of key resources in the cluster, to enable them to form an effective part of a security environment.
 </details>
 
-**Result:** Not Applicable
+**Result:** Not Scored - Operator Dependent
 
 **Remediation:**
 
