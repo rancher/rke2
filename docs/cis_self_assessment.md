@@ -1694,7 +1694,7 @@ The `kubelet` service file controls various parameters that set the behavior of 
 **Result:** Not Applicable
 
 **Remediation:**
-RKE2 doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
+RKE2 doesn’t launch the kubelet as a service. It is launched and managed by the RKE2 supervisor process. All configuration is passed to it as command line arguments at run time.
 
 
 #### 4.1.2
@@ -1707,7 +1707,7 @@ The `kubelet` service file controls various parameters that set the behavior of 
 **Result:** Not Applicable
 
 **Remediation:**
-RKE2 doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
+RKE2 doesn’t launch the kubelet as a service. It is launched and managed by the RKE2 supervisor process. All configuration is passed to it as command line arguments at run time.
 
 
 #### 4.1.3
@@ -1722,7 +1722,7 @@ It is possible to run `kube-proxy` with the kubeconfig parameters configured as 
 **Result:** Pass
 
 **Audit**
-Run the below command on the master node.
+Run the below command on the worker node.
 
 ```bash
 stat -c %a /var/lib/rancher/rke2/server/manifests/rke2-kube-proxy.yaml
@@ -1755,7 +1755,7 @@ root:root
 Verify that if a file is specified and it exists, the permissions are 644 or more restrictive.
 
 **Remediation:**
-By derfault, RKE2 creates `rke2-kube-proxy.yaml` with `root:root` ownership. No manual remediation needed.
+By default, RKE2 creates `rke2-kube-proxy.yaml` with `root:root` ownership. No manual remediation needed.
 
 
 #### 4.1.5
@@ -1768,10 +1768,11 @@ The `kubelet.conf` file is the kubeconfig file for the node, and controls variou
 **Result:** Not Applicable
 
 **Audit**
-Run the below command on the master node.
+Run the below command on the worker node.
 
 ```bash
-/bin/sh -c 'if test -e /etc/kubernetes/ssl/kubecfg-kube-node.yaml; then stat -c %a /etc/kubernetes/ssl/kubecfg-kube-node.yaml; fi'
+stat -c %a /var/lib/rancher/rke2/agent/kubelet.kubeconfig
+644
 ```
 
 **Remediation:**
