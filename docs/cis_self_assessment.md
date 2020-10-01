@@ -1,5 +1,5 @@
 ---
-title: CIS Benchmark Rancher Self-Assessment Guide - v2.4
+title: CIS Self-Assessment Guide
 weight: 204
 ---
 
@@ -236,7 +236,7 @@ Ensure that the etcd data directory permissions are set to 700 or more restricti
 etcd is a highly-available key-value store used by Kubernetes deployments for persistent storage of all of its REST API objects. This data directory should be protected from any unauthorized reads or writes. It should not be readable or writable by any group members or the world.
 </details>
 
-**Result:** FAIL TODO!!!
+**Result:** Pass
 
 **Audit:**
 ```bash
@@ -2157,7 +2157,7 @@ Ensure that the cluster-admin role is only used where required (Not Scored)
 Inappropriate access to secrets stored within the Kubernetes cluster can allow for an attacker to gain additional access to the Kubernetes cluster or external resources whose credentials are stored as secrets.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2169,7 +2169,22 @@ Minimize wildcard use in Roles and ClusterRoles (Not Scored)
 The principle of least privilege recommends that users are provided only the access required for their role and nothing more. The use of wildcard rights grants is likely to provide excessive rights to the Kubernetes API.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored - Operator Dependent
+
+**Audit:**
+Run the below command on the master node.
+
+```bash
+# Retrieve the roles defined across each namespaces in the cluster and review for wildcards
+/var/lib/rancher/rke2/bin/kubectl get roles --all-namespaces -o yaml
+
+# Retrieve the cluster roles defined in the	cluster	and	review for wildcards
+/var/lib/rancher/rke2/bin/kubectl get clusterroles -o yaml
+```
+
+Verify that there are not wildcards in use.
+
+**NOTE** roles check passes however clusterroles does not
 
 **Remediation:**
 
@@ -2181,7 +2196,7 @@ Minimize access to create pods (Not Scored)
 The ability to create pods in a cluster opens up possibilities for privilege escalation and should be restricted, where possible.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2198,18 +2213,10 @@ Where access to the Kubernetes API from a pod is required, a specific service ac
 The default service account should be configured such that it does not provide a service account token and does not have any explicit rights assignments.
 </details>
 
-**Result:** Pass
+**Result:** Pass TODO - update hardening guide
 
-**Remediation:**
-Create explicit service accounts wherever a Kubernetes workload requires specific access
-to the Kubernetes API server.
-Modify the configuration of each default service account to include this value
-
-``` bash
-automountServiceAccountToken: false
-```
-
-**Audit Script:** 5.1.5.sh
+**Audit:**
+Run the below command on the master node.
 
 ```
 #!/bin/bash
@@ -2240,16 +2247,13 @@ echo "--pass"
 exit 0
 ```
 
-**Audit Execution:**
+**Remediation:**
+Create explicit service accounts wherever a Kubernetes workload requires specific access
+to the Kubernetes API server.
+Modify the configuration of each default service account to include this value
 
-```
-./5.1.5.sh
-```
-
-**Expected result**:
-
-```
-'--pass' is present
+``` bash
+automountServiceAccountToken: false
 ```
 
 
@@ -2262,10 +2266,10 @@ Mounting service account tokens inside pods can provide an avenue for privilege 
 Avoiding mounting these tokens removes this attack avenue.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored - Operator Dependent
 
 **Remediation:**
-
+The pods launched by RKE2 are part of control plane and generally need access to communicate with the API server, thus this control does not apply to them. Operators should review their workloads and take steps to modify the definition of pods and service accounts which do not need to mount service account tokens to disable it.
 
 ### 5.2 Pod Security Policies
 
@@ -2283,8 +2287,17 @@ If you need to run privileged containers, this should be defined in a separate P
 
 **Result:** Pass
 
-**Remediation:**
+**Audit**
+Run the below command on the master node.
 
+```bash
+/var/lib/rancher/rke2/bin/kubectl describe psp global-restricted-psp | grep MustRunAsNonRoot
+```
+
+Verify that the result is `Rule:  MustRunAsNonRoot`.
+
+**Remediation:**
+RKE2, when run with the `--profile=cis-1.5` argument, will disallow the use of privileged containers.
 
 #### 5.2.2
 Minimize the admission of containers wishing to share the host process ID namespace (Scored)
@@ -2299,21 +2312,17 @@ If you need to run containers which require hostPID, this should be defined in a
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/var/lib/rancher/rke2/bin/kubectl get psp -o json | jq .items[] | jq -r 'select((.spec.hostPID == null) or (.spec.hostPID == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
+```
+
+Verify that the returned count is 1.
+
 **Remediation:**
-Create a PSP as described in the Kubernetes documentation, ensuring that the
-`.spec.hostPID` field is omitted or set to `false`.
-
-**Audit:**
-
-```
-kubectl --kubeconfig=/root/.kube/config get psp -o json | jq .items[] | jq -r 'select((.spec.hostPID == null) or (.spec.hostPID == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
-```
-
-**Expected result**:
-
-```
-1 is greater than 0
-```
+RKE2 sets the `spec.HostPID` value to false explicitly in the (PodSecurityPolicySpec)[https://github.com/kubernetes/kubernetes/blob/cc68a78ef52a37f66d6e0c1569998e271470dc3a/staging/src/k8s.io/api/policy/v1beta1/types.go#L186]. The value of `false` is the default value for this field and due to how Go uses zero value and the field's JSON omit empty tag, this will not show up in the results. No manual remediation is needed.
 
 
 #### 5.2.3
@@ -2330,21 +2339,17 @@ If you have a requirement to containers which require hostIPC, this should be de
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/var/lib/rancher/rke2/bin/kubectl get psp -o json | jq .items[] | jq -r 'select((.spec.hostIPC == null) or (.spec.hostIPC == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
+```
+
+Verify that the returned count is 1.
+
 **Remediation:**
-Create a PSP as described in the Kubernetes documentation, ensuring that the
-`.spec.hostIPC` field is omitted or set to `false`.
-
-**Audit:**
-
-```
-kubectl --kubeconfig=/root/.kube/config get psp -o json | jq .items[] | jq -r 'select((.spec.hostIPC == null) or (.spec.hostIPC == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
-```
-
-**Expected result**:
-
-```
-1 is greater than 0
-```
+RKE2 sets the `spec.HostIPC` value to false explicitly in the (PodSecurityPolicySpec)[https://github.com/kubernetes/kubernetes/blob/cc68a78ef52a37f66d6e0c1569998e271470dc3a/staging/src/k8s.io/api/policy/v1beta1/types.go#L189]. The value of `false` is the default value for this field and due to how Go uses zero value and the field's JSON omit empty tag, this will not show up in the results. No manual remediation is needed.
 
 
 #### 5.2.4
@@ -2360,21 +2365,17 @@ If you have need to run containers which require hostNetwork, this should be def
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/var/lib/rancher/rke2/bin/kubectl get psp -o json | jq .items[] | jq -r 'select((.spec.hostNetwork == null) or (.spec.hostNetwork == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
+```
+
+Verify that the returned count is 1.
+
 **Remediation:**
-Create a PSP as described in the Kubernetes documentation, ensuring that the
-`.spec.hostNetwork` field is omitted or set to `false`.
-
-**Audit:**
-
-```
-kubectl --kubeconfig=/root/.kube/config get psp -o json | jq .items[] | jq -r 'select((.spec.hostNetwork == null) or (.spec.hostNetwork == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
-```
-
-**Expected result**:
-
-```
-1 is greater than 0
-```
+RKE2 sets the `spec.HostNetwork` value to false explicitly in the (PodSecurityPolicySpec)[https://github.com/kubernetes/kubernetes/blob/cc68a78ef52a37f66d6e0c1569998e271470dc3a/staging/src/k8s.io/api/policy/v1beta1/types.go#L180]. The value of `false` is the default value for this field and due to how Go uses zero value and the field's JSON omit empty tag, this will not show up in the results. No manual remediation is needed.
 
 
 #### 5.2.5
@@ -2390,21 +2391,17 @@ If you have need to run containers which use setuid binaries or require privileg
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/var/lib/rancher/rke2/bin/kubectl get psp -o json | jq .items[] | jq -r 'select((.spec.allowPrivilegeEscalation == null) or (.spec.allowPrivilegeEscalation == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
+```
+
+Verify that the returned count is 1.
+
 **Remediation:**
-Create a PSP as described in the Kubernetes documentation, ensuring that the
-`.spec.allowPrivilegeEscalation` field is omitted or set to `false`.
-
-**Audit:**
-
-```
-kubectl --kubeconfig=/root/.kube/config get psp -o json | jq .items[] | jq -r 'select((.spec.allowPrivilegeEscalation == null) or (.spec.allowPrivilegeEscalation == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
-```
-
-**Expected result**:
-
-```
-1 is greater than 0
-```
+RKE2 sets the `spec.allowPrivilegeEscalation` value to false explicitly in the (PodSecurityPolicySpec)[https://github.com/kubernetes/kubernetes/blob/cc68a78ef52a37f66d6e0c1569998e271470dc3a/staging/src/k8s.io/api/policy/v1beta1/types.go#L217]. The value of `false` is the default value for this field and due to how Go uses zero value and the field's JSON omit empty tag, this will not show up in the results. No manual remediation is needed.
 
 
 #### 5.2.6
@@ -2422,8 +2419,17 @@ If you need to run root containers, this should be defined in a separate PSP and
 
 **Result:** Pass
 
-**Remediation:**
+**Audit**
+Run the below command on the master node.
 
+```bash
+/var/lib/rancher/rke2/bin/kubectl get psp -o json | jq .items[] | jq -r 'select((.spec.allowPrivilegeEscalation == null) or (.spec.allowPrivilegeEscalation == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
+```
+
+Verify that the returned count is 1.
+
+**Remediation:**
+RKE2 sets the `spec.runAsUser.Rule` value to `MustRunAsNonRoot` in the (PodSecurityPolicySpec)[https://github.com/kubernetes/kubernetes/blob/cc68a78ef52a37f66d6e0c1569998e271470dc3a/staging/src/k8s.io/api/policy/v1beta1/types.go#L193]. No manual remediation is needed.
 
 
 #### 5.2.7
@@ -2439,10 +2445,17 @@ There should be at least one PodSecurityPolicy (PSP) defined which prevents cont
 If you need to run containers with this capability, this should be defined in a separate PSP and you should carefully check RBAC controls to ensure that only limited service accounts and users are given permission to access that PSP.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored - Operator Dependent
+
+**Audit**
+Run the below command on the master node.
+
+```bash
+/var/lib/rancher/rke2/bin/kubectl get psp global-restricted-psp -o json | jq .spec.requiredDropCapabilities[]
+```
 
 **Remediation:**
-
+RKE2 sets `.spec.requiredDropCapabilities[]` to a value of `All`. No manual remediation needed.
 
 
 #### 5.2.8
@@ -2456,7 +2469,7 @@ There should be at least one PodSecurityPolicy (PSP) defined which prevents cont
 If you need to run containers with additional capabilities, this should be defined in a separate PSP and you should carefully check RBAC controls to ensure that only limited service accounts and users are given permission to access that PSP.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2471,7 +2484,7 @@ Containers run with a default set of capabilities as assigned by the Container R
 In many cases applications running in containers do not require any capabilities to operate, so from the perspective of the principal of least privilege use of capabilities should be minimized.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2502,44 +2515,17 @@ Network Policies are namespace scoped. When a network policy is introduced to a 
 
 **Result:** Pass
 
+**Audit:**
+Run the below command on the master node.
+
+```bash
+for i in kube-system kube-public default; do /var/lib/rancher/rke2/bin/kubectl get networkpolicies -n $i; done
+```
+
+Verify that there are network policies applied to each of the namespaces.
+
 **Remediation:**
-Follow the documentation and create `NetworkPolicy` objects as you need them.
-
-**Audit Script:** 5.3.2.sh
-
-```
-#!/bin/bash -e
-
-export KUBECONFIG=${KUBECONFIG:-"/root/.kube/config"}
-
-kubectl version > /dev/null
-if [ $? -ne 0 ]; then
-  echo "fail: kubectl failed"
-  exit 1
-fi
-
-for namespace in $(kubectl get namespaces -A -o json | jq -r '.items[].metadata.name'); do
-  policy_count=$(kubectl get networkpolicy -n ${namespace} -o json | jq '.items | length')
-  if [ ${policy_count} -eq 0 ]; then
-    echo "fail: ${namespace}"
-    exit 1
-  fi
-done
-
-echo "pass"
-```
-
-**Audit Execution:**
-
-```
-./5.3.2.sh
-```
-
-**Expected result**:
-
-```
-'pass' is present
-```
+RKE2, when executed with the `--profile=cis-1.5` argument applies a secure network policy that only allows intra-namespace traffic and DNS to kube-system. No manual remediation needed.
 
 ### 5.4 Secrets Management
 
@@ -2551,7 +2537,7 @@ Prefer using secrets as files over secrets as environment variables (Not Scored)
 It is reasonably common for application code to log out its environment (particularly in the event of an error). This will include any secret values passed in as environment variables, so secrets can easily be exposed to any user or entity who has access to the logs.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2563,7 +2549,7 @@ Consider external secret storage (Not Scored)
 Kubernetes supports secrets as first-class objects, but care needs to be taken to ensure that access to secrets is carefully limited. Using an external secrets provider can ease the management of access to secrets, especially where secrests are used across both Kubernetes and non-Kubernetes environments.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2578,7 +2564,7 @@ Configure Image Provenance using ImagePolicyWebhook admission controller (Not Sc
 Kubernetes supports plugging in provenance rules to accept or reject the images in your deployments. You could configure such rules to ensure that only approved images are deployed in the cluster.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2598,7 +2584,7 @@ Create administrative boundaries between resources using namespaces (Not Scored)
 Limiting the scope of user permissions can reduce the impact of mistakes or malicious activities. A Kubernetes namespace allows you to partition created resources into logically named groups. Resources created in one namespace can be hidden from other namespaces. By default, each resource created by a user in Kubernetes cluster runs in a default namespace, called default. You can create additional namespaces and attach resources and users to them. You can use Kubernetes Authorization plugins to create policies that segregate access to namespace resources between different users.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2610,7 +2596,7 @@ Ensure that the seccomp profile is set to docker/default in your pod definitions
 Seccomp (secure computing mode) is used to restrict the set of system calls applications can make, allowing cluster administrators greater control over the security of workloads running in the cluster. Kubernetes disables seccomp profiles by default for historical reasons. You should enable it to ensure that the workloads have restricted actions available within the container.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2622,7 +2608,7 @@ Apply Security Context to Your Pods and Containers (Not Scored)
 A security context defines the operating system security settings (uid, gid, capabilities, SELinux role, etc..) applied to a container. When designing your containers and pods, make sure that you configure the security context for your pods, containers, and volumes. A security context is a property defined in the deployment yaml. It controls the security parameters that will be assigned to the pod/container/volume. There are two levels of security context: pod level security context, and container level security context.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2636,40 +2622,14 @@ Resources in a Kubernetes cluster should be segregated by namespace, to allow fo
 
 **Result:** Pass
 
+**Audit:** 
+Run the below command on the master node.
+
+```bash
+/var/lib/rancher/rke2/bin/kubectl get all -n default
+```
+
+Verify that there are no resources applied to the default namespace.
+
 **Remediation:**
-
-**Result:** Pass
-
-**Remediation:**
-Ensure that namespaces are created to allow for appropriate segregation of Kubernetes
-resources and that all new resources are created in a specific namespace.
-
-**Audit Script:** 5.6.4.sh
-
-```
-#!/bin/bash -e
-
-export KUBECONFIG=${KUBECONFIG:-/root/.kube/config}
-
-kubectl version > /dev/null
-if [[ $? -gt 0 ]]; then
-  echo "fail: kubectl failed"
-  exit 1
-fi
-
-default_resources=$(kubectl get all -o json | jq --compact-output '.items[] | select((.kind == "Service") and (.metadata.name == "kubernetes") and (.metadata.namespace == "default") | not)' | wc -l)
-
-echo "--count=${default_resources}"
-```
-
-**Audit Execution:**
-
-```
-./5.6.4.sh
-```
-
-**Expected result**:
-
-```
-'0' is equal to '0'
-```
+By default, RKE2 does not utilize the default namespace.
