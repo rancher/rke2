@@ -55,7 +55,7 @@ func NewAgentCommand() cli.Command {
 
 func AgentRun(clx *cli.Context) error {
 	switch profile {
-	case "cis-1.5":
+	case rke2.CISProfile:
 		if err := validateCISReqs("agent"); err != nil {
 			logrus.Fatal(err)
 		}

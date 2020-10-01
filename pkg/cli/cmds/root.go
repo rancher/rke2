@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/rancher/k3s/pkg/version"
+	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
@@ -39,7 +40,7 @@ var (
 		},
 		&cli.StringFlag{
 			Name:        "profile",
-			Usage:       "(security) Validate system configuration against the selected benchmark (valid items: cis-1.5)",
+			Usage:       "(security) Validate system configuration against the selected benchmark (valid items: " + rke2.CISProfile + ")",
 			EnvVar:      "RKE2_CIS_PROFILE",
 			Destination: &profile,
 		},
