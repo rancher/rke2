@@ -16,7 +16,7 @@ For more detail about evaluating a hardened cluster against the official CIS ben
 
 ## Configure Kernel Runtime Parameters
 
-The following sysctl configuration is recommended for all nodes type in the cluster. Set the following parameters in `/etc/sysctl.d/90-kubelet.conf`.
+The following sysctl configuration is recommended for all nodes type in the cluster. Set the following parameters in `/usr/local/share/rke2/rke2-cis-sysctl.conf`.
 
 ```sh
 vm.overcommit_memory=1
