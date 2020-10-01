@@ -20,5 +20,8 @@ markdown_extensions:
     permalink: true
 nav:
   - index.md
+  - Architecture:
+    - architecture.md
   - Security:
     - cis_self_assessment.md
+
