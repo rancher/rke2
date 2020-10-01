@@ -2197,7 +2197,7 @@ The ability to create pods in a cluster opens up possibilities for privilege esc
 **Result:** Not Scored - Operator Dependent
 
 **Remediation:**
-
+Operators should review who has access to create pods in their cluster. See the CIS Benchmark guide for more details.
 
 #### 5.1.5
 Ensure that default service accounts are not actively used. (Scored)
