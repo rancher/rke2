@@ -1601,7 +1601,7 @@ etcd is a highly available key-value store used by Kubernetes deployments for pe
 Authentication to etcd is based on whether the certificate presented was issued by a trusted certificate authority. There is no checking of certificate attributes such as common name or subject alternative name. As such, if any attackers were able to gain access to any certificate issued by the trusted certificate authority, they would be able to gain full access to the etcd database.
 </details>
 
-**Result:** **Not Applicable**
+**Result:** Pass
 
 **Audit**
 Run the below command on the master node.
