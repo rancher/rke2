@@ -1523,7 +1523,7 @@ grep 'auto-tls' /var/lib/rancher/rke2/server/db/etcd/config
 Verify that if the `auto-tls` field does not exist.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, it does not contain the `auto-tls` argument. No manual remediation needed.
+By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, it does not contain the `auto-tls` argument. No manual remediation needed.
 
 
 #### 2.4
@@ -1545,7 +1545,7 @@ grep -E 'peer-server-client.crt|peer-server-client.key' /var/lib/rancher/rke2/se
 Verify that the `peer-server-client.crt` and `peer-server-client.key` fields are set as appropriate.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, the `peer-server-client.crt` and `peer-server-client.key` fields are set. No manual remediation needed.
+By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, the `peer-server-client.crt` and `peer-server-client.key` fields are set. No manual remediation needed.
 
 
 #### 2.5
@@ -1567,7 +1567,7 @@ grep 'client-cert-auth' /var/lib/rancher/rke2/server/db/etcd/config
 Verify that the `client-cert-auth` field in the peer section is set to true.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, the `client-cert-auth` field is set. No manual remediation needed.
+By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, the `client-cert-auth` field is set. No manual remediation needed.
 
 
 #### 2.6
@@ -1589,7 +1589,7 @@ grep 'peer-auto-tls' /var/lib/rancher/rke2/server/db/etcd/config
 Verify that if the `peer-auto-tls` field does not exist.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, it does not contain the `peer-auto-tls` field. No manual remediation needed.
+By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config`. Within the file, it does not contain the `peer-auto-tls` field. No manual remediation needed.
 
 
 #### 2.7
@@ -1616,7 +1616,7 @@ ps -ef | grep kube-apiserver | grep -v grep
 Verify that the file referenced by the `client-ca-file` flag in the apiserver process is different from the file referenced by the `trusted-ca-file` parameter in the etcd configuration file.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config` and the `trusted-ca-file` parameters in it are set to unique values specific to etcd. No manual remediation needed.
+By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config` and the `trusted-ca-file` parameters in it are set to unique values specific to etcd. No manual remediation needed.
 
 
 
