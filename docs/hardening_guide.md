@@ -42,17 +42,24 @@ The CIS Benchmark requires that the etcd data directory be owned by the `etcd` u
 This section gives you the commands necessary to configure your host to meet the above requirements.
 
 #### Set kernel parameters
-When RKE2 is installed, it creates a sysctl config file to set the required parameters appropriately. However, it does automatically configure the Host to use this configuration. You must do this manually.
+When RKE2 is installed, it creates a sysctl config file to set the required parameters appropriately.
+However, it does not automatically configure the Host to use this configuration. You must do this manually.
+The location of the config file depends on the installation method used. 
 
-The location of the config file depends on the install method used. 
-
-If RKE2 was installed via the RPM (the default on OSes that use RPMs, such as CentOS), run the following command:
+If RKE2 was installed via RPM, YUM, or DNF (the default on OSes that use RPMs, such as CentOS), run the following command(s):
 ```bash
-# TODO this file isn't yet in the RPM. Update this command once it is 
-sysctl -p /usr/local/share/rke2/rke2-cis-sysctl.conf
+sudo cp -f /usr/share/rke2/rke2-cis-sysctl.conf /etc/sysctl.d/60-rke2-cis.conf
+sudo systemctl restart systemd-sysctl
 ```
 
 If RKE2 was installed via the tarball (the default on OSes that do not use RPMs, such as Ubuntu), run the following command:
+```bash
+sudo cp -f /usr/local/share/rke2/rke2-cis-sysctl.conf /etc/sysctl.d/60-rke2-cis.conf
+sudo systemctl restart systemd-sysctl
+```
+
+If your system lacks the `systemd-sysctl.service` and/or the `/etc/sysctl.d` directory you will want to make sure the
+sysctls are applied at boot by running the following command during start-up:
 ```bash
 sysctl -p /usr/local/share/rke2/rke2-cis-sysctl.conf
 ```
