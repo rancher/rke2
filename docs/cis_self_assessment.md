@@ -1651,7 +1651,7 @@ Ensure that a minimal audit policy is created (Scored)
 Logging is an important detective control for all systems, to detect potential unauthorised access.
 </details>
 
-**Result:** Scored - Operator Dependent
+**Result:** FAIL TODO!!!
 
 **Audit:**
 Run the below command on the master node.
