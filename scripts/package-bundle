@@ -11,7 +11,7 @@ mkdir -p dist/bundle/share/${PROG}
 rsync -a bundle/ dist/bundle/
 
 ### bin/rke2
-cp -f bin/${PROG} dist/bundle/bin/
+install -s bin/${PROG} dist/bundle/bin/
 
 ### share/rke2/LICENSE
 cp -vf LICENSE dist/bundle/share/${PROG}/LICENSE.txt
