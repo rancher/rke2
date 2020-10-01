@@ -1533,7 +1533,7 @@ Ensure that the `peer-cert-file` and `peer-key-file` fields are set as appropria
 etcd is a highly-available key value store used by Kubernetes deployments for persistent storage of all of its REST API objects. These objects are sensitive in nature and should be encrypted in transit and also amongst peers in the etcd clusters.
 </details>
 
-**Result:** *Pass
+**Result:** Pass
 
 **Audit**
 Run the below command on the master node.
@@ -2126,7 +2126,7 @@ Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers (Not Scor
 TLS ciphers have had a number of known vulnerabilities and weaknesses, which can reduce the protection provided by them. By default Kubernetes supports a number of TLS ciphersuites including some that have security concerns, weakening the protection provided.
 </details>
 
-**Result:** FAIL TODO!!!
+**Result:** Not Scored - Operator Dependent
 
 **Remediation:**
 Configuration of the parameter is dependent on your use case. Please see the CIS Kubernetes Benchmark for suggestions on configuring this for your usecase.
