@@ -104,7 +104,7 @@ func NewServerCommand() cli.Command {
 
 func ServerRun(clx *cli.Context) error {
 	switch profile {
-	case "cis-1.5":
+	case rke2.CISProfile:
 		if err := validateCISReqs("server"); err != nil {
 			logrus.Fatal(err)
 		}

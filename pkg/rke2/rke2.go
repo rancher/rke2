@@ -28,6 +28,8 @@ type Config struct {
 
 var cisMode bool
 
+const CISProfile = "cis-1.5"
+
 func Server(clx *cli.Context, cfg Config) error {
 	if err := setup(clx, cfg); err != nil {
 		return err
@@ -63,19 +65,8 @@ func Agent(clx *cli.Context, cfg Config) error {
 }
 
 func setup(clx *cli.Context, cfg Config) error {
-	var dataDir string
-
-	for _, f := range clx.Command.Flags {
-		switch t := f.(type) {
-		case cli.StringFlag:
-			if strings.Contains(t.Name, "data-dir") {
-				dataDir = *t.Destination
-			} else if t.Name == "profile" && t.Destination != nil && *t.Destination != "" {
-				cisMode = true
-			}
-
-		}
-	}
+	cisMode = clx.String("profile") == CISProfile
+	dataDir := clx.String("data-dir")
 
 	images := images.New(cfg.SystemDefaultRegistry)
 	if err := defaults.Set(clx, images, dataDir); err != nil {
