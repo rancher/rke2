@@ -1776,8 +1776,7 @@ stat -c %a /var/lib/rancher/rke2/agent/kubelet.kubeconfig
 ```
 
 **Remediation:**
-RKE2 doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
-
+By derfault, RKE2 creates `kubelet.kubeconfig` with `644` permissions. No manual remediation needed.
 
 #### 4.1.6
 Ensure that the kubelet.conf file ownership is set to `root:root` (Scored)
@@ -1792,11 +1791,12 @@ The `kubelet.conf` file is the kubeconfig file for the node, and controls variou
 Run the below command on the master node.
 
 ```bash
-/bin/sh -c 'if test -e /etc/kubernetes/ssl/kubecfg-kube-node.yaml; then stat -c %U:%G /etc/kubernetes/ssl/kubecfg-kube-node.yaml; fi'
+stat -c %U:%G /var/lib/rancher/rke2/agent/kubelet.kubeconfig
+root:root
 ```
 
 **Remediation:**
-RKE2 doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
+By default, RKE2 creates `kubelet.kubeconfig` with `root:root` ownership. No manual remediation needed.
 
 
 #### 4.1.7
@@ -1853,7 +1853,7 @@ The kubelet reads various parameters, including security settings, from a config
 **Result:** Not Applicable
 
 **Remediation:**
-RKE2 doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
+RKE2 doesn’t require or maintain a configuration file for the kubelet process. All configuration is passed to it as command line arguments at run time.
 
 
 #### 4.1.10
@@ -1866,7 +1866,7 @@ The kubelet reads various parameters, including security settings, from a config
 **Result:** Not Applicable
 
 **Remediation:**
-RKE2 doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
+RKE2 doesn’t require or maintain a configuration file for the kubelet process. All configuration is passed to it as command line arguments at run time.
 
 
 ### 4.2 Kubelet
@@ -1913,7 +1913,7 @@ Run the below command on the master node.
 Verify that `AlwaysAllow` is not present.
 
 **Remediation:**
-RKE2 starts kubelet with `Node,RBAC` as the value for the `--authorization-mode` argument. No manual remediation needed.
+RKE2 starts kubelet with `Webhook` as the value for the `--authorization-mode` argument. No manual remediation needed.
 
 
 #### 4.2.3
@@ -2019,7 +2019,7 @@ Run the below command on the master node.
 /bin/ps -ef | grep kubelet | grep -v grep
 ```
 
-Verify there are no  results returned.
+Verify there are no results returned.
 
 **Remediation:**
 By default, RKE2 does not set the `--make-iptables-util-chains` argument. No manual remediation needed.
