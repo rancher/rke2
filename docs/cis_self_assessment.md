@@ -2032,9 +2032,10 @@ Ensure that the `--hostname-override` argument is not set (Not Scored)
 Overriding hostnames could potentially break TLS setup between the kubelet and the apiserver. Additionally, with overridden hostnames, it becomes increasingly difficult to associate logs with a particular node and process them for security analytics. Hence, you should setup your kubelet nodes with resolvable FQDNs and avoid overriding the hostnames with IPs.
 </details>
 
-**Result:** Not Applicable FAIL TODO!!!
+**Result:** Not Applicable
 
 **Remediation:**
+RKE2 does set this parameter for each host, but RKE2 also manages all certificates in the cluster. It ensures the hostname-override is included as a subject alternative name (SAN) in the kubelet's certificate.
 
 
 #### 4.2.9
