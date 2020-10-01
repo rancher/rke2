@@ -2184,8 +2184,6 @@ Run the below command on the master node.
 
 Verify that there are not wildcards in use.
 
-**NOTE** roles check passes however clusterroles does not
-
 **Remediation:**
 
 
@@ -2218,34 +2216,7 @@ The default service account should be configured such that it does not provide a
 **Audit:**
 Run the below command on the master node.
 
-```
-#!/bin/bash
-
-export KUBECONFIG=${KUBECONFIG:-/root/.kube/config}
-
-kubectl version > /dev/null
-if [ $? -ne 0 ]; then
-echo "fail: kubectl failed"
-exit 1
-fi
-
-accounts="$(kubectl --kubeconfig=${KUBECONFIG} get serviceaccounts -A -o json | jq -r '.items[] | select(.metadata.name=="default") | select((.automountServiceAccountToken == null) or (.automountServiceAccountToken == true)) | "fail \(.metadata.name) \(.metadata.namespace)"')"
-
-if [[ "${accounts}" != "" ]]; then
-echo "fail: automountServiceAccountToken not false for accounts: ${accounts}"
-exit 1
-fi
-
-default_binding="$(kubectl get rolebindings,clusterrolebindings -A -o json | jq -r '.items[] | select(.subjects[].kind=="ServiceAccount" and .subjects[].name=="default" and .metadata.name=="default").metadata.uid' | wc -l)"
-
-if [[ "${default_binding}" -gt 0 ]]; then
-echo "fail: default service accounts have non default bindings"
-exit 1
-fi
-
-echo "--pass"
-exit 0
-```
+For	each namespace in the cluster, review the rights assigned to the default service account and ensure that it has no roles or cluster roles bound to it apart from the defaults. Additionally ensure that the automountServiceAccountToken: false setting is in place for each default service account.
 
 **Remediation:**
 Create explicit service accounts wherever a Kubernetes workload requires specific access
