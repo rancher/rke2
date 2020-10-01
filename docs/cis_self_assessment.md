@@ -2240,7 +2240,7 @@ Avoiding mounting these tokens removes this attack avenue.
 **Result:** Not Scored - Operator Dependent
 
 **Remediation:**
-The pods launched by RKE2 are part of control plane and generally need access to communicate with the API server, thus this control does not apply to them. Operators should review their workloads and take steps to modify the definition of pods and service accounts which do not need to mount service account tokens to disable it.
+The pods launched by RKE2 are part of the control plane and generally need access to communicate with the API server, thus this control does not apply to them. Operators should review their workloads and take steps to modify the definition of pods and service accounts which do not need to mount service account tokens to disable it.
 
 ### 5.2 Pod Security Policies
 
