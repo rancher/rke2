@@ -2185,7 +2185,7 @@ Run the below command on the master node.
 Verify that there are not wildcards in use.
 
 **Remediation:**
-
+Operators should review their workloads for proper role usage. See the CIS Benchmark guide for more details.
 
 #### 5.1.4
 Minimize access to create pods (Not Scored)
