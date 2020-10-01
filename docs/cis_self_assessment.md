@@ -1607,10 +1607,13 @@ Authentication to etcd is based on whether the certificate presented was issued 
 Run the below command on the master node.
 
 ```bash
+# To find the ca file used by etcd:
 grep 'trusted-ca-file' /var/lib/rancher/rke2/server/db/etcd/config
+# To find the kube-apiserver process:
+ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-Verify that the file referenced by the `client-ca-file` for apiserver is different from the `trusted-ca-file` used by etcd.
+Verify that the file referenced by the `client-ca-file` for kube-apiserver is different from the `trusted-ca-file` used by etcd.
 
 **Remediation:**
 By default, RKE2 uses a config file for etcd that can be found `/var/lib/rancher/rke2/server/db/etcd/config`. The `server-client.crt` field is set. No manual remediation needed.
