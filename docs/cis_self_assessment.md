@@ -2125,10 +2125,10 @@ Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers (Not Scor
 TLS ciphers have had a number of known vulnerabilities and weaknesses, which can reduce the protection provided by them. By default Kubernetes supports a number of TLS ciphersuites including some that have security concerns, weakening the protection provided.
 </details>
 
-**Result:** Pass
+**Result:** FAIL TODO!!!
 
 **Remediation:**
-By default, RKE2 is built using a FIPS 140-2 certified module.
+Configuration of the parameter is dependent on your use case. Please see the CIS Kubernetes Benchmark for suggestions on configuring this for your usecase.
 
 
 ## 5 Kubernetes Policies
