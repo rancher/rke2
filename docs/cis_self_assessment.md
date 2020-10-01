@@ -2157,7 +2157,7 @@ Ensure that the cluster-admin role is only used where required (Not Scored)
 Inappropriate access to secrets stored within the Kubernetes cluster can allow for an attacker to gain additional access to the Kubernetes cluster or external resources whose credentials are stored as secrets.
 </details>
 
-**Result:** Not Scored
+**Result:** Not Scored - Operator Dependent
 
 **Remediation:**
 
