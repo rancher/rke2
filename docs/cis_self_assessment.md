@@ -1371,7 +1371,7 @@ Ensure that the `RotateKubeletServerCertificate` argument is set to `true` (Scor
 Note: This recommendation only applies if you let kubelets get their certificates from the API server. In case your kubelet certificates come from an outside authority/tool (e.g. Vault) then you need to take care of rotation yourself.
 </details>
 
-**Result:** **Not Applicable**
+**Result:** Not Applicable
 
 **Audit:**
 Run the below command on the master node.
@@ -1555,7 +1555,7 @@ Ensure that the `client-cert-auth` field is set to `true` (Scored)
 etcd is a highly-available key value store used by Kubernetes deployments for persistent storage of all of its REST API objects. These objects are sensitive in nature and should be accessible only by authenticated etcd peers in the etcd cluster.
 </details>
 
-**Result:** **Not Applicable**
+**Result:** Not Applicable
 
 **Audit**
 Run the below command on the master node.
@@ -1633,10 +1633,13 @@ Client certificate authentication should not be used for users (Not Scored)
 With any authentication mechanism the ability to revoke credentials if they are compromised or no longer required, is a key control. Kubernetes client certificate authentication does not allow for this due to a lack of support for certificate revocation.
 </details>
 
-**Result:** Pass
+**Result:** Not Applicable
+
+**Audit:**
+Review user access to the cluster and ensure that users are not making use of Kubernetes client certificate authentication.
 
 **Remediation:**
-
+Alternative mechanisms provided by Kubernetes such as the use of OIDC should be implemented in place of client certificates.
 
 ### 3.2 Logging
 
@@ -1648,32 +1651,19 @@ Ensure that a minimal audit policy is created (Scored)
 Logging is an important detective control for all systems, to detect potential unauthorised access.
 </details>
 
-**Result:** Pass
+**Result:** Not Applicable
+
+**Audit:**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kube-apiserver | grep -v grep 
+```
+
+Verify that the `--audit-policy-file` is set. Review the contents of the file specified and ensure that it contains avalid audit policy.
 
 **Remediation:**
 Create an audit policy file for your cluster.
-
-**Audit Script:** 3.2.1.sh
-
-```
-#!/bin/bash -e
-
-api_server_bin=${1}
-
-/bin/ps -ef | /bin/grep ${api_server_bin} | /bin/grep -v ${0} | /bin/grep -v grep
-```
-
-**Audit Execution:**
-
-```
-./3.2.1.sh kube-apiserver
-```
-
-**Expected result**:
-
-```
-'--audit-policy-file' is present
-```
 
 
 #### 3.2.2
@@ -1683,7 +1673,7 @@ Ensure that the audit policy covers key security concerns (Not Scored)
 Security audit logs should cover access and modification of key resources in the cluster, to enable them to form an effective part of a security environment.
 </details>
 
-**Result:** Pass
+**Result:** Not Applicable
 
 **Remediation:**
 
@@ -1704,7 +1694,7 @@ The `kubelet` service file controls various parameters that set the behavior of 
 **Result:** Not Applicable
 
 **Remediation:**
-RKE doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
+RKE2 doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
 
 
 #### 4.1.2
@@ -1717,7 +1707,7 @@ The `kubelet` service file controls various parameters that set the behavior of 
 **Result:** Not Applicable
 
 **Remediation:**
-RKE doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
+RKE2 doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
 
 
 #### 4.1.3
@@ -1731,25 +1721,18 @@ It is possible to run `kube-proxy` with the kubeconfig parameters configured as 
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+stat -c %a /var/lib/rancher/rke2/server/manifests/rke2-kube-proxy.yaml
+644
+```
+
+Verify that if a file is specified and it exists, the permissions are 644 or more restrictive.
+
 **Remediation:**
-Run the below command (based on the file location on your system) on the each worker node.
-For example,
-
-``` bash
-chmod 644 /etc/kubernetes/ssl/kubecfg-kube-proxy.yaml
-```
-
-**Audit:**
-
-```
-/bin/sh -c 'if test -e /etc/kubernetes/ssl/kubecfg-kube-proxy.yaml; then stat -c %a /etc/kubernetes/ssl/kubecfg-kube-proxy.yaml; fi'
-```
-
-**Expected result**:
-
-```
-'644' is present OR '640' is present OR '600' is equal to '600' OR '444' is present OR '440' is present OR '400' is present OR '000' is present
-```
+By derfault, RKE2 creates `rke2-kube-proxy.yaml` with `644` permissions. No manual remediation needed.
 
 
 #### 4.1.4
@@ -1761,25 +1744,18 @@ The kubeconfig file for `kube-proxy` controls various parameters for the `kube-p
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+stat -c %U:%G /var/lib/rancher/rke2/server/manifests/rke2-kube-proxy.yaml
+root:root
+```
+
+Verify that if a file is specified and it exists, the permissions are 644 or more restrictive.
+
 **Remediation:**
-Run the below command (based on the file location on your system) on the each worker node.
-For example,
-
-``` bash
-chown root:root /etc/kubernetes/ssl/kubecfg-kube-proxy.yaml
-```
-
-**Audit:**
-
-```
-/bin/sh -c 'if test -e /etc/kubernetes/ssl/kubecfg-kube-proxy.yaml; then stat -c %U:%G /etc/kubernetes/ssl/kubecfg-kube-proxy.yaml; fi'
-```
-
-**Expected result**:
-
-```
-'root:root' is present
-```
+By derfault, RKE2 creates `rke2-kube-proxy.yaml` with `root:root` ownership. No manual remediation needed.
 
 
 #### 4.1.5
@@ -1789,27 +1765,17 @@ Ensure that the kubelet.conf file permissions are set to `644` or more restricti
 The `kubelet.conf` file is the kubeconfig file for the node, and controls various parameters that set the behavior and identity of the worker node. You should restrict its file permissions to maintain the integrity of the file. The file should be writable by only the administrators on the system.
 </details>
 
-**Result:** Pass
+**Result:** Not Applicable
 
-**Remediation:**
-Run the below command (based on the file location on your system) on the each worker node.
-For example,
+**Audit**
+Run the below command on the master node.
 
-``` bash
-chmod 644 /etc/kubernetes/ssl/kubecfg-kube-node.yaml
-```
-
-**Audit:**
-
-```
+```bash
 /bin/sh -c 'if test -e /etc/kubernetes/ssl/kubecfg-kube-node.yaml; then stat -c %a /etc/kubernetes/ssl/kubecfg-kube-node.yaml; fi'
 ```
 
-**Expected result**:
-
-```
-'644' is present OR '640' is present OR '600' is equal to '600' OR '444' is present OR '440' is present OR '400' is present OR '000' is present
-```
+**Remediation:**
+RKE2 doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
 
 
 #### 4.1.6
@@ -1819,27 +1785,17 @@ Ensure that the kubelet.conf file ownership is set to `root:root` (Scored)
 The `kubelet.conf` file is the kubeconfig file for the node, and controls various parameters that set the behavior and identity of the worker node. You should set its file ownership to maintain the integrity of the file. The file should be owned by `root:root`.
 </details>
 
-**Result:** Pass
+**Result:** Not Applicable
 
-**Remediation:**
-Run the below command (based on the file location on your system) on the each worker node.
-For example,
+**Audit**
+Run the below command on the master node.
 
-``` bash
-chown root:root /etc/kubernetes/ssl/kubecfg-kube-node.yaml
-```
-
-**Audit:**
-
-```
+```bash
 /bin/sh -c 'if test -e /etc/kubernetes/ssl/kubecfg-kube-node.yaml; then stat -c %U:%G /etc/kubernetes/ssl/kubecfg-kube-node.yaml; fi'
 ```
 
-**Expected result**:
-
-```
-'root:root' is equal to 'root:root'
-```
+**Remediation:**
+RKE2 doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
 
 
 #### 4.1.7
@@ -1851,24 +1807,18 @@ The certificate authorities file controls the authorities used to validate API r
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+stat -c %a /var/lib/rancher/rke2/server/tls/server-ca.crt
+644
+```
+
+Verify that the permissions are 644.
+
 **Remediation:**
-Run the following command to modify the file permissions of the
-
-``` bash
---client-ca-file chmod 644 <filename>
-```
-
-**Audit:**
-
-```
-stat -c %a /etc/kubernetes/ssl/kube-ca.pem
-```
-
-**Expected result**:
-
-```
-'644' is equal to '644' OR '640' is present OR '600' is present
-```
+By default, RKE2 creates `/var/lib/rancher/rke2/server/tls/server-ca.crt` with 644 permissions.
 
 
 #### 4.1.8
@@ -1880,24 +1830,16 @@ The certificate authorities file controls the authorities used to validate API r
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+stat -c %U:%G /var/lib/rancher/rke2/server/tls/client-ca.crt
+root:root
+```
+
 **Remediation:**
-Run the following command to modify the ownership of the `--client-ca-file`.
-
-``` bash
-chown root:root <filename>
-```
-
-**Audit:**
-
-```
-/bin/sh -c 'if test -e /etc/kubernetes/ssl/kube-ca.pem; then stat -c %U:%G /etc/kubernetes/ssl/kube-ca.pem; fi'
-```
-
-**Expected result**:
-
-```
-'root:root' is equal to 'root:root'
-```
+By default, RKE2 creates `/var/lib/rancher/rke2/server/tls/client-ca.crt` with root:root ownership.
 
 
 #### 4.1.9
@@ -1910,7 +1852,7 @@ The kubelet reads various parameters, including security settings, from a config
 **Result:** Not Applicable
 
 **Remediation:**
-RKE doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
+RKE2 doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
 
 
 #### 4.1.10
@@ -1923,7 +1865,7 @@ The kubelet reads various parameters, including security settings, from a config
 **Result:** Not Applicable
 
 **Remediation:**
-RKE doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
+RKE2 doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
 
 
 ### 4.2 Kubelet
@@ -1931,7 +1873,7 @@ This section contains recommendations for kubelet configuration.
 
 
 #### 4.2.1
-Ensure that the `--anonymous-auth argument` is set to false (Scored)
+Ensure that the `--anonymous-auth` argument is set to false (Scored)
 <details>
 <summary>Rationale</summary>
 When enabled, requests that are not rejected by other configured authentication methods are treated as anonymous requests. These requests are then served by the Kubelet server. You should rely on authentication to authorize access and disallow anonymous requests.
@@ -1939,42 +1881,17 @@ When enabled, requests that are not rejected by other configured authentication 
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kubelet | grep -v grep
+```
+
+Verify that the value for `--anonymous-auth` is false.
+
 **Remediation:**
-If using a Kubelet config file, edit the file to set authentication: `anonymous`: enabled to
-`false`.
-If using executable arguments, edit the kubelet service file
-`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and
-set the below parameter in `KUBELET_SYSTEM_PODS_ARGS` variable.
-
-``` bash
---anonymous-auth=false
-```
-
-Based on your system, restart the kubelet service. For example:
-
-``` bash
-systemctl daemon-reload
-systemctl restart kubelet.service
-```
-
-**Audit:**
-
-```
-/bin/ps -fC kubelet
-```
-
-**Audit Config:**
-
-```
-/bin/cat /var/lib/kubelet/config.yaml
-```
-
-**Expected result**:
-
-```
-'false' is equal to 'false'
-```
-
+By default, RKE2 starts kubelet with `--anonymous-auth` set to false. No manual remediation needed.
 
 #### 4.2.2
 Ensure that the `--authorization-mode` argument is not set to `AlwaysAllow` (Scored)
@@ -1985,40 +1902,17 @@ Kubelets, by default, allow all authenticated requests (even anonymous ones) wit
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kubelet | grep -v grep
+```
+
+Verify that `AlwaysAllow` is not present.
+
 **Remediation:**
-If using a Kubelet config file, edit the file to set authorization: `mode` to `Webhook`. If
-using executable arguments, edit the kubelet service file
-`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and
-set the below parameter in `KUBELET_AUTHZ_ARGS` variable.
-
-``` bash
---authorization-mode=Webhook
-```
-
-Based on your system, restart the kubelet service. For example:
-
-``` bash
-systemctl daemon-reload
-systemctl restart kubelet.service
-```
-
-**Audit:**
-
-```
-/bin/ps -fC kubelet
-```
-
-**Audit Config:**
-
-```
-/bin/cat /var/lib/kubelet/config.yaml
-```
-
-**Expected result**:
-
-```
-'Webhook' not have 'AlwaysAllow'
-```
+RKE2 starts kubelet with `Node,RBAC` as the value for the `--authorization-mode` argument. No manual remediation needed.
 
 
 #### 4.2.3
@@ -2030,41 +1924,17 @@ The connections from the apiserver to the kubelet are used for fetching logs for
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kubelet | grep -v grep
+```
+
+Verify that the `--client-ca-file` argument has a ca file associated.
+
 **Remediation:**
-If using a Kubelet config file, edit the file to set authentication: `x509`: `clientCAFile` to
-the location of the client CA file.
-If using command line arguments, edit the kubelet service file
-`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and
-set the below parameter in `KUBELET_AUTHZ_ARGS` variable.
-
-``` bash
---client-ca-file=<path/to/client-ca-file>
-```
-
-Based on your system, restart the kubelet service. For example:
-
-``` bash
-systemctl daemon-reload
-systemctl restart kubelet.service
-```
-
-**Audit:**
-
-```
-/bin/ps -fC kubelet
-```
-
-**Audit Config:**
-
-```
-/bin/cat /var/lib/kubelet/config.yaml
-```
-
-**Expected result**:
-
-```
-'--client-ca-file' is present
-```
+By default, RKE2 starts the kubelet process with the `--client-ca-file`. No manual remediation needed.
 
 
 #### 4.2.4
@@ -2076,40 +1946,16 @@ The Kubelet process provides a read-only API in addition to the main Kubelet API
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kubelet | grep -v grep
+```
+Verify that the `--read-only-port` argument is set to 0.
+
 **Remediation:**
-If using a Kubelet config file, edit the file to set `readOnlyPort` to `0`.
-If using command line arguments, edit the kubelet service file
-`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and
-set the below parameter in `KUBELET_SYSTEM_PODS_ARGS` variable.
-
-``` bash
---read-only-port=0
-```
-
-Based on your system, restart the kubelet service. For example:
-
-``` bash
-systemctl daemon-reload
-systemctl restart kubelet.service
-```
-
-**Audit:**
-
-```
-/bin/ps -fC kubelet
-```
-
-**Audit Config:**
-
-```
-/bin/cat /var/lib/kubelet/config.yaml
-```
-
-**Expected result**:
-
-```
-'0' is equal to '0'
-```
+By default, RKE2 starts the kubelet process with the `--read-only-port` argument set to 0.
 
 
 #### 4.2.5
@@ -2123,41 +1969,17 @@ Setting idle timeouts ensures that you are protected against Denial-of-Service a
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kubelet | grep -v grep
+```
+
+Verify that there's nothing returned.
+
 **Remediation:**
-If using a Kubelet config file, edit the file to set `streamingConnectionIdleTimeout` to a
-value other than `0`.
-If using command line arguments, edit the kubelet service file
-`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and
-set the below parameter in `KUBELET_SYSTEM_PODS_ARGS` variable.
-
-``` bash
---streaming-connection-idle-timeout=5m
-```
-
-Based on your system, restart the kubelet service. For example:
-
-``` bash
-systemctl daemon-reload
-systemctl restart kubelet.service
-```
-
-**Audit:**
-
-```
-/bin/ps -fC kubelet
-```
-
-**Audit Config:**
-
-```
-/bin/cat /var/lib/kubelet/config.yaml
-```
-
-**Expected result**:
-
-```
-'30m' is not equal to '0' OR '--streaming-connection-idle-timeout' is not present
-```
+By default, RKE2 does not set `--streaming-connection-idle-timeout` when starting kubelet.
 
 
 #### 4.2.6
@@ -2169,40 +1991,15 @@ Kernel parameters are usually tuned and hardened by the system administrators be
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kubelet | grep -v grep
+```
+
 **Remediation:**
-If using a Kubelet config file, edit the file to set `protectKernelDefaults`: `true`.
-If using command line arguments, edit the kubelet service file
-`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and
-set the below parameter in `KUBELET_SYSTEM_PODS_ARGS` variable.
-
-``` bash
---protect-kernel-defaults=true
-```
-
-Based on your system, restart the kubelet service. For example:
-
-``` bash
-systemctl daemon-reload
-systemctl restart kubelet.service
-```
-
-**Audit:**
-
-```
-/bin/ps -fC kubelet
-```
-
-**Audit Config:**
-
-```
-/bin/cat /var/lib/kubelet/config.yaml
-```
-
-**Expected result**:
-
-```
-'true' is equal to 'true'
-```
+By default, RKE2 starts the kubelet process with the `--protect-kernel-defaults` argument set to true.
 
 
 #### 4.2.7
@@ -2214,58 +2011,39 @@ Kubelets can automatically manage the required changes to iptables based on how 
 
 **Result:** Pass
 
-**Remediation:**
-If using a Kubelet config file, edit the file to set `makeIPTablesUtilChains`: `true`.
-If using command line arguments, edit the kubelet service file
-`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and
-remove the `--make-iptables-util-chains` argument from the
-`KUBELET_SYSTEM_PODS_ARGS` variable.
-Based on your system, restart the kubelet service. For example:
+**Audit**
+Run the below command on the master node.
 
 ```bash
-systemctl daemon-reload
-systemctl restart kubelet.service
+/bin/ps -ef | grep kubelet | grep -v grep
 ```
 
-**Audit:**
+Verify there are no  results returned.
 
-```
-/bin/ps -fC kubelet
-```
-
-**Audit Config:**
-
-```
-/bin/cat /var/lib/kubelet/config.yaml
-```
-
-**Expected result**:
-
-```
-'true' is equal to 'true' OR '--make-iptables-util-chains' is not present
-```
+**Remediation:**
+By default, RKE2 does not set the `--make-iptables-util-chains` argument. No manual remediation needed.
 
 
 #### 4.2.8
-Ensure that the --hostname-override argument is not set (Not Scored)
+Ensure that the `--hostname-override` argument is not set (Not Scored)
 <details>
 <summary>Rationale</summary>
 Overriding hostnames could potentially break TLS setup between the kubelet and the apiserver. Additionally, with overridden hostnames, it becomes increasingly difficult to associate logs with a particular node and process them for security analytics. Hence, you should setup your kubelet nodes with resolvable FQDNs and avoid overriding the hostnames with IPs.
 </details>
 
-**Result:** Pass
+**Result:** Not Applicable
 
 **Remediation:**
 
 
 #### 4.2.9
-Ensure that the --event-qps argument is set to 0 or a level which ensures appropriate event capture (Not Scored)
+Ensure that the `--event-qps` argument is set to 0 or a level which ensures appropriate event capture (Not Scored)
 <details>
 <summary>Rationale</summary>
 It is important to capture all events and not restrict event creation. Events are an important source of security information and analytics that ensure that your environment is consistently monitored using the event data.
 </details>
 
-**Result:** Pass
+**Result:** Not Applicable
 
 **Remediation:**
 
@@ -2277,10 +2055,19 @@ Ensure that the `--tls-cert-file` and `--tls-private-key-file` arguments are set
 Kubelet communication contains sensitive parameters that should remain encrypted in transit. Configure the Kubelets to serve only HTTPS traffic.
 </details>
 
-**Result:** Not Applicable
+**Result:** Pass
+
+**Audit**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kubelet | grep -v grep 
+```
+
+Verify the `--tls-cert-file` and `--tls-private-key-file` arguments are present and set appropriately.
 
 **Remediation:**
-RKE doesn’t require or maintain a configuration file for the kubelet service. All configuration is passed in as arguments at container run time.
+By default, RKE2 sets the `--tls-cert-file` and `--tls-private-key-file` arguments when executing the kubelet process.
 
 
 #### 4.2.11
@@ -2297,37 +2084,15 @@ The `--rotate-certificates` setting causes the kubelet to rotate its client cert
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kubelet | grep -v grep
+```
+
 **Remediation:**
-If using a Kubelet config file, edit the file to add the line `rotateCertificates`: `true` or
-remove it altogether to use the default value.
-If using command line arguments, edit the kubelet service file
-`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and
-remove `--rotate-certificates=false` argument from the `KUBELET_CERTIFICATE_ARGS`
-variable.
-Based on your system, restart the kubelet service. For example:
-
-``` bash
-systemctl daemon-reload
-systemctl restart kubelet.service
-```
-
-**Audit:**
-
-```
-/bin/ps -fC kubelet
-```
-
-**Audit Config:**
-
-```
-/bin/cat /var/lib/kubelet/config.yaml
-```
-
-**Expected result**:
-
-```
-'--rotate-certificates' is present OR '--rotate-certificates' is not present
-```
+By default, RKE2 implements it's own logic for certificate generation and rotation.
 
 
 #### 4.2.12
@@ -2341,38 +2106,15 @@ Note: This recommendation only applies if you let kubelets get their certificate
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/bin/ps -ef | grep kubelet | grep -v grep
+```
+
 **Remediation:**
-Edit the kubelet service file `/etc/systemd/system/kubelet.service.d/10-kubeadm.conf`
-on each worker node and set the below parameter in `KUBELET_CERTIFICATE_ARGS` variable.
-
-``` bash
---feature-gates=RotateKubeletServerCertificate=true
-```
-
-Based on your system, restart the kubelet service. For example:
-
-``` bash
-systemctl daemon-reload
-systemctl restart kubelet.service
-```
-
-**Audit:**
-
-```
-/bin/ps -fC kubelet
-```
-
-**Audit Config:**
-
-```
-/bin/cat /var/lib/kubelet/config.yaml
-```
-
-**Expected result**:
-
-```
-'true' is equal to 'true'
-```
+By default, RKE2 implements it's own logic for certificate generation and rotation.
 
 
 #### 4.2.13
@@ -2385,6 +2127,7 @@ TLS ciphers have had a number of known vulnerabilities and weaknesses, which can
 **Result:** Pass
 
 **Remediation:**
+By default, RKE2 is built using a FIPS 140-2 certified module.
 
 ## 5 Kubernetes Policies
 
