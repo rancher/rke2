@@ -2194,7 +2194,7 @@ Minimize access to create pods (Not Scored)
 The ability to create pods in a cluster opens up possibilities for privilege escalation and should be restricted, where possible.
 </details>
 
-**Result:** Not Scored
+**Result:** Not Scored - Operator Dependent
 
 **Remediation:**
 
