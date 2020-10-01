@@ -2000,7 +2000,7 @@ Run the below command on the master node.
 ```
 
 **Remediation:**
-By default, RKE2 starts the kubelet process with the `--protect-kernel-defaults` argument set to true.
+When running with the `profile` flag set to `cis-1.5`, RKE2 starts the kubelet process with the `--protect-kernel-defaults` argument set to true.
 
 
 #### 4.2.7
@@ -2032,7 +2032,7 @@ Ensure that the `--hostname-override` argument is not set (Not Scored)
 Overriding hostnames could potentially break TLS setup between the kubelet and the apiserver. Additionally, with overridden hostnames, it becomes increasingly difficult to associate logs with a particular node and process them for security analytics. Hence, you should setup your kubelet nodes with resolvable FQDNs and avoid overriding the hostnames with IPs.
 </details>
 
-**Result:** Not Applicable
+**Result:** Not Applicable FAIL TODO!!!
 
 **Remediation:**
 
@@ -2044,10 +2044,10 @@ Ensure that the `--event-qps` argument is set to 0 or a level which ensures appr
 It is important to capture all events and not restrict event creation. Events are an important source of security information and analytics that ensure that your environment is consistently monitored using the event data.
 </details>
 
-**Result:** Not Applicable
+**Result:** Not Scored - Operator Dependent
 
 **Remediation:**
-
+See CIS Benchmark guide for further details on configuring this.
 
 #### 4.2.10
 Ensure that the `--tls-cert-file` and `--tls-private-key-file` arguments are set as appropriate (Scored)
@@ -2083,7 +2083,7 @@ The `--rotate-certificates` setting causes the kubelet to rotate its client cert
 **Note:**This feature also require the `RotateKubeletClientCertificate` feature gate to be enabled (which is the default since Kubernetes v1.7)
 </details>
 
-**Result:** Pass
+**Result:** Not Applicable
 
 **Audit**
 Run the below command on the master node.
@@ -2105,7 +2105,7 @@ Ensure that the `RotateKubeletServerCertificate` argument is set to `true` (Scor
 Note: This recommendation only applies if you let kubelets get their certificates from the API server. In case your kubelet certificates come from an outside authority/tool (e.g. Vault) then you need to take care of rotation yourself.
 </details>
 
-**Result:** Pass
+**Result:** Not Applicable
 
 **Audit**
 Run the below command on the master node.
@@ -2129,6 +2129,7 @@ TLS ciphers have had a number of known vulnerabilities and weaknesses, which can
 
 **Remediation:**
 By default, RKE2 is built using a FIPS 140-2 certified module.
+
 
 ## 5 Kubernetes Policies
 
