@@ -60,7 +60,7 @@ setup_env() {
 
     # --- make sure install channel has a value
     if [ -z "${INSTALL_RKE2_CHANNEL}" ]; then
-        INSTALL_RKE2_CHANNEL="testing"
+        INSTALL_RKE2_CHANNEL="latest"
     fi
 
     # --- make sure install type has a value
@@ -133,7 +133,6 @@ get_release_version() {
     else
         info "finding release for channel ${INSTALL_RKE2_CHANNEL}"
         INSTALL_RKE2_CHANNEL_URL=${INSTALL_RKE2_CHANNEL_URL:-'https://update.rke2.io/v1-release/channels'}
-        INSTALL_RKE2_CHANNEL=${INSTALL_RKE2_CHANNEL:-'stable'}
         version_url="${INSTALL_RKE2_CHANNEL_URL}/${INSTALL_RKE2_CHANNEL}"
         case ${DOWNLOADER} in
         *curl)
