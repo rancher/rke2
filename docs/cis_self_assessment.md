@@ -1,6 +1,5 @@
 ---
 title: CIS Self-Assessment Guide
-weight: 204
 ---
 
 ### CIS Kubernetes Benchmark v1.5 - RKE2 v1.18
@@ -54,7 +53,7 @@ stat -c %a /var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml
 644
 ```
 
-**Remediation:** 
+**Remediation:**
 By default, RKE2 creates these files with `644` permissions. No manual remediation needed.
 
 
@@ -396,7 +395,7 @@ By default, RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/control
 Ensure that the Kubernetes PKI directory and file ownership is set to `root:root` (Scored)
 <details>
 <summary>Rationale</summary>
-Kubernetes makes use of a number of certificates as part of its operation. You should set the ownership of the directory containing the PKI information and all files in that directory to maintain their integrity. The directory and files should be owned by root:root. 
+Kubernetes makes use of a number of certificates as part of its operation. You should set the ownership of the directory containing the PKI information and all files in that directory to maintain their integrity. The directory and files should be owned by root:root.
 </details>
 
 **Result:** Pass
@@ -415,12 +414,12 @@ By default, RKE2 creates the directory and files with the expected ownership of 
 Ensure that the Kubernetes PKI certificate file permissions are set to `644` or more restrictive (Scored)
 <details>
 <summary>Rationale</summary>
-Kubernetes makes use of a number of certificate files as part of the operation of its components. The permissions on these files should be set to 644 or more restrictive to protect their integrity. 
+Kubernetes makes use of a number of certificate files as part of the operation of its components. The permissions on these files should be set to 644 or more restrictive to protect their integrity.
 </details>
 
 **Result:** Pass
 
-**Audit:** 
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -443,7 +442,7 @@ Kubernetes makes use of a number of key files as part of the operation of its co
 **Result:** Pass
 
 **Audit**
-Run the below command on the master node. 
+Run the below command on the master node.
 
 ```bash
 stat -c %n\ %a /var/lib/rancher/rke2/server/tls/*.key
@@ -475,7 +474,7 @@ If you are using RBAC authorization, it is generally considered reasonable to al
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep 
+/bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
 Verify that `--anonymous-auth=false` is present.
@@ -519,7 +518,7 @@ The token-based authentication utilizes static tokens to authenticate requests t
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep 
+/bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
 Verify that the --basic-auth-file argument does not exist.
@@ -542,7 +541,7 @@ Connections from apiserver to kubelets could potentially carry sensitive data su
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep 
+/bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
 Verify that the `--kubelet-https` argument does not exist.
@@ -1210,7 +1209,7 @@ Where `etcd` encryption is used, it is important to ensure that the appropriate 
 Follow the Kubernetes documentation and configure a `EncryptionConfig` file.
 In this file, choose **aescbc**, **kms** or **secretbox** as the encryption provider.
 
-**Audit:** 
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1479,7 +1478,7 @@ grep -E 'cert-file|key-file' /var/lib/rancher/rke2/server/db/etcd/config
 Verify that the	`cert-file` and the `key-file` fields are set as appropriate.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config`. Server and peer cert and key files are specified. No manual remediation needed. 
+By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config`. Server and peer cert and key files are specified. No manual remediation needed.
 
 
 #### 2.2
@@ -1501,7 +1500,7 @@ grep 'client-cert-auth' /var/lib/rancher/rke2/server/db/etcd/config
 Verify that the `client-cert-auth` field is set to true.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config`. `client-cert-auth` is set to true. No manual remediation needed. 
+By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config`. `client-cert-auth` is set to true. No manual remediation needed.
 
 
 #### 2.3
@@ -1657,7 +1656,7 @@ Logging is an important detective control for all systems, to detect potential u
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep 
+/bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
 Verify that the `--audit-policy-file` is set. Review the contents of the file specified and ensure that it contains avalid audit policy.
@@ -2063,7 +2062,7 @@ Kubelet communication contains sensitive parameters that should remain encrypted
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kubelet | grep -v grep 
+/bin/ps -ef | grep kubelet | grep -v grep
 ```
 
 Verify the `--tls-cert-file` and `--tls-private-key-file` arguments are present and set appropriately.
@@ -2592,7 +2591,7 @@ Resources in a Kubernetes cluster should be segregated by namespace, to allow fo
 
 **Result:** Pass
 
-**Audit:** 
+**Audit:**
 Run the below command on the master node.
 
 ```bash
