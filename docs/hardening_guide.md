@@ -85,7 +85,7 @@ When ran with the cis-1.5 profile, RKE2 will put a much more restrictive set of 
 
 ### NetworkPolicies
 
-When ran with the cis-1.5 profile, RKE2 will put NetworkPolicies in place that pass the CIS Benchmark for Kubernetes's built-in namespcaes. These namespaces are: `kube-system`, `kube-public`, and `default`.
+When ran with the cis-1.5 profile, RKE2 will put NetworkPolicies in place that pass the CIS Benchmark for Kubernetes's built-in namespcaes. These namespaces are: `kube-system`, `kube-public`, `kube-node-lease`, and `default`.
 
 The NetworkPolicy used will only allow pods within the same namespace to talk to each other. The notable exception to this is that it allows DNS requests to be resolved.
 
@@ -93,20 +93,34 @@ The NetworkPolicy used will only allow pods within the same namespace to talk to
 
 **TODO:** Add a separate doc on our NP behavior that explains how the defaults can be overriden by the operator and link here.
 
+## Known Issues
+The following are controls that RKE2 currently does not pass. Each gap will be explained and whether it can be passed through manual operator intervention or if it will be addressed in a future release
+
+### Control 5.1.5
+Ensure that default service accounts are not actively used. (Scored)
+<details>
+<summary>Rationale</summary>
+    
+Kubernetes provides a default service account which is used by cluster workloads where no specific service account is assigned to the pod.
+
+Where access to the Kubernetes API from a pod is required, a specific service account should be created for that pod, and rights granted to that service account.
+
+The default service account should be configured such that it does not provide a service account token and does not have any explicit rights assignments.
+</details>
+
+The remediation for this is to update the `automountServiceAccountToken` field to `false` for the `default` service account in each namespace.
+
+For the built-in namespaces (`kube-system`, `kube-public`, `kube-node-lease`, and `default`), RKE2 does not automatically update this service account. You can manually update this field on these service accounts to passs the control.
+
+### Control 3.2.1
+Ensure that a minimal audit policy is created (Scored)
+<details>
+<summary>Rationale</summary>
+Logging is an important detective control for all systems, to detect potential unauthorised access.
+</details>
+
+RKE2 currently does not support configuring audit logging. This is a [known issue](https://github.com/rancher/rke2/issues/410) that will be addressed in an upcoming release.
+
 ## Conclusion
 
 If you have followed this guide, your RKE2 cluster will be configured to pass the CIS Kubernetes Benchmark. You can review our [CIS Benchmark Self-Assessment Guide](cis_self_assessment.md) to understand how we verified each of the benchmark and how you can do the same on your cluster.
-
-## Securing Default Service Accounts
-
-### Determine if Changes Need to be Made
-
-For	each namespace in the cluster, review the rights assigned to the default service account and ensure that it has no roles or cluster roles bound to it apart from the defaults. Additionally ensure that the automountServiceAccountToken: false setting is in place for each default service account.
-
-```bash
-for i in kube-system kube-public default; do
-    /var/lib/rancher/rke2/bin/kubectl get serviceaccounts -n $i -o json | grep automountServiceAccountToken
-done
-```
-
-If the results for the field `automountServiceAccountToken` is anything other than `false`, that service account for the given namespace should be updated.
