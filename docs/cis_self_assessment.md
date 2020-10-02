@@ -2293,7 +2293,7 @@ Run the below command on the master node.
 Verify that the returned count is 1.
 
 **Remediation:**
-RKE2 sets the `spec.HostPID` value to false explicitly in the (PodSecurityPolicySpec)[https://github.com/kubernetes/kubernetes/blob/cc68a78ef52a37f66d6e0c1569998e271470dc3a/staging/src/k8s.io/api/policy/v1beta1/types.go#L186]. The value of `false` is the default value for this field and due to how Go uses zero value and the field's JSON omit empty tag, this will not show up in the results. No manual remediation is needed.
+RKE2 sets the `hostPID` value to false explicitly for the PSP it creates. When reviewing PSPs, note that the Kubernetes API only displays this field if it is explicitly set to true. No manual remediation is needed.
 
 
 #### 5.2.3
@@ -2320,7 +2320,7 @@ Run the below command on the master node.
 Verify that the returned count is 1.
 
 **Remediation:**
-RKE2 sets the `spec.HostIPC` value to false explicitly in the (PodSecurityPolicySpec)[https://github.com/kubernetes/kubernetes/blob/cc68a78ef52a37f66d6e0c1569998e271470dc3a/staging/src/k8s.io/api/policy/v1beta1/types.go#L189]. The value of `false` is the default value for this field and due to how Go uses zero value and the field's JSON omit empty tag, this will not show up in the results. No manual remediation is needed.
+RKE2 sets the `HostIPC` value to false explicitly for the PSP it creates. When reviewing PSPs, note that the Kubernetes API only displays this field if it is explicitly set to true. No manual remediation is needed.
 
 
 #### 5.2.4
@@ -2346,7 +2346,7 @@ Run the below command on the master node.
 Verify that the returned count is 1.
 
 **Remediation:**
-RKE2 sets the `spec.HostNetwork` value to false explicitly in the (PodSecurityPolicySpec)[https://github.com/kubernetes/kubernetes/blob/cc68a78ef52a37f66d6e0c1569998e271470dc3a/staging/src/k8s.io/api/policy/v1beta1/types.go#L180]. The value of `false` is the default value for this field and due to how Go uses zero value and the field's JSON omit empty tag, this will not show up in the results. No manual remediation is needed.
+RKE2 sets the `HostNetwork` value to false explicitly for the PSP it creates. When reviewing PSPs, note that the Kubernetes API only displays this field if it is explicitly set to true. No manual remediation is needed.
 
 
 #### 5.2.5
@@ -2372,7 +2372,7 @@ Run the below command on the master node.
 Verify that the returned count is 1.
 
 **Remediation:**
-RKE2 sets the `spec.allowPrivilegeEscalation` value to false explicitly in the (PodSecurityPolicySpec)[https://github.com/kubernetes/kubernetes/blob/cc68a78ef52a37f66d6e0c1569998e271470dc3a/staging/src/k8s.io/api/policy/v1beta1/types.go#L217]. The value of `false` is the default value for this field and due to how Go uses zero value and the field's JSON omit empty tag, this will not show up in the results. No manual remediation is needed.
+RKE2 sets the `allowPrivilegeEscalation` value to false explicitly for the PSP it creates. When reviewing PSPs, note that the Kubernetes API only displays this field if it is explicitly set to true. No manual remediation is needed.
 
 
 #### 5.2.6
