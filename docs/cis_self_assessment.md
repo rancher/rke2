@@ -6,7 +6,7 @@ title: CIS Self-Assessment Guide
 
 #### Overview
 
-This document is a companion to the RKE2 security hardening guide. The hardening guide provides prescriptive guidance for hardening a production installation of RKE2, and this benchmark guide is meant to help you evaluate the level of security of the hardened cluster against each control in the CIS Kubernetes benchmark. It is to be used by RKE2 operators, security teams, auditors and decision makers.
+This document is a companion to the RKE2 security hardening guide. The hardening guide provides prescriptive guidance for hardening a production installation of RKE2, and this benchmark guide is meant to help you evaluate the level of security of the hardened cluster against each control in the CIS Kubernetes benchmark. It is to be used by RKE2 operators, security teams, auditors, and decision makers.
 
 This guide is specific to the **v1.18** release line of RKE2 and the **v1.5.1** release of the CIS Kubernetes Benchmark.
 
@@ -22,7 +22,7 @@ These are the possible results for each control:
 
 - **Pass** - The RKE2 cluster under test passed the audit outlined in the benchmark.
 - **Not Applicable** - The control is not applicable to RKE2 because of how it is designed to operate. The remediation section will explain why this is so.
-- **Not Scored - Operator Dependent** - The control is not scored in the CIS benchmark and it depends on the cluster's usecase or some other variable factor determined by the cluster operator. These controls have been evaluated to ensure RKE2 does not prevent their implementation, but no further configuration or auditing of the cluster under test has been performed for them.
+- **Not Scored - Operator Dependent** - The control is not scored in the CIS benchmark and it depends on the cluster's use case or some other factor that must be determined by the cluster operator. These controls have been evaluated to ensure RKE2 does not prevent their implementation, but no further configuration or auditing of the cluster under test has been performed.
 
 <!--
 RKE2 is launched as a single process that will first install and launch containerd as a host-level process. It will then launch the kubelet as a host-level process. The reamining Kubernetes control plane components (including etcd) are then launched as static pods, using the kubelet. Configuration of Kubernetes is achieved by passing additional arguments to the RKE2 process via a config file (recommended) or command line arguments.
@@ -474,7 +474,7 @@ If you are using RBAC authorization, it is generally considered reasonable to al
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that `--anonymous-auth=false` is present.
@@ -495,7 +495,7 @@ Basic authentication uses plaintext credentials for authentication. Currently, t
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--basic-auth-file` argument does not exist.
@@ -518,7 +518,7 @@ The token-based authentication utilizes static tokens to authenticate requests t
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the --basic-auth-file argument does not exist.
@@ -541,7 +541,7 @@ Connections from apiserver to kubelets could potentially carry sensitive data su
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--kubelet-https` argument does not exist.
@@ -563,7 +563,7 @@ The apiserver, by default, does not authenticate itself to the kubelet's HTTPS e
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the --kubelet-client-certificate and --kubelet-client-key arguments exist and they are set as appropriate.
@@ -585,7 +585,7 @@ The connections from the apiserver to the kubelet are used for fetching logs for
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--kubelet-certificate-authority` argument exists and is set as appropriate.
@@ -607,7 +607,7 @@ The API Server, can be configured to allow all requests. This mode should not be
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the argument value doesn't contain `AlwaysAllow`.
@@ -629,7 +629,7 @@ The Node authorization mode only allows kubelets to read Secret, ConfigMap, Pers
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify `Node` exists as a parameter to the argument.
@@ -651,7 +651,7 @@ Role Based Access Control (RBAC) allows fine-grained control over the operations
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify `RBAC` exists as a parameter to the argument.
@@ -675,7 +675,7 @@ Note: This is an Alpha feature in the Kubernetes 1.15 release.
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--enable-admission-plugins` argument is set to a value that includes EventRateLimit.
@@ -700,7 +700,7 @@ The AlwaysAdmit admission controller was deprecated in Kubernetes v1.13. Its beh
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that if the `--enable-admission-plugins` argument is set, its value does not include `AlwaysAdmit`.
@@ -723,7 +723,7 @@ Setting admission control policy to `AlwaysPullImages` forces every new pod to p
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--enable-admission-plugins` argument is set to a value that includes `AlwaysPullImages`.
@@ -745,7 +745,7 @@ SecurityContextDeny can be used to provide a layer of security for clusters whic
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--enable-admission-plugins` argument is set to a value that includes `SecurityContextDeny`, if `PodSecurityPolicy` is not included.
@@ -767,7 +767,7 @@ When you create a pod, if you do not specify a service account, it is automatica
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--disable-admission-plugins` argument is set to a value that does not includes `ServiceAccount`.
@@ -790,7 +790,7 @@ Setting admission control policy to `NamespaceLifecycle` ensures that objects ca
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--disable-admission-plugins` argument is set to a value that does not include `NamespaceLifecycle`.
@@ -814,7 +814,7 @@ A Pod Security Policy is a cluster-level resource that controls the actions that
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--enable-admission-plugins` argument is set to a value that includes `PodSecurityPolicy`.
@@ -837,7 +837,7 @@ Using the `NodeRestriction` plug-in ensures that the kubelet is restricted to th
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFCkube-apiserver
 ```
 
 **Remediation:**
@@ -857,7 +857,7 @@ If you bind the apiserver to an insecure address, basically anyone who could con
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--insecure-bind-address` argument does not exist.
@@ -879,7 +879,7 @@ Setting up the apiserver to serve on an insecure port would allow unauthenticate
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--insecure-port` argument is set to 0.
@@ -901,7 +901,7 @@ The secure port is used to serve https with authentication and authorization. If
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--secure-port` argument is either not set or is set to an integer value between 1 and 65535.
@@ -923,7 +923,7 @@ Profiling allows for the identification of specific performance bottlenecks. It 
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--profiling` argument is set to false.
@@ -945,7 +945,7 @@ Auditing the Kubernetes API Server provides a security-relevant chronological se
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--audit-log-path` argument is set as appropriate.
@@ -967,7 +967,7 @@ Retaining logs for at least 30 days ensures that you can go back in time and inv
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--audit-log-maxage` argument is set to 30 or as appropriate.
@@ -989,7 +989,7 @@ Kubernetes automatically rotates the log files. Retaining old log files ensures 
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--audit-log-maxbackup` argument is set to 10 or as appropriate.
@@ -1011,7 +1011,7 @@ Kubernetes automatically rotates the log files. Retaining old log files ensures 
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--audit-log-maxsize` argument is set to 100 or as appropriate.
@@ -1033,7 +1033,7 @@ Setting global request timeout allows extending the API server request timeout l
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--request-timeout` argument is either not set or set to an appropriate value.
@@ -1055,7 +1055,7 @@ If `--service-account-lookup` is not enabled, the apiserver only verifies that t
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that if the `--service-account-lookup` argument exists it is set to true.
@@ -1077,7 +1077,7 @@ By default, if no `--service-account-key-file` is specified to the apiserver, it
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--service-account-key-file` argument exists and is set as appropriate.
@@ -1099,7 +1099,7 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--etcd-certfile` and `--etcd-keyfile` arguments exist and they are set as appropriate.
@@ -1121,7 +1121,7 @@ API server communication contains sensitive parameters that should remain encryp
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--tls-cert-file` and `--tls-private-key-file` arguments exist and they are set as appropriate.
@@ -1143,7 +1143,7 @@ API server communication contains sensitive parameters that should remain encryp
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--client-ca-file` argument exists and it is set as appropriate.
@@ -1165,7 +1165,7 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--etcd-cafile` argument exists and it is set as appropriate.
@@ -1187,7 +1187,7 @@ etcd is a highly available key-value store used by Kubernetes deployments for pe
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--encryption-provider-config` argument is set to a EncryptionConfigfile. Additionally, ensure that the `EncryptionConfigfile` has all the desired resources covered especially any secrets.
@@ -1238,7 +1238,7 @@ TLS ciphers have had a number of known vulnerabilities and weaknesses, which can
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--tls-cipher-suites` argument is set as outlined in the remediation procedure below.
@@ -1262,7 +1262,7 @@ Garbage collection is important to ensure sufficient resource availability and a
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-controller-manager | grep -v grep
+/bin/ps -wwFC kube-controller-manager
 ```
 
 Verify that the `--terminated-pod-gc-threshold` argument is set as appropriate.
@@ -1284,7 +1284,7 @@ Profiling allows for the identification of specific performance bottlenecks. It 
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-controller-manager | grep -v grep
+/bin/ps -wwFC kube-controller-manager
 ```
 
 Verify that the `--profiling` argument is set to false.
@@ -1306,7 +1306,7 @@ The controller manager creates a service account per controller in the `kube-sys
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-controller-manager | grep -v grep
+/bin/ps -wwFC kube-controller-manager
 ```
 
 Verify that the `--use-service-account-credentials` argument is set to true.
@@ -1328,7 +1328,7 @@ To ensure that keys for service account tokens can be rotated as needed, a separ
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-controller-manager | grep -v grep
+/bin/ps -wwFC kube-controller-manager
 ```
 
 Verify that the `--service-account-private-key-file` argument is set as appropriate.
@@ -1352,7 +1352,7 @@ Providing the root certificate for the API server's serving certificate to the c
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-controller-manager | grep -v grep
+/bin/ps -wwFC kube-controller-manager
 ```
 
 Verify that the `--root-ca-file` argument exists and is set to a certificate bundle file containing the root certificate for the API server's serving certificate
@@ -1376,7 +1376,7 @@ Note: This recommendation only applies if you let kubelets get their certificate
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-controller-manager | grep -v grep
+/bin/ps -wwFC kube-controller-manager
 ```
 
 Verify that RotateKubeletServerCertificateargument exists and is set to true.
@@ -1398,7 +1398,7 @@ The Controller Manager API service which runs on port 10252/TCP by default is us
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-controller-manager | grep -v grep
+/bin/ps -wwFC kube-controller-manager
 ```
 
 Verify that the `--bind-address` argument is set to 127.0.0.1.
@@ -1424,7 +1424,7 @@ Profiling allows for the identification of specific performance bottlenecks. It 
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-scheduler | grep -v grep
+/bin/ps -wwFC kube-scheduler
 ```
 
 Verify that the `--profiling` argument is set to false.
@@ -1447,7 +1447,7 @@ The Scheduler API service which runs on port 10251/TCP by default is used for he
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-scheduler | grep -v grep
+/bin/ps -wwFC kube-scheduler
 ```
 
 Verify that the `--bind-address` argument is set to 127.0.0.1.
@@ -1609,7 +1609,7 @@ Run the below command on the master node.
 # To find the ca file used by etcd:
 grep 'trusted-ca-file' /var/lib/rancher/rke2/server/db/etcd/config
 # To find the kube-apiserver process:
-ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the file referenced by the `client-ca-file` flag in the apiserver process is different from the file referenced by the `trusted-ca-file` parameter in the etcd configuration file.
@@ -1656,7 +1656,7 @@ Logging is an important detective control for all systems, to detect potential u
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep
+/bin/ps -wwFC kube-apiserver
 ```
 
 Verify that the `--audit-policy-file` is set. Review the contents of the file specified and ensure that it contains avalid audit policy.
@@ -1885,7 +1885,7 @@ When enabled, requests that are not rejected by other configured authentication 
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kubelet | grep -v grep
+/bin/ps -wwFC kubelet
 ```
 
 Verify that the value for `--anonymous-auth` is false.
@@ -1906,7 +1906,7 @@ Kubelets, by default, allow all authenticated requests (even anonymous ones) wit
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kubelet | grep -v grep
+/bin/ps -wwFC kubelet
 ```
 
 Verify that `AlwaysAllow` is not present.
@@ -1928,7 +1928,7 @@ The connections from the apiserver to the kubelet are used for fetching logs for
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kubelet | grep -v grep
+/bin/ps -wwFC kubelet
 ```
 
 Verify that the `--client-ca-file` argument has a ca file associated.
@@ -1950,7 +1950,7 @@ The Kubelet process provides a read-only API in addition to the main Kubelet API
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kubelet | grep -v grep
+/bin/ps -wwFC kubelet
 ```
 Verify that the `--read-only-port` argument is set to 0.
 
@@ -1973,7 +1973,7 @@ Setting idle timeouts ensures that you are protected against Denial-of-Service a
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kubelet | grep -v grep
+/bin/ps -wwFC kubelet
 ```
 
 Verify that there's nothing returned.
@@ -1995,7 +1995,7 @@ Kernel parameters are usually tuned and hardened by the system administrators be
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kubelet | grep -v grep
+/bin/ps -wwFC kubelet
 ```
 
 **Remediation:**
@@ -2015,7 +2015,7 @@ Kubelets can automatically manage the required changes to iptables based on how 
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kubelet | grep -v grep
+/bin/ps -wwFC kubelet
 ```
 
 Verify there are no results returned.
@@ -2062,7 +2062,7 @@ Kubelet communication contains sensitive parameters that should remain encrypted
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kubelet | grep -v grep
+/bin/ps -wwFC kubelet 
 ```
 
 Verify the `--tls-cert-file` and `--tls-private-key-file` arguments are present and set appropriately.
@@ -2089,7 +2089,7 @@ The `--rotate-certificates` setting causes the kubelet to rotate its client cert
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kubelet | grep -v grep
+/bin/ps -wwFC kubelet
 ```
 
 **Remediation:**
@@ -2111,7 +2111,7 @@ Note: This recommendation only applies if you let kubelets get their certificate
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kubelet | grep -v grep
+/bin/ps -wwFC kubelet
 ```
 
 **Remediation:**
