@@ -1,13 +1,32 @@
 ---
 title: General Operation and CIS Security Policies
-weight: 204
 ---
 
 #### Pod Security Policies
 
-RKE2 can be run with or without the `--profile=cis-1.5` argument and behaves differently when done so in regards to the PodSecurityPolicies it applies at start-up.
+RKE2 can be ran with or without the `--profile=cis-1.5` argument. This will cause it to apply different PodSecurityPolicies (PSPs) at start-up.
 
-At start, RKE2 checks to see if it is running in CIS mode and if so checks for the existence of 3 annotations applied to the "kube-system" namespace in this order; `globalRestricted`, and `systemUnrestricted`, and `globalUnrestricted`. If the annotation exists, RKE2 continues. If any of the 3 annotations don't exist, we check to see if the policy exists and if so, we delete it and the associated policy is created as well as the annotation. However the "globalUnrestricted" policy is just deleted. This is to account for moving to and from CIS mode and non CIS mode. At the time of creating the policies, cluster roles and cluster role bindings are checked for existence and created if necessary. They're then associated with the relevant polciy. See below.
+* If ran with the `cis-1.5` profile, RKE2 will apply a restrictive policy called `global-restricted-psp` to all namespaces except `kube-system`. The `kube-system` namespace needs a less restrictive policy named `system-unrestricted-psp` in order to launch critical components.
+* If ran without the `cis-1.5` profile, RKE2 will apply a completely unrestricted policy called `global-unrestricted-psp`, which is the equivalent of running without the PSP admission controller enabled.
+
+RKE2 will put these policies in place upon initial startup, but will not modify them after that, unless explicitly triggered by the cluster operator as described below. This is to allow the operator to fully control the PSPs without RKE2's defaults adding interference.
+
+Creation and application of the PSPs is controlled by the presence or absence of certain annotations on the `kube-system` namespace. These map directly to the PSPs which can be created and are:
+
+ * `psp.rke2.io/global-restricted`
+ * `psp.rke2.io/system-unrestricted`
+ * `psp.rke2.io/global-unrestricted`
+
+The following logic is performed at startup for the policies and their annotations:
+
+* If the annotation exists, RKE2 continues without further action.
+* If the annotation doesn't exist, RKE2 checks to see if the associated policy exists and if so, deletes and recreates it, along with adding the annotation to the namespace.
+* In the case of the `global-unrestricted-psp`, the policy is not recreated. This is to account for moving between CIS and non-CIS modes without making the cluster less secure.
+* At the time of creating a policy, cluster roles and cluster role bindings are also created to ensure the appropriate policies are put into use by default.
+
+So, after initial start-up, operators can modify or delete RKE2's policies and RKE2 will respect those changes. Additionally, to "reset" a policy, an operator just needs to delete the associated annotation from the `kube-system` namespace and restart RKE2.
+
+The policies are outlined below.
 
 ```yaml
 apiVersion: policy/v1beta1
@@ -123,7 +142,7 @@ kubectl get psp -A
 
 #### Network Policies
 
-When RKE2 is run with the `--profile=cis-1.5` argument, it will apply 2 network policies to the "kube-system", "kube-public", and "default" namespaces and applies associated annotations. On start, the annotations for each namespace are checked for existence and if they exist, we take no action. If the annoation doesn't exist, we check to see if the policy exists and if it does, we delete it, and create the new policy.
+When RKE2 is run with the `--profile=cis-1.5` argument, it will apply 2 network policies to the `kube-system`, `kube-public`, and `default` namespaces and applies associated annotations. The same logic applies to these policies and annotations as the PSPs. On start, the annotations for each namespace are checked for existence and if they exist, RKE2 takes no action. If the annotation doesn't exist, RKE2 checks to see if the policy exists and if it does, recreates it.
 
 The first policy applied is to restrict network traffic to only the namespace itself. See below.
 
@@ -150,7 +169,7 @@ spec:
   - Ingress
 ```
 
-The second policy applied is to the "kube-system" namespace and allows for DNS traffic. See below.
+The second policy applied is to the `kube-system` namespace and allows for DNS traffic. See below.
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -180,7 +199,7 @@ spec:
   - Ingress
 ```
 
-RKE2 applies 2 network policy for all namespaces and updates the namespaces with annotations `default-network-policy` and `default-network-dns-policy`. 
+RKE2 applies the `default-network-policy` policy and `np.rke2.io` annotation to all built-in namespaces. The `kube-system` namespace additionally gets the `default-network-dns-policy` policy and `np.rke2.io/dns` annotation applied to it.
 
 To view the network policies currently deployed on your system, run the below command:
 
