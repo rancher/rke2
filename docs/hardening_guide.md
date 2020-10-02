@@ -96,3 +96,17 @@ The NetworkPolicy used will only allow pods within the same namespace to talk to
 ## Conclusion
 
 If you have followed this guide, your RKE2 cluster will be configured to pass the CIS Kubernetes Benchmark. You can review our [CIS Benchmark Self-Assessment Guide](cis_self_assessment.md) to understand how we verified each of the benchmark and how you can do the same on your cluster.
+
+## Securing Default Service Accounts
+
+### Determine if Changes Need to be Made
+
+For	each namespace in the cluster, review the rights assigned to the default service account and ensure that it has no roles or cluster roles bound to it apart from the defaults. Additionally ensure that the automountServiceAccountToken: false setting is in place for each default service account.
+
+```bash
+for i in kube-system kube-public default; do
+    /var/lib/rancher/rke2/bin/kubectl get serviceaccounts -n $i -o json | grep automountServiceAccountToken
+done
+```
+
+If the results for the field `automountServiceAccountToken` is anything other than `false`, that service account for the given namespace should be updated.
