@@ -7,12 +7,12 @@ For more detail about evaluating a hardened cluster against the official CIS ben
 RKE2 is designed to be "hardened by default" and pass the majority of the Kubernetes CIS controls without modification. There are a few notable exceptions to this that require manual intervention to fully pass the CIS Benchmark:
 
 1. RKE2 will not modify the host operating system. Therefore, you, the operator, must make a few host-level modifications.
-1. Certain CIS policy controls for PodSecurityPolicies and NetworkPolicies will restrict the functionality of this cluster. You must opt into having RKE2 configuring these out of the box.
+1. Certain CIS policy controls for Pod Security Policies and Network Policies will restrict the functionality of this cluster. You must opt into having RKE2 configure these for you.
 1. RKE2 does not ship with auditing enabled. Kubernetes supports a very complex set of audit policy rules. In order to pass seciton 3.2.1 of the CIS benchmark, you must provide a minimal audity policy, and modify the RKE2 configuration to refer to your policy.
 
-To help ensure these above requirements are met, RKE2 can be started with the `profile` parameter set to `cis-1.5`. This parameter generally does two things:
+To help ensure these above requirements are met, RKE2 can be started with the `profile` flag set to `cis-1.5`. This flag generally does two things:
 
-1. Checks that host-level requirements have been met. If they haven't RKE2 will log a fatal error describing the requirement that has not been met and exit.
+1. Checks that host-level requirements have been met. If they haven't, RKE2 will exit with a fatal error describing the unmet requirements..
 2. Configures runtime Pod Security Policies and Network Policies that allow the cluster to pass associated controls.
 
 > **Note:** The profile's flag only valid value is `cis-1.5`. It accepts a string value to allow for other profiles in the future.
@@ -26,9 +26,9 @@ There are two areas of host-level requirements: kernel parameters, and etcd proc
 ### Ensure `protect-kernel-defaults` is set
 This is a kubelet flag that will cause the kubelet to exit if the required kernel parameters are unset or are set to values that are different from the kubelet's defaults.
 
-When the `profile` parameter is set, RKE2 will set the flag to true. 
+When the `profile` flag is set, RKE2 will set the flag to true. 
 
-> **Note:** `protect-kernel-defaults` is exposed a top-level parameter for RKE2. If you have set `profile` to "cis-1.5" and `protect-kernel-defaults` to false explicitly, RKE2 will exit with an error.
+> **Note:** `protect-kernel-defaults` is exposed a top-level flag for RKE2. If you have set `profile` to "cis-1.5" and `protect-kernel-defaults` to false explicitly, RKE2 will exit with an error.
 
 RKE2 will also check the same kernel parameters that the kubelet does, and exit with an error following the same rules as the kubelet. This is done as a convenience to help the operator more quickly and easily identify what kernel parameters are violationg the kubelet defaults.
 
