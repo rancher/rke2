@@ -2148,10 +2148,10 @@ Kubernetes provides a set of default roles where RBAC is used. Some of these rol
 **Result:** Pass
 
 **Remediation:**
-
+RKE2 does not make inappropriate use of the cluster-admin role. Operators must audit their workloads of additional usage. See the CIS Benchmark guide for more details.
 
 #### 5.1.2
-Ensure that the cluster-admin role is only used where required (Not Scored)
+Minimize access to secrets (Not Scored)
 <details>
 <summary>Rationale</summary>
 Inappropriate access to secrets stored within the Kubernetes cluster can allow for an attacker to gain additional access to the Kubernetes cluster or external resources whose credentials are stored as secrets.
@@ -2160,7 +2160,7 @@ Inappropriate access to secrets stored within the Kubernetes cluster can allow f
 **Result:** Not Scored - Operator Dependent
 
 **Remediation:**
-
+RKE2 limits its use of secrets for the system components appropriately, but operators must audit the use of secrets by their workloads. See the CIS Benchmark guide for more details.
 
 #### 5.1.3
 Minimize wildcard use in Roles and ClusterRoles (Not Scored)
