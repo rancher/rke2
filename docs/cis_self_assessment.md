@@ -2372,7 +2372,7 @@ Run the below command on the master node.
 Verify that the returned count is 1.
 
 **Remediation:**
-RKE2 sets the `allowPrivilegeEscalation` value to false explicitly for the PSP it creates. When reviewing PSPs, note that the Kubernetes API only displays this field if it is explicitly set to true. No manual remediation is needed.
+RKE2 sets the `allowPrivilegeEscalation` value to false explicitly for the PSP it creates. No manual remediation is needed.
 
 
 #### 5.2.6
@@ -2400,7 +2400,7 @@ Run the below command on the master node.
 Verify that the returned count is 1.
 
 **Remediation:**
-RKE2 sets the `spec.runAsUser.Rule` value to `MustRunAsNonRoot` in the (PodSecurityPolicySpec)[https://github.com/kubernetes/kubernetes/blob/cc68a78ef52a37f66d6e0c1569998e271470dc3a/staging/src/k8s.io/api/policy/v1beta1/types.go#L193]. No manual remediation is needed.
+RKE2 sets the `runAsUser.Rule` value to `MustRunAsNonRoot` in the PodSecurityPolicy that it creates. No manual remediation is needed.
 
 
 #### 5.2.7
@@ -2416,7 +2416,7 @@ There should be at least one PodSecurityPolicy (PSP) defined which prevents cont
 If you need to run containers with this capability, this should be defined in a separate PSP and you should carefully check RBAC controls to ensure that only limited service accounts and users are given permission to access that PSP.
 </details>
 
-**Result:** Not Scored - Operator Dependent
+**Result:** Pass
 
 **Audit**
 Run the below command on the master node.
@@ -2424,6 +2424,8 @@ Run the below command on the master node.
 ```bash
 /var/lib/rancher/rke2/bin/kubectl get psp global-restricted-psp -o json | jq .spec.requiredDropCapabilities[]
 ```
+
+Verify the value is `"ALL"`.
 
 **Remediation:**
 RKE2 sets `.spec.requiredDropCapabilities[]` to a value of `All`. No manual remediation needed.
