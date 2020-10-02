@@ -80,18 +80,49 @@ RKE2 always runs with the PodSecurityPolicy admission controller turned on. Howe
 When ran with the cis-1.5 profile, RKE2 will put a much more restrictive set of policies in place. These policies meet the requirements outlined in section 5.2 of the CIS Benchmark.
 
 > **Note:** The Kubernetes control plane components and critical additions such as CNI, DNS, and Ingress are ran as pods in the `kube-system` namespace. Therefore, this namespace will have a policy that is less restrictive so that these components can run properly.
-
+<!--
 **TODO:** Add a separate doc on our default PSP behavior that explains how the defaults can be overriden by the operator and link here.
+-->
 
 ### NetworkPolicies
 
-When ran with the cis-1.5 profile, RKE2 will put NetworkPolicies in place that pass the CIS Benchmark for Kubernetes's built-in namespcaes. These namespaces are: `kube-system`, `kube-public`, and `default`.
+When ran with the cis-1.5 profile, RKE2 will put NetworkPolicies in place that pass the CIS Benchmark for Kubernetes's built-in namespcaes. These namespaces are: `kube-system`, `kube-public`, `kube-node-lease`, and `default`.
 
 The NetworkPolicy used will only allow pods within the same namespace to talk to each other. The notable exception to this is that it allows DNS requests to be resolved.
 
 > **Note:** Operators must manage network policies as normal for additional namespaces that are created.
-
+<!--
 **TODO:** Add a separate doc on our NP behavior that explains how the defaults can be overriden by the operator and link here.
+-->
+
+## Known Issues
+The following are controls that RKE2 currently does not pass. Each gap will be explained and whether it can be passed through manual operator intervention or if it will be addressed in a future release.
+
+### Control 3.2.1
+Ensure that a minimal audit policy is created (Scored)
+<details>
+<summary>Rationale</summary>
+Logging is an important detective control for all systems, to detect potential unauthorised access.
+</details>
+
+RKE2 currently does not support configuring audit logging. This is a [known issue](https://github.com/rancher/rke2/issues/410) that will be addressed in an upcoming release.
+
+### Control 5.1.5
+Ensure that default service accounts are not actively used. (Scored)
+<details>
+<summary>Rationale</summary>
+    
+Kubernetes provides a default service account which is used by cluster workloads where no specific service account is assigned to the pod.
+
+Where access to the Kubernetes API from a pod is required, a specific service account should be created for that pod, and rights granted to that service account.
+
+The default service account should be configured such that it does not provide a service account token and does not have any explicit rights assignments.
+</details>
+
+The remediation for this is to update the `automountServiceAccountToken` field to `false` for the `default` service account in each namespace.
+
+For `default` service accounts in the built-in namespaces (`kube-system`, `kube-public`, `kube-node-lease`, and `default`), RKE2 does not automatically do this. You can manually update this field on these service accounts to passs the control.
+
 
 ## Conclusion
 

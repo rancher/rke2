@@ -1,6 +1,5 @@
 ---
-title: CIS Benchmark Rancher Self-Assessment Guide - v2.4
-weight: 204
+title: CIS Self-Assessment Guide
 ---
 
 ### CIS Kubernetes Benchmark v1.5 - RKE2 v1.18
@@ -54,7 +53,7 @@ stat -c %a /var/lib/rancher/rke2/agent/pod-manifests/kube-apiserver.yaml
 644
 ```
 
-**Remediation:** 
+**Remediation:**
 By default, RKE2 creates these files with `644` permissions. No manual remediation needed.
 
 
@@ -236,7 +235,7 @@ Ensure that the etcd data directory permissions are set to 700 or more restricti
 etcd is a highly-available key-value store used by Kubernetes deployments for persistent storage of all of its REST API objects. This data directory should be protected from any unauthorized reads or writes. It should not be readable or writable by any group members or the world.
 </details>
 
-**Result:** FAIL TODO!!!
+**Result:** Pass
 
 **Audit:**
 ```bash
@@ -396,7 +395,7 @@ By default, RKE2 creates this file at `/var/lib/rancher/rke2/server/cred/control
 Ensure that the Kubernetes PKI directory and file ownership is set to `root:root` (Scored)
 <details>
 <summary>Rationale</summary>
-Kubernetes makes use of a number of certificates as part of its operation. You should set the ownership of the directory containing the PKI information and all files in that directory to maintain their integrity. The directory and files should be owned by root:root. 
+Kubernetes makes use of a number of certificates as part of its operation. You should set the ownership of the directory containing the PKI information and all files in that directory to maintain their integrity. The directory and files should be owned by root:root.
 </details>
 
 **Result:** Pass
@@ -415,12 +414,12 @@ By default, RKE2 creates the directory and files with the expected ownership of 
 Ensure that the Kubernetes PKI certificate file permissions are set to `644` or more restrictive (Scored)
 <details>
 <summary>Rationale</summary>
-Kubernetes makes use of a number of certificate files as part of the operation of its components. The permissions on these files should be set to 644 or more restrictive to protect their integrity. 
+Kubernetes makes use of a number of certificate files as part of the operation of its components. The permissions on these files should be set to 644 or more restrictive to protect their integrity.
 </details>
 
 **Result:** Pass
 
-**Audit:** 
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -443,7 +442,7 @@ Kubernetes makes use of a number of key files as part of the operation of its co
 **Result:** Pass
 
 **Audit**
-Run the below command on the master node. 
+Run the below command on the master node.
 
 ```bash
 stat -c %n\ %a /var/lib/rancher/rke2/server/tls/*.key
@@ -475,7 +474,7 @@ If you are using RBAC authorization, it is generally considered reasonable to al
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep 
+/bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
 Verify that `--anonymous-auth=false` is present.
@@ -519,7 +518,7 @@ The token-based authentication utilizes static tokens to authenticate requests t
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep 
+/bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
 Verify that the --basic-auth-file argument does not exist.
@@ -542,7 +541,7 @@ Connections from apiserver to kubelets could potentially carry sensitive data su
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep 
+/bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
 Verify that the `--kubelet-https` argument does not exist.
@@ -1210,7 +1209,7 @@ Where `etcd` encryption is used, it is important to ensure that the appropriate 
 Follow the Kubernetes documentation and configure a `EncryptionConfig` file.
 In this file, choose **aescbc**, **kms** or **secretbox** as the encryption provider.
 
-**Audit:** 
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1479,7 +1478,7 @@ grep -E 'cert-file|key-file' /var/lib/rancher/rke2/server/db/etcd/config
 Verify that the	`cert-file` and the `key-file` fields are set as appropriate.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config`. Server and peer cert and key files are specified. No manual remediation needed. 
+By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config`. Server and peer cert and key files are specified. No manual remediation needed.
 
 
 #### 2.2
@@ -1501,7 +1500,7 @@ grep 'client-cert-auth' /var/lib/rancher/rke2/server/db/etcd/config
 Verify that the `client-cert-auth` field is set to true.
 
 **Remediation:**
-By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config`. `client-cert-auth` is set to true. No manual remediation needed. 
+By default, RKE2 uses a config file for etcd that can be found at `/var/lib/rancher/rke2/server/db/etcd/config`. `client-cert-auth` is set to true. No manual remediation needed.
 
 
 #### 2.3
@@ -1651,13 +1650,13 @@ Ensure that a minimal audit policy is created (Scored)
 Logging is an important detective control for all systems, to detect potential unauthorised access.
 </details>
 
-**Result:** FAIL TODO!!!
+**Result:** Does not pass. See the [known issue](hardening_guid.md#control-321) for details.
 
 **Audit:**
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kube-apiserver | grep -v grep 
+/bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
 Verify that the `--audit-policy-file` is set. Review the contents of the file specified and ensure that it contains avalid audit policy.
@@ -2063,7 +2062,7 @@ Kubelet communication contains sensitive parameters that should remain encrypted
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kubelet | grep -v grep 
+/bin/ps -ef | grep kubelet | grep -v grep
 ```
 
 Verify the `--tls-cert-file` and `--tls-private-key-file` arguments are present and set appropriately.
@@ -2148,19 +2147,19 @@ Kubernetes provides a set of default roles where RBAC is used. Some of these rol
 **Result:** Pass
 
 **Remediation:**
-
+RKE2 does not make inappropriate use of the cluster-admin role. Operators must audit their workloads of additional usage. See the CIS Benchmark guide for more details.
 
 #### 5.1.2
-Ensure that the cluster-admin role is only used where required (Not Scored)
+Minimize access to secrets (Not Scored)
 <details>
 <summary>Rationale</summary>
 Inappropriate access to secrets stored within the Kubernetes cluster can allow for an attacker to gain additional access to the Kubernetes cluster or external resources whose credentials are stored as secrets.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored - Operator Dependent
 
 **Remediation:**
-
+RKE2 limits its use of secrets for the system components appropriately, but operators must audit the use of secrets by their workloads. See the CIS Benchmark guide for more details.
 
 #### 5.1.3
 Minimize wildcard use in Roles and ClusterRoles (Not Scored)
@@ -2169,10 +2168,23 @@ Minimize wildcard use in Roles and ClusterRoles (Not Scored)
 The principle of least privilege recommends that users are provided only the access required for their role and nothing more. The use of wildcard rights grants is likely to provide excessive rights to the Kubernetes API.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored - Operator Dependent
+
+**Audit:**
+Run the below command on the master node.
+
+```bash
+# Retrieve the roles defined across each namespaces in the cluster and review for wildcards
+/var/lib/rancher/rke2/bin/kubectl get roles --all-namespaces -o yaml
+
+# Retrieve the cluster roles defined in the	cluster	and	review for wildcards
+/var/lib/rancher/rke2/bin/kubectl get clusterroles -o yaml
+```
+
+Verify that there are not wildcards in use.
 
 **Remediation:**
-
+Operators should review their workloads for proper role usage. See the CIS Benchmark guide for more details.
 
 #### 5.1.4
 Minimize access to create pods (Not Scored)
@@ -2181,16 +2193,15 @@ Minimize access to create pods (Not Scored)
 The ability to create pods in a cluster opens up possibilities for privilege escalation and should be restricted, where possible.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored - Operator Dependent
 
 **Remediation:**
-
+Operators should review who has access to create pods in their cluster. See the CIS Benchmark guide for more details.
 
 #### 5.1.5
 Ensure that default service accounts are not actively used. (Scored)
 <details>
 <summary>Rationale</summary>
-
 Kubernetes provides a default service account which is used by cluster workloads where no specific service account is assigned to the pod.
 
 Where access to the Kubernetes API from a pod is required, a specific service account should be created for that pod, and rights granted to that service account.
@@ -2198,7 +2209,10 @@ Where access to the Kubernetes API from a pod is required, a specific service ac
 The default service account should be configured such that it does not provide a service account token and does not have any explicit rights assignments.
 </details>
 
-**Result:** Pass
+**Result:** Pass. Currently requires operator intervention See the [known issue](hardening_guide.md#control-515) for details.
+
+**Audit:**
+For	each namespace in the cluster, review the rights assigned to the default service account and ensure that it has no roles or cluster roles bound to it apart from the defaults. Additionally ensure that the automountServiceAccountToken: false setting is in place for each default service account.
 
 **Remediation:**
 Create explicit service accounts wherever a Kubernetes workload requires specific access
@@ -2207,49 +2221,6 @@ Modify the configuration of each default service account to include this value
 
 ``` bash
 automountServiceAccountToken: false
-```
-
-**Audit Script:** 5.1.5.sh
-
-```
-#!/bin/bash
-
-export KUBECONFIG=${KUBECONFIG:-/root/.kube/config}
-
-kubectl version > /dev/null
-if [ $? -ne 0 ]; then
-echo "fail: kubectl failed"
-exit 1
-fi
-
-accounts="$(kubectl --kubeconfig=${KUBECONFIG} get serviceaccounts -A -o json | jq -r '.items[] | select(.metadata.name=="default") | select((.automountServiceAccountToken == null) or (.automountServiceAccountToken == true)) | "fail \(.metadata.name) \(.metadata.namespace)"')"
-
-if [[ "${accounts}" != "" ]]; then
-echo "fail: automountServiceAccountToken not false for accounts: ${accounts}"
-exit 1
-fi
-
-default_binding="$(kubectl get rolebindings,clusterrolebindings -A -o json | jq -r '.items[] | select(.subjects[].kind=="ServiceAccount" and .subjects[].name=="default" and .metadata.name=="default").metadata.uid' | wc -l)"
-
-if [[ "${default_binding}" -gt 0 ]]; then
-echo "fail: default service accounts have non default bindings"
-exit 1
-fi
-
-echo "--pass"
-exit 0
-```
-
-**Audit Execution:**
-
-```
-./5.1.5.sh
-```
-
-**Expected result**:
-
-```
-'--pass' is present
 ```
 
 
@@ -2262,10 +2233,10 @@ Mounting service account tokens inside pods can provide an avenue for privilege 
 Avoiding mounting these tokens removes this attack avenue.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored - Operator Dependent
 
 **Remediation:**
-
+The pods launched by RKE2 are part of the control plane and generally need access to communicate with the API server, thus this control does not apply to them. Operators should review their workloads and take steps to modify the definition of pods and service accounts which do not need to mount service account tokens to disable it.
 
 ### 5.2 Pod Security Policies
 
@@ -2283,8 +2254,17 @@ If you need to run privileged containers, this should be defined in a separate P
 
 **Result:** Pass
 
-**Remediation:**
+**Audit**
+Run the below command on the master node.
 
+```bash
+/var/lib/rancher/rke2/bin/kubectl describe psp global-restricted-psp | grep MustRunAsNonRoot
+```
+
+Verify that the result is `Rule:  MustRunAsNonRoot`.
+
+**Remediation:**
+RKE2, when run with the `--profile=cis-1.5` argument, will disallow the use of privileged containers.
 
 #### 5.2.2
 Minimize the admission of containers wishing to share the host process ID namespace (Scored)
@@ -2299,21 +2279,17 @@ If you need to run containers which require hostPID, this should be defined in a
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/var/lib/rancher/rke2/bin/kubectl get psp -o json | jq .items[] | jq -r 'select((.spec.hostPID == null) or (.spec.hostPID == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
+```
+
+Verify that the returned count is 1.
+
 **Remediation:**
-Create a PSP as described in the Kubernetes documentation, ensuring that the
-`.spec.hostPID` field is omitted or set to `false`.
-
-**Audit:**
-
-```
-kubectl --kubeconfig=/root/.kube/config get psp -o json | jq .items[] | jq -r 'select((.spec.hostPID == null) or (.spec.hostPID == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
-```
-
-**Expected result**:
-
-```
-1 is greater than 0
-```
+RKE2 sets the `hostPID` value to false explicitly for the PSP it creates. When reviewing PSPs, note that the Kubernetes API only displays this field if it is explicitly set to true. No manual remediation is needed.
 
 
 #### 5.2.3
@@ -2330,21 +2306,17 @@ If you have a requirement to containers which require hostIPC, this should be de
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/var/lib/rancher/rke2/bin/kubectl get psp -o json | jq .items[] | jq -r 'select((.spec.hostIPC == null) or (.spec.hostIPC == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
+```
+
+Verify that the returned count is 1.
+
 **Remediation:**
-Create a PSP as described in the Kubernetes documentation, ensuring that the
-`.spec.hostIPC` field is omitted or set to `false`.
-
-**Audit:**
-
-```
-kubectl --kubeconfig=/root/.kube/config get psp -o json | jq .items[] | jq -r 'select((.spec.hostIPC == null) or (.spec.hostIPC == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
-```
-
-**Expected result**:
-
-```
-1 is greater than 0
-```
+RKE2 sets the `HostIPC` value to false explicitly for the PSP it creates. When reviewing PSPs, note that the Kubernetes API only displays this field if it is explicitly set to true. No manual remediation is needed.
 
 
 #### 5.2.4
@@ -2360,21 +2332,17 @@ If you have need to run containers which require hostNetwork, this should be def
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/var/lib/rancher/rke2/bin/kubectl get psp -o json | jq .items[] | jq -r 'select((.spec.hostNetwork == null) or (.spec.hostNetwork == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
+```
+
+Verify that the returned count is 1.
+
 **Remediation:**
-Create a PSP as described in the Kubernetes documentation, ensuring that the
-`.spec.hostNetwork` field is omitted or set to `false`.
-
-**Audit:**
-
-```
-kubectl --kubeconfig=/root/.kube/config get psp -o json | jq .items[] | jq -r 'select((.spec.hostNetwork == null) or (.spec.hostNetwork == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
-```
-
-**Expected result**:
-
-```
-1 is greater than 0
-```
+RKE2 sets the `HostNetwork` value to false explicitly for the PSP it creates. When reviewing PSPs, note that the Kubernetes API only displays this field if it is explicitly set to true. No manual remediation is needed.
 
 
 #### 5.2.5
@@ -2390,21 +2358,17 @@ If you have need to run containers which use setuid binaries or require privileg
 
 **Result:** Pass
 
+**Audit**
+Run the below command on the master node.
+
+```bash
+/var/lib/rancher/rke2/bin/kubectl get psp -o json | jq .items[] | jq -r 'select((.spec.allowPrivilegeEscalation == null) or (.spec.allowPrivilegeEscalation == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
+```
+
+Verify that the returned count is 1.
+
 **Remediation:**
-Create a PSP as described in the Kubernetes documentation, ensuring that the
-`.spec.allowPrivilegeEscalation` field is omitted or set to `false`.
-
-**Audit:**
-
-```
-kubectl --kubeconfig=/root/.kube/config get psp -o json | jq .items[] | jq -r 'select((.spec.allowPrivilegeEscalation == null) or (.spec.allowPrivilegeEscalation == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
-```
-
-**Expected result**:
-
-```
-1 is greater than 0
-```
+RKE2 sets the `allowPrivilegeEscalation` value to false explicitly for the PSP it creates. No manual remediation is needed.
 
 
 #### 5.2.6
@@ -2422,8 +2386,17 @@ If you need to run root containers, this should be defined in a separate PSP and
 
 **Result:** Pass
 
-**Remediation:**
+**Audit**
+Run the below command on the master node.
 
+```bash
+/var/lib/rancher/rke2/bin/kubectl get psp -o json | jq .items[] | jq -r 'select((.spec.allowPrivilegeEscalation == null) or (.spec.allowPrivilegeEscalation == false))' | jq .metadata.name | wc -l | xargs -I {} echo '--count={}'
+```
+
+Verify that the returned count is 1.
+
+**Remediation:**
+RKE2 sets the `runAsUser.Rule` value to `MustRunAsNonRoot` in the PodSecurityPolicy that it creates. No manual remediation is needed.
 
 
 #### 5.2.7
@@ -2441,8 +2414,17 @@ If you need to run containers with this capability, this should be defined in a 
 
 **Result:** Pass
 
-**Remediation:**
+**Audit**
+Run the below command on the master node.
 
+```bash
+/var/lib/rancher/rke2/bin/kubectl get psp global-restricted-psp -o json | jq .spec.requiredDropCapabilities[]
+```
+
+Verify the value is `"ALL"`.
+
+**Remediation:**
+RKE2 sets `.spec.requiredDropCapabilities[]` to a value of `All`. No manual remediation needed.
 
 
 #### 5.2.8
@@ -2456,7 +2438,7 @@ There should be at least one PodSecurityPolicy (PSP) defined which prevents cont
 If you need to run containers with additional capabilities, this should be defined in a separate PSP and you should carefully check RBAC controls to ensure that only limited service accounts and users are given permission to access that PSP.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2471,7 +2453,7 @@ Containers run with a default set of capabilities as assigned by the Container R
 In many cases applications running in containers do not require any capabilities to operate, so from the perspective of the principal of least privilege use of capabilities should be minimized.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2502,44 +2484,17 @@ Network Policies are namespace scoped. When a network policy is introduced to a 
 
 **Result:** Pass
 
+**Audit:**
+Run the below command on the master node.
+
+```bash
+for i in kube-system kube-public default; do /var/lib/rancher/rke2/bin/kubectl get networkpolicies -n $i; done
+```
+
+Verify that there are network policies applied to each of the namespaces.
+
 **Remediation:**
-Follow the documentation and create `NetworkPolicy` objects as you need them.
-
-**Audit Script:** 5.3.2.sh
-
-```
-#!/bin/bash -e
-
-export KUBECONFIG=${KUBECONFIG:-"/root/.kube/config"}
-
-kubectl version > /dev/null
-if [ $? -ne 0 ]; then
-  echo "fail: kubectl failed"
-  exit 1
-fi
-
-for namespace in $(kubectl get namespaces -A -o json | jq -r '.items[].metadata.name'); do
-  policy_count=$(kubectl get networkpolicy -n ${namespace} -o json | jq '.items | length')
-  if [ ${policy_count} -eq 0 ]; then
-    echo "fail: ${namespace}"
-    exit 1
-  fi
-done
-
-echo "pass"
-```
-
-**Audit Execution:**
-
-```
-./5.3.2.sh
-```
-
-**Expected result**:
-
-```
-'pass' is present
-```
+RKE2, when executed with the `--profile=cis-1.5` argument applies a secure network policy that only allows intra-namespace traffic and DNS to kube-system. No manual remediation needed.
 
 ### 5.4 Secrets Management
 
@@ -2551,7 +2506,7 @@ Prefer using secrets as files over secrets as environment variables (Not Scored)
 It is reasonably common for application code to log out its environment (particularly in the event of an error). This will include any secret values passed in as environment variables, so secrets can easily be exposed to any user or entity who has access to the logs.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2563,7 +2518,7 @@ Consider external secret storage (Not Scored)
 Kubernetes supports secrets as first-class objects, but care needs to be taken to ensure that access to secrets is carefully limited. Using an external secrets provider can ease the management of access to secrets, especially where secrests are used across both Kubernetes and non-Kubernetes environments.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2578,7 +2533,7 @@ Configure Image Provenance using ImagePolicyWebhook admission controller (Not Sc
 Kubernetes supports plugging in provenance rules to accept or reject the images in your deployments. You could configure such rules to ensure that only approved images are deployed in the cluster.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2598,7 +2553,7 @@ Create administrative boundaries between resources using namespaces (Not Scored)
 Limiting the scope of user permissions can reduce the impact of mistakes or malicious activities. A Kubernetes namespace allows you to partition created resources into logically named groups. Resources created in one namespace can be hidden from other namespaces. By default, each resource created by a user in Kubernetes cluster runs in a default namespace, called default. You can create additional namespaces and attach resources and users to them. You can use Kubernetes Authorization plugins to create policies that segregate access to namespace resources between different users.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2610,7 +2565,7 @@ Ensure that the seccomp profile is set to docker/default in your pod definitions
 Seccomp (secure computing mode) is used to restrict the set of system calls applications can make, allowing cluster administrators greater control over the security of workloads running in the cluster. Kubernetes disables seccomp profiles by default for historical reasons. You should enable it to ensure that the workloads have restricted actions available within the container.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2622,7 +2577,7 @@ Apply Security Context to Your Pods and Containers (Not Scored)
 A security context defines the operating system security settings (uid, gid, capabilities, SELinux role, etc..) applied to a container. When designing your containers and pods, make sure that you configure the security context for your pods, containers, and volumes. A security context is a property defined in the deployment yaml. It controls the security parameters that will be assigned to the pod/container/volume. There are two levels of security context: pod level security context, and container level security context.
 </details>
 
-**Result:** Pass
+**Result:** Not Scored
 
 **Remediation:**
 
@@ -2636,40 +2591,14 @@ Resources in a Kubernetes cluster should be segregated by namespace, to allow fo
 
 **Result:** Pass
 
+**Audit:**
+Run the below command on the master node.
+
+```bash
+/var/lib/rancher/rke2/bin/kubectl get all -n default
+```
+
+Verify that there are no resources applied to the default namespace.
+
 **Remediation:**
-
-**Result:** Pass
-
-**Remediation:**
-Ensure that namespaces are created to allow for appropriate segregation of Kubernetes
-resources and that all new resources are created in a specific namespace.
-
-**Audit Script:** 5.6.4.sh
-
-```
-#!/bin/bash -e
-
-export KUBECONFIG=${KUBECONFIG:-/root/.kube/config}
-
-kubectl version > /dev/null
-if [[ $? -gt 0 ]]; then
-  echo "fail: kubectl failed"
-  exit 1
-fi
-
-default_resources=$(kubectl get all -o json | jq --compact-output '.items[] | select((.kind == "Service") and (.metadata.name == "kubernetes") and (.metadata.namespace == "default") | not)' | wc -l)
-
-echo "--count=${default_resources}"
-```
-
-**Audit Execution:**
-
-```
-./5.6.4.sh
-```
-
-**Expected result**:
-
-```
-'0' is equal to '0'
-```
+By default, RKE2 does not utilize the default namespace.
