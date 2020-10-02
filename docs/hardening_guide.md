@@ -80,8 +80,9 @@ RKE2 always runs with the PodSecurityPolicy admission controller turned on. Howe
 When ran with the cis-1.5 profile, RKE2 will put a much more restrictive set of policies in place. These policies meet the requirements outlined in section 5.2 of the CIS Benchmark.
 
 > **Note:** The Kubernetes control plane components and critical additions such as CNI, DNS, and Ingress are ran as pods in the `kube-system` namespace. Therefore, this namespace will have a policy that is less restrictive so that these components can run properly.
-
+<!--
 **TODO:** Add a separate doc on our default PSP behavior that explains how the defaults can be overriden by the operator and link here.
+-->
 
 ### NetworkPolicies
 
@@ -90,8 +91,9 @@ When ran with the cis-1.5 profile, RKE2 will put NetworkPolicies in place that p
 The NetworkPolicy used will only allow pods within the same namespace to talk to each other. The notable exception to this is that it allows DNS requests to be resolved.
 
 > **Note:** Operators must manage network policies as normal for additional namespaces that are created.
-
+<!--
 **TODO:** Add a separate doc on our NP behavior that explains how the defaults can be overriden by the operator and link here.
+-->
 
 ## Known Issues
 The following are controls that RKE2 currently does not pass. Each gap will be explained and whether it can be passed through manual operator intervention or if it will be addressed in a future release
