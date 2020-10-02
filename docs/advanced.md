@@ -27,15 +27,15 @@ RKE2 will generate config.toml for containerd in `/var/lib/rancher/rke2/agent/et
 
 For advanced customization for this file you can create another file called `config.toml.tmpl` in the same directory and it will be used instead.
 
-The `config.toml.tmpl` will be treated as a Go template file, and the `config.Node` structure is being passed to the template. [This template](https://github.com/rancher/k3s/blob/master/pkg/agent/templates/templates.go#L16-L32) example on how to use the structure to customize the configuration file.
+The `config.toml.tmpl` will be treated as a Go template file, and the `config.Node` structure is being passed to the template. See [this template](https://github.com/rancher/k3s/blob/master/pkg/agent/templates/templates.go#L16-L32) for an example of how to use the structure to customize the configuration file.
 
 # Secrets Encryption Config
-RKE2 supports the secrets encryption at rest, and will do the following automatically:
+RKE2 supports encrypting Secrets at rest, and will do the following automatically:
 
 - Generate an AES-CBC key
-- Generate an encryption config file with the generated key
+- Generate an encryption config file with the generated key:
 
-```
+```yaml
 {
   "kind": "EncryptionConfiguration",
   "apiVersion": "apiserver.config.k8s.io/v1",
@@ -66,11 +66,11 @@ RKE2 supports the secrets encryption at rest, and will do the following automati
 
 - Pass the config to the Kubernetes APIServer as encryption-provider-config
 
-Once enabled any created secret will be encrypted with this key. Note that if you disable encryption then any encrypted secrets will not be readable until you enable encryption again.
+Once enabled any created secret will be encrypted with this key. Note that if you disable encryption then any encrypted secrets will not be readable until you enable encryption again using the same key.
 
 # Node Labels and Taints
 
-RKE2 agents can be configured with the options `--node-label` and `--node-taint` which adds a label and taint to the kubelet. The two options only add labels and/or taints [at registration time,](FIXME/rke2/latest/en/installation/install-options/#node-labels-and-taints-for-agents) so they can only be added once and not changed after that again by running RKE2 commands.
+RKE2 agents can be configured with the options `--node-label` and `--node-taint` which adds a label and taint to the kubelet. The two options only add labels and/or taints [at registration time [FIXME]](#FIXME), so they can only be added once and not changed after that again by running RKE2 commands.
 
 If you want to change node labels and taints after node registration you should use `kubectl`. Refer to the official Kubernetes documentation for details on how to add [taints](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/) and [node labels.](https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/#add-a-label-to-a-node)
 
