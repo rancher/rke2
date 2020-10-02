@@ -96,7 +96,7 @@ The NetworkPolicy used will only allow pods within the same namespace to talk to
 -->
 
 ## Known Issues
-The following are controls that RKE2 currently does not pass. Each gap will be explained and whether it can be passed through manual operator intervention or if it will be addressed in a future release
+The following are controls that RKE2 currently does not pass. Each gap will be explained and whether it can be passed through manual operator intervention or if it will be addressed in a future release.
 
 ### Control 3.2.1
 Ensure that a minimal audit policy is created (Scored)
