@@ -441,7 +441,7 @@ Kubernetes makes use of a number of key files as part of the operation of its co
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1490,7 +1490,7 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1512,7 +1512,7 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1534,7 +1534,7 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1556,7 +1556,7 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 
 **Result:** Not Applicable
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1578,7 +1578,7 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1602,7 +1602,7 @@ Authentication to etcd is based on whether the certificate presented was issued 
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1720,7 +1720,7 @@ It is possible to run `kube-proxy` with the kubeconfig parameters configured as 
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the worker node.
 
 ```bash
@@ -1743,7 +1743,7 @@ The kubeconfig file for `kube-proxy` controls various parameters for the `kube-p
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1766,7 +1766,7 @@ The `kubelet.conf` file is the kubeconfig file for the node, and controls variou
 
 **Result:** Not Applicable
 
-**Audit**
+**Audit:**
 Run the below command on the worker node.
 
 ```bash
@@ -1786,7 +1786,7 @@ The `kubelet.conf` file is the kubeconfig file for the node, and controls variou
 
 **Result:** Not Applicable
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1807,7 +1807,7 @@ The certificate authorities file controls the authorities used to validate API r
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1830,7 +1830,7 @@ The certificate authorities file controls the authorities used to validate API r
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1881,7 +1881,7 @@ When enabled, requests that are not rejected by other configured authentication 
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1902,7 +1902,7 @@ Kubelets, by default, allow all authenticated requests (even anonymous ones) wit
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1924,7 +1924,7 @@ The connections from the apiserver to the kubelet are used for fetching logs for
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1946,7 +1946,7 @@ The Kubelet process provides a read-only API in addition to the main Kubelet API
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1969,7 +1969,7 @@ Setting idle timeouts ensures that you are protected against Denial-of-Service a
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1991,7 +1991,7 @@ Kernel parameters are usually tuned and hardened by the system administrators be
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2011,7 +2011,7 @@ Kubelets can automatically manage the required changes to iptables based on how 
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2058,7 +2058,7 @@ Kubelet communication contains sensitive parameters that should remain encrypted
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2085,7 +2085,7 @@ The `--rotate-certificates` setting causes the kubelet to rotate its client cert
 
 **Result:** Not Applicable
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2107,7 +2107,7 @@ Note: This recommendation only applies if you let kubelets get their certificate
 
 **Result:** Not Applicable
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2254,7 +2254,7 @@ If you need to run privileged containers, this should be defined in a separate P
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2279,7 +2279,7 @@ If you need to run containers which require hostPID, this should be defined in a
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2306,7 +2306,7 @@ If you have a requirement to containers which require hostIPC, this should be de
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2332,7 +2332,7 @@ If you have need to run containers which require hostNetwork, this should be def
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2358,7 +2358,7 @@ If you have need to run containers which use setuid binaries or require privileg
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2386,7 +2386,7 @@ If you need to run root containers, this should be defined in a separate PSP and
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2414,7 +2414,7 @@ If you need to run containers with this capability, this should be defined in a 
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2440,7 +2440,7 @@ If you need to run containers with additional capabilities, this should be defin
 
 **Result:** Not Scored
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2464,7 +2464,7 @@ In many cases applications running in containers do not require any capabilities
 
 **Result:** Not Scored
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
