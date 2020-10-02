@@ -98,6 +98,15 @@ The NetworkPolicy used will only allow pods within the same namespace to talk to
 ## Known Issues
 The following are controls that RKE2 currently does not pass. Each gap will be explained and whether it can be passed through manual operator intervention or if it will be addressed in a future release
 
+### Control 3.2.1
+Ensure that a minimal audit policy is created (Scored)
+<details>
+<summary>Rationale</summary>
+Logging is an important detective control for all systems, to detect potential unauthorised access.
+</details>
+
+RKE2 currently does not support configuring audit logging. This is a [known issue](https://github.com/rancher/rke2/issues/410) that will be addressed in an upcoming release.
+
 ### Control 5.1.5
 Ensure that default service accounts are not actively used. (Scored)
 <details>
@@ -112,16 +121,8 @@ The default service account should be configured such that it does not provide a
 
 The remediation for this is to update the `automountServiceAccountToken` field to `false` for the `default` service account in each namespace.
 
-For the built-in namespaces (`kube-system`, `kube-public`, `kube-node-lease`, and `default`), RKE2 does not automatically update this service account. You can manually update this field on these service accounts to passs the control.
+For `default` service accounts in the built-in namespaces (`kube-system`, `kube-public`, `kube-node-lease`, and `default`), RKE2 does not automatically do this. You can manually update this field on these service accounts to passs the control.
 
-### Control 3.2.1
-Ensure that a minimal audit policy is created (Scored)
-<details>
-<summary>Rationale</summary>
-Logging is an important detective control for all systems, to detect potential unauthorised access.
-</details>
-
-RKE2 currently does not support configuring audit logging. This is a [known issue](https://github.com/rancher/rke2/issues/410) that will be addressed in an upcoming release.
 
 ## Conclusion
 
