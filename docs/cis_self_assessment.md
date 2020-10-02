@@ -1651,7 +1651,7 @@ Ensure that a minimal audit policy is created (Scored)
 Logging is an important detective control for all systems, to detect potential unauthorised access.
 </details>
 
-**Result:** FAIL TODO!!!
+**Result:** Does not pass. See the [known issue](hardening_guid.md#control-321) for details.
 
 **Audit:**
 Run the below command on the master node.
@@ -2203,7 +2203,6 @@ Operators should review who has access to create pods in their cluster. See the 
 Ensure that default service accounts are not actively used. (Scored)
 <details>
 <summary>Rationale</summary>
-
 Kubernetes provides a default service account which is used by cluster workloads where no specific service account is assigned to the pod.
 
 Where access to the Kubernetes API from a pod is required, a specific service account should be created for that pod, and rights granted to that service account.
@@ -2211,11 +2210,9 @@ Where access to the Kubernetes API from a pod is required, a specific service ac
 The default service account should be configured such that it does not provide a service account token and does not have any explicit rights assignments.
 </details>
 
-**Result:** Pass TODO - update hardening guide
+**Result:** Pass. Currently requires operator intervention See the [known issue](hardening_guide.md#control-515) for details.
 
 **Audit:**
-Run the below command on the master node.
-
 For	each namespace in the cluster, review the rights assigned to the default service account and ensure that it has no roles or cluster roles bound to it apart from the defaults. Additionally ensure that the automountServiceAccountToken: false setting is in place for each default service account.
 
 **Remediation:**
