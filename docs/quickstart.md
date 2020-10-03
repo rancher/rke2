@@ -62,7 +62,7 @@ vim /etc/rancher/rke2/config.yaml
 ```
 Content for config.yaml:
 ```bash
-url: https://<server>:9345
+server: https://<server>:9345
 token: <token from server node>
 ```
 
