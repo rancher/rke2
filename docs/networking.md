@@ -1,5 +1,4 @@
-title: "Networking"
----
+# Networking
 
 This page explains how CoreDNS, the Nginx-Ingress controller, and Klipper service load balancer work within RKE2.
 

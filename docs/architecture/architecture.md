@@ -11,7 +11,7 @@ What this means is that RKE2 is, at its simplest, a single binary to be installe
 to participate in the [Kubernetes][io-kubernetes] cluster. Once started, RKE2 is then able to bootstrap and supervise
 role-appropriate agents per node while sourcing needed content from the network.
 
-![Architecture Overview](architecture/overview.png "RKE2 Architecture Overview")
+![Architecture Overview](overview.png "RKE2 Architecture Overview")
 
 RKE2 brings together a number of Open Source technologies to make this all work:
 
@@ -39,7 +39,7 @@ All of these, except the NGINX Ingress Controller, are compiled and statically l
 #### Content Bootstrap
 
 RKE2 sources binaries and manifests to run both _server_ and _agent_ nodes from the RKE2 Runtime image.
-This means RKE2 scans `/var/lib/rancher/rke2/agent/images/*.tar` for the [`rancher/rke2-runtime`](https://hub.docker.com/r/rancher/rke2-runtime/tags) 
+This means RKE2 scans `/var/lib/rancher/rke2/agent/images/*.tar` for the [`rancher/rke2-runtime`](https://hub.docker.com/r/rancher/rke2-runtime/tags)
 image (with a tag correlating to the output of `rke2 --version`) by default and if it cannot be found, attempts to pull
 it from the network (a.k.a. Docker Hub). RKE2 then extracts `/bin/` from the image, flattening it into
 `/var/lib/rancher/rke2/data/${RKE2_DATA_KEY}/bin` where `${RKE2_DATA_KEY}` represents a unique string identifying the
@@ -56,7 +56,7 @@ For RKE2 to work as expected the runtime image must minimally provide:
 
 The following ops tooling is also provided by the runtime image:
 
-- **`ctr`** (low level `containerd` maintenance and inspection) 
+- **`ctr`** (low level `containerd` maintenance and inspection)
 - **`crictl`** (low level CRI maintenance and inspection)
 - **`kubectl`** (kubernetes cluster maintenance and inspection)
 - **`socat`** (needed by `containerd` for port-forwarding)
@@ -88,7 +88,7 @@ and then write the static pod definition in `/var/lib/rancher/rke2/agent/pod-man
 
 ##### Start Cluster
 
-Spin up an HTTP server in a goroutine to listen for other cluster servers/agents then initialize/join the cluster. 
+Spin up an HTTP server in a goroutine to listen for other cluster servers/agents then initialize/join the cluster.
 
 ###### `etcd`
 
@@ -116,7 +116,7 @@ Spawn the `containerd` process and listen for termination. If `containerd` exits
 Spawn and supervise the `kubelet` process. If `kubelet` exits then `rke2` will attempt to restart it.
 Once the `kubelet` is running it will start any available static pods. For servers this means that `etcd`
 and `kube-apiserver` will start, in succession, allowing the remaining components started via static pod
-to connect to the `kube-apiserver` and begin their processing. 
+to connect to the `kube-apiserver` and begin their processing.
 
 ##### Server Charts
 
