@@ -87,3 +87,17 @@ curl -sfL https://get.rke2.io | sh -
 systemctl enable rke2-server
 systemctl start rke2-server
 ```
+
+## Disabling Server Charts
+
+The server charts bundled with `rke2` deployed during cluster bootstrapping can be disabled and replaced with alternatives.  A common use case is replacing the bundled `rke2-ingress-nginx` chart with an alternative.
+
+To disable any of the bundled system charts, pass the `--disable` flag to `rke2 server` during bootstrapping.  The full list of system charts to disable is below:
+
+* `rke2-canal`
+* `rke2-coredns`
+* `rke2-ingress`
+* `rke2-kube-proxy`
+* `rke2-metrics-server`
+
+Note that it is the cluster operator's responsibility to ensure that components are disabled or replaced with care, as the server charts play important roles in cluster operability.  Refer to the [architecture overview](architecture/architecture.md#server-charts) for more information on the individual system charts role within the cluster.
