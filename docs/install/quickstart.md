@@ -10,7 +10,7 @@ For information on how RKE2 components work together, refer to the [architecture
 
 ### Server Node Installation
 --------------
-RKE2 provides an installation script that is a convenient way to install it as a service on systemd or openrc based systems. This script is available at https://get.rke2.io. To install RKE2 using this method do the following:
+RKE2 provides an installation script that is a convenient way to install it as a service on systemd based systems. This script is available at https://get.rke2.io. To install RKE2 using this method do the following:
 
 **Run the installer**
 ```
