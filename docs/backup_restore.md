@@ -1,3 +1,5 @@
+# Etcd Backup and Restore
+
 In this section, you'll learn how to create backups of the rke2 cluster data and to restore the cluster from backup.
 
 **Note:** /var/lib/rancher/rke2 is the default data directory for rke2, its however configurable via --data-dir
@@ -23,7 +25,7 @@ rke2 server --cluster-reset
 ```
 
 **Result:**  A message in the logs say that RKE2 can be restarted without the flags. Start rke2 again and it should start rke2 as a 1 member cluster.
- 
+
 ### Restoring a Cluster from a Snapshot
 
 When RKE2 is restored from backup, the old data directory will be moved to `/var/lib/rancher/rke2/server/db/etcd-old-%date%/`. Then RKE2 will attempt to restore the snapshot by creating a new data directory, then starting etcd with a new RKE2 cluster with one etcd member.
