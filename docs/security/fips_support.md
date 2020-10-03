@@ -45,4 +45,4 @@ To ensure that all aspects of the system architecture are using FIPS 140-2 compl
 
 ## Ingress
 
-The NGINX Ingress included with RKE2 is **not** currently FIPS enabled. It can, however, be disabled and replaced by the cluster operator/owner.
+The NGINX Ingress included with RKE2 is **not** currently FIPS enabled. It can, however, be [disabled and replaced](../advanced.md#disabling-server-charts) by the cluster operator/owner.
