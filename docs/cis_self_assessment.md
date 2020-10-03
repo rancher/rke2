@@ -441,7 +441,7 @@ Kubernetes makes use of a number of key files as part of the operation of its co
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1490,7 +1490,7 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1512,7 +1512,7 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1534,7 +1534,7 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1556,7 +1556,7 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 
 **Result:** Not Applicable
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1578,7 +1578,7 @@ etcd is a highly-available key value store used by Kubernetes deployments for pe
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1602,7 +1602,7 @@ Authentication to etcd is based on whether the certificate presented was issued 
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1720,7 +1720,7 @@ It is possible to run `kube-proxy` with the kubeconfig parameters configured as 
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the worker node.
 
 ```bash
@@ -1743,7 +1743,7 @@ The kubeconfig file for `kube-proxy` controls various parameters for the `kube-p
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1766,7 +1766,7 @@ The `kubelet.conf` file is the kubeconfig file for the node, and controls variou
 
 **Result:** Not Applicable
 
-**Audit**
+**Audit:**
 Run the below command on the worker node.
 
 ```bash
@@ -1786,7 +1786,7 @@ The `kubelet.conf` file is the kubeconfig file for the node, and controls variou
 
 **Result:** Not Applicable
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1807,7 +1807,7 @@ The certificate authorities file controls the authorities used to validate API r
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1830,7 +1830,7 @@ The certificate authorities file controls the authorities used to validate API r
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1881,7 +1881,7 @@ When enabled, requests that are not rejected by other configured authentication 
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1902,7 +1902,7 @@ Kubelets, by default, allow all authenticated requests (even anonymous ones) wit
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1924,7 +1924,7 @@ The connections from the apiserver to the kubelet are used for fetching logs for
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1946,7 +1946,7 @@ The Kubelet process provides a read-only API in addition to the main Kubelet API
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1969,7 +1969,7 @@ Setting idle timeouts ensures that you are protected against Denial-of-Service a
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -1991,7 +1991,7 @@ Kernel parameters are usually tuned and hardened by the system administrators be
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2011,7 +2011,7 @@ Kubelets can automatically manage the required changes to iptables based on how 
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2058,7 +2058,7 @@ Kubelet communication contains sensitive parameters that should remain encrypted
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2085,7 +2085,7 @@ The `--rotate-certificates` setting causes the kubelet to rotate its client cert
 
 **Result:** Not Applicable
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2107,7 +2107,7 @@ Note: This recommendation only applies if you let kubelets get their certificate
 
 **Result:** Not Applicable
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2254,7 +2254,7 @@ If you need to run privileged containers, this should be defined in a separate P
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2279,7 +2279,7 @@ If you need to run containers which require hostPID, this should be defined in a
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2306,7 +2306,7 @@ If you have a requirement to containers which require hostIPC, this should be de
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2332,7 +2332,7 @@ If you have need to run containers which require hostNetwork, this should be def
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2358,7 +2358,7 @@ If you have need to run containers which use setuid binaries or require privileg
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2386,7 +2386,7 @@ If you need to run root containers, this should be defined in a separate PSP and
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2414,7 +2414,7 @@ If you need to run containers with this capability, this should be defined in a 
 
 **Result:** Pass
 
-**Audit**
+**Audit:**
 Run the below command on the master node.
 
 ```bash
@@ -2440,8 +2440,17 @@ If you need to run containers with additional capabilities, this should be defin
 
 **Result:** Not Scored
 
-**Remediation:**
+**Audit:**
+Run the below command on the master node.
 
+```bash
+/var/lib/rancher/rke2/bin/kubectl get psp 
+```
+
+Verify that there are no PSPs present which have `allowedCapabilities` set to anything other than an empty array.
+
+**Remediation:**
+When run with the `--profile=cis-1.5` argument RKE2 applies a PodSecurityPolicy that sets `requiredDropCapabilities` to `ALL`. No manual remediation needed.
 
 
 #### 5.2.9
@@ -2455,7 +2464,15 @@ In many cases applications running in containers do not require any capabilities
 
 **Result:** Not Scored
 
+**Audit:**
+Run the below command on the master node.
+
+```bash
+/var/lib/rancher/rke2/bin/kubectl get psp 
+```
+
 **Remediation:**
+When run with the `--profile=cis-1.5` argument RKE2 applies a PodSecurityPolicy that sets `requiredDropCapabilities` to `ALL`. No manual remediation needed.
 
 
 ### 5.3 Network Policies and CNI
@@ -2470,7 +2487,11 @@ Kubernetes network policies are enforced by the CNI plugin in use. As such it is
 
 **Result:** Pass
 
+**Audit:**
+Review the documentation of CNI plugin in use by the cluster, and confirm that it supports Ingress and Egress network policies.
+
 **Remediation:**
+By default, RKE2 use Canal (Calico and Flannel) and fully supports network policies.
 
 
 #### 5.3.2
@@ -2488,7 +2509,9 @@ Network Policies are namespace scoped. When a network policy is introduced to a 
 Run the below command on the master node.
 
 ```bash
-for i in kube-system kube-public default; do /var/lib/rancher/rke2/bin/kubectl get networkpolicies -n $i; done
+for i in kube-system kube-public default; do 
+    /var/lib/rancher/rke2/bin/kubectl get networkpolicies -n $i;
+done
 ```
 
 Verify that there are network policies applied to each of the namespaces.
@@ -2508,7 +2531,15 @@ It is reasonably common for application code to log out its environment (particu
 
 **Result:** Not Scored
 
+**Audit:**
+Run the following command to find references to objects which use environment variables defined from secrets.
+
+```bash
+/var/lib/rancher/rke2/bin/kubectl get all -o jsonpath='{range .items[?(@..secretKeyRef)]} {.kind} {.metadata.name} {"\n"}{end}' -A
+```
+
 **Remediation:**
+If possible, rewrite application code to read secrets from mounted secret files, rather than from environment variables.
 
 
 #### 5.4.2
@@ -2520,7 +2551,11 @@ Kubernetes supports secrets as first-class objects, but care needs to be taken t
 
 **Result:** Not Scored
 
+**Audit:**
+Review your secrets management implementation.
+
 **Remediation:**
+Refer to the secrets management options offered by your cloud provider or a third-party secrets management solution.
 
 
 ### 5.5 Extensible Admission Control
@@ -2535,7 +2570,11 @@ Kubernetes supports plugging in provenance rules to accept or reject the images 
 
 **Result:** Not Scored
 
+**Audit:**
+Review the pod definitions in your cluster and verify that image provenance is configured as appropriate.
+
 **Remediation:**
+Follow the Kubernetes documentation and setup image provenance.
 
 
 ### 5.6 Omitted
@@ -2555,11 +2594,21 @@ Limiting the scope of user permissions can reduce the impact of mistakes or mali
 
 **Result:** Not Scored
 
+**Audit:**
+Run the below command and review the namespaces created in the cluster.
+
+```bash
+/var/lib/rancher/rke2/bin/kubectl get namespaces
+```
+
+Ensure that these namespaces are the ones you need and are adequately administered as per your requirements.
+
 **Remediation:**
+Follow the documentation and create namespaces for objects in your deployment as you need them.
 
 
 #### 5.7.2
-Ensure that the seccomp profile is set to docker/default in your pod definitions (Not Scored)
+Ensure that the seccomp profile is set to `docker/default` in your pod definitions (Not Scored)
 <details>
 <summary>Rationale</summary>
 Seccomp (secure computing mode) is used to restrict the set of system calls applications can make, allowing cluster administrators greater control over the security of workloads running in the cluster. Kubernetes disables seccomp profiles by default for historical reasons. You should enable it to ensure that the workloads have restricted actions available within the container.
@@ -2567,8 +2616,16 @@ Seccomp (secure computing mode) is used to restrict the set of system calls appl
 
 **Result:** Not Scored
 
-**Remediation:**
+**Audit:**
+Review the pod definitions in your cluster. It should create a line as below:
 
+```yaml
+annotations:
+  seccomp.security.alpha.kubernetes.io/pod: docker/default
+```
+
+**Remediation:**
+Review the Kubernetes documentation and if needed, apply a relevant PodSecurityPolicy.
 
 #### 5.7.3
 Apply Security Context to Your Pods and Containers (Not Scored)
@@ -2579,7 +2636,11 @@ A security context defines the operating system security settings (uid, gid, cap
 
 **Result:** Not Scored
 
+**Audit:**
+Review the pod definitions in your cluster and verify that you have security contexts defined as appropriate.
+
 **Remediation:**
+Follow the Kubernetes documentation and apply security contexts to your pods. For a suggested list of security contexts, you may refer to the CIS Security Benchmark.
 
 
 #### 5.7.4

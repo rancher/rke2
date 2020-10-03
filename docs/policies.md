@@ -157,7 +157,6 @@ metadata:
       f:spec:
         f:ingress: {}
         f:policyTypes: {}
-    manager: rke2
   name: default-network-policy
   namespace: default
 spec:
@@ -183,7 +182,6 @@ metadata:
         f:podSelector:
           f:matchLabels:
         f:policyTypes: {}
-    manager: rke2
   name: default-network-dns-policy
   namespace: kube-system
 spec:
