@@ -2488,8 +2488,7 @@ Kubernetes network policies are enforced by the CNI plugin in use. As such it is
 **Result:** Pass
 
 **Audit:**
-Review the documentation of	CNI	plugin	in	use	by	the	cluster,	and	confirm	that	it	supports	
-Ingress	and	Egress	network	policies.
+Review the documentation of CNI plugin in use by the cluster, and confirm that it supports Ingress and Egress network policies.
 
 **Remediation:**
 By default, RKE2 use Canal (Calico and Flannel) and fully supports network policies.
