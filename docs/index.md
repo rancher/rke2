@@ -6,8 +6,8 @@ It is a fully conformant ([currently under review](https://github.com/cncf/k8s-c
 
 To meet these goals, RKE2 does the following:
 
-- Provides [defaults and configuration options](hardening_guide.md) that allow clusters to pass the [CIS Kubernetes Benchmark](cis_self_assessment.md) with minimal operator intervention
-- Enables [FIPS 140-2 compliance](fips_support.md)
+- Provides [defaults and configuration options](security/hardening_guide.md) that allow clusters to pass the [CIS Kubernetes Benchmark](security/cis_self_assessment.md) with minimal operator intervention
+- Enables [FIPS 140-2 compliance](security/fips_support.md)
 - Regularly scans components for CVEs using [trivy](https://github.com/aquasecurity/trivy) in our build pipeline
 
 ## How is this different from RKE or K3s?
