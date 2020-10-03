@@ -16,7 +16,7 @@ RKE2 provides an installation script that is a convenient way to install it as a
 ```
 curl -sfL https://get.rke2.io | sh -
 ```
-This will install `rke2-server` and `rke2-agent` services onto your machine.
+This will install the `rke2-server` service and the `rke2` binary onto your machine.
 
 **Enable the rke2-server service**
 ```
@@ -35,7 +35,7 @@ journalctl -u rke2-server -f
 
 After running this installation:
 
-* The `rke2-server` and `rke2-agent` services will be installed. The `rke2-server` service will be configured to automatically restart after node reboots or if the process crashes or is killed.
+* The `rke2-server` service will be installed. The `rke2-server` service will be configured to automatically restart after node reboots or if the process crashes or is killed.
 * Additional utilities will be installed at `/var/lib/rancher/rke2/bin/`. They include: `kubectl`, `crictl`, and `ctr`. Note that these are not on your path by default.
 * Two cleanup scripts will be installed to the path at `/usr/local/bin/rke2`. They are: `rke2-killall.sh` and `rke2-uninstall.sh`.
 * A [kubeconfig](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) file will be written to `/etc/rancher/rke2/rke2.yaml`.
@@ -46,13 +46,13 @@ After running this installation:
 ### Worker Node Configuration
 **Run the installer**
 ```
-curl -sfL https://get.rke2.io | sh -
+curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh -
 ```
-This will install `rke2-server` and `rke2-agent` services onto your machine.
+This will install the `rke2-agent` service and the `rke2` binary onto your machine.
 
 **Enable the rke2-agent service**
 ```
-systemctl enable rke2-server.service
+systemctl enable rke2-agent.service
 ```
 
 **Configure the rke2-agent service**
