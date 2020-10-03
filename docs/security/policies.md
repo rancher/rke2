@@ -1,6 +1,7 @@
 ---
-title: General Operation and CIS Security Policies
+title: Default Policy Configuration
 ---
+This document describes how RKE2 configures PodSecurityPolicies and NetworkPolicies in order to be secure-by-default while also providing operators with maximum configuration flexibility.
 
 #### Pod Security Policies
 

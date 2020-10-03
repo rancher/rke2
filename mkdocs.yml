@@ -21,12 +21,15 @@ markdown_extensions:
 nav:
   - index.md
   - Installation:
-    - quickstart.md
-    - airgap.md
+    - install/quickstart.md
+    - install/airgap.md
   - Architecture:
-    - architecture.md
+    - architecture/architecture.md
   - Security:
-    - hardening_guide.md
-    - cis_self_assessment.md
-    - fips_support.md
-    - policies.md
+    - security/hardening_guide.md
+    - security/cis_self_assessment.md
+    - security/fips_support.md
+    - security/policies.md
+  - networking.md
+  - helm.md
+  - advanced.md
