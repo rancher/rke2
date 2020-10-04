@@ -29,7 +29,7 @@ mv rke2-killall.sh /usr/local/bin
 Now run the `rke2-uninstall.sh` script. This will call the `rke2-killall.sh` script which will 
 
 ```bash
-./rke2-uninstall.sh
+rke2-uninstall.sh
 ```
 
 After the `rke2-uninstall.sh` and `rke2-killall.sh` scripts complete,run the commands below to perform additional clean uup.
