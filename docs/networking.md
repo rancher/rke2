@@ -2,7 +2,7 @@
 
 This page explains how CoreDNS, the Nginx-Ingress controller, and Klipper service load balancer work within RKE2.
 
-Refer to the [Installation Network Options [FIXME]](#FIXME) page for details on Canal configuration options, or how to set up your own CNI.
+Refer to the [Installation Network Options](install/network_options.md) page for details on Canal configuration options, or how to set up your own CNI.
 
 For information on which ports need to be opened for RKE2, refer to the [Installation Requirements [FIXME]](#FIXME).
 

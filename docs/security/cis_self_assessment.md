@@ -24,13 +24,6 @@ These are the possible results for each control:
 - **Not Applicable** - The control is not applicable to RKE2 because of how it is designed to operate. The remediation section will explain why this is so.
 - **Not Scored - Operator Dependent** - The control is not scored in the CIS benchmark and it depends on the cluster's use case or some other factor that must be determined by the cluster operator. These controls have been evaluated to ensure RKE2 does not prevent their implementation, but no further configuration or auditing of the cluster under test has been performed.
 
-<!--
-RKE2 is launched as a single process that will first install and launch containerd as a host-level process. It will then launch the kubelet as a host-level process. The reamining Kubernetes control plane components (including etcd) are then launched as static pods, using the kubelet. Configuration of Kubernetes is achieved by passing additional arguments to the RKE2 process via a config file (recommended) or command line arguments.
-TODO Rancher and RKE install Kubernetes services via Docker containers. Configuration is defined by arguments passed to the container at the time of initialization, not via configuration files.-->
-
-
-<!-- TODO When performing the tests, you will need access to the Docker command line on the hosts of all three RKE roles. The commands also make use of the the [jq](https://stedolan.github.io/jq/) and [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) (with valid config) tools to and are required in the testing and evaluation of test results. -->
-
 ### Controls
 
 ---
@@ -2062,7 +2055,7 @@ Kubelet communication contains sensitive parameters that should remain encrypted
 Run the below command on the master node.
 
 ```bash
-/bin/ps -ef | grep kubelet | grep -v grep 
+/bin/ps -ef | grep kubelet | grep -v grep
 ```
 
 Verify the `--tls-cert-file` and `--tls-private-key-file` arguments are present and set appropriately.
@@ -2444,7 +2437,7 @@ If you need to run containers with additional capabilities, this should be defin
 Run the below command on the master node.
 
 ```bash
-/var/lib/rancher/rke2/bin/kubectl get psp 
+/var/lib/rancher/rke2/bin/kubectl get psp
 ```
 
 Verify that there are no PSPs present which have `allowedCapabilities` set to anything other than an empty array.
@@ -2468,7 +2461,7 @@ In many cases applications running in containers do not require any capabilities
 Run the below command on the master node.
 
 ```bash
-/var/lib/rancher/rke2/bin/kubectl get psp 
+/var/lib/rancher/rke2/bin/kubectl get psp
 ```
 
 **Remediation:**
@@ -2509,7 +2502,7 @@ Network Policies are namespace scoped. When a network policy is introduced to a 
 Run the below command on the master node.
 
 ```bash
-for i in kube-system kube-public default; do 
+for i in kube-system kube-public default; do
     /var/lib/rancher/rke2/bin/kubectl get networkpolicies -n $i;
 done
 ```
