@@ -22,6 +22,7 @@ nav:
   - index.md
   - Installation:
     - install/quickstart.md
+    - install/ha.md
     - install/network_options.md
     - install/airgap.md
   - Upgrades:
