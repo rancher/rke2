@@ -6,7 +6,11 @@ title: Uninstall
 
 ## Tarball Method
 
+To uninstall RKE2 from your system, simply run the command below. This will shutdown process, remove the RKE2 binary, and clean up files used by RKE2.
 
+```bash
+rke2-uninstall.sh
+```
 
 ## RPM Method
 
