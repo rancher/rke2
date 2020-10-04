@@ -35,6 +35,6 @@ rke2-uninstall.sh
 After the `rke2-uninstall.sh` and `rke2-killall.sh` scripts complete,run the commands below to perform additional clean uup.
 
 ```bash
-yum remove -y rke2-*;
+yum remove -y rke2-*
 rm -rf /run/k3s
 ```
