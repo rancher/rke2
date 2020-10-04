@@ -36,6 +36,5 @@ After the `rke2-uninstall.sh` and `rke2-killall.sh` scripts complete,run the com
 
 ```bash
 yum remove -y rke2-*;
-rm -rf /run/k3s 
-rm -rf /var/log/pods /var/log/containers
+rm -rf /run/k3s
 ```
