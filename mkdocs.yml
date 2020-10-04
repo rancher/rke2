@@ -39,4 +39,6 @@ nav:
   - backup_restore.md
   - networking.md
   - helm.md
+  - containerd_registry_configuration.md
+  - cgroups_v2.md
   - advanced.md
