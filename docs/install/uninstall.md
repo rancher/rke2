@@ -1,3 +1,7 @@
+---
+title: Uninstall
+---
+
 # Uninstall
 
 ## Tarball Method
