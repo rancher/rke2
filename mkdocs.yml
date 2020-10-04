@@ -42,3 +42,4 @@ nav:
   - networking.md
   - helm.md
   - advanced.md
+  - known_issues.md
