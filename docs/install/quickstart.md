@@ -75,4 +75,6 @@ systemctl start rke2-agent.service
 journalctl -u rke2-agent -f
 ```
 
-**Note:** Each machine must have a unique hostname. If your machines do not have unique hostnames, set the `node-name` parameter in the `config.yaml` file and provide a value with a valid and unique hostname for each node.
+**Note:** Each machine must have a unique hostname. If your machines do not have unique hostnames, set the `node-name` parameter in the `config.yaml` file and provide a value with a valid and unique hostname for each node
+
+For more about the config.yaml file, see the [Configuration File documentation](config_file.md).
