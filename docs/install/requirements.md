@@ -24,13 +24,13 @@ Hardware requirements scale based on the size of your deployments. Minimum recom
 
 #### Disks
 
-RKE2 performance depends on the performance of the database, and since RKE2 runs etcd embeddedly and it stores the data dir on disk. we recommend using an SSD when possible to ensure optimal performance.
+RKE2 performance depends on the performance of the database, and since RKE2 runs etcd embeddedly and it stores the data dir on disk, we recommend using an SSD when possible to ensure optimal performance.
 
 ## Networking
 
-The RKE2 server needs port 6443 and 9345 to be accessible by the nodes.
+The RKE2 server needs port 6443 and 9345 to be accessible by other nodes in the cluster.
 
-The nodes need to be able to reach other nodes over UDP port 8472 when Flannel VXLAN is used.
+All nodes need to be able to reach other nodes over UDP port 8472 when Flannel VXLAN is used.
 
 If you wish to utilize the metrics server, you will need to open port 10250 on each node.
 
