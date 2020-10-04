@@ -12,6 +12,11 @@ title: Uninstall
 
 To uninstll RKE2 from your system, if installed with from RPM, a few commands need to be ran. 
 
+```bash
+yum remove -y rke2-*
+rm -rf /run/k3s
+```
+
 Once those commands are ran, the `rke2-uninstall.sh` and `rke2-killall.sh` scripts should be downloaded. These two scripts will stop any running containers and processes, clean up used processes, and ultimately remove RKE2 from the system. Run the commands below.
 
 ```bash
@@ -30,11 +35,4 @@ Now run the `rke2-uninstall.sh` script. This will call the `rke2-killall.sh` scr
 
 ```bash
 rke2-uninstall.sh
-```
-
-After the `rke2-uninstall.sh` and `rke2-killall.sh` scripts complete,run the commands below to perform additional clean uup.
-
-```bash
-yum remove -y rke2-*
-rm -rf /run/k3s
 ```
