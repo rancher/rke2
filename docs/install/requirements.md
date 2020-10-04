@@ -34,7 +34,7 @@ All nodes need to be able to reach other nodes over UDP port 8472 when Flannel V
 
 If you wish to utilize the metrics server, you will need to open port 10250 on each node.
 
-> **Important:** The VXLAN port on nodes should not be exposed to the world as it opens up your cluster network to be accessed by anyone. Run your nodes behind a firewall/security group that disables access to port 8472.
+**Important:** The VXLAN port on nodes should not be exposed to the world as it opens up your cluster network to be accessed by anyone. Run your nodes behind a firewall/security group that disables access to port 8472.
 
 <figcaption>Inbound Rules for RKE2 Server Nodes</figcaption>
 
