@@ -4,7 +4,7 @@ RKE2 is very lightweight, but has some minimum requirements as outlined below.
 
 Two nodes cannot have the same hostname.
 
-If all your nodes have the same hostname, use `--node-name` or `$RKE2_NODE_NAME` for each node you add to the cluster to have a different node name.
+If all your nodes have the same hostname, set the `node-name` parameter in the RKE2 config file for each node you add to the cluster to have a different node name.
 
 ## Operating Systems
 
