@@ -22,14 +22,20 @@ nav:
   - index.md
   - Installation:
     - install/quickstart.md
+    - install/network_options.md
     - install/airgap.md
-  - Architecture:
-    - architecture/architecture.md
+  - Upgrades:
+    - Overview: upgrade/upgrade.md
+    - upgrade/basic_upgrade.md
+    - upgrade/automated_upgrade.md
   - Security:
     - security/hardening_guide.md
     - security/cis_self_assessment.md
     - security/fips_support.md
     - security/policies.md
+  - Architecture:
+    - architecture/architecture.md
+  - cluster_access.md
   - backup_restore.md
   - networking.md
   - helm.md
