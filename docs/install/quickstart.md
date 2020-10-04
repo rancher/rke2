@@ -4,8 +4,6 @@ title: Quick Start
 
 This guide will help you quickly launch a cluster with default options.
 
-For information on how RKE2 components work together, refer to the [architecture section.](architecture.md)
-
 > New to Kubernetes? The official Kubernetes docs already have some great tutorials outlining the basics [here](https://kubernetes.io/docs/tutorials/kubernetes-basics/).
 
 ### Server Node Installation

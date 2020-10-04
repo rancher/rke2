@@ -10,7 +10,7 @@ The Go compiler in use can be found [here](https://hub.docker.com/u/goboring). E
 
 This version of Go replaces the standard Go crypto libraries with the FIPS validated BoringCrypto module. See the [readme](https://github.com/golang/go/blob/dev.boringcrypto/README.boringcrypto.md) for more details.
 
-Moreover, this module is currently being [revalidated](assets/fips_engagement.pdf) as the Rancher Kubernetes Cryptographic Library for the additional platforms and systems supported by RKE2.
+Moreover, this module is currently being [revalidated](../assets/fips_engagement.pdf) as the Rancher Kubernetes Cryptographic Library for the additional platforms and systems supported by RKE2.
 
 ### FIPS Support in Cluster Components
 
