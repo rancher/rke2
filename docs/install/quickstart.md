@@ -12,23 +12,23 @@ For information on how RKE2 components work together, refer to the [architecture
 --------------
 RKE2 provides an installation script that is a convenient way to install it as a service on systemd based systems. This script is available at https://get.rke2.io. To install RKE2 using this method do the following:
 
-**Run the installer**
+#### 1. Run the installer
 ```
 curl -sfL https://get.rke2.io | sh -
 ```
 This will install the `rke2-server` service and the `rke2` binary onto your machine.
 
-**Enable the rke2-server service**
+#### 2. Enable the rke2-server service
 ```
 systemctl enable rke2-server.service
 ```
 
-**Start the service**
+#### 3. Start the service
 ```
 systemctl start rke2-server.service
 ```
 
-**Follow the logs, if you like**
+#### 4. Follow the logs, if you like
 ```
 journalctl -u rke2-server -f
 ```
@@ -41,21 +41,21 @@ After running this installation:
 * A [kubeconfig](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) file will be written to `/etc/rancher/rke2/rke2.yaml`.
 * A token that can be used to register other server or agent nodes will be created at `/var/lib/rancher/rke2/server/node-token`
 
-**Note:** If you are adding additional server nodes, you must have an odd number in total. An odd number is needed to maintain quorom.
+**Note:** If you are adding additional server nodes, you must have an odd number in total. An odd number is needed to maintain quorum. See the [High Availability documentation](ha.md) for more details.
 
-### Worker Node Configuration
-**Run the installer**
+### Agent (Worker) Node Installation
+#### 1. Run the installer
 ```
 curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh -
 ```
 This will install the `rke2-agent` service and the `rke2` binary onto your machine.
 
-**Enable the rke2-agent service**
+#### 2. Enable the rke2-agent service
 ```
 systemctl enable rke2-agent.service
 ```
 
-**Configure the rke2-agent service**
+#### 3. Configure the rke2-agent service
 ```
 mkdir -p /etc/rancher/rke2/
 vim /etc/rancher/rke2/config.yaml
@@ -65,8 +65,9 @@ Content for config.yaml:
 server: https://<server>:9345
 token: <token from server node>
 ```
+**Note:** The `rke2 server` process listens on port `9345` for new nodes to register. The Kubernetes API is still served on port `6443`, as normal.
 
-**Start the service**
+#### 4. Start the service
 ```
 systemctl start rke2-agent.service
 ```
