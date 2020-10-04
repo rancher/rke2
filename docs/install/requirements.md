@@ -8,12 +8,12 @@ If all your nodes have the same hostname, set the `node-name` parameter in the R
 
 ## Operating Systems
 
-RKE2 is officially supported and tested on the following operating systems and their subsequent non-major releases:
+RKE2 has been tested and validated on the following operating systems and their subsequent non-major releases:
 
 *    Ubuntu 18.04 (amd64)
 *    Ubuntu 20.04 (amd64)
 *    CentOS/RHEL 7.8 (amd64)
-*    CentOS/RHEL 8.x (amd64)
+*    CentOS/RHEL 8.2 (amd64)
 
 ## Hardware
 

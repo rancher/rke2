@@ -22,6 +22,7 @@ nav:
   - index.md
   - Installation:
     - install/quickstart.md
+    - install/requirements.md
     - install/ha.md
     - install/network_options.md
     - install/containerd_registry_configuration.md
