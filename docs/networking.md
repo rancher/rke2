@@ -4,7 +4,7 @@ This page explains how CoreDNS, the Nginx-Ingress controller, and Klipper servic
 
 Refer to the [Installation Network Options](install/network_options.md) page for details on Canal configuration options, or how to set up your own CNI.
 
-For information on which ports need to be opened for RKE2, refer to the [Installation Requirements [FIXME]](#FIXME).
+For information on which ports need to be opened for RKE2, refer to the [Installation Requirements](install/requirements.md).
 
 - [CoreDNS](#coredns)
 - [Nginx-Ingress Controller](#nginx-ingress-controller)
