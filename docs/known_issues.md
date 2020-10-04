@@ -1,4 +1,11 @@
-# Control Groups V2
+# Known Issues and Limitations
+
+This section contains advanced information describing the different ways you can run and manage RKE2.
+
+## Firewalld conflicts with default networking
+Firewalld conflicts with RKE2's default Canal (Calico + Flannel) networking stack. To avoid unexpected behavior, firewalld should be disabled on systems running RKE2.
+
+## Control Groups V2
 
 Linux distributions, more and more, are shipping with kernels and userspaces that support cgroups v2,
 e.g. since Fedora 31. However, at the time of this writing, the `containerd` that is built and shipped

@@ -25,7 +25,7 @@ There are two areas of of Host-level requirements: kernel parameters and etcd pr
 ### Ensure `protect-kernel-defaults` is set
 This is a kubelet flag that will cause the kubelet to exit if the required kernel parameters are unset or are set to values that are different from the kubelet's defaults.
 
-When the `profile` flag is set, RKE2 will set the flag to true. 
+When the `profile` flag is set, RKE2 will set the flag to true.
 
 > **Note:** `protect-kernel-defaults` is exposed a top-level flag for RKE2. If you have set `profile` to "cis-1.5" and `protect-kernel-defaults` to false explicitly, RKE2 will exit with an error.
 
@@ -44,7 +44,7 @@ This section gives you the commands necessary to configure your host to meet the
 #### Set kernel parameters
 When RKE2 is installed, it creates a sysctl config file to set the required parameters appropriately.
 However, it does not automatically configure the Host to use this configuration. You must do this manually.
-The location of the config file depends on the installation method used. 
+The location of the config file depends on the installation method used.
 
 If RKE2 was installed via RPM, YUM, or DNF (the default on OSes that use RPMs, such as CentOS), run the following command(s):
 ```bash
@@ -75,14 +75,11 @@ The runtime requirements to pass the CIS Benchmark are centered around pod secur
 
 ### PodSecurityPolicies
 
-RKE2 always runs with the PodSecurityPolicy admission controller turned on. However, when it is **not** started with the cis-1.5 profile, RKE2 will put an unrestriced policy in place that allows Kubernetes to run as though the PodSecurityPolicy admission controller was not enabled.
+RKE2 always runs with the PodSecurityPolicy admission controller turned on. However, when it is **not** started with the cis-1.5 profile, RKE2 will put an unrestricted policy in place that allows Kubernetes to run as though the PodSecurityPolicy admission controller was not enabled.
 
 When ran with the cis-1.5 profile, RKE2 will put a much more restrictive set of policies in place. These policies meet the requirements outlined in section 5.2 of the CIS Benchmark.
 
 > **Note:** The Kubernetes control plane components and critical additions such as CNI, DNS, and Ingress are ran as pods in the `kube-system` namespace. Therefore, this namespace will have a policy that is less restrictive so that these components can run properly.
-<!--
-**TODO:** Add a separate doc on our default PSP behavior that explains how the defaults can be overriden by the operator and link here.
--->
 
 ### NetworkPolicies
 
@@ -91,9 +88,6 @@ When ran with the cis-1.5 profile, RKE2 will put NetworkPolicies in place that p
 The NetworkPolicy used will only allow pods within the same namespace to talk to each other. The notable exception to this is that it allows DNS requests to be resolved.
 
 > **Note:** Operators must manage network policies as normal for additional namespaces that are created.
-<!--
-**TODO:** Add a separate doc on our NP behavior that explains how the defaults can be overriden by the operator and link here.
--->
 
 ## Known Issues
 The following are controls that RKE2 currently does not pass. Each gap will be explained and whether it can be passed through manual operator intervention or if it will be addressed in a future release.
@@ -111,7 +105,7 @@ RKE2 currently does not support configuring audit logging. This is a [known issu
 Ensure that default service accounts are not actively used. (Scored)
 <details>
 <summary>Rationale</summary>
-    
+
 Kubernetes provides a default service account which is used by cluster workloads where no specific service account is assigned to the pod.
 
 Where access to the Kubernetes API from a pod is required, a specific service account should be created for that pod, and rights granted to that service account.
