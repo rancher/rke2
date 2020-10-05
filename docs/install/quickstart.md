@@ -76,3 +76,5 @@ journalctl -u rke2-agent -f
 ```
 
 **Note:** Each machine must have a unique hostname. If your machines do not have unique hostnames, set the `node-name` parameter in the `config.yaml` file and provide a value with a valid and unique hostname for each node.
+
+To read more about the config.yaml file, see the [Install Options documentation.](./install_options/install_options.md#configuration-file)
