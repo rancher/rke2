@@ -1,8 +1,9 @@
 # Known Issues and Limitations
 
-This section contains advanced information describing the different ways you can run and manage RKE2.
+This section contains current known issues and limitations with rke2. If you come across issues with rke2 not documented here, please open a new issue [here](https://github.com/rancher/rke2/issues).
 
 ## Firewalld conflicts with default networking
+
 Firewalld conflicts with RKE2's default Canal (Calico + Flannel) networking stack. To avoid unexpected behavior, firewalld should be disabled on systems running RKE2.
 
 ## Control Groups V2

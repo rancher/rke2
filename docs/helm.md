@@ -59,7 +59,7 @@ spec:
 
 ### Customizing Packaged Components with HelmChartConfig
 
-To allow overriding values for packaged components that are deployed as HelmCharts (such as Canal, CoreDNS, Ingress-Nginx, etc), RKE2 supports customizing deployments via a HelmChartConfig resources. The HelmChartConfig resource must match the name and namespace of its corresponding HelmChart, and supports providing additional `valuesContent`, which is passed to the `helm` command as an additional value file.
+To allow overriding values for packaged components that are deployed as HelmCharts (such as Canal, CoreDNS, Nginx-Ingress, etc), RKE2 supports customizing deployments via a `HelmChartConfig` resources. The `HelmChartConfig` resource must match the name and namespace of its corresponding HelmChart, and supports providing additional `valuesContent`, which is passed to the `helm` command as an additional value file.
 
 > **Note:** HelmChart `spec.set` values override HelmChart and HelmChartConfig `spec.valuesContent` settings.
 
