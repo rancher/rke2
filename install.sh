@@ -16,7 +16,7 @@ fi
 #
 #   - INSTALL_RKE2_CHANNEL
 #     Channel to use for fetching rke2 download URL.
-#     Defaults to 'testing'.
+#     Defaults to 'latest'.
 #
 #   - INSTALL_RKE2_METHOD
 #     The installation method to use.
@@ -60,7 +60,7 @@ setup_env() {
 
     # --- make sure install channel has a value
     if [ -z "${INSTALL_RKE2_CHANNEL}" ]; then
-        INSTALL_RKE2_CHANNEL="testing"
+        INSTALL_RKE2_CHANNEL="latest"
     fi
 
     # --- make sure install type has a value
@@ -133,7 +133,6 @@ get_release_version() {
     else
         info "finding release for channel ${INSTALL_RKE2_CHANNEL}"
         INSTALL_RKE2_CHANNEL_URL=${INSTALL_RKE2_CHANNEL_URL:-'https://update.rke2.io/v1-release/channels'}
-        INSTALL_RKE2_CHANNEL=${INSTALL_RKE2_CHANNEL:-'stable'}
         version_url="${INSTALL_RKE2_CHANNEL_URL}/${INSTALL_RKE2_CHANNEL}"
         case ${DOWNLOADER} in
         *curl)
@@ -215,19 +214,23 @@ unpack_tarball() {
 }
 
 do_install_rpm() {
+    rpm_site="rpm.rancher.io"
+    if [ "${1}" = "testing" ]; then
+        rpm_site="rpm-${1}.rancher.io"
+    fi
     cat <<-EOF >"/etc/yum.repos.d/rancher-rke2-${1}.repo"
 [rancher-rke2-common-${1}]
 name=Rancher RKE2 Common (${1})
-baseurl=https://rpm-${1}.rancher.io/rke2/${1}/common/centos/7/noarch
+baseurl=https://${rpm_site}/rke2/${1}/common/centos/7/noarch
 enabled=1
 gpgcheck=1
-gpgkey=https://rpm-${1}.rancher.io/public.key
+gpgkey=https://${rpm_site}/public.key
 [rancher-rke2-1-18-${1}]
 name=Rancher RKE2 1.18 (${1})
-baseurl=https://rpm-${1}.rancher.io/rke2/${1}/1.18/centos/7/x86_64
+baseurl=https://${rpm_site}/rke2/${1}/1.18/centos/7/x86_64
 enabled=1
 gpgcheck=1
-gpgkey=https://rpm-${1}.rancher.io/public.key
+gpgkey=https://${rpm_site}/public.key
 EOF
     yum -y install "rke2-${INSTALL_RKE2_TYPE}"
 }
