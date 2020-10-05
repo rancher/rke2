@@ -41,6 +41,7 @@ nav:
     - security/cis_self_assessment.md
     - security/fips_support.md
     - security/policies.md
+    - security/selinux.md
   - Architecture:
     - architecture/architecture.md
   - cluster_access.md
