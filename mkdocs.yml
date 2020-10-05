@@ -31,6 +31,7 @@ nav:
     - install/network_options.md
     - install/containerd_registry_configuration.md
     - install/airgap.md
+    - install/uninstall.md
   - Upgrades:
     - Overview: upgrade/upgrade.md
     - upgrade/basic_upgrade.md
