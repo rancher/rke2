@@ -26,7 +26,7 @@ If you don't install CoreDNS, you will need to install a cluster DNS provider yo
 
 Nginx-ingress is deployed by default when starting the server. The ingress controller will use ports 80, and 443 on the host (i.e. these will not be usable for HostPort or NodePort).
 
-Nginx-ingress can be configured by creating a [HelmChartConfig manifest](helm.md#customizing-packaged-components-with-helmchartconfig) to customize the `rke2-nignix-ingress` HelmChart values. For more information, refer to the official [Traefik for Helm Configuration Parameters.](https://github.com/helm/charts/tree/cfcf87ac254dcbb2d4aa1c866e20dd7e8e55b8e5/stable/nginx-ingress#configuration)
+Nginx-ingress can be configured by creating a [HelmChartConfig manifest](helm.md#customizing-packaged-components-with-helmchartconfig) to customize the `rke2-nginx-ingress` HelmChart values. For more information, refer to the official [nginx-ingress Helm Configuration Parameters](https://github.com/helm/charts/tree/cfcf87ac254dcbb2d4aa1c866e20dd7e8e55b8e5/stable/nginx-ingress#configuration).
 
 To disable it, start each server with the `--disable rke2-ingress-nginx` option.
 
