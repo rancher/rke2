@@ -1,154 +1,36 @@
 # RKE2
+![RKE2](docs/assets/logo-horizontal-rke.svg)
 
-We're starting to experiment with our next-generation Kubernetes distribution. This is currently an alpha project that will evolve a lot. Stay tuned.
+RKE2, also known as RKE Government, is Rancher's next-generation Kubernetes distribution.
 
-## What is this?
+It is a fully conformant ([currently under review](https://github.com/cncf/k8s-conformance/pull/1151)) Kubernetes distribution that focuses on security and compliance within the U.S. Federal Government sector.
 
-RKE2 is a fully compliant Kubernetes distribution, with the following changes:
+To meet these goals, RKE2 does the following:
 
-- Packaged as a single binary.
-- Kubelet running as an embedded process in the agent and server.
-- Master components running as static pods.
-- All components images are compiled using Goboring library.
-- The following addons are installed as helm charts:
-  - CoreDNS
-  - Kube-proxy
-  - Canal
-  - Nginx Ingress Controller
-  - Metrics Server
+- Provides [defaults and configuration options](security/hardening_guide.md) that allow clusters to pass the [CIS Kubernetes Benchmark](security/cis_self_assessment.md) with minimal operator intervention
+- Enables [FIPS 140-2 compliance](security/fips_support.md)
+- Supports SELinux policy and [Multi-Category Security (MCS)](https://selinuxproject.org/page/NB_MLS) label enforcement
+- Regularly scans components for CVEs using [trivy](https://github.com/aquasecurity/trivy) in our build pipeline
 
-## Installation
+For more information and detailed installation and operation instructions, [please visit our docs](https://docs.rke2.io/).
 
-RKE2 comes with a convenient installation script that will, by default, install via `yum` on RPM-based systems while unpacking the tarball bundle to `/usr/local` on all others.
-
-### Quick Start
-
-To install via the default mechanism for your system:
-
+## Quick Start
+Here's the ***extremely*** quick start:
 ```sh
-curl -fsSL https://raw.githubusercontent.com/rancher/rke2/master/install.sh | sudo sh -
-```
-
-To install via unpacking the tarball on an RPM-based system:
-```sh
-curl -fsSL https://raw.githubusercontent.com/rancher/rke2/master/install.sh --output install.sh
-sudo INSTALL_RKE2_METHOD=tar sh ./install.sh
-```
-
-To install a specific version:
-```sh
-sudo INSTALL_RKE2_METHOD=tar INSTALL_RKE2_VERSION='v1.18.8-beta19+rke2' sh ./install.sh
-```
-
-## Configuration
-
-### CIS Mode
-
-If you plan to run your RKE2 cluster in CIS mode you will want to:
-
-- apply these sysctls (at [/usr/local/share/rke2/rke2-cis-sysctl.conf](bundle/share/rke2/rke2-cis-sysctl.conf) for tar installations):
-```
-vm.panic_on_oom=0
-vm.overcommit_memory=1
-kernel.keys.root_maxbytes=25000000
-kernel.panic=10
-kernel.panic_on_oops=1
-```
-- create an `rke2` and `etcd` user
-```
-useradd -d /var/lib/rancher/rke2 -r -s /bin/false rke2
-useradd -d /var/lib/rancher/rke2/server/db -r -s /bin/false etcd
-usermod -aG etcd rke2
-```
-
-## Operation
-
-To start using the rke2 cluster:
-
-```sh
+curl -sfL https://get.rke2.io | sh -
+systemctl enable rke2-server.service
+systemctl start rke2-server.service
+# Wait a bit
 export KUBECONFIG=/etc/rancher/rke2/rke2.yaml PATH=$PATH:/var/lib/rancher/rke2/bin
 kubectl get nodes
 ```
-
-`RKE2_TOKEN` is created at `/var/lib/rancher/rke2/server/node-token` on your server. To install on worker nodes we should pass `RKE2_URL` along with `RKE2_TOKEN` or `RKE2_CLUSTER_SECRET` environment variables, for example:
-
-```sh
-RKE2_URL=https://myserver:9345 RKE2_TOKEN=XXX ./install.sh
-```
-
-## Automated deployment
-
-We provide a simple automated way to install RKE2 on AWS via terraform scripts, this method requires terraform to be installed and access to AWS cloud, to get started please checkout the [rke2-build](https://github.com/rancher/rke2-build) repo.
-
-## RPM Repositories
-
-Signed RPMs are published for RKE2 within the `rpm-testing.rancher.io` and `rpm.rancher.io` RPM repositories. The RPMs can be installed and will provide `systemd` units for managing `rke2`, but will need to be configured via configuration file before starting the services for the first time. 
-
-### Enterprise Linux 7
-
-In order to use the RPM repository, on a CentOS 7 or RHEL 7 system, run the following bash snippet:
-
-```bash
-cat << EOF > /etc/yum.repos.d/rancher-rke2-1-18-testing.repo
-[rancher-rke2-common-testing]
-name=Rancher RKE2 Common Testing
-baseurl=https://rpm-testing.rancher.io/rke2/testing/common/centos/7/noarch
-enabled=1
-gpgcheck=1
-gpgkey=https://rpm-testing.rancher.io/public.key
-
-[rancher-rke2-1-18-testing]
-name=Rancher RKE2 1.18 Testing
-baseurl=https://rpm-testing.rancher.io/rke2/testing/1.18/centos/7/x86_64
-enabled=1
-gpgcheck=1
-gpgkey=https://rpm-testing.rancher.io/public.key
-EOF
-```
-
-### Enterprise Linux 8
-
-In order to use the RPM repository, on a CentOS 8 or RHEL 8 system, run the following bash snippet:
-
-```bash
-cat << EOF > /etc/yum.repos.d/rancher-rke2-1-18-testing.repo
-[rancher-rke2-common-testing]
-name=Rancher RKE2 Common Testing
-baseurl=https://rpm-testing.rancher.io/rke2/testing/common/centos/8/noarch
-enabled=1
-gpgcheck=1
-gpgkey=https://rpm-testing.rancher.io/public.key
-
-[rancher-rke2-1-18-testing]
-name=Rancher RKE2 1.18 Testing
-baseurl=https://rpm-testing.rancher.io/rke2/testing/1.18/centos/8/x86_64
-enabled=1
-gpgcheck=1
-gpgkey=https://rpm-testing.rancher.io/public.key
-EOF
-```
-
-### Installing
-
-After this, you can either run:
-
-```bash
-yum -y install rke2-server
-```
-
-or 
-
-```bash
-yum -y install rke2-agent
-```
-
-The RPM will install a corresponding `rke2-server.service` or `rke2-agent.service` systemd unit that can be invoked like: `systemctl start rke2-server`. Make sure that you configure `rke2` before you start it, by following the `Configuration File` instructions below.
+For a bit more, [check out our full quick start guide](https://docs.rke2.io/install/quickstart/).
 
 ## Configuration File
 
-In addition to configuring RKE2 with environment variables and cli arguments, RKE2 can also use a config file.
+The primary way to configure RKE2 is through its [config file](https://docs.rke2.io/install/install_options/install_options/#configuration-file). Command line arguments and environment variables are also available, but RKE2 is installed as a systemd service and thus these are not as easy to leverage.
 
-By default, values present in a `yaml` file located at `/etc/rancher/rke2/config.yaml` will be used on install.
+By default, RKE2 will launch with the values present in the YAML file located at `/etc/rancher/rke2/config.yaml`.
 
 An example of a basic `server` config file is below:
 
@@ -162,9 +44,7 @@ node-label:
   - "something=amazing"
 ```
 
-In general, cli arguments map to their respective yaml key, with repeatable cli args being represented as yaml lists.
-
-An identical configuration using solely cli arguments is shown below to demonstrate this:
+In general, cli arguments map to their respective yaml key, with repeatable cli args being represented as yaml lists. So, an identical configuration using solely cli arguments is shown below to demonstrate this:
 
 ```bash
 rke2 server \
@@ -177,3 +57,73 @@ rke2 server \
 It is also possible to use both a configuration file and cli arguments.  In these situations, values will be loaded from both sources, but cli arguments will take precedence.  For repeatable arguments such as `--node-label`, the cli arguments will overwrite all values in the list.
 
 Finally, the location of the config file can be changed either through the cli argument `--config FILE, -c FILE`, or the environment variable `$RKE2_CONFIG_FILE`.
+
+## RPM Repositories
+
+Signed RPMs are published for RKE2 within the `rpm-testing.rancher.io` and `rpm.rancher.io` RPM repositories. If you run the https://get.rke2.io script on nodes supporting RPMs, it will use these RPM rpeos by default. But you can also install them yourself.
+
+The RPMs provide `systemd` units for managing `rke2`, but will need to be configured via configuration file before starting the services for the first time.
+
+### Enterprise Linux 7
+
+In order to use the RPM repository, on a CentOS 7 or RHEL 7 system, run the following bash snippet:
+
+```bash
+cat << EOF > /etc/yum.repos.d/rancher-rke2-1-18-latest.repo
+[rancher-rke2-common-latest]
+name=Rancher RKE2 Common Latest
+baseurl=https://rpm.rancher.io/rke2/latest/common/centos/7/noarch
+enabled=1
+gpgcheck=1
+gpgkey=https://rpm.rancher.io/public.key
+
+[rancher-rke2-1-18-latest]
+name=Rancher RKE2 1.18 Latest
+baseurl=https://rpm.rancher.io/rke2/latest/1.18/centos/7/x86_64
+enabled=1
+gpgcheck=1
+gpgkey=https://rpm.rancher.io/public.key
+EOF
+```
+
+### Enterprise Linux 8
+
+In order to use the RPM repository, on a CentOS 8 or RHEL 8 system, run the following bash snippet:
+
+```bash
+cat << EOF > /etc/yum.repos.d/rancher-rke2-1-18-latest.repo
+[rancher-rke2-common-latest]
+name=Rancher RKE2 Common Latest
+baseurl=https://rpm.rancher.io/rke2/latest/common/centos/8/noarch
+enabled=1
+gpgcheck=1
+gpgkey=https://rpm.rancher.io/public.key
+
+[rancher-rke2-1-18-latest]
+name=Rancher RKE2 1.18 Latest
+baseurl=https://rpm.rancher.io/rke2/latest/1.18/centos/8/x86_64
+enabled=1
+gpgcheck=1
+gpgkey=https://rpm.rancher.io/public.key
+EOF
+```
+
+### Installing
+
+After this, you can either run:
+
+```bash
+yum -y install rke2-server
+```
+or
+
+```bash
+yum -y install rke2-agent
+```
+
+The RPM will install a corresponding `rke2-server.service` or `rke2-agent.service` systemd unit that can be invoked like: `systemctl start rke2-server`. Make sure that you configure `rke2` before you start it, by following the `Configuration File` instructions below.
+
+## FAQ
+
+- [How is the different from RKE1 or K3s?](https://docs.rke2.io/#how-is-this-different-from-rke-or-k3s)
+- [Why two names?](https://docs.rke2.io/#why-two-names)
