@@ -63,7 +63,7 @@ Once enabled any created secret will be encrypted with this key. Note that if yo
 
 ## Node Labels and Taints
 
-RKE2 agents can be configured with the options `--node-label` and `--node-taint` which adds a label and taint to the kubelet. The two options only add labels and/or taints at registration time, so they can only be added once and not changed after that again by running RKE2 commands.
+RKE2 agents can be configured with the options `node-label` and `node-taint` which adds a label and taint to the kubelet. The two options only add labels and/or taints at registration time, so they can only be added once and not changed after that again by running RKE2 commands.
 
 If you want to change node labels and taints after node registration you should use `kubectl`. Refer to the official Kubernetes documentation for details on how to add [taints](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/) and [node labels.](https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/#add-a-label-to-a-node)
 
@@ -85,7 +85,7 @@ systemctl start rke2-server
 
 The server charts bundled with `rke2` deployed during cluster bootstrapping can be disabled and replaced with alternatives.  A common use case is replacing the bundled `rke2-ingress-nginx` chart with an alternative.
 
-To disable any of the bundled system charts, pass the `--disable` flag to `rke2 server` during bootstrapping.  The full list of system charts to disable is below:
+To disable any of the bundled system charts, set the `disable` parameter in the config file before bootstrapping.  The full list of system charts to disable is below:
 
 * `rke2-canal`
 * `rke2-coredns`

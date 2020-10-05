@@ -17,11 +17,14 @@ The private registry must be using TLS, with a cert trusted by the host CA bundl
 
 1. Add all the required system images to your private registry. A simple list of these can be obtained from the `rke2-images.linux-amd64.txt` file.
 2. Add the ca cert to the operating system's trusted certs
-3. [Install RKE2](#install-rke2) using the `--system-default-registry` flag.
+3. [Install RKE2](#install-rke2) using the `system-default-registry` parameter.
 
 ## Install RKE2
 These steps should only be performed after completing one of either the [Tarball Method](#tarball-method) or [Private Registry Method](#private-registry-method).
 
 1. Obtain the rke2 binary file `rke2.linux-amd64`
 2. Ensure the binary is named `rke2` and place it in `/usr/local/bin`. Ensure it is executable.
-3. Run the binary with the desired flags. For example, if using the Private Registry Method: `sudo rke2 server --system-default-registry="https://myprivreg.com:5000" 2>&1 &`
+3. Run the binary with the desired parameters. For example, if using the Private Registry Method, your config file would have the following:
+```yaml
+system-default-registry: "https://myprivreg.com:5000"
+```

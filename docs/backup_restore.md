@@ -2,7 +2,7 @@
 
 In this section, you'll learn how to create backups of the rke2 cluster data and to restore the cluster from backup.
 
-**Note:** /var/lib/rancher/rke2 is the default data directory for rke2, its however configurable via --data-dir
+**Note:** /var/lib/rancher/rke2 is the default data directory for rke2, it is configurable however via `data-dir` parameter.
 
 ### Creating Snapshots
 
@@ -44,13 +44,13 @@ When rke2 resets the cluster, it creates a file at `/var/lib/rancher/rke2/server
 
 ### Options
 
-These options can be passed in with the command line, or in the configuration file. Which may be easier to use.
+These options can be set in the configuration file:
 
 | Options | Description |
 | ----------- | --------------- |
-| `--etcd-disable-snapshots` | Disable automatic etcd snapshots |
-| `--etcd-snapshot-schedule-cron` value  |  Snapshot interval time in cron spec. eg. every 5 hours `* */5 * * *`(default: `0 */12 * * *`) |
-| `--etcd-snapshot-retention` value  | Number of snapshots to retain (default: 5) |
-| `--etcd-snapshot-dir` value  | Directory to save db snapshots. (Default location: `${data-dir}/db/snapshots`) |
-| `--cluster-reset`  | Forget all peers and become sole member of a new cluster. This can also be set with the environment variable `[$K3S_CLUSTER_RESET]`.
-| `--cluster-reset-restore-path` value | Path to snapshot file to be restored
+| `etcd-disable-snapshots` | Disable automatic etcd snapshots |
+| `etcd-snapshot-schedule-cron` value  |  Snapshot interval time in cron spec. eg. every 5 hours `* */5 * * *`(default: `0 */12 * * *`) |
+| `etcd-snapshot-retention` value  | Number of snapshots to retain (default: 5) |
+| `etcd-snapshot-dir` value  | Directory to save db snapshots. (Default location: `${data-dir}/db/snapshots`) |
+| `cluster-reset`  | Forget all peers and become sole member of a new cluster. This can also be set with the environment variable `[$K3S_CLUSTER_RESET]`.
+| `cluster-reset-restore-path` value | Path to snapshot file to be restored

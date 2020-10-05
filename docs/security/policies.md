@@ -5,7 +5,7 @@ This document describes how RKE2 configures PodSecurityPolicies and NetworkPolic
 
 #### Pod Security Policies
 
-RKE2 can be ran with or without the `--profile=cis-1.5` argument. This will cause it to apply different PodSecurityPolicies (PSPs) at start-up.
+RKE2 can be ran with or without the `profile: cis-1.5` configuration parameter. This will cause it to apply different PodSecurityPolicies (PSPs) at start-up.
 
 * If ran with the `cis-1.5` profile, RKE2 will apply a restrictive policy called `global-restricted-psp` to all namespaces except `kube-system`. The `kube-system` namespace needs a less restrictive policy named `system-unrestricted-psp` in order to launch critical components.
 * If ran without the `cis-1.5` profile, RKE2 will apply a completely unrestricted policy called `global-unrestricted-psp`, which is the equivalent of running without the PSP admission controller enabled.
@@ -143,7 +143,7 @@ kubectl get psp -A
 
 #### Network Policies
 
-When RKE2 is run with the `--profile=cis-1.5` argument, it will apply 2 network policies to the `kube-system`, `kube-public`, and `default` namespaces and applies associated annotations. The same logic applies to these policies and annotations as the PSPs. On start, the annotations for each namespace are checked for existence and if they exist, RKE2 takes no action. If the annotation doesn't exist, RKE2 checks to see if the policy exists and if it does, recreates it.
+When RKE2 is run with the `profile: cis-1.5` parameter, it will apply 2 network policies to the `kube-system`, `kube-public`, and `default` namespaces and applies associated annotations. The same logic applies to these policies and annotations as the PSPs. On start, the annotations for each namespace are checked for existence and if they exist, RKE2 takes no action. If the annotation doesn't exist, RKE2 checks to see if the policy exists and if it does, recreates it.
 
 The first policy applied is to restrict network traffic to only the namespace itself. See below.
 
