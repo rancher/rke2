@@ -16,6 +16,8 @@ rke2-uninstall.sh
 
 To uninstll RKE2 from your system, if installed with from RPM, a few commands need to be ran. 
 
+> **Note:** RPM based installs currently do not install the rke2-uninstall.sh script. This is a known issue that will be addressed in a future release. This document instructs you on how to download and use the necessary scripts.
+
 ```bash
 yum remove -y rke2-*
 rm -rf /run/k3s
