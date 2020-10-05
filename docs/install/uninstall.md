@@ -4,6 +4,8 @@ title: Uninstall
 
 # Uninstall
 
+This document explains how to fully uninstall RKE2 on a node, based on the installation method that was used.
+
 ## Tarball Method
 
 To uninstall RKE2 from your system, simply run the command below. This will shutdown process, remove the RKE2 binary, and clean up files used by RKE2.
@@ -15,6 +17,8 @@ rke2-uninstall.sh
 ## RPM Method
 
 To uninstll RKE2 from your system, if installed with from RPM, a few commands need to be ran. 
+
+> **Note:** RPM based installs currently do not install the rke2-uninstall.sh script. This is a known issue that will be addressed in a future release. This document instructs you on how to download and use the necessary scripts.
 
 ```bash
 yum remove -y rke2-*
