@@ -34,7 +34,7 @@ var (
 		"disable-agent":                     hide,
 		"cluster-cidr":                      copy,
 		"service-cidr":                      copy,
-		"cluster-init":                      copy,
+		"cluster-init":                      drop,
 		"cluster-reset":                     copy,
 		"cluster-reset-restore-path":        copy,
 		"cluster-dns":                       copy,
