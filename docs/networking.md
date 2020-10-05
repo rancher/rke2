@@ -16,7 +16,7 @@ For information on which ports need to be opened for RKE2, refer to the [Install
 
 # CoreDNS
 
-CoreDNS is deployed by default when starting the server. To disable, run each server with the `--disable rke2-coredns` option.
+CoreDNS is deployed by default when starting the server. To disable, run each server with `disable: rke2-coredns` option in your configuration file.
 
 If you don't install CoreDNS, you will need to install a cluster DNS provider yourself.
 
@@ -28,8 +28,8 @@ Nginx-ingress is deployed by default when starting the server. The ingress contr
 
 Nginx-ingress can be configured by creating a [HelmChartConfig manifest](helm.md#customizing-packaged-components-with-helmchartconfig) to customize the `rke2-nignix-ingress` HelmChart values. For more information, refer to the official [Traefik for Helm Configuration Parameters.](https://github.com/helm/charts/tree/cfcf87ac254dcbb2d4aa1c866e20dd7e8e55b8e5/stable/nginx-ingress#configuration)
 
-To disable it, start each server with the `--disable rke2-ingress-nginx` option.
+To disable it, start each server with the `disable: rke2-ingress-nginx` option in your configuration file.
 
 # Nodes Without a Hostname
 
-Some cloud providers, such as Linode, will create machines with "localhost" as the hostname and others may not have a hostname set at all. This can cause problems with domain name resolution. You can run RKE2 with the `--node-name` flag or `RKE2_NODE_NAME` environment variable and this will pass the node name to resolve this issue.
+Some cloud providers, such as Linode, will create machines with "localhost" as the hostname and others may not have a hostname set at all. This can cause problems with domain name resolution. You can run RKE2 with the `node-name` parameter and this will pass the node name to resolve this issue.
