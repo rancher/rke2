@@ -16,13 +16,14 @@ For information about deploying Helm charts using the manifests directory, refer
 
 ## Configuring containerd
 
-RKE2 will generate config.toml for containerd in `/var/lib/rancher/rke2/agent/etc/containerd/config.toml`.
+RKE2 will generate the `config.toml` for containerd in `/var/lib/rancher/rke2/agent/etc/containerd/config.toml`.
 
-For advanced customization for this file you can create another file called `config.toml.tmpl` in the same directory and it will be used instead.
+For advanced customization of this file you can create another file called `config.toml.tmpl` in the same directory and it will be used instead.
 
 The `config.toml.tmpl` will be treated as a Go template file, and the `config.Node` structure is being passed to the template. See [this template](https://github.com/rancher/k3s/blob/master/pkg/agent/templates/templates.go#L16-L32) for an example of how to use the structure to customize the configuration file.
 
 ## Secrets Encryption Config
+
 RKE2 supports encrypting Secrets at rest, and will do the following automatically:
 
 - Generate an AES-CBC key
@@ -63,9 +64,9 @@ Once enabled any created secret will be encrypted with this key. Note that if yo
 
 ## Node Labels and Taints
 
-RKE2 agents can be configured with the options `node-label` and `node-taint` which adds a label and taint to the kubelet. The two options only add labels and/or taints at registration time, so they can only be added once and not changed after that again by running RKE2 commands.
+RKE2 agents can be configured with the options `node-label` and `node-taint` which adds a label and taint to the kubelet. The two options only add labels and/or taints at registration time, and can only be added once and not removed after that through rke2 commands.
 
-If you want to change node labels and taints after node registration you should use `kubectl`. Refer to the official Kubernetes documentation for details on how to add [taints](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/) and [node labels.](https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/#add-a-label-to-a-node)
+If you want to change node labels and taints after node registration you should use `kubectl`. Refer to the official Kubernetes documentation for details on how to add [taints](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/) and [node labels](https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/#add-a-label-to-a-node).
 
 ## Starting the Server with the Installation Script
 
