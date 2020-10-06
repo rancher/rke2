@@ -78,7 +78,7 @@ spec:
     args:
     - prepare
     - rke2-server
-    image: rancher/rke2-upgrade:v1.18.9+rke2r1
+    image: rancher/rke2-upgrade
   serviceAccountName: system-upgrade
   cordon: true
   drain:
@@ -118,4 +118,3 @@ You can monitor the progress of an upgrade by viewing the plan and jobs via kube
 kubectl -n system-upgrade get plans -o yaml
 kubectl -n system-upgrade get jobs -o yaml
 ```
-
