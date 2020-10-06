@@ -57,7 +57,7 @@ spec:
 #    force: true
   upgrade:
     image: rancher/rke2-upgrade
-  version: v1.18.9+rke2
+  version: v1.18.9+rke2r1
 ---
 # Agent plan
 apiVersion: upgrade.cattle.io/v1
@@ -78,14 +78,14 @@ spec:
     args:
     - prepare
     - rke2-server
-    image: rancher/rke2-upgrade:v1.18.9+rke2
+    image: rancher/rke2-upgrade:v1.18.9+rke2r1
   serviceAccountName: system-upgrade
   cordon: true
   drain:
     force: true
   upgrade:
     image: rancher/rke2-upgrade
-  version: v1.18.9+rke2
+  version: v1.18.9+rke2r1
 
 ```
 
