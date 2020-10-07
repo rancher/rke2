@@ -389,30 +389,50 @@ func decodeYamlResource(data interface{}, yaml string) error {
 	return decoder.Decode(data)
 }
 
-func retryTo(ctx context.Context, runFunc deployFn, cs *kubernetes.Clientset, resource interface{}, retries, wait int) error {
-	var err error
-	if retries <= 0 {
-		retries = defaultRetries
-	}
-	if wait <= 0 {
-		wait = defaultWaitSeconds
-	}
-	for i := 0; i < retries; i++ {
-		if err = runFunc(ctx, cs, resource); err != nil {
-			time.Sleep(time.Second * time.Duration(wait))
-			continue
-		}
-		return nil
-	}
-	return err
-}
+// func retryTo(ctx context.Context, runFunc deployFn, cs *kubernetes.Clientset, resource interface{}, retries, wait int) error {
+// 	var err error
+// 	if retries <= 0 {
+// 		retries = defaultRetries
+// 	}
+// 	if wait <= 0 {
+// 		wait = defaultWaitSeconds
+// 	}
+// 	for i := 0; i < retries; i++ {
+// 		if err = runFunc(ctx, cs, resource); err != nil {
+// 			time.Sleep(time.Second * time.Duration(wait))
+// 			continue
+// 		}
+// 		return nil
+// 	}
+// 	return err
+// }
 
 func deployPodSecurityPolicyFromYaml(ctx context.Context, cs *kubernetes.Clientset, pspYaml string) error {
 	var psp v1beta1.PodSecurityPolicy
 	if err := decodeYamlResource(&psp, pspYaml); err != nil {
 		return err
 	}
-	return retryTo(ctx, deployPodSecurityPolicy, cs, psp, defaultRetries, defaultWaitSeconds)
+
+	// try to create the given PSP (continue documenting the flow...)
+	if err := retry.OnError(retry.DefaultBackoff,
+		func(err error) bool {
+			return !apierrors.IsAlreadyExists(err)
+		}, func() error {
+			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Create(ctx, &psp, metav1.CreateOptions{}); err != nil {
+				return err
+			}
+			return nil
+		},
+	); err != nil && apierrors.IsAlreadyExists(err) {
+		return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+			_, err := cs.PolicyV1beta1().PodSecurityPolicies().Update(ctx, &psp, metav1.UpdateOptions{})
+			return err
+		})
+	} else {
+		return err
+	}
+
+	return nil
 }
 
 func deployPodSecurityPolicy(ctx context.Context, cs *kubernetes.Clientset, p interface{}) error {
@@ -424,7 +444,12 @@ func deployPodSecurityPolicy(ctx context.Context, cs *kubernetes.Clientset, p in
 		if !apierrors.IsAlreadyExists(err) {
 			return err
 		}
-		if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Update(ctx, &psp, metav1.UpdateOptions{}); err != nil {
+		if err := retry.OnError(retry.DefaultBackoff, func(error) bool { return true }, func() error {
+			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Update(ctx, &psp, metav1.UpdateOptions{}); err != nil {
+				return err
+			}
+			return nil
+		}); err != nil {
 			return err
 		}
 	}
