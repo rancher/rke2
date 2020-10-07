@@ -389,31 +389,14 @@ func decodeYamlResource(data interface{}, yaml string) error {
 	return decoder.Decode(data)
 }
 
-// func retryTo(ctx context.Context, runFunc deployFn, cs *kubernetes.Clientset, resource interface{}, retries, wait int) error {
-// 	var err error
-// 	if retries <= 0 {
-// 		retries = defaultRetries
-// 	}
-// 	if wait <= 0 {
-// 		wait = defaultWaitSeconds
-// 	}
-// 	for i := 0; i < retries; i++ {
-// 		if err = runFunc(ctx, cs, resource); err != nil {
-// 			time.Sleep(time.Second * time.Duration(wait))
-// 			continue
-// 		}
-// 		return nil
-// 	}
-// 	return err
-// }
-
 func deployPodSecurityPolicyFromYaml(ctx context.Context, cs *kubernetes.Clientset, pspYaml string) error {
 	var psp v1beta1.PodSecurityPolicy
 	if err := decodeYamlResource(&psp, pspYaml); err != nil {
 		return err
 	}
 
-	// try to create the given PSP (continue documenting the flow...)
+	// try to create the given PSP. If it already exists, we fall through to
+	// attempting to update the existing PSP.
 	if err := retry.OnError(retry.DefaultBackoff,
 		func(err error) bool {
 			return !apierrors.IsAlreadyExists(err)
@@ -431,29 +414,6 @@ func deployPodSecurityPolicyFromYaml(ctx context.Context, cs *kubernetes.Clients
 	} else {
 		return err
 	}
-
-	return nil
-}
-
-func deployPodSecurityPolicy(ctx context.Context, cs *kubernetes.Clientset, p interface{}) error {
-	psp, ok := p.(v1beta1.PodSecurityPolicy)
-	if !ok {
-		return fmt.Errorf("invalid type provided: %T, expected: PodSecurityPolicy", p)
-	}
-	if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Create(ctx, &psp, metav1.CreateOptions{}); err != nil {
-		if !apierrors.IsAlreadyExists(err) {
-			return err
-		}
-		if err := retry.OnError(retry.DefaultBackoff, func(error) bool { return true }, func() error {
-			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Update(ctx, &psp, metav1.UpdateOptions{}); err != nil {
-				return err
-			}
-			return nil
-		}); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func deployClusterRoleBindingFromYaml(ctx context.Context, cs *kubernetes.Clientset, clusterRoleBindingYaml string) error {
@@ -461,23 +421,26 @@ func deployClusterRoleBindingFromYaml(ctx context.Context, cs *kubernetes.Client
 	if err := decodeYamlResource(&clusterRoleBinding, clusterRoleBindingYaml); err != nil {
 		return err
 	}
-	return retryTo(ctx, deployClusterRoleBinding, cs, clusterRoleBinding, defaultRetries, defaultWaitSeconds)
-}
 
-func deployClusterRoleBinding(ctx context.Context, cs *kubernetes.Clientset, crb interface{}) error {
-	clusterRoleBinding, ok := crb.(rbacv1.ClusterRoleBinding)
-	if !ok {
-		return fmt.Errorf("invalid type provided: %T, expected: ClusterRoleBinding", crb)
-	}
-	if _, err := cs.RbacV1().ClusterRoleBindings().Create(ctx, &clusterRoleBinding, metav1.CreateOptions{}); err != nil {
-		if !apierrors.IsAlreadyExists(err) {
+	// try to create the given cluster role binding. If it already exists, we
+	// fall through to attempting to update the existing cluster role binding.
+	if err := retry.OnError(retry.DefaultBackoff,
+		func(err error) bool {
+			return !apierrors.IsAlreadyExists(err)
+		}, func() error {
+			if _, err := cs.RbacV1().ClusterRoleBindings().Create(ctx, &clusterRoleBinding, metav1.CreateOptions{}); err != nil {
+				return err
+			}
+			return nil
+		},
+	); err != nil && apierrors.IsAlreadyExists(err) {
+		return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+			_, err := cs.RbacV1().ClusterRoleBindings().Update(ctx, &clusterRoleBinding, metav1.UpdateOptions{})
 			return err
-		}
-		if _, err := cs.RbacV1().ClusterRoleBindings().Update(ctx, &clusterRoleBinding, metav1.UpdateOptions{}); err != nil {
-			return err
-		}
+		})
+	} else {
+		return err
 	}
-	return nil
 }
 
 func deployClusterRoleFromYaml(ctx context.Context, cs *kubernetes.Clientset, clusterRoleYaml string) error {
@@ -485,23 +448,26 @@ func deployClusterRoleFromYaml(ctx context.Context, cs *kubernetes.Clientset, cl
 	if err := decodeYamlResource(&clusterRole, clusterRoleYaml); err != nil {
 		return err
 	}
-	return retryTo(ctx, deployClusterRole, cs, clusterRole, defaultRetries, defaultWaitSeconds)
-}
 
-func deployClusterRole(ctx context.Context, cs *kubernetes.Clientset, cr interface{}) error {
-	clusterRole, ok := cr.(rbacv1.ClusterRole)
-	if !ok {
-		return fmt.Errorf("invalid type provided: %T, expected: ClusterRole", cr)
-	}
-	if _, err := cs.RbacV1().ClusterRoles().Create(ctx, &clusterRole, metav1.CreateOptions{}); err != nil {
-		if !apierrors.IsAlreadyExists(err) {
+	// try to create the given cluster role. If it already exists, we
+	// fall through to attempting to update the existing cluster role.
+	if err := retry.OnError(retry.DefaultBackoff,
+		func(err error) bool {
+			return !apierrors.IsAlreadyExists(err)
+		}, func() error {
+			if _, err := cs.RbacV1().ClusterRoles().Create(ctx, &clusterRole, metav1.CreateOptions{}); err != nil {
+				return err
+			}
+			return nil
+		},
+	); err != nil && apierrors.IsAlreadyExists(err) {
+		return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+			_, err := cs.RbacV1().ClusterRoles().Update(ctx, &clusterRole, metav1.UpdateOptions{})
 			return err
-		}
-		if _, err := cs.RbacV1().ClusterRoles().Update(ctx, &clusterRole, metav1.UpdateOptions{}); err != nil {
-			return err
-		}
+		})
+	} else {
+		return err
 	}
-	return nil
 }
 
 func deployRoleBindingFromYaml(ctx context.Context, cs *kubernetes.Clientset, roleBindingYaml string) error {
@@ -509,21 +475,24 @@ func deployRoleBindingFromYaml(ctx context.Context, cs *kubernetes.Clientset, ro
 	if err := decodeYamlResource(&roleBinding, roleBindingYaml); err != nil {
 		return err
 	}
-	return retryTo(ctx, deployRoleBinding, cs, roleBinding, defaultRetries, defaultWaitSeconds)
-}
 
-func deployRoleBinding(ctx context.Context, cs *kubernetes.Clientset, rb interface{}) error {
-	roleBinding, ok := rb.(rbacv1.RoleBinding)
-	if !ok {
-		return fmt.Errorf("invalid type provided: %T, expected: RoleBinding", rb)
-	}
-	if _, err := cs.RbacV1().RoleBindings(roleBinding.Namespace).Create(ctx, &roleBinding, metav1.CreateOptions{}); err != nil {
-		if !apierrors.IsAlreadyExists(err) {
+	// try to create the given role binding. If it already exists, we fall through to
+	// attempting to update the existing role binding.
+	if err := retry.OnError(retry.DefaultBackoff,
+		func(err error) bool {
+			return !apierrors.IsAlreadyExists(err)
+		}, func() error {
+			if _, err := cs.RbacV1().RoleBindings(roleBinding.Namespace).Create(ctx, &roleBinding, metav1.CreateOptions{}); err != nil {
+				return err
+			}
+			return nil
+		},
+	); err != nil && apierrors.IsAlreadyExists(err) {
+		return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+			_, err := cs.RbacV1().RoleBindings(roleBinding.Namespace).Update(ctx, &roleBinding, metav1.UpdateOptions{})
 			return err
-		}
-		if _, err := cs.RbacV1().RoleBindings(roleBinding.Namespace).Update(ctx, &roleBinding, metav1.UpdateOptions{}); err != nil {
-			return err
-		}
+		})
+	} else {
+		return err
 	}
-	return nil
 }
