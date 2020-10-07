@@ -6,21 +6,47 @@ RKE2 can be installed to a system in a number of ways, 2 of which being the pref
 
 ### Tarball
 
-#### Structure 
+To install RKE2 via install you first need to get the install script. This can be done in a number of ways.
+
+This gets the script and immediately starts the install process.
+
+```bash
+curl -sfL https://get.rke2.io | sh -
+```
+
+This will download the install script and make it executable.
+
+```bash
+curl -sfL https://get.rke2.io --output install.sh
+chmod +x install.sh
+```
+
+#### Installation
+
+The install process defaults to tarball and the latest RKE2 version and no other qualifiers are necessary. However, if you want specify a version, you should set the `INSTALL_RKE2_CHANNEL` environment variable. An examplr below:
+
+```bash
+INSTALL_RKE2_CHANNEL=latest ./install.sh
+```
+
+When the install script is executed, it makes a determination of what type of system it is. If it's any form of a RedHat system, it will perform an RPM based installation, otherwise the script defaults to tarball. RPM based installation is covered below.
+
+Next, the installation script downloads the tarball, verifies it by comparing SHA256 hashes, and lastly, extracts the contents to `/usr/local`. An operator is free to move the files after installtion if desired. This operation simply extracts the tarball and no other system modifications are made.
+
+Tarball structure / contents
 
 * bin - contains the RKE2 executable as well as the `rke2-killall.sh` and `rke2-uninstall.sh` scripts
 * lib - contains server and agent systemd unit files
 * share - contains the RKE2 license as well as a sysctl configuration file used for when RKE2 is ran in CIS mode
 
-The tarball extracts its contents to `/usr/local` by default.
+To configure the system any further, you'll want to reference the either the [server](install/server_config.md) or [agent](install/agent_config.md) documentation.
 
-#### Installation
-
-```bash
-
-```
 
 ### RPM
+
+To start the RPM install process, you need to get the installation script which is covered above. The script will check your system for `rpm`, `yum`, or `dnf` and if any of those exist, it determines that the system is Redhat based and starts the RPM install process.
+
+Files are installed with the prefix of `/usr` rather than `/usr/local`.
 
 #### Repositories
 
