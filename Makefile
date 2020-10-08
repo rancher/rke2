@@ -120,12 +120,15 @@ package-bundle: build				## Package the tarball bundle
 	./scripts/package-bundle
 
 .PHONY: test
-test: unit-tests
-	./scripts/test
+test: unit-tests integration-tests
 
 .PHONY: unit-tests
 unit-tests:
 	./scripts/unit-tests
+
+.PHONY: integration-tests
+integration-tests:
+	./scripts/test
 
 ./.dapper:
 	@echo Downloading dapper
