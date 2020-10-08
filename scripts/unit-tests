@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
+
 set -ex
 
-source ./scripts/build-binary
-
-cd ../
-
-go test -tags=selinux,osusergo,netgo -v -cover ./...
+go test -v -cover ./...

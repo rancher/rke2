@@ -12,27 +12,34 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
+const (
+	testPSPName                = "test-psp"
+	testClusterRoleName        = "test-cluster-role"
+	testClusterRoleBindingName = "test-cluster-role-binding"
+	testRoleBindingName        = "test-role-binding"
+)
+
 var testPodSecurityPolicy = &v1beta1.PodSecurityPolicy{
 	ObjectMeta: metav1.ObjectMeta{
-		Name: "test-psp",
+		Name: testPSPName,
 	},
 }
 
 var testClusterRole = &rbacv1.ClusterRole{
 	ObjectMeta: metav1.ObjectMeta{
-		Name: "test-cluster-role",
+		Name: testClusterRoleName,
 	},
 }
 
 var testClusterRoleBinding = &rbacv1.ClusterRoleBinding{
 	ObjectMeta: metav1.ObjectMeta{
-		Name: "test-cluster-role-binding",
+		Name: testClusterRoleBindingName,
 	},
 }
 
 var testRoleBinding = &rbacv1.RoleBinding{
 	ObjectMeta: metav1.ObjectMeta{
-		Name: "test-role-binding",
+		Name: testRoleBindingName,
 	},
 }
 
@@ -102,7 +109,7 @@ func Test_deployClusterRoleBindingFromYaml(t *testing.T) {
 			args: args{
 				ctx:                    context.Background(),
 				cs:                     fake.NewSimpleClientset(&rbacv1.ClusterRoleBinding{}),
-				clusterRoleBindingYaml: fmt.Sprintf(kubeletAPIServerRoleBindingTemplate, "test-cluster-role-binding"),
+				clusterRoleBindingYaml: fmt.Sprintf(kubeletAPIServerRoleBindingTemplate, testClusterRoleBindingName),
 			},
 			wantErr: false,
 		},
@@ -120,7 +127,7 @@ func Test_deployClusterRoleBindingFromYaml(t *testing.T) {
 			args: args{
 				ctx:                    context.Background(),
 				cs:                     fake.NewSimpleClientset(testClusterRoleBinding),
-				clusterRoleBindingYaml: fmt.Sprintf(kubeletAPIServerRoleBindingTemplate, "test-cluster-role-binding"),
+				clusterRoleBindingYaml: fmt.Sprintf(kubeletAPIServerRoleBindingTemplate, testClusterRoleBindingName),
 			},
 			wantErr: false,
 		},
@@ -135,6 +142,7 @@ func Test_deployClusterRoleBindingFromYaml(t *testing.T) {
 }
 
 func Test_deployClusterRoleFromYaml(t *testing.T) {
+	const testResourceName = "test-resource-name"
 	type args struct {
 		ctx             context.Context
 		cs              kubernetes.Interface
@@ -150,7 +158,7 @@ func Test_deployClusterRoleFromYaml(t *testing.T) {
 			args: args{
 				ctx:             context.Background(),
 				cs:              fake.NewSimpleClientset(&rbacv1.ClusterRole{}),
-				clusterRoleYaml: fmt.Sprintf(roleTemplate, "test-cluster-role", "test-resource-name"),
+				clusterRoleYaml: fmt.Sprintf(roleTemplate, "test-cluster-role", testResourceName),
 			},
 			wantErr: false,
 		},
@@ -168,7 +176,7 @@ func Test_deployClusterRoleFromYaml(t *testing.T) {
 			args: args{
 				ctx:             context.Background(),
 				cs:              fake.NewSimpleClientset(testClusterRole),
-				clusterRoleYaml: fmt.Sprintf(roleTemplate, "test-cluster-role", "test-resource-name"),
+				clusterRoleYaml: fmt.Sprintf(roleTemplate, "test-cluster-role", testResourceName),
 			},
 			wantErr: false,
 		},
@@ -198,7 +206,7 @@ func Test_deployRoleBindingFromYaml(t *testing.T) {
 			args: args{
 				ctx:             context.Background(),
 				cs:              fake.NewSimpleClientset(&rbacv1.RoleBinding{}),
-				roleBindingYaml: fmt.Sprintf(tunnelControllerRoleTemplate, "test-role-binding"),
+				roleBindingYaml: fmt.Sprintf(tunnelControllerRoleTemplate, testRoleBindingName),
 			},
 			wantErr: false,
 		},
@@ -216,7 +224,7 @@ func Test_deployRoleBindingFromYaml(t *testing.T) {
 			args: args{
 				ctx:             context.Background(),
 				cs:              fake.NewSimpleClientset(testRoleBinding),
-				roleBindingYaml: fmt.Sprintf(tunnelControllerRoleTemplate, "test-role-binding"),
+				roleBindingYaml: fmt.Sprintf(tunnelControllerRoleTemplate, testRoleBindingName),
 			},
 			wantErr: false,
 		},
