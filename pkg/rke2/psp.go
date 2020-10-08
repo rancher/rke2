@@ -369,8 +369,6 @@ func updateNamespaceRef(ctx context.Context, cs *kubernetes.Clientset, ns *v1.Na
 	return nil
 }
 
-type deployFn func(context.Context, *kubernetes.Clientset, interface{}) error
-
 // newClient create a new Kubernetes client from configuration.
 func newClient(kubeConfigPath string, k8sWrapTransport transport.WrapperFunc) (*kubernetes.Clientset, error) {
 	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
@@ -411,12 +409,13 @@ func deployPodSecurityPolicyFromYaml(ctx context.Context, cs kubernetes.Interfac
 			_, err := cs.PolicyV1beta1().PodSecurityPolicies().Update(ctx, &psp, metav1.UpdateOptions{})
 			return err
 		})
-	} else {
+	} else if err != nil {
 		return err
 	}
+	return nil
 }
 
-func deployClusterRoleBindingFromYaml(ctx context.Context, cs *kubernetes.Clientset, clusterRoleBindingYaml string) error {
+func deployClusterRoleBindingFromYaml(ctx context.Context, cs kubernetes.Interface, clusterRoleBindingYaml string) error {
 	var clusterRoleBinding rbacv1.ClusterRoleBinding
 	if err := decodeYamlResource(&clusterRoleBinding, clusterRoleBindingYaml); err != nil {
 		return err
@@ -438,12 +437,13 @@ func deployClusterRoleBindingFromYaml(ctx context.Context, cs *kubernetes.Client
 			_, err := cs.RbacV1().ClusterRoleBindings().Update(ctx, &clusterRoleBinding, metav1.UpdateOptions{})
 			return err
 		})
-	} else {
+	} else if err != nil {
 		return err
 	}
+	return nil
 }
 
-func deployClusterRoleFromYaml(ctx context.Context, cs *kubernetes.Clientset, clusterRoleYaml string) error {
+func deployClusterRoleFromYaml(ctx context.Context, cs kubernetes.Interface, clusterRoleYaml string) error {
 	var clusterRole rbacv1.ClusterRole
 	if err := decodeYamlResource(&clusterRole, clusterRoleYaml); err != nil {
 		return err
@@ -465,12 +465,13 @@ func deployClusterRoleFromYaml(ctx context.Context, cs *kubernetes.Clientset, cl
 			_, err := cs.RbacV1().ClusterRoles().Update(ctx, &clusterRole, metav1.UpdateOptions{})
 			return err
 		})
-	} else {
+	} else if err != nil {
 		return err
 	}
+	return nil
 }
 
-func deployRoleBindingFromYaml(ctx context.Context, cs *kubernetes.Clientset, roleBindingYaml string) error {
+func deployRoleBindingFromYaml(ctx context.Context, cs kubernetes.Interface, roleBindingYaml string) error {
 	var roleBinding rbacv1.RoleBinding
 	if err := decodeYamlResource(&roleBinding, roleBindingYaml); err != nil {
 		return err
@@ -492,7 +493,8 @@ func deployRoleBindingFromYaml(ctx context.Context, cs *kubernetes.Clientset, ro
 			_, err := cs.RbacV1().RoleBindings(roleBinding.Namespace).Update(ctx, &roleBinding, metav1.UpdateOptions{})
 			return err
 		})
-	} else {
+	} else if err != nil {
 		return err
 	}
+	return nil
 }
