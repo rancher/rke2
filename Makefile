@@ -123,6 +123,10 @@ package-bundle: build						## Package the tarball bundle
 test:
 	./scripts/test
 
+.PHONY: unit-tests
+unit-tests:
+	./scripts/unit-tests
+
 ./.dapper:
 	@echo Downloading dapper
 	@curl -sL https://releases.rancher.com/dapper/v0.5.0/dapper-$$(uname -s)-$$(uname -m) > .dapper.tmp

@@ -389,7 +389,7 @@ func decodeYamlResource(data interface{}, yaml string) error {
 	return decoder.Decode(data)
 }
 
-func deployPodSecurityPolicyFromYaml(ctx context.Context, cs *kubernetes.Clientset, pspYaml string) error {
+func deployPodSecurityPolicyFromYaml(ctx context.Context, cs kubernetes.Interface, pspYaml string) error {
 	var psp v1beta1.PodSecurityPolicy
 	if err := decodeYamlResource(&psp, pspYaml); err != nil {
 		return err
