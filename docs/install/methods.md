@@ -23,7 +23,7 @@ chmod +x install.sh
 
 #### Installation
 
-The install process defaults to tarball and the latest RKE2 version and no other qualifiers are necessary. However, if you want specify a version, you should set the `INSTALL_RKE2_CHANNEL` environment variable. An examplr below:
+The install process defaults to tarball and the latest RKE2 version and no other qualifiers are necessary. However, if you want specify a version, you should set the `INSTALL_RKE2_CHANNEL` environment variable. An example below:
 
 ```bash
 INSTALL_RKE2_CHANNEL=latest ./install.sh
