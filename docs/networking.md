@@ -55,10 +55,8 @@ You may need to modify your cluster-cidr and service-cidr depending on your spec
 
 Once you have created or updated your config file with the options above, you will need to create the Calico manifests in the RKE2 server manifests directory at `/var/lib/rancher/rke2/server/manifests/`
 
-Copy the tigera-operator manifest from https://docs.projectcalico.org/manifests/tigera-operator.yaml
+Copy the Calico manifest from https://docs.projectcalico.org/manifests/calico.yaml
 
-Copy the Calico custom resources manifest from https://docs.projectcalico.org/manifests/custom-resources.yaml
-
-You may wish to modify settings in these manifests, or you can use the defaults.  Once these manifests are copied over and the config file options are set, you can restart the RKE2 server service on your server nodes with `sudo systemctl restart rke2-server` for the changes to take effect and the manifests to deploy.
+You may wish to modify settings in this manifest, or you can use the defaults.  Once the manifest is copied over and the config file options are set, you can restart the RKE2 server service on your server nodes with `sudo systemctl restart rke2-server` for the changes to take effect and the manifest to deploy.
 
 <b>Warning:</b> It is not recommended to switch CNI providers once you have already deployed one as it will cause downtime and issues.  It's best to deploy a fresh cluster with the default CNI disabled before installing another CNI by following the instructions above.
