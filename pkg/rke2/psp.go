@@ -406,8 +406,10 @@ func deployPodSecurityPolicyFromYaml(ctx context.Context, cs kubernetes.Interfac
 		},
 	); err != nil && apierrors.IsAlreadyExists(err) {
 		return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-			_, err := cs.PolicyV1beta1().PodSecurityPolicies().Update(ctx, &psp, metav1.UpdateOptions{})
-			return err
+			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Update(ctx, &psp, metav1.UpdateOptions{}); err != nil {
+				return err
+			}
+			return nil
 		})
 	} else if err != nil {
 		return err

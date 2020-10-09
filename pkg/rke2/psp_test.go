@@ -2,14 +2,20 @@ package rke2
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
 	"k8s.io/api/policy/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
+	fakepolicyv1beta1 "k8s.io/client-go/kubernetes/typed/policy/v1beta1/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
 
 const (
@@ -43,8 +49,38 @@ var testRoleBinding = &rbacv1.RoleBinding{
 	},
 }
 
+// fakeWithNonretriableError creates a new value of fake.Clientset
+// pointer and sets a Reactor to return an error that is not retriable.
+func fakeWithNonretriableError() *fake.Clientset {
+	cs := fake.NewSimpleClientset(testPodSecurityPolicy)
+	cs.PolicyV1beta1().(*fakepolicyv1beta1.FakePolicyV1beta1).PrependReactor("update", "*",
+		func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+			return true, &v1beta1.PodSecurityPolicy{}, errors.New("non retriable error")
+		},
+	)
+	return cs
+}
+
+// fakeWithRetriableError creates a new value of fake.Clientset
+// pointer and sets a Reactor to return an error that will be
+// caught by retry logic.
+func fakeWithRetriableError() *fake.Clientset {
+	cs := fake.NewSimpleClientset(testPodSecurityPolicy)
+	cs.PolicyV1beta1().(*fakepolicyv1beta1.FakePolicyV1beta1).PrependReactor("update", "*",
+		func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+			return true, &v1beta1.PodSecurityPolicy{},
+				k8serrors.NewConflict(schema.GroupResource{
+					Resource: "psp",
+				},
+					"psp-update", nil,
+				)
+		},
+	)
+	return cs
+}
+
 func Test_deployPodSecurityPolicyFromYaml(t *testing.T) {
-	pspYAML := fmt.Sprintf(globalRestrictedPSPTemplate, "test-psp")
+	pspYAML := fmt.Sprintf(globalRestrictedPSPTemplate, testPSPName)
 	type args struct {
 		ctx     context.Context
 		cs      kubernetes.Interface
@@ -56,43 +92,71 @@ func Test_deployPodSecurityPolicyFromYaml(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "successfully create PSP",
-			args: args{
-				ctx:     context.Background(),
-				cs:      fake.NewSimpleClientset(&v1beta1.PodSecurityPolicy{}),
-				pspYaml: pspYAML,
-			},
-			wantErr: false,
-		},
-		{
 			name: "fail to decode YAML",
 			args: args{
-				ctx:     context.Background(),
+				ctx:     context.TODO(),
 				cs:      fake.NewSimpleClientset(testPodSecurityPolicy),
 				pspYaml: "",
 			},
 			wantErr: true,
 		},
 		{
+			name: "successfully create PSP",
+			args: args{
+				ctx:     context.TODO(),
+				cs:      fake.NewSimpleClientset(&v1beta1.PodSecurityPolicy{}),
+				pspYaml: pspYAML,
+			},
+			wantErr: false,
+		},
+		{
 			name: "successfully update PSP",
 			args: args{
-				ctx:     context.Background(),
+				ctx:     context.TODO(),
 				cs:      fake.NewSimpleClientset(testPodSecurityPolicy),
 				pspYaml: pspYAML,
 			},
 			wantErr: false,
 		},
+		{
+			name: "fail update PSP - nonretriable",
+			args: args{
+				ctx:     context.TODO(),
+				cs:      fakeWithNonretriableError(),
+				pspYaml: pspYAML,
+			},
+			wantErr: true,
+		},
+		{
+			name: "fail update PSP - retriable error",
+			args: args{
+				ctx:     context.TODO(),
+				cs:      fakeWithRetriableError(),
+				pspYaml: pspYAML,
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := deployPodSecurityPolicyFromYaml(tt.args.ctx, tt.args.cs, tt.args.pspYaml); (err != nil) != tt.wantErr {
+				t.Log(err)
 				t.Errorf("deployPodSecurityPolicyFromYaml() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			//verify that the existing PSP has in fact been updated from the given YAML.
+			if tt.name == "successfully create PSP" || tt.name == "successfully update PSP" {
+				val, _ := tt.args.cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), testPSPName, metav1.GetOptions{})
+				annocationsLen := len(val.Annotations)
+				if annocationsLen != 4 {
+					t.Errorf("expected 4 but got %d", annocationsLen)
+				}
 			}
 		})
 	}
 }
 
 func Test_deployClusterRoleBindingFromYaml(t *testing.T) {
+	clusterRoleBindingYaml := fmt.Sprintf(kubeletAPIServerRoleBindingTemplate, testClusterRoleBindingName)
 	type args struct {
 		ctx                    context.Context
 		cs                     kubernetes.Interface
@@ -109,7 +173,7 @@ func Test_deployClusterRoleBindingFromYaml(t *testing.T) {
 			args: args{
 				ctx:                    context.Background(),
 				cs:                     fake.NewSimpleClientset(&rbacv1.ClusterRoleBinding{}),
-				clusterRoleBindingYaml: fmt.Sprintf(kubeletAPIServerRoleBindingTemplate, testClusterRoleBindingName),
+				clusterRoleBindingYaml: clusterRoleBindingYaml,
 			},
 			wantErr: false,
 		},
@@ -127,7 +191,7 @@ func Test_deployClusterRoleBindingFromYaml(t *testing.T) {
 			args: args{
 				ctx:                    context.Background(),
 				cs:                     fake.NewSimpleClientset(testClusterRoleBinding),
-				clusterRoleBindingYaml: fmt.Sprintf(kubeletAPIServerRoleBindingTemplate, testClusterRoleBindingName),
+				clusterRoleBindingYaml: clusterRoleBindingYaml,
 			},
 			wantErr: false,
 		},
@@ -143,6 +207,7 @@ func Test_deployClusterRoleBindingFromYaml(t *testing.T) {
 
 func Test_deployClusterRoleFromYaml(t *testing.T) {
 	const testResourceName = "test-resource-name"
+	clusterRoleYaml := fmt.Sprintf(roleTemplate, "test-cluster-role", testResourceName)
 	type args struct {
 		ctx             context.Context
 		cs              kubernetes.Interface
@@ -158,7 +223,7 @@ func Test_deployClusterRoleFromYaml(t *testing.T) {
 			args: args{
 				ctx:             context.Background(),
 				cs:              fake.NewSimpleClientset(&rbacv1.ClusterRole{}),
-				clusterRoleYaml: fmt.Sprintf(roleTemplate, "test-cluster-role", testResourceName),
+				clusterRoleYaml: clusterRoleYaml,
 			},
 			wantErr: false,
 		},
@@ -176,7 +241,7 @@ func Test_deployClusterRoleFromYaml(t *testing.T) {
 			args: args{
 				ctx:             context.Background(),
 				cs:              fake.NewSimpleClientset(testClusterRole),
-				clusterRoleYaml: fmt.Sprintf(roleTemplate, "test-cluster-role", testResourceName),
+				clusterRoleYaml: clusterRoleYaml,
 			},
 			wantErr: false,
 		},
@@ -191,6 +256,7 @@ func Test_deployClusterRoleFromYaml(t *testing.T) {
 }
 
 func Test_deployRoleBindingFromYaml(t *testing.T) {
+	roleBindingYaml := fmt.Sprintf(tunnelControllerRoleTemplate, testRoleBindingName)
 	type args struct {
 		ctx             context.Context
 		cs              kubernetes.Interface
@@ -206,7 +272,7 @@ func Test_deployRoleBindingFromYaml(t *testing.T) {
 			args: args{
 				ctx:             context.Background(),
 				cs:              fake.NewSimpleClientset(&rbacv1.RoleBinding{}),
-				roleBindingYaml: fmt.Sprintf(tunnelControllerRoleTemplate, testRoleBindingName),
+				roleBindingYaml: roleBindingYaml,
 			},
 			wantErr: false,
 		},
@@ -224,7 +290,7 @@ func Test_deployRoleBindingFromYaml(t *testing.T) {
 			args: args{
 				ctx:             context.Background(),
 				cs:              fake.NewSimpleClientset(testRoleBinding),
-				roleBindingYaml: fmt.Sprintf(tunnelControllerRoleTemplate, testRoleBindingName),
+				roleBindingYaml: roleBindingYaml,
 			},
 			wantErr: false,
 		},
