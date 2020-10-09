@@ -65,19 +65,19 @@ func fakeWithNonretriableError(ro interface{}) *fake.Clientset {
 			},
 		)
 	case *rbacv1.ClusterRoleBinding:
-		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("update", "*",
+		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("*", "*",
 			func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
 				return true, &rbacv1.ClusterRoleBinding{}, errors.New(errMsg)
 			},
 		)
 	case *rbacv1.ClusterRole:
-		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("update", "*",
+		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("*", "*",
 			func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
 				return true, &rbacv1.ClusterRole{}, errors.New(errMsg)
 			},
 		)
 	case *rbacv1.RoleBinding:
-		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("update", "*",
+		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("*", "*",
 			func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
 				return true, &rbacv1.RoleBinding{}, errors.New(errMsg)
 			},
@@ -104,9 +104,9 @@ func fakeWithRetriableError(ro interface{}) *fake.Clientset {
 			},
 		)
 	case *rbacv1.ClusterRoleBinding:
-		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("update", "*",
+		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("*", "*",
 			func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-				return true, &v1beta1.PodSecurityPolicy{},
+				return true, &rbacv1.ClusterRoleBinding{},
 					k8serrors.NewConflict(schema.GroupResource{
 						Resource: "clusterolebindings",
 					},
@@ -115,9 +115,9 @@ func fakeWithRetriableError(ro interface{}) *fake.Clientset {
 			},
 		)
 	case *rbacv1.ClusterRole:
-		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("update", "*",
+		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("*", "*",
 			func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-				return true, &rbacv1.ClusterRoleBinding{},
+				return true, &rbacv1.ClusterRole{},
 					k8serrors.NewConflict(schema.GroupResource{
 						Resource: "clusterrole",
 					},
@@ -126,7 +126,7 @@ func fakeWithRetriableError(ro interface{}) *fake.Clientset {
 			},
 		)
 	case *rbacv1.RoleBinding:
-		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("update", "*",
+		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("*", "*",
 			func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
 				return true, &rbacv1.RoleBinding{},
 					k8serrors.NewConflict(schema.GroupResource{
@@ -201,7 +201,6 @@ func Test_deployPodSecurityPolicyFromYaml(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := deployPodSecurityPolicyFromYaml(tt.args.ctx, tt.args.cs, tt.args.pspYaml); (err != nil) != tt.wantErr {
-				t.Log(err)
 				t.Errorf("deployPodSecurityPolicyFromYaml() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			//verify that the existing PSP has in fact been updated from the given YAML.
@@ -228,16 +227,6 @@ func Test_deployClusterRoleBindingFromYaml(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-
-		{
-			name: "successfully create cluster role binding",
-			args: args{
-				ctx:                    context.Background(),
-				cs:                     fake.NewSimpleClientset(&rbacv1.ClusterRoleBinding{}),
-				clusterRoleBindingYaml: clusterRoleBindingYaml,
-			},
-			wantErr: false,
-		},
 		{
 			name: "fail to decode YAML",
 			args: args{
@@ -248,6 +237,15 @@ func Test_deployClusterRoleBindingFromYaml(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "successfully create cluster role binding",
+			args: args{
+				ctx:                    context.Background(),
+				cs:                     fake.NewSimpleClientset(&rbacv1.ClusterRoleBinding{}),
+				clusterRoleBindingYaml: clusterRoleBindingYaml,
+			},
+			wantErr: false,
+		},
+		{
 			name: "successfully update cluster role binding",
 			args: args{
 				ctx:                    context.Background(),
@@ -255,6 +253,24 @@ func Test_deployClusterRoleBindingFromYaml(t *testing.T) {
 				clusterRoleBindingYaml: clusterRoleBindingYaml,
 			},
 			wantErr: false,
+		},
+		{
+			name: "fail update cluster role binding - nonretriable",
+			args: args{
+				ctx:                    context.TODO(),
+				cs:                     fakeWithNonretriableError(&rbacv1.ClusterRoleBinding{}),
+				clusterRoleBindingYaml: clusterRoleBindingYaml,
+			},
+			wantErr: true,
+		},
+		{
+			name: "fail update cluster role binding - retriable error",
+			args: args{
+				ctx:                    context.TODO(),
+				cs:                     fakeWithRetriableError(&rbacv1.ClusterRoleBinding{}),
+				clusterRoleBindingYaml: clusterRoleBindingYaml,
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -280,15 +296,6 @@ func Test_deployClusterRoleFromYaml(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "successfully create cluster role",
-			args: args{
-				ctx:             context.Background(),
-				cs:              fake.NewSimpleClientset(&rbacv1.ClusterRole{}),
-				clusterRoleYaml: clusterRoleYaml,
-			},
-			wantErr: false,
-		},
-		{
 			name: "fail to decode YAML",
 			args: args{
 				ctx:             context.Background(),
@@ -298,6 +305,15 @@ func Test_deployClusterRoleFromYaml(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "successfully create cluster role",
+			args: args{
+				ctx:             context.Background(),
+				cs:              fake.NewSimpleClientset(&rbacv1.ClusterRole{}),
+				clusterRoleYaml: clusterRoleYaml,
+			},
+			wantErr: false,
+		},
+		{
 			name: "successfully update cluster role",
 			args: args{
 				ctx:             context.Background(),
@@ -305,6 +321,24 @@ func Test_deployClusterRoleFromYaml(t *testing.T) {
 				clusterRoleYaml: clusterRoleYaml,
 			},
 			wantErr: false,
+		},
+		{
+			name: "fail update cluster role binding - nonretriable",
+			args: args{
+				ctx:             context.TODO(),
+				cs:              fakeWithNonretriableError(&rbacv1.ClusterRole{}),
+				clusterRoleYaml: clusterRoleYaml,
+			},
+			wantErr: true,
+		},
+		{
+			name: "fail update cluster role binding - retriable error",
+			args: args{
+				ctx:             context.TODO(),
+				cs:              fakeWithRetriableError(&rbacv1.ClusterRole{}),
+				clusterRoleYaml: clusterRoleYaml,
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -329,15 +363,6 @@ func Test_deployRoleBindingFromYaml(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "successfully create role binding",
-			args: args{
-				ctx:             context.Background(),
-				cs:              fake.NewSimpleClientset(&rbacv1.RoleBinding{}),
-				roleBindingYaml: roleBindingYaml,
-			},
-			wantErr: false,
-		},
-		{
 			name: "fail to decode YAML",
 			args: args{
 				ctx:             context.Background(),
@@ -347,6 +372,15 @@ func Test_deployRoleBindingFromYaml(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "successfully create role binding",
+			args: args{
+				ctx:             context.Background(),
+				cs:              fake.NewSimpleClientset(&rbacv1.RoleBinding{}),
+				roleBindingYaml: roleBindingYaml,
+			},
+			wantErr: false,
+		},
+		{
 			name: "successfully update role binding",
 			args: args{
 				ctx:             context.Background(),
@@ -354,6 +388,24 @@ func Test_deployRoleBindingFromYaml(t *testing.T) {
 				roleBindingYaml: roleBindingYaml,
 			},
 			wantErr: false,
+		},
+		{
+			name: "fail update role binding - nonretriable",
+			args: args{
+				ctx:             context.TODO(),
+				cs:              fakeWithNonretriableError(&rbacv1.RoleBinding{}),
+				roleBindingYaml: roleBindingYaml,
+			},
+			wantErr: true,
+		},
+		{
+			name: "fail update role binding - retriable error",
+			args: args{
+				ctx:             context.TODO(),
+				cs:              fakeWithRetriableError(&rbacv1.RoleBinding{}),
+				roleBindingYaml: roleBindingYaml,
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
