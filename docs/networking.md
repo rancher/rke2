@@ -33,3 +33,32 @@ To disable it, start each server with the `disable: rke2-ingress-nginx` option i
 # Nodes Without a Hostname
 
 Some cloud providers, such as Linode, will create machines with "localhost" as the hostname and others may not have a hostname set at all. This can cause problems with domain name resolution. You can run RKE2 with the `node-name` parameter and this will pass the node name to resolve this issue.
+
+# CNI options
+
+### Replacing the default CNI
+
+By default RKE2 deploys the Canal CNI which uses flannel for networking and provides calico-felix to enable networkpolicy support.  If you wish to use a CNI other than Canal, you can disable it by adding the `disable: rke2-canal` option in your configuration file.
+
+### Running Calico as your CNI
+
+In order to deploy Calico as your CNI you will need to set a few options in your RKE2 config file.
+
+```
+service-cidr: "10.41.0.0/16"
+cluster-cidr: "10.42.0.0/16"
+disable:
+  - rke2-canal
+```
+
+You may need to modify your cluster-cidr and service-cidr depending on your specific network environment.
+
+Once you have created or updated your config file with the options above, you will need to create the Calico manifests in the RKE2 server manifests directory at `/var/lib/rancher/rke2/server/manifests/`
+
+Copy the tigera-operator manifest from https://docs.projectcalico.org/manifests/tigera-operator.yaml
+
+Copy the Calico custom resources manifest from https://docs.projectcalico.org/manifests/custom-resources.yaml
+
+You may wish to modify settings in these manifests, or you can use the defaults.  Once these manifests are copied over and the config file options are set, you can restart the RKE2 server service on your server nodes with `sudo systemctl restart rke2-server` for the changes to take effect and the manifests to deploy.
+
+<b>Warning:</b> It is not recommended to switch CNI providers once you have already deployed one as it will cause downtime and issues.  It's best to deploy a fresh cluster with the default CNI disabled before installing another CNI by following the instructions above.
