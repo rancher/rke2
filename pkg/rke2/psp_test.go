@@ -15,6 +15,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	fakepolicyv1beta1 "k8s.io/client-go/kubernetes/typed/policy/v1beta1/fake"
+	fakerbacv1 "k8s.io/client-go/kubernetes/typed/rbac/v1/fake"
 	k8stesting "k8s.io/client-go/testing"
 )
 
@@ -49,33 +50,93 @@ var testRoleBinding = &rbacv1.RoleBinding{
 	},
 }
 
-// fakeWithNonretriableError creates a new value of fake.Clientset
-// pointer and sets a Reactor to return an error that is not retriable.
-func fakeWithNonretriableError() *fake.Clientset {
+// fakeWithNonretriableError recieves a value of type runtime.Object,
+// determines underlying underlying type, and creates a new value of
+// type fake.Clientset pointer and sets a Reactor to return an error
+// that is not retriable.
+func fakeWithNonretriableError(ro interface{}) *fake.Clientset {
 	cs := fake.NewSimpleClientset(testPodSecurityPolicy)
-	cs.PolicyV1beta1().(*fakepolicyv1beta1.FakePolicyV1beta1).PrependReactor("update", "*",
-		func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-			return true, &v1beta1.PodSecurityPolicy{}, errors.New("non retriable error")
-		},
-	)
+	const errMsg = "non retriable error"
+	switch ro.(type) {
+	case *v1beta1.PodSecurityPolicy:
+		cs.PolicyV1beta1().(*fakepolicyv1beta1.FakePolicyV1beta1).PrependReactor("update", "*",
+			func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+				return true, &v1beta1.PodSecurityPolicy{}, errors.New(errMsg)
+			},
+		)
+	case *rbacv1.ClusterRoleBinding:
+		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("update", "*",
+			func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+				return true, &rbacv1.ClusterRoleBinding{}, errors.New(errMsg)
+			},
+		)
+	case *rbacv1.ClusterRole:
+		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("update", "*",
+			func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+				return true, &rbacv1.ClusterRole{}, errors.New(errMsg)
+			},
+		)
+	case *rbacv1.RoleBinding:
+		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("update", "*",
+			func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+				return true, &rbacv1.RoleBinding{}, errors.New(errMsg)
+			},
+		)
+	}
 	return cs
 }
 
 // fakeWithRetriableError creates a new value of fake.Clientset
 // pointer and sets a Reactor to return an error that will be
 // caught by retry logic.
-func fakeWithRetriableError() *fake.Clientset {
+func fakeWithRetriableError(ro interface{}) *fake.Clientset {
 	cs := fake.NewSimpleClientset(testPodSecurityPolicy)
-	cs.PolicyV1beta1().(*fakepolicyv1beta1.FakePolicyV1beta1).PrependReactor("update", "*",
-		func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
-			return true, &v1beta1.PodSecurityPolicy{},
-				k8serrors.NewConflict(schema.GroupResource{
-					Resource: "psp",
-				},
-					"psp-update", nil,
-				)
-		},
-	)
+	switch ro.(type) {
+	case *v1beta1.PodSecurityPolicy:
+		cs.PolicyV1beta1().(*fakepolicyv1beta1.FakePolicyV1beta1).PrependReactor("update", "*",
+			func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+				return true, &v1beta1.PodSecurityPolicy{},
+					k8serrors.NewConflict(schema.GroupResource{
+						Resource: "psp",
+					},
+						"psp-update", nil,
+					)
+			},
+		)
+	case *rbacv1.ClusterRoleBinding:
+		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("update", "*",
+			func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+				return true, &v1beta1.PodSecurityPolicy{},
+					k8serrors.NewConflict(schema.GroupResource{
+						Resource: "clusterolebindings",
+					},
+						"cluster-role-binding-update", nil,
+					)
+			},
+		)
+	case *rbacv1.ClusterRole:
+		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("update", "*",
+			func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+				return true, &rbacv1.ClusterRoleBinding{},
+					k8serrors.NewConflict(schema.GroupResource{
+						Resource: "clusterrole",
+					},
+						"cluster-role-update", nil,
+					)
+			},
+		)
+	case *rbacv1.RoleBinding:
+		cs.RbacV1().(*fakerbacv1.FakeRbacV1).PrependReactor("update", "*",
+			func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+				return true, &rbacv1.RoleBinding{},
+					k8serrors.NewConflict(schema.GroupResource{
+						Resource: "rolebindings",
+					},
+						"role-binding-update", nil,
+					)
+			},
+		)
+	}
 	return cs
 }
 
@@ -122,7 +183,7 @@ func Test_deployPodSecurityPolicyFromYaml(t *testing.T) {
 			name: "fail update PSP - nonretriable",
 			args: args{
 				ctx:     context.TODO(),
-				cs:      fakeWithNonretriableError(),
+				cs:      fakeWithNonretriableError(&v1beta1.PodSecurityPolicy{}),
 				pspYaml: pspYAML,
 			},
 			wantErr: true,
@@ -131,7 +192,7 @@ func Test_deployPodSecurityPolicyFromYaml(t *testing.T) {
 			name: "fail update PSP - retriable error",
 			args: args{
 				ctx:     context.TODO(),
-				cs:      fakeWithRetriableError(),
+				cs:      fakeWithRetriableError(&v1beta1.PodSecurityPolicy{}),
 				pspYaml: pspYAML,
 			},
 			wantErr: true,
