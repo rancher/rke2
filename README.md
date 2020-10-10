@@ -26,6 +26,10 @@ kubectl get nodes
 ```
 For a bit more, [check out our full quick start guide](https://docs.rke2.io/install/quickstart/).
 
+## Installation
+
+A full breakdown of installation methods and information can be found [here](install/methods.md).
+
 ## Configuration File
 
 The primary way to configure RKE2 is through its [config file](https://docs.rke2.io/install/install_options/install_options/#configuration-file). Command line arguments and environment variables are also available, but RKE2 is installed as a systemd service and thus these are not as easy to leverage.
