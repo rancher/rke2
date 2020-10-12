@@ -2,7 +2,9 @@
 title: Installation Methods
 ---
 
-RKE2 can be installed to a system in a number of ways, 2 of which being the preferred and supported methods. Those methods are tarball and RPM. Both of which are wrappers for the provided install script.
+RKE2 can be installed to a system in a number of ways, two of which are the preferred and supported methods. Those methods are tarball and RPM. The install script referenced in the Quick Start is a wrapper around these two methods.
+
+This document explains these installation methods in greater detail. 
 
 ### Tarball
 
