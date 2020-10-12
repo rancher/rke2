@@ -41,7 +41,7 @@ Tarball structure / contents
 * lib - contains server and agent systemd unit files
 * share - contains the RKE2 license as well as a sysctl configuration file used for when RKE2 is ran in CIS mode
 
-To configure the system any further, you'll want to reference the either the [server](server_config.md) or [agent](agent_config.md) documentation.
+To configure the system any further, you'll want to reference the either the [server](install_options/server_config.md) or [agent](install_options/agent_config.md) documentation.
 
 
 ### RPM
