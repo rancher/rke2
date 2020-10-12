@@ -426,10 +426,8 @@ func deployClusterRoleBindingFromYaml(ctx context.Context, cs kubernetes.Interfa
 		func(err error) bool {
 			return !apierrors.IsAlreadyExists(err)
 		}, func() error {
-			if _, err := cs.RbacV1().ClusterRoleBindings().Create(ctx, &clusterRoleBinding, metav1.CreateOptions{}); err != nil {
-				return err
-			}
-			return nil
+			_, err := cs.RbacV1().ClusterRoleBindings().Create(ctx, &clusterRoleBinding, metav1.CreateOptions{})
+			return err
 		},
 	); err != nil && apierrors.IsAlreadyExists(err) {
 		return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
