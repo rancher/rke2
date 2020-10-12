@@ -28,6 +28,7 @@ nav:
       - install/install_options/install_options.md
       - install/install_options/server_config.md
       - install/install_options/agent_config.md
+    - install/methods.md
     - install/network_options.md
     - install/containerd_registry_configuration.md
     - install/airgap.md
