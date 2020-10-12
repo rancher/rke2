@@ -25,8 +25,8 @@ nav:
     - install/requirements.md
     - install/ha.md
     - Install Options:
-      - install/install_options/install_options.md
       - install/methods.md
+      - install/install_options/install_options.md
       - install/install_options/server_config.md
       - install/install_options/agent_config.md
     - install/network_options.md
