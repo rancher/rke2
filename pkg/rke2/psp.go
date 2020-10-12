@@ -399,17 +399,14 @@ func deployPodSecurityPolicyFromYaml(ctx context.Context, cs kubernetes.Interfac
 		func(err error) bool {
 			return !apierrors.IsAlreadyExists(err)
 		}, func() error {
-			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Create(ctx, &psp, metav1.CreateOptions{}); err != nil {
-				return err
-			}
-			return nil
+			_, err := cs.PolicyV1beta1().PodSecurityPolicies().Create(ctx, &psp, metav1.CreateOptions{})
+			return err
+
 		},
 	); err != nil && apierrors.IsAlreadyExists(err) {
 		return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-			if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Update(ctx, &psp, metav1.UpdateOptions{}); err != nil {
-				return err
-			}
-			return nil
+			_, err := cs.PolicyV1beta1().PodSecurityPolicies().Update(ctx, &psp, metav1.UpdateOptions{})
+			return err
 		})
 	} else if err != nil {
 		return err
@@ -436,10 +433,8 @@ func deployClusterRoleBindingFromYaml(ctx context.Context, cs kubernetes.Interfa
 		},
 	); err != nil && apierrors.IsAlreadyExists(err) {
 		return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-			if _, err := cs.RbacV1().ClusterRoleBindings().Update(ctx, &clusterRoleBinding, metav1.UpdateOptions{}); err != nil {
-				return err
-			}
-			return nil
+			_, err := cs.RbacV1().ClusterRoleBindings().Update(ctx, &clusterRoleBinding, metav1.UpdateOptions{})
+			return err
 		})
 	} else if err != nil {
 		return err
@@ -459,17 +454,13 @@ func deployClusterRoleFromYaml(ctx context.Context, cs kubernetes.Interface, clu
 		func(err error) bool {
 			return !apierrors.IsAlreadyExists(err)
 		}, func() error {
-			if _, err := cs.RbacV1().ClusterRoles().Create(ctx, &clusterRole, metav1.CreateOptions{}); err != nil {
-				return err
-			}
-			return nil
+			_, err := cs.RbacV1().ClusterRoles().Create(ctx, &clusterRole, metav1.CreateOptions{})
+			return err
 		},
 	); err != nil && apierrors.IsAlreadyExists(err) {
 		return retry.RetryOnConflict(retry.DefaultRetry, func() error {
-			if _, err := cs.RbacV1().ClusterRoles().Update(ctx, &clusterRole, metav1.UpdateOptions{}); err != nil {
-				return err
-			}
-			return nil
+			_, err := cs.RbacV1().ClusterRoles().Update(ctx, &clusterRole, metav1.UpdateOptions{})
+			return err
 		})
 	} else if err != nil {
 		return err
@@ -489,10 +480,8 @@ func deployRoleBindingFromYaml(ctx context.Context, cs kubernetes.Interface, rol
 		func(err error) bool {
 			return !apierrors.IsAlreadyExists(err)
 		}, func() error {
-			if _, err := cs.RbacV1().RoleBindings(roleBinding.Namespace).Create(ctx, &roleBinding, metav1.CreateOptions{}); err != nil {
-				return err
-			}
-			return nil
+			_, err := cs.RbacV1().RoleBindings(roleBinding.Namespace).Create(ctx, &roleBinding, metav1.CreateOptions{})
+			return err
 		},
 	); err != nil && apierrors.IsAlreadyExists(err) {
 		return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
