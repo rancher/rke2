@@ -32,6 +32,7 @@ nav:
     - install/containerd_registry_configuration.md
     - install/airgap.md
     - install/uninstall.md
+    - install/methods.md
   - Upgrades:
     - Overview: upgrade/upgrade.md
     - upgrade/basic_upgrade.md
