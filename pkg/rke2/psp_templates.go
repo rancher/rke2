@@ -127,8 +127,7 @@ subjects:
   name: system:authenticated
 `
 
-const systemUnrestrictedPSPTemplate = `
-apiVersion: policy/v1beta1
+const systemUnrestrictedPSPTemplate = `apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: %s

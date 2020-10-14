@@ -401,11 +401,21 @@ func deployPodSecurityPolicyFromYaml(ctx context.Context, cs kubernetes.Interfac
 		}, func() error {
 			_, err := cs.PolicyV1beta1().PodSecurityPolicies().Create(ctx, &psp, metav1.CreateOptions{})
 			return err
-
 		},
 	); err != nil && apierrors.IsAlreadyExists(err) {
 		return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-			_, err := cs.PolicyV1beta1().PodSecurityPolicies().Update(ctx, &psp, metav1.UpdateOptions{})
+			retrievedPSP, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(ctx, psp.Name, metav1.GetOptions{})
+			if err != nil {
+				return err
+			}
+			if retrievedPSP.Annotations == nil {
+				retrievedPSP.Annotations = make(map[string]string, len(psp.Annotations))
+			}
+			for k, v := range psp.Annotations {
+				retrievedPSP.Annotations[k] = v
+			}
+			retrievedPSP.Spec = psp.Spec
+			_, err = cs.PolicyV1beta1().PodSecurityPolicies().Update(ctx, retrievedPSP, metav1.UpdateOptions{})
 			return err
 		})
 	} else if err != nil {
@@ -431,7 +441,19 @@ func deployClusterRoleBindingFromYaml(ctx context.Context, cs kubernetes.Interfa
 		},
 	); err != nil && apierrors.IsAlreadyExists(err) {
 		return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-			_, err := cs.RbacV1().ClusterRoleBindings().Update(ctx, &clusterRoleBinding, metav1.UpdateOptions{})
+			retrievedCRB, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, clusterRoleBinding.Name, metav1.GetOptions{})
+			if err != nil {
+				return err
+			}
+			if retrievedCRB.Annotations == nil {
+				retrievedCRB.Annotations = make(map[string]string, len(clusterRoleBinding.Annotations))
+			}
+			for k, v := range clusterRoleBinding.Annotations {
+				retrievedCRB.Annotations[k] = v
+			}
+			retrievedCRB.Subjects = clusterRoleBinding.Subjects
+			retrievedCRB.RoleRef = clusterRoleBinding.RoleRef
+			_, err = cs.RbacV1().ClusterRoleBindings().Update(ctx, retrievedCRB, metav1.UpdateOptions{})
 			return err
 		})
 	} else if err != nil {
@@ -457,7 +479,18 @@ func deployClusterRoleFromYaml(ctx context.Context, cs kubernetes.Interface, clu
 		},
 	); err != nil && apierrors.IsAlreadyExists(err) {
 		return retry.RetryOnConflict(retry.DefaultRetry, func() error {
-			_, err := cs.RbacV1().ClusterRoles().Update(ctx, &clusterRole, metav1.UpdateOptions{})
+			retrievedCR, err := cs.RbacV1().ClusterRoles().Get(ctx, clusterRole.Name, metav1.GetOptions{})
+			if err != nil {
+				return err
+			}
+			if retrievedCR.Annotations == nil {
+				retrievedCR.Annotations = make(map[string]string, len(clusterRole.Annotations))
+			}
+			for k, v := range clusterRole.Annotations {
+				retrievedCR.Annotations[k] = v
+			}
+			retrievedCR.Rules = clusterRole.Rules
+			_, err = cs.RbacV1().ClusterRoles().Update(ctx, retrievedCR, metav1.UpdateOptions{})
 			return err
 		})
 	} else if err != nil {
@@ -483,7 +516,19 @@ func deployRoleBindingFromYaml(ctx context.Context, cs kubernetes.Interface, rol
 		},
 	); err != nil && apierrors.IsAlreadyExists(err) {
 		return retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-			_, err := cs.RbacV1().RoleBindings(roleBinding.Namespace).Update(ctx, &roleBinding, metav1.UpdateOptions{})
+			retrievedR, err := cs.RbacV1().RoleBindings(roleBinding.Namespace).Get(ctx, roleBinding.Name, metav1.GetOptions{})
+			if err != nil {
+				return err
+			}
+			if retrievedR.Annotations == nil {
+				retrievedR.Annotations = make(map[string]string, len(roleBinding.Annotations))
+			}
+			for k, v := range roleBinding.Annotations {
+				retrievedR.Annotations[k] = v
+			}
+			retrievedR.Subjects = roleBinding.Subjects
+			retrievedR.RoleRef = roleBinding.RoleRef
+			_, err = cs.RbacV1().RoleBindings(roleBinding.Namespace).Update(ctx, retrievedR, metav1.UpdateOptions{})
 			return err
 		})
 	} else if err != nil {
