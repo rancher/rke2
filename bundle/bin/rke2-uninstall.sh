@@ -30,7 +30,7 @@ uninstall_disable_services()
 
 uninstall_remove_files()
 {
-    rm -f "${INSTALL_RKE2_ROOT}/lib/systemd/system/rke2*.service"
+    find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.service -type f -delete
     rm -f "${INSTALL_RKE2_ROOT}/bin/rke2"
     rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
     rm -rf "${INSTALL_RKE2_ROOT}/share/rke2"
