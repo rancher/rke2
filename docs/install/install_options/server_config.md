@@ -52,7 +52,6 @@ OPTIONS:
    --agent-token value                  (experimental/cluster) Shared secret used to join agents to the cluster, but not servers [$RKE2_AGENT_TOKEN]
    --agent-token-file value             (experimental/cluster) File containing the agent secret [$RKE2_AGENT_TOKEN_FILE]
    --server value, -s value             (experimental/cluster) Server to connect to, used to join a cluster [$RKE2_URL]
-   --cluster-init                       (experimental/cluster) Initialize a new cluster [$RKE2_CLUSTER_INIT]
    --cluster-reset                      (experimental/cluster) Forget all peers and become sole member of a new cluster [$RKE2_CLUSTER_RESET]
    --cluster-reset-restore-path value   (db) Path to snapshot file to be restored
    --secrets-encryption                 (experimental) Enable Secret encryption at rest
