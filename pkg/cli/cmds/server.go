@@ -76,7 +76,7 @@ var (
 		"pause-image":                 drop,
 		"private-registry":            copy,
 		"node-ip":                     copy,
-		"node-external-ip":            drop,
+		"node-external-ip":            copy,
 		"resolv-conf":                 copy,
 		"flannel-iface":               drop,
 		"flannel-conf":                drop,
