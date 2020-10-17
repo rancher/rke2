@@ -28,7 +28,7 @@ For a bit more, [check out our full quick start guide](https://docs.rke2.io/inst
 
 ## Installation
 
-A full breakdown of installation methods and information can be found [here](install/methods.md).
+A full breakdown of installation methods and information can be found [here](docs/install/methods.md).
 
 ## Configuration File
 
