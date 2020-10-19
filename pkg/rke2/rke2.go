@@ -1,6 +1,7 @@
 package rke2
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -87,7 +88,7 @@ func setup(clx *cli.Context, cfg Config) error {
 
 	managed.RegisterDriver(&etcd.ETCD{})
 	if clx.IsSet("node-external-ip") && (clx.IsSet("cloud-provider-config") || clx.IsSet("cloud-provider-name")) {
-		return fmt.Errorf("Can't set node-external-ip while using cloud provider")
+		return errors.New("can't set node-external-ip while using cloud provider")
 	}
 	var cpConfig *podexecutor.CloudProviderConfig
 	if cfg.CloudProviderConfig != "" && cfg.CloudProviderName == "" {
