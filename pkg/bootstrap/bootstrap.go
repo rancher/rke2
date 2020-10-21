@@ -21,6 +21,7 @@ import (
 	errors2 "github.com/pkg/errors"
 	helmv1 "github.com/rancher/helm-controller/pkg/apis/helm.cattle.io/v1"
 	"github.com/rancher/helm-controller/pkg/helm"
+	"github.com/rancher/rke2/pkg/cni"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/wrangler/pkg/merr"
 	"github.com/rancher/wrangler/pkg/schemes"
@@ -70,7 +71,7 @@ func dirExists(dir string) bool {
 // Unique image detection is accomplished by hashing the image name and tag, or the image digest,
 // depending on what the runtime image reference points at.
 // If the bin directory already exists, or content is successfully extracted, the bin directory path is returned.
-func Stage(dataDir string, imageConf images.Images) (string, error) {
+func Stage(dataDir, cniPlugin string, imageConf images.Images) (string, error) {
 	var img v1.Image
 	ref, err := name.ParseReference(imageConf.Runtime)
 	if err != nil {
@@ -121,6 +122,16 @@ func Stage(dataDir string, imageConf images.Images) (string, error) {
 		// Extract charts to manifests dir
 		if err := extractToDir(manifestsDir, "/charts/", img, ref.String()); err != nil {
 			return "", err
+		}
+
+		// Extract the chosen CNI plugin, if any
+		if err := cni.ValidateCNIPlugin(cniPlugin); err != nil {
+			return "", err
+		}
+		if cniPlugin != cni.None {
+			if err := extractToDir(manifestsDir, filepath.Join("/charts-cni-plugins/", fmt.Sprintf("rke2-%s", cniPlugin)), img, ref.String()); err != nil {
+				return "", err
+			}
 		}
 	}
 

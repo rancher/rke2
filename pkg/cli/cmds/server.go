@@ -2,14 +2,16 @@ package cmds
 
 import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
+	"github.com/rancher/rke2/pkg/cni"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
 const (
-	DisableItems = "rke2-canal, rke2-coredns, rke2-ingress, rke2-kube-proxy, rke2-metrics-server"
-	rke2Path     = "/var/lib/rancher/rke2"
+	DisableItems     = "rke2-coredns, rke2-ingress, rke2-kube-proxy, rke2-metrics-server"
+	rke2Path         = "/var/lib/rancher/rke2"
+	defaultCNIPlugin = cni.Canal
 )
 
 var (

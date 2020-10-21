@@ -24,6 +24,7 @@ type Config struct {
 	SystemDefaultRegistry string
 	CloudProviderName     string
 	CloudProviderConfig   string
+	CNIPlugin             string
 }
 
 var cisMode bool
@@ -73,7 +74,7 @@ func setup(clx *cli.Context, cfg Config) error {
 		return err
 	}
 
-	execPath, err := bootstrap.Stage(dataDir, images)
+	execPath, err := bootstrap.Stage(dataDir, cfg.CNIPlugin, images)
 	if err != nil {
 		return err
 	}

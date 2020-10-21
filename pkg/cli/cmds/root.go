@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/rancher/k3s/pkg/version"
+	"github.com/rancher/rke2/pkg/cni"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -37,6 +38,13 @@ var (
 			Usage:       "(cloud provider) Cloud provider configuration file path",
 			EnvVar:      "RKE2_CLOUD_PROVIDER_CONFIG",
 			Destination: &config.CloudProviderConfig,
+		},
+		&cli.StringFlag{
+			Name:        "cni-plugin",
+			Usage:       "(CNI plugin) CNI plugin to deploy (valid items: " + strings.Join(cni.All, ", ") + ")",
+			EnvVar:      "RKE2_CNI_PLUGIN",
+			Value:       defaultCNIPlugin,
+			Destination: &config.CNIPlugin,
 		},
 		&cli.StringFlag{
 			Name:        "profile",
