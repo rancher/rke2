@@ -106,15 +106,17 @@ COPY --from=build-k8s \
     /usr/local/bin/
 
 FROM build AS charts
-ARG CHARTS_REPO="https://rke2-charts.rancher.io"
+ARG CHART_REPO="https://rke2-charts.rancher.io"
 ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
-RUN CHART_VERSION="v3.13.3"     CHART_FILE=/charts/rke2-canal.yaml             CHART_BOOTSTRAP=true    /charts/build-chart.sh
 RUN CHART_VERSION="1.10.101"    CHART_FILE=/charts/rke2-coredns.yaml           CHART_BOOTSTRAP=true    /charts/build-chart.sh
 RUN CHART_VERSION="1.36.300"    CHART_FILE=/charts/rke2-ingress-nginx.yaml     CHART_BOOTSTRAP=false   /charts/build-chart.sh
 RUN CHART_VERSION="v1.18.10"     CHART_FILE=/charts/rke2-kube-proxy.yaml        CHART_BOOTSTRAP=true    /charts/build-chart.sh
 RUN CHART_VERSION="2.11.100"    CHART_FILE=/charts/rke2-metrics-server.yaml    CHART_BOOTSTRAP=false   /charts/build-chart.sh
+RUN mkdir /charts-cni-plugins
+RUN CHART_VERSION="v3.13.3"     CHART_FILE=/charts-cni-plugins/rke2-canal.yaml  CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="1.8.4"       CHART_FILE=/charts-cni-plugins/rke2-cilium.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN rm -vf /charts/*.sh /charts/*.md
 
 # rke-runtime image
@@ -150,6 +152,9 @@ COPY --from=kubernetes \
 COPY --from=charts \
     /charts/ \
     /charts/
+COPY --from=charts \
+    /charts-cni-plugins/ \
+    /charts-cni-plugins/
 
 FROM ubuntu:18.04 AS test
 ARG TARGETARCH
