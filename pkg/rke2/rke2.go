@@ -74,7 +74,7 @@ func setup(clx *cli.Context, cfg Config) error {
 		return err
 	}
 
-	execPath, err := bootstrap.Stage(dataDir, images)
+	execPath, err := bootstrap.Stage(dataDir, images, clx.IsSet("node-external-ip"))
 	if err != nil {
 		return err
 	}

@@ -70,7 +70,7 @@ func dirExists(dir string) bool {
 // Unique image detection is accomplished by hashing the image name and tag, or the image digest,
 // depending on what the runtime image reference points at.
 // If the bin directory already exists, or content is successfully extracted, the bin directory path is returned.
-func Stage(dataDir string, imageConf images.Images) (string, error) {
+func Stage(dataDir string, imageConf images.Images, ccm bool) (string, error) {
 	var img v1.Image
 	ref, err := name.ParseReference(imageConf.Runtime)
 	if err != nil {
@@ -122,6 +122,12 @@ func Stage(dataDir string, imageConf images.Images) (string, error) {
 		if err := extractToDir(manifestsDir, "/charts/", img, ref.String()); err != nil {
 			return "", err
 		}
+		if ccm {
+			if err := extractToDir(manifestsDir, "/manifests/", img, ref.String()); err != nil {
+				return "", err
+			}
+		}
+
 	}
 
 	// Fix up HelmCharts to set default registry

@@ -117,6 +117,9 @@ RUN CHART_VERSION="v1.18.10"     CHART_FILE=/charts/rke2-kube-proxy.yaml        
 RUN CHART_VERSION="2.11.100"    CHART_FILE=/charts/rke2-metrics-server.yaml    CHART_BOOTSTRAP=false   /charts/build-chart.sh
 RUN rm -vf /charts/*.sh /charts/*.md
 
+FROM manifests AS manifests
+COPY manifests/ccm.yaml /manifests/
+
 # rke-runtime image
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
@@ -150,6 +153,10 @@ COPY --from=kubernetes \
 COPY --from=charts \
     /charts/ \
     /charts/
+
+COPY --from=manifests \
+    /manifests/ \
+    /manifests/
 
 FROM ubuntu:18.04 AS test
 ARG TARGETARCH
