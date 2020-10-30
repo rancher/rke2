@@ -328,16 +328,12 @@ func writeArgFile(path string, content []byte) error {
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err
 	}
-
-	_, err := os.Stat(path)
-	if err == nil {
+	if _, err := os.Stat(path); err == nil {
 		return nil
 	} else {
 		if !os.IsNotExist(err) {
 			return err
 		}
 	}
-
 	return ioutil.WriteFile(path, content, 0600)
-
 }
