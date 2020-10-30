@@ -113,7 +113,7 @@ func setCloudControllerManagerRoleBinding(ctx context.Context, cs *kubernetes.Cl
 		if apierrors.IsNotFound(err) {
 			logrus.Infof("Setting Cluster RoleBinding: %s", cloudControllerManagerRoleName)
 
-			tmpl := fmt.Sprintf(cloudControllerManagerRoleBindingTemplate, cloudControllerManagerRoleName, cloudControllerManagerRoleName)
+			tmpl := fmt.Sprintf(cloudControllerManagerRoleBindingTemplate, cloudControllerManagerRoleName)
 			if err := deployClusterRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
 				return err
 			}
