@@ -32,7 +32,7 @@ var cisMode bool
 
 const (
 	CISProfile             = "cis-1.5"
-	DefaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
+	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
 )
 
 func Server(clx *cli.Context, cfg Config) error {
@@ -75,7 +75,7 @@ func setup(clx *cli.Context, cfg Config) error {
 
 	auditPolicyFile := clx.String("audit-policy-file")
 	if auditPolicyFile == "" {
-		auditPolicyFile = DefaultAuditPolicyFile
+		auditPolicyFile = defaultAuditPolicyFile
 	}
 
 	images := images.New(cfg.SystemDefaultRegistry)
