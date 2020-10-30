@@ -31,6 +31,10 @@ func setClusterRoles() func(context.Context, <-chan struct{}, string) error {
 				logrus.Fatalf("psp: set tunnelControllerRoleBinding: %s", err.Error())
 			}
 
+			if err := setCloudControllerManagerRoleBinding(ctx, cs); err != nil {
+				logrus.Fatalf("ccm: set cloudControllerManagerRoleBinding: %s", err.Error())
+			}
+
 			logrus.Info("Cluster Role Bindings applied successfully")
 		}()
 		return nil
@@ -78,6 +82,38 @@ func setTunnelControllerRoleBinding(ctx context.Context, cs *kubernetes.Clientse
 			logrus.Infof("Setting Cluster RoleBinding: %s", tunnelControllerRoleName)
 
 			tmpl := fmt.Sprintf(tunnelControllerRoleBindingTemplate, tunnelControllerRoleName, tunnelControllerRoleName)
+			if err := deployClusterRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func setCloudControllerManagerRoleBinding(ctx context.Context, cs *kubernetes.Clientset) error {
+	// check if clusterrole exists
+	if _, err := cs.RbacV1().ClusterRoles().Get(ctx, cloudControllerManagerRoleName, metav1.GetOptions{}); err != nil {
+		if apierrors.IsNotFound(err) {
+			logrus.Infof("Setting Cluster Role: %s", cloudControllerManagerRoleName)
+
+			tmpl := fmt.Sprintf(cloudControllerManagerRoleTemplate, cloudControllerManagerRoleName)
+			if err := deployClusterRoleFromYaml(ctx, cs, tmpl); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+
+	// check if clusterrolebinding exists
+	if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, cloudControllerManagerRoleName, metav1.GetOptions{}); err != nil {
+		if apierrors.IsNotFound(err) {
+			logrus.Infof("Setting Cluster RoleBinding: %s", cloudControllerManagerRoleName)
+
+			tmpl := fmt.Sprintf(cloudControllerManagerRoleBindingTemplate, cloudControllerManagerRoleName, cloudControllerManagerRoleName)
 			if err := deployClusterRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
 				return err
 			}
