@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"io/ioutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"os"
 	"os/exec"
@@ -20,6 +21,7 @@ import (
 	"github.com/rancher/rke2/pkg/staticpod"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+	auditv1 "k8s.io/apiserver/pkg/apis/audit/v1"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 	"sigs.k8s.io/yaml"
 )
@@ -34,12 +36,13 @@ var (
 )
 
 type StaticPodConfig struct {
-	ManifestsDir  string
-	ImagesDir     string
-	Images        images.Images
-	CloudProvider *CloudProviderConfig
-	CISMode       bool
-	DataDir       string
+	ManifestsDir    string
+	ImagesDir       string
+	Images          images.Images
+	CloudProvider   *CloudProviderConfig
+	CISMode         bool
+	DataDir         string
+	AuditPolicyFile string
 }
 
 type CloudProviderConfig struct {
@@ -78,6 +81,7 @@ func (s *StaticPodConfig) KubeProxy(args []string) error {
 
 // APIServer sets up the apiserver static pod once etcd is available, returning the authenticator and request handler.
 func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) (authenticator.Request, http.Handler, error) {
+	auditLogFile := filepath.Join(s.DataDir, "server/logs/audit.log")
 	if s.CloudProvider != nil {
 		args = append(args,
 			"--cloud-provider="+s.CloudProvider.Name,
@@ -86,12 +90,19 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 	if err := images.Pull(s.ImagesDir, "kube-apiserver", s.Images.KubeAPIServer); err != nil {
 		return nil, nil, err
 	}
-	args = append(args,
-		"--audit-log-path=/var/log/kube-audit/audit-log.json",
-		"--audit-log-maxage=30",
-		"--audit-log-maxbackup=10",
-		"--audit-log-maxsize=100",
-	)
+
+	if s.CISMode {
+		args = append(args,
+			"--audit-policy-file="+s.AuditPolicyFile,
+			"--audit-log-path="+auditLogFile,
+			"--audit-log-maxage=30",
+			"--audit-log-maxbackup=10",
+			"--audit-log-maxsize=100",
+		)
+		if err := writeDefaultPolicyFile(s.AuditPolicyFile); err != nil {
+			return nil, nil, err
+		}
+	}
 	auth, err := auth.FromArgs(args)
 	for i, arg := range args {
 		// This is an option k3s adds that does not exist upstream
@@ -107,9 +118,9 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 			Command:   "kube-apiserver",
 			Args:      args,
 			Image:     s.Images.KubeAPIServer,
-			Dirs:      ssldirs,
+			Dirs:      append(ssldirs, filepath.Dir(auditLogFile)),
 			CPUMillis: 250,
-			Files:       []string{etcdNameFile(s.DataDir)},
+			Files:     []string{etcdNameFile(s.DataDir)},
 		})
 	})
 	return auth, http.NotFoundHandler(), err
@@ -284,4 +295,49 @@ func chownr(path string, uid, gid int) error {
 
 func etcdNameFile(dataDir string) string {
 	return filepath.Join(dataDir, "server", "db", "etcd", "name")
+}
+
+func writeDefaultPolicyFile(policyFilePath string) error {
+	auditPolicy := auditv1.Policy{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Policy",
+			APIVersion: "audit.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{},
+		Rules: []auditv1.PolicyRule{
+			auditv1.PolicyRule{
+				Level: "Metadata",
+				Resources: []auditv1.GroupResources{
+					auditv1.GroupResources{
+						Group:     "",
+						Resources: []string{"pods"},
+					},
+				},
+			},
+		},
+	}
+	bytes, err := yaml.Marshal(auditPolicy)
+	if err != nil {
+		return err
+	}
+	return writeArgFile(policyFilePath, bytes)
+}
+
+func writeArgFile(path string, content []byte) error {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		return err
+	}
+
+	_, err := os.Stat(path)
+	if err == nil {
+		return nil
+	} else {
+		if !os.IsNotExist(err) {
+			return err
+		}
+	}
+
+	return ioutil.WriteFile(path, content, 0600)
+
 }

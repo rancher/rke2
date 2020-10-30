@@ -232,7 +232,7 @@ func readFiles(args []string) ([]string, error) {
 	for _, arg := range args {
 		parts := strings.SplitN(arg, "=", 2)
 		if len(parts) == 2 && strings.HasPrefix(parts[1], "/") {
-			if stat, err := os.Stat(parts[1]); err == nil && !stat.IsDir() {
+			if stat, err := os.Stat(parts[1]); err == nil && !stat.IsDir() && !strings.Contains(parts[1], "audit.log") {
 				files[parts[1]] = true
 
 				if parts[0] == "--kubeconfig" {
