@@ -72,14 +72,14 @@ subjects:
 const cloudControllerManagerRoleBindingTemplate = `apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: %s
+  name: %[1]s
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cloud-controller-manager
+  name: %[1]s
 subjects:
   - kind: User
-    name: cloud-controller-manager
+    name: %[1]s
     namespace: kube-system
 `
 
