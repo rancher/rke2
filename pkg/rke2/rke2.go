@@ -87,8 +87,12 @@ func setup(clx *cli.Context, cfg Config) error {
 	agentImagesDir := filepath.Join(dataDir, "agent", "images")
 
 	managed.RegisterDriver(&etcd.ETCD{})
-	if clx.IsSet("node-external-ip") && (clx.IsSet("cloud-provider-config") || clx.IsSet("cloud-provider-name")) {
-		return errors.New("can't set node-external-ip while using cloud provider")
+
+	if clx.IsSet("node-external-ip") {
+		if clx.IsSet("cloud-provider-config") || clx.IsSet("cloud-provider-name") {
+			return errors.New("can't set node-external-ip while using cloud provider")
+		}
+		cmds.ServerConfig.DisableCCM = false
 	}
 	var cpConfig *podexecutor.CloudProviderConfig
 	if cfg.CloudProviderConfig != "" && cfg.CloudProviderName == "" {
