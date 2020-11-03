@@ -64,6 +64,8 @@ WORKDIR ${GOPATH}/src/github.com/kubernetes/kubernetes
 # force code generation
 RUN make WHAT=cmd/kube-apiserver
 ARG TAG
+ARG MAJOR
+ARG MINOR
 # build statically linked executables
 RUN echo "export GIT_COMMIT=$(git rev-parse HEAD)" \
     >> /usr/local/go/bin/go-build-static-k8s.sh
@@ -71,10 +73,14 @@ RUN echo "export BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     >> /usr/local/go/bin/go-build-static-k8s.sh
 RUN echo "export GO_LDFLAGS=\"-linkmode=external \
     -X k8s.io/component-base/version.gitVersion=${TAG} \
+    -X k8s.io/component-base/version.gitMajor=${MAJOR} \
+    -X k8s.io/component-base/version.gitMinor=${MINOR} \
     -X k8s.io/component-base/version.gitCommit=\${GIT_COMMIT} \
     -X k8s.io/component-base/version.gitTreeState=clean \
     -X k8s.io/component-base/version.buildDate=\${BUILD_DATE} \
     -X k8s.io/client-go/pkg/version.gitVersion=${TAG} \
+    -X k8s.io/client-go/pkg/version.gitMajor=${MAJOR} \
+    -X k8s.io/client-go/pkg/version.gitMinor=${MINOR} \
     -X k8s.io/client-go/pkg/version.gitCommit=\${GIT_COMMIT} \
     -X k8s.io/client-go/pkg/version.gitTreeState=clean \
     -X k8s.io/client-go/pkg/version.buildDate=\${BUILD_DATE} \

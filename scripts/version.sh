@@ -53,4 +53,9 @@ else
     VERSION="${KUBERNETES_VERSION}-dev+${COMMIT:0:8}$DIRTY"
 fi
 
+if [[ "${VERSION}" =~ ^v([0-9]+)\.([0-9]+)(\.[0-9]+)?([-+].*)?$ ]]; then
+    VERSION_MAJOR=${BASH_REMATCH[1]}
+    VERSION_MINOR=${BASH_REMATCH[2]}
+fi
+
 DOCKERIZED_VERSION="${VERSION/+/-}" # this mimics what kubernetes builds do

@@ -7,6 +7,8 @@ source ./scripts/version.sh
 
 DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
     --build-arg TAG=${VERSION} \
+    --build-arg MAJOR=${VERSION_MAJOR} \
+    --build-arg MINOR=${VERSION_MINOR} \
     --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
     --tag ${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION} \
     --tag ${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}-${GOARCH} \
