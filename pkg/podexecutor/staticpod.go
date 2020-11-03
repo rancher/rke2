@@ -306,13 +306,7 @@ func writeDefaultPolicyFile(policyFilePath string) error {
 		ObjectMeta: metav1.ObjectMeta{},
 		Rules: []auditv1.PolicyRule{
 			auditv1.PolicyRule{
-				Level: "Metadata",
-				Resources: []auditv1.GroupResources{
-					auditv1.GroupResources{
-						Group:     "",
-						Resources: []string{"pods"},
-					},
-				},
+				Level: "None",
 			},
 		},
 	}
