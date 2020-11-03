@@ -25,11 +25,15 @@ type Config struct {
 	SystemDefaultRegistry string
 	CloudProviderName     string
 	CloudProviderConfig   string
+	AuditPolicyFile       string
 }
 
 var cisMode bool
 
-const CISProfile = "cis-1.5"
+const (
+	CISProfile             = "cis-1.5"
+	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
+)
 
 func Server(clx *cli.Context, cfg Config) error {
 	if err := setup(clx, cfg); err != nil {
@@ -69,6 +73,11 @@ func setup(clx *cli.Context, cfg Config) error {
 	cisMode = clx.String("profile") == CISProfile
 	dataDir := clx.String("data-dir")
 
+	auditPolicyFile := clx.String("audit-policy-file")
+	if auditPolicyFile == "" {
+		auditPolicyFile = defaultAuditPolicyFile
+	}
+
 	images := images.New(cfg.SystemDefaultRegistry)
 	if err := defaults.Set(clx, images, dataDir); err != nil {
 		return err
@@ -106,12 +115,13 @@ func setup(clx *cli.Context, cfg Config) error {
 	}
 
 	sp := podexecutor.StaticPodConfig{
-		Images:        images,
-		ImagesDir:     agentImagesDir,
-		ManifestsDir:  agentManifestsDir,
-		CISMode:       cisMode,
-		CloudProvider: cpConfig,
-		DataDir:       dataDir,
+		Images:          images,
+		ImagesDir:       agentImagesDir,
+		ManifestsDir:    agentManifestsDir,
+		CISMode:         cisMode,
+		CloudProvider:   cpConfig,
+		DataDir:         dataDir,
+		AuditPolicyFile: auditPolicyFile,
 	}
 	executor.Set(&sp)
 

@@ -44,6 +44,12 @@ var (
 			EnvVar:      "RKE2_CIS_PROFILE",
 			Destination: &profile,
 		},
+		&cli.StringFlag{
+			Name:        "audit-policy-file",
+			Usage:       "Path to the file that defines the audit policy configuration",
+			EnvVar:      "RKE2_AUDIT_POLICY_FILE",
+			Destination: &config.AuditPolicyFile,
+		},
 	}
 )
 
