@@ -218,16 +218,29 @@ do_install_rpm() {
     if [ "${1}" = "testing" ]; then
         rpm_site="rpm-${1}.rancher.io"
     fi
+    maj_ver="7"
+    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
+        dist_version="$(. /etc/os-release && echo "$VERSION_ID")"
+        maj_ver=$(echo "$dist_version" | sed -E -e "s/^([0-9]+)\.?[0-9]*$/\1/")
+        case ${maj_ver} in
+            7|8)
+                :
+                ;;
+            *) # In certain cases, like installing on Fedora, maj_ver will end up being something that is not 7 or 8
+                maj_ver="7"
+                ;;
+        esac
+    fi
     cat <<-EOF >"/etc/yum.repos.d/rancher-rke2-${1}.repo"
 [rancher-rke2-common-${1}]
 name=Rancher RKE2 Common (${1})
-baseurl=https://${rpm_site}/rke2/${1}/common/centos/7/noarch
+baseurl=https://${rpm_site}/rke2/${1}/common/centos/${maj_ver}/noarch
 enabled=1
 gpgcheck=1
 gpgkey=https://${rpm_site}/public.key
 [rancher-rke2-1-18-${1}]
 name=Rancher RKE2 1.18 (${1})
-baseurl=https://${rpm_site}/rke2/${1}/1.18/centos/7/x86_64
+baseurl=https://${rpm_site}/rke2/${1}/1.18/centos/${maj_ver}/x86_64
 enabled=1
 gpgcheck=1
 gpgkey=https://${rpm_site}/public.key
