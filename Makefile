@@ -116,11 +116,18 @@ package-images: build-images		## Package docker images for airgap environment
 	./scripts/package-images
 
 .PHONY: package-bundle
-package-bundle: build						## Package the tarball bundle
+package-bundle: build				## Package the tarball bundle
 	./scripts/package-bundle
 
 .PHONY: test
-test:
+test: unit-tests integration-tests
+
+.PHONY: unit-tests
+unit-tests:
+	./scripts/unit-tests
+
+.PHONY: integration-tests
+integration-tests:
 	./scripts/test
 
 ./.dapper:
