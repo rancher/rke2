@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"io/ioutil"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"os"
 	"os/exec"
@@ -21,6 +20,7 @@ import (
 	"github.com/rancher/rke2/pkg/staticpod"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	auditv1 "k8s.io/apiserver/pkg/apis/audit/v1"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 	"sigs.k8s.io/yaml"
@@ -187,7 +187,7 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 func (s *StaticPodConfig) CurrentETCDOptions() (opts executor.InitialOptions, err error) {
 	bytes, err := ioutil.ReadFile(filepath.Join(s.ManifestsDir, "etcd.yaml"))
 	if os.IsNotExist(err) {
-		return
+		return opts, nil
 	}
 
 	pod := &v1.Pod{}
@@ -200,7 +200,7 @@ func (s *StaticPodConfig) CurrentETCDOptions() (opts executor.InitialOptions, er
 		return opts, json.NewDecoder(strings.NewReader(v)).Decode(&opts)
 	}
 
-	return
+	return opts, nil
 }
 
 // ETCD starts the etcd static pod.
