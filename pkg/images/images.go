@@ -23,7 +23,7 @@ var (
 	runtime           = os.Getenv("RKE2_RUNTIME_IMAGE")
 	etcd              = os.Getenv("RKE2_ETCD_IMAGE")
 
-	KubernetesVersion = "v1.18.10"     // make sure this matches what is in the scripts/version.sh script
+	KubernetesVersion = "v1.18.12"     // make sure this matches what is in the scripts/version.sh script
 	PauseVersion      = "3.2"          // make sure this matches what is in the scripts/build-images script
 	EtcdVersion       = "v3.4.13-k3s1" // make sure this matches what is in the scripts/build-images script
 	RuntimeImageName  = "rke2-runtime"
