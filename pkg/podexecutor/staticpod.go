@@ -43,6 +43,7 @@ type StaticPodConfig struct {
 	CISMode         bool
 	DataDir         string
 	AuditPolicyFile string
+	KubeletPath     string
 }
 
 type CloudProviderConfig struct {
@@ -59,7 +60,7 @@ func (s *StaticPodConfig) Kubelet(args []string) error {
 	}
 	go func() {
 		for {
-			cmd := exec.Command("kubelet", args...)
+			cmd := exec.Command(s.KubeletPath, args...)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			addDeathSig(cmd)
@@ -74,7 +75,7 @@ func (s *StaticPodConfig) Kubelet(args []string) error {
 	return nil
 }
 
-// KubeProxy panics if used. KubeProxy is not supported in RKE2.
+// KubeProxy panics if used. KubeProxy for RKE2 is provided by a packaged component (rke2-kube-proxy Helm chart).
 func (s *StaticPodConfig) KubeProxy(args []string) error {
 	panic("kube-proxy unsupported")
 }
