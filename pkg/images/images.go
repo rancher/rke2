@@ -15,14 +15,6 @@ const (
 )
 
 var (
-	// These environment variables are primarily intended for developer use
-	apiServer         = os.Getenv("RKE2_KUBE_APISERVER_IMAGE")
-	controllerManager = os.Getenv("RKE2_KUBE_CONTROLLER_MANAGER_IMAGE")
-	scheduler         = os.Getenv("RKE2_KUBE_SCHEDULER_IMAGE")
-	pause             = os.Getenv("RKE2_PAUSE_IMAGE")
-	runtime           = os.Getenv("RKE2_RUNTIME_IMAGE")
-	etcd              = os.Getenv("RKE2_ETCD_IMAGE")
-
 	KubernetesVersion = "v1.18.12"     // make sure this matches what is in the scripts/version.sh script
 	PauseVersion      = "3.2"          // make sure this matches what is in the scripts/build-images script
 	EtcdVersion       = "v3.4.13-k3s1" // make sure this matches what is in the scripts/build-images script
@@ -48,17 +40,14 @@ func override(defaultValue string, overrideValue string) string {
 	return defaultValue
 }
 
-// New constructs a new image list, honoring the systemDefaultRegistry value if it is not empty.
-func New(systemDefaultRegistry string) Images {
-	return Images{
-		SystemDefaultRegistry: systemDefaultRegistry,
-		Runtime:               override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/"+RuntimeImageName+":"+strings.ReplaceAll(version.Version, "+", "-"), runtime),
-		KubeAPIServer:         override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/hardened-kubernetes:"+KubernetesVersion, apiServer),
-		KubeControllManager:   override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/hardened-kubernetes:"+KubernetesVersion, controllerManager),
-		KubeScheduler:         override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/hardened-kubernetes:"+KubernetesVersion, scheduler),
-		ETCD:                  override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/hardened-etcd:"+EtcdVersion, etcd),
-		Pause:                 override(override(dockerRegistry, systemDefaultRegistry)+"/rancher/pause:"+PauseVersion, pause),
-	}
+// SetDefaults updates the image list, honoring the SystemDefaultRegistry and Image overrides if they are not empty.
+func (i *Images) SetDefaults() {
+	i.Runtime = override(override(dockerRegistry, i.SystemDefaultRegistry)+"/rancher/"+RuntimeImageName+":"+strings.ReplaceAll(version.Version, "+", "-"), i.Runtime)
+	i.KubeAPIServer = override(override(dockerRegistry, i.SystemDefaultRegistry)+"/rancher/hardened-kubernetes:"+KubernetesVersion, i.KubeAPIServer)
+	i.KubeControllManager = override(override(dockerRegistry, i.SystemDefaultRegistry)+"/rancher/hardened-kubernetes:"+KubernetesVersion, i.KubeControllManager)
+	i.KubeScheduler = override(override(dockerRegistry, i.SystemDefaultRegistry)+"/rancher/hardened-kubernetes:"+KubernetesVersion, i.KubeScheduler)
+	i.ETCD = override(override(dockerRegistry, i.SystemDefaultRegistry)+"/rancher/hardened-etcd:"+EtcdVersion, i.ETCD)
+	i.Pause = override(override(dockerRegistry, i.SystemDefaultRegistry)+"/rancher/pause:"+PauseVersion, i.Pause)
 }
 
 // Pull checks for preloaded images in dir. If they are available, nothing is done.

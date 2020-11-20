@@ -22,10 +22,11 @@ import (
 )
 
 type Config struct {
-	SystemDefaultRegistry string
-	CloudProviderName     string
-	CloudProviderConfig   string
-	AuditPolicyFile       string
+	CloudProviderName   string
+	CloudProviderConfig string
+	AuditPolicyFile     string
+	KubeletPath         string
+	Images              images.Images
 }
 
 var cisMode bool
@@ -78,12 +79,12 @@ func setup(clx *cli.Context, cfg Config) error {
 		auditPolicyFile = defaultAuditPolicyFile
 	}
 
-	images := images.New(cfg.SystemDefaultRegistry)
-	if err := defaults.Set(clx, images, dataDir); err != nil {
+	cfg.Images.SetDefaults()
+	if err := defaults.Set(clx, cfg.Images, dataDir); err != nil {
 		return err
 	}
 
-	execPath, err := bootstrap.Stage(dataDir, images)
+	execPath, err := bootstrap.Stage(dataDir, cfg.Images)
 	if err != nil {
 		return err
 	}
@@ -114,14 +115,19 @@ func setup(clx *cli.Context, cfg Config) error {
 		}
 	}
 
+	if cfg.KubeletPath == "" {
+		cfg.KubeletPath = "kubelet"
+	}
+
 	sp := podexecutor.StaticPodConfig{
-		Images:          images,
+		Images:          cfg.Images,
 		ImagesDir:       agentImagesDir,
 		ManifestsDir:    agentManifestsDir,
 		CISMode:         cisMode,
 		CloudProvider:   cpConfig,
 		DataDir:         dataDir,
 		AuditPolicyFile: auditPolicyFile,
+		KubeletPath:     cfg.KubeletPath,
 	}
 	executor.Set(&sp)
 
