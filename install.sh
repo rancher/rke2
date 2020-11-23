@@ -60,7 +60,7 @@ setup_env() {
 
     # --- make sure install channel has a value
     if [ -z "${INSTALL_RKE2_CHANNEL}" ]; then
-        INSTALL_RKE2_CHANNEL="stable"
+        INSTALL_RKE2_CHANNEL="latest"
     fi
 
     # --- make sure install type has a value
