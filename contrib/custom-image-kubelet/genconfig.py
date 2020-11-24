@@ -40,6 +40,11 @@ def main(release_url, data_dir, prefix):
             'data-dir': normpath(data_dir),
             }
 
+    try:
+        write_ecr_credentials(release, prefix)
+    except Exception as e:
+        raise Exception(f'Unable to write ECR credentials to registries.yaml: {e}') from e
+
     for image in IMAGES:
         alt_image = get_image_artifact(release, image)
         rke2_config[f'{image}-image'] = alt_image
@@ -49,11 +54,6 @@ def main(release_url, data_dir, prefix):
         write_chart_config(component, alt_image, f'{prefix}/{data_dir}')
 
     extract_archive(release, release_url, 'kubernetes-node-linux-amd64.tar.gz', f'{prefix}/{data_dir}')
-
-    try:
-        write_ecr_credentials(release, prefix)
-    except Exception as e:
-        logging.warning(f'Unable to write ECR credenials to registries.yaml: {e}')
 
     write_rke2_config(rke2_config, prefix)
 
