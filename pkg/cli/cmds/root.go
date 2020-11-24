@@ -64,7 +64,7 @@ var (
 		},
 		&cli.StringFlag{
 			Name:        "kubelet-path",
-			Usage:       "(agent/node) Override kubelet binary path",
+			Usage:       "(experimental/agent) Override kubelet binary path",
 			EnvVar:      "RKE2_KUBELET_PATH",
 			Destination: &config.KubeletPath,
 		},
