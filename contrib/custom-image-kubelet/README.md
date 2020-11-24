@@ -34,7 +34,7 @@ Installing
 On an Ubuntu host:
 
 ```bash
-curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION=v1.18.12-rc1+rke2r2 sh -
+curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION=v1.18.12-beta1+rke2r2 sh -
 
 sudo apt update
 sudo apt install -y python3-venv python3-wheel python3-pip
