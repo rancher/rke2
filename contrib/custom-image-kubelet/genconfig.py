@@ -1,29 +1,33 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
-import sys
 import io
 import logging
-import click
-import requests
-import boto3
+import os
+import re
+import stat
+import sys
 import tarfile
 from base64 import b64decode
-from yaml import load, dump
-from os.path import basename, normpath
 from collections import defaultdict
-from urllib.parse import urlparse
+from os.path import basename, normpath
 from shutil import copyfileobj
 
+import boto3
+import click
+import requests
+from yaml import dump, load
+
 try:
-    from yaml import CLoader as Loader, CDumper as Dumper
+    from yaml import CDumper as Dumper
+    from yaml import CLoader as Loader
 except ImportError:
-    from yaml import Loader, Dumper
+    from yaml import Dumper, Loader
 
 
 IMAGES = ['kube-apiserver', 'kube-controller-manager', 'kube-scheduler', 'pause', 'etcd']
 COMPONENTS = ['kube-proxy', 'coredns', 'metrics-server']
+ECR_REGEX = r'(?P<registry>.+)\.dkr\.ecr\.(?P<region>.+)\.amazonaws\.com'
 
 
 @click.command(context_settings={'max_content_width': 120})
@@ -53,7 +57,7 @@ def main(release_url, data_dir, prefix):
         alt_image = get_image_artifact(release, component)
         write_chart_config(component, alt_image, f'{prefix}/{data_dir}')
 
-    extract_archive(release, release_url, 'kubernetes-node-linux-amd64.tar.gz', f'{prefix}/{data_dir}')
+    extract_archive(release, 'kubernetes-node-linux-amd64.tar.gz', f'{prefix}/{data_dir}')
 
     write_rke2_config(rke2_config, prefix)
 
@@ -125,9 +129,8 @@ def write_chart_config(component, image, data_dir):
         dump(config_yaml, config_file, Dumper=Dumper)
 
 
-def extract_archive(release, release_url, name, data_dir):
+def extract_archive(release, name, data_dir):
     bin_dir = normpath(f'{data_dir}/opt/bin')
-    base_url = urlparse(release_url)
 
     try:
         os.makedirs(normpath(bin_dir), mode=0o0700)
@@ -137,8 +140,7 @@ def extract_archive(release, release_url, name, data_dir):
     for c in release.get('status', {}).get('components', []):
         for a in c.get('assets', []):
             if a['type'] == 'Archive' and a['name'] == name:
-                archive_url = base_url._replace(path=a['archive']['path']).geturl()
-                extract_network_tar(archive_url, bin_dir)
+                extract_network_tar(a['archive']['uri'], bin_dir)
 
 
 def extract_network_tar(archive_url, bin_dir):
@@ -150,7 +152,7 @@ def extract_network_tar(archive_url, bin_dir):
 
         with tarfile.open(fileobj=buf) as tar:
             for member in tar.getmembers():
-                if member.isreg():
+                if member.isreg() and member.mode & stat.S_IXUSR:
                     member.name = basename(member.name)
                     logging.info(f'Extracting {bin_dir}/{member.name}')
                     tar.extract(member, bin_dir)
@@ -159,15 +161,17 @@ def extract_network_tar(archive_url, bin_dir):
 def write_ecr_credentials(release, prefix):
     etc_dir = f'{prefix}/etc/rancher/rke2'
     registries = get_ecr_registries(release)
-    if not registries:
-        return
 
     registry_configs = dict()
     registry_regions = defaultdict(list)
 
     for registry in registries:
-        parts = registry.split('.')
-        registry_regions[parts[3]].append(parts[0])
+        match = re.match(ECR_REGEX, registry)
+        if match:
+            registry_regions[match.group('region')].append(match.group('registry'))
+
+    if not registry_regions:
+        return
 
     for region, registries in registry_regions.items():
         logging.info(f'Getting auth tokens for {registries} in {region}')
