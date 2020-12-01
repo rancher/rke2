@@ -2,7 +2,8 @@ RKE2 Image / Kubelet Override
 =====
 
 This repo contiains a python script that will generate configuration files and extract binaries from a Kubernetes release manifest YAML.
-Documentatation on the format for this manifest file is TBD.
+Releases should be in the format described by [releases.distro.eks.amazonaws.com/v1alpha1 Release](https://github.com/aws/eks-distro-build-tooling/blob/main/release/config/crds/distro.eks.amazonaws.com_releases.yaml).
+One example of a vendor providing releases in this format is [EKS Distro](https://github.com/aws/eks-distro#releases).
 
 The resulting configuration will override binaries and images for the following components:
 * coredns
