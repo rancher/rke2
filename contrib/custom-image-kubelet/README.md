@@ -1,7 +1,7 @@
 RKE2 Image / Kubelet Override
 =====
 
-This repo contiains a python script that will generate configuration files and extract binaries from a Kubernetes release manifest YAML.
+This repo contains a python script that will generate configuration files and extract binaries from a Kubernetes release manifest YAML.
 Releases should be in the format described by [releases.distro.eks.amazonaws.com/v1alpha1 Release](https://github.com/aws/eks-distro-build-tooling/blob/main/release/config/crds/distro.eks.amazonaws.com_releases.yaml).
 One example of a vendor providing releases in this format is [EKS Distro](https://github.com/aws/eks-distro#releases).
 
@@ -26,7 +26,7 @@ Requirements
 
 1. RKE2 v1.18.12-beta1+rke2r2 or newer (with image/kubelet override support)
 1. Python 3
-1. Access to AWS ECR (either via awcli IAM keys, or EC2 instance role)
+1. Access to AWS ECR (either via AWS CLI IAM keys, or EC2 instance role)
     *This is only necessary if the replacement RKE2 images are stored in ECR*
 
 Installing
