@@ -7,12 +7,12 @@ This document describes how RKE2 configures PodSecurityPolicies and NetworkPolic
 
 RKE2 can be ran with or without the `profile: cis-1.5` configuration parameter. This will cause it to apply different PodSecurityPolicies (PSPs) at start-up.
 
-* If ran with the `cis-1.5` profile, RKE2 will apply a restrictive policy called `global-restricted-psp` to all namespaces except `kube-system`. The `kube-system` namespace needs a less restrictive policy named `system-unrestricted-psp` in order to launch critical components.
-* If ran without the `cis-1.5` profile, RKE2 will apply a completely unrestricted policy called `global-unrestricted-psp`, which is the equivalent of running without the PSP admission controller enabled.
+* If running with the `cis-1.5` profile, RKE2 will apply a restrictive policy called `global-restricted-psp` to all namespaces except `kube-system`. The `kube-system` namespace needs a less restrictive policy named `system-unrestricted-psp` in order to launch critical components.
+* If running without the `cis-1.5` profile, RKE2 will apply a completely unrestricted policy called `global-unrestricted-psp`, which is the equivalent of running without the PSP admission controller enabled.
 
 RKE2 will put these policies in place upon initial startup, but will not modify them after that, unless explicitly triggered by the cluster operator as described below. This is to allow the operator to fully control the PSPs without RKE2's defaults adding interference.
 
-Creation and application of the PSPs is controlled by the presence or absence of certain annotations on the `kube-system` namespace. These map directly to the PSPs which can be created and are:
+The creation and application of the PSPs are controlled by the presence or absence of certain annotations on the `kube-system` namespace. These map directly to the PSPs which can be created and are:
 
  * `psp.rke2.io/global-restricted`
  * `psp.rke2.io/system-unrestricted`
@@ -25,7 +25,7 @@ The following logic is performed at startup for the policies and their annotatio
 * In the case of the `global-unrestricted-psp`, the policy is not recreated. This is to account for moving between CIS and non-CIS modes without making the cluster less secure.
 * At the time of creating a policy, cluster roles and cluster role bindings are also created to ensure the appropriate policies are put into use by default.
 
-So, after initial start-up, operators can modify or delete RKE2's policies and RKE2 will respect those changes. Additionally, to "reset" a policy, an operator just needs to delete the associated annotation from the `kube-system` namespace and restart RKE2.
+So, after the initial start-up, operators can modify or delete RKE2's policies and RKE2 will respect those changes. Additionally, to "reset" a policy, an operator just needs to delete the associated annotation from the `kube-system` namespace and restart RKE2.
 
 The policies are outlined below.
 
