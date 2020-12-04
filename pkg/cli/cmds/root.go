@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -191,6 +192,7 @@ func NewApp() *cli.App {
 	app.Version = fmt.Sprintf("%s (%s)", version.Version, version.GitCommit)
 	cli.VersionPrinter = func(c *cli.Context) {
 		fmt.Printf("%s version %s\n", app.Name, app.Version)
+		fmt.Printf("go version %s\n", runtime.Version())
 	}
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
