@@ -5,7 +5,7 @@ channels:
   latestRegexp: .*
   excludeRegexp: ^[^+]+-
 - name: testing
-  latestRegexp: .*
+  latestRegexp: -(alpha|beta|rc)
 github:
   owner: rancher
   repo: rke2
