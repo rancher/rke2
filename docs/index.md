@@ -27,3 +27,9 @@ It is known as RKE Government in order to convey the primary use cases and secto
 It is known as RKE2 because it is the future of the RKE distribution. Right now, it is entirely independent from RKE1, but our next phase of development will focus on a seamless upgrade path and feature parity with RKE1 when integrated with the Rancher multi-cluster management platform.
 
 Once we've completed the upgrade path and Rancher-integration feature parity work, RKE1 and RKE Government will converge into a single distribution.
+
+## Security
+
+Rancher Labs supports responsible disclosure and endeavors to resolve security
+issues in a reasonable timeframe. To report a security vulnerability, email
+[security@rancher.com](mailto:security@rancher.com).

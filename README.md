@@ -64,5 +64,9 @@ Finally, the location of the config file can be changed either through the cli a
 
 ## FAQ
 
-- [How is the different from RKE1 or K3s?](https://docs.rke2.io/#how-is-this-different-from-rke-or-k3s)
+- [How is this different from RKE1 or K3s?](https://docs.rke2.io/#how-is-this-different-from-rke-or-k3s)
 - [Why two names?](https://docs.rke2.io/#why-two-names)
+
+## Security
+
+Security issues in RKE2 can be reported by sending an email to [security@rancher.com](mailto:security@rancher.com). Please do not open security issues here.
