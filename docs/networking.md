@@ -1,26 +1,22 @@
 # Networking
 
-This page explains how CoreDNS, the Nginx-Ingress controller, and Klipper service load balancer work within RKE2.
+This page explains how CoreDNS, the Nginx-Ingress controller work within RKE2.
 
 Refer to the [Installation Network Options](install/network_options.md) page for details on Canal configuration options, or how to set up your own CNI.
 
 For information on which ports need to be opened for RKE2, refer to the [Installation Requirements](install/requirements.md).
 
 - [CoreDNS](#coredns)
-- [Nginx-Ingress Controller](#nginx-ingress-controller)
-- [Service Load Balancer](#service-load-balancer)
-  - [How the Service LB Works](#how-the-service-lb-works)
-  - [Usage](#usage)
-  - [Excluding the Service LB from Nodes](#excluding-the-service-lb-from-nodes)
-  - [Disabling the Service LB](#disabling-the-service-lb)
+- [Nginx Ingress Controller](#nginx-ingress-controller)
+- [Nodes Without a Hostname](#nodes-without-a-hostname)
 
-# CoreDNS
+## CoreDNS
 
 CoreDNS is deployed by default when starting the server. To disable, run each server with `disable: rke2-coredns` option in your configuration file.
 
 If you don't install CoreDNS, you will need to install a cluster DNS provider yourself.
 
-# Nginx Ingress Controller
+## Nginx Ingress Controller
 
 [nginx-ingress](https://github.com/kubernetes/ingress-nginx) is an Ingress controller that uses ConfigMap to store the nginx configuration.
 
@@ -30,6 +26,6 @@ Nginx-ingress can be configured by creating a [HelmChartConfig manifest](helm.md
 
 To disable it, start each server with the `disable: rke2-ingress-nginx` option in your configuration file.
 
-# Nodes Without a Hostname
+## Nodes Without a Hostname
 
 Some cloud providers, such as Linode, will create machines with "localhost" as the hostname and others may not have a hostname set at all. This can cause problems with domain name resolution. You can run RKE2 with the `node-name` parameter and this will pass the node name to resolve this issue.
