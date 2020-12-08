@@ -77,7 +77,7 @@ spec:
   prepare:
     args:
     - prepare
-    - rke2-server
+    - server-plan
     image: rancher/rke2-upgrade
   serviceAccountName: system-upgrade
   cordon: true
