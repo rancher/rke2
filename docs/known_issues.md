@@ -6,6 +6,17 @@ This section contains current known issues and limitations with rke2. If you com
 
 Firewalld conflicts with RKE2's default Canal (Calico + Flannel) networking stack. To avoid unexpected behavior, firewalld should be disabled on systems running RKE2.
 
+## Istio in Selinux Enforcing System Fails by Default
+
+This is due to just-in-time kernel module loading of rke2, which is disallowed under Selinux unless the container is privileged.
+To allow Istio to run under these conditions, it requires two steps:
+1. [Enable CNI](https://istio.io/latest/docs/setup/additional-setup/cni/) as part of the Istio install. Please note that this [feature](https://istio.io/latest/about/feature-stages/) is still in Alpha state at the time of this writing.
+Ensure `values.cni.cniBinDir=/opt/cni/bin` and `values.cni.cniConfDir=/etc/cni/net.d`
+2. After the install is complete, there should be `cni-node` pods in a CrashLoopBackoff. Manually edit their daemonset to include `securityContext.privileged: true` on the `install-cni` container.
+
+This is also possible to do directly [through Rancher](https://github.com/rancher/rancher/issues/27377#issuecomment-739075400), if desired.
+For more information regarding exact failures with detailed logs when not following these steps, please see [Issue 504](https://github.com/rancher/rke2/issues/504).
+
 ## Control Groups V2
 
 Linux distributions, more and more, are shipping with kernels and userspaces that support cgroups v2,
