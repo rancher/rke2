@@ -3,7 +3,7 @@
 
 You can upgrade rke2 by using the installation script, or by manually installing the binary of the desired version.
 
->**Note:** When upgrading, upgrade server nodes first one at a time, then any worker nodes.
+>**Note:** Upgrade the server nodes first, one at a time. Once all servers have been upgraded, you may then upgrade agent nodes.
 
 ### Release Channels
 
