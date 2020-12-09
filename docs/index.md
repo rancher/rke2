@@ -21,10 +21,17 @@ From RKE1, it inherits close alignment with upstream Kubernetes. In places K3s h
 Importantly, RKE2 does not rely on Docker as RKE1 does. RKE1 leveraged Docker for deploying and managing the control plane components as well as the container runtime for Kubernetes. RKE2 launches control plane components as static pods, managed by the kubelet. The embedded container runtime is containerd.
 
 ## Why two names?
+
 There are a few reasons why this distribution is known as both RKE2 and RKE Government.
 It is known as RKE Government in order to convey the primary use cases and sector it currently targets.
 
-It is known as RKE2 because it is the future of the RKE distribution. Right now, it is entirely independent from RKE1, but our next phase of development will focus on a seamless upgrade path and feature parity with RKE1 when integrated with the Rancher multi-cluster management platform.
+It is known as RKE2 because it is the future of the RKE distribution. Right now, it is entirely independent from RKE1.
+
+## Can I upgrade from RKE1 to RKE2?
+
+We do not currently support upgrades from RKE1 or K3s to RKE2.
+
+Our next phase of development will focus on a seamless upgrade path and feature parity with RKE1, when integrated with the Rancher multi-cluster management platform.
 
 Once we've completed the upgrade path and Rancher-integration feature parity work, RKE1 and RKE Government will converge into a single distribution.
 
