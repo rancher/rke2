@@ -29,6 +29,10 @@ fi
 #   - INSTALL_RKE2_VERSION
 #     Version of rke2 to download from github.
 #
+#   - INSTALL_RKE2_RPM_RELEASE_VERSION
+#     Version of the rke2 RPM release to install.
+#     Format would be like "1.el7" or "2.el8"
+#
 
 
 # info logs the given argument at info log level.
@@ -214,10 +218,6 @@ unpack_tarball() {
 }
 
 do_install_rpm() {
-    rpm_site="rpm.rancher.io"
-    if [ "${1}" = "testing" ]; then
-        rpm_site="rpm-${1}.rancher.io"
-    fi
     maj_ver="7"
     if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
         dist_version="$(. /etc/os-release && echo "$VERSION_ID")"
@@ -231,21 +231,46 @@ do_install_rpm() {
                 ;;
         esac
     fi
-    cat <<-EOF >"/etc/yum.repos.d/rancher-rke2-${1}.repo"
-[rancher-rke2-common-${1}]
+    case "${INSTALL_RKE2_CHANNEL}" in
+        v*.*)
+            # We are operating with a version-based channel, so we should parse our version out
+            rke2_majmin=$(echo "${INSTALL_RKE2_CHANNEL}" | sed -E -e "s/^v([0-9]+\.[0-9]+).*/\1/")
+            rke2_rpm_channel=$(echo "${INSTALL_RKE2_CHANNEL}" | sed -E -e "s/^v[0-9]+\.[0-9]+-(.*)/\1/")
+            ;;
+        *)
+            rke2_majmin="1.18"
+            rke2_rpm_channel=${1}
+            ;;
+    esac
+    rpm_site="rpm.rancher.io"
+    if [ "${rke2_rpm_channel}" = "testing" ]; then
+        rpm_site="rpm-${rke2_rpm_channel}.rancher.io"
+    fi
+    rm -f /etc/yum.repos.d/rancher-rke2*.repo
+    cat <<-EOF >"/etc/yum.repos.d/rancher-rke2.repo"
+[rancher-rke2-common-${rke2_rpm_channel}]
 name=Rancher RKE2 Common (${1})
-baseurl=https://${rpm_site}/rke2/${1}/common/centos/${maj_ver}/noarch
+baseurl=https://${rpm_site}/rke2/${rke2_rpm_channel}/common/centos/${maj_ver}/noarch
 enabled=1
 gpgcheck=1
 gpgkey=https://${rpm_site}/public.key
-[rancher-rke2-1-18-${1}]
-name=Rancher RKE2 1.18 (${1})
-baseurl=https://${rpm_site}/rke2/${1}/1.18/centos/${maj_ver}/x86_64
+[rancher-rke2-${rke2_majmin}-${rke2_rpm_channel}]
+name=Rancher RKE2 ${rke2_majmin} (${1})
+baseurl=https://${rpm_site}/rke2/${rke2_rpm_channel}/${rke2_majmin}/centos/${maj_ver}/x86_64
 enabled=1
 gpgcheck=1
 gpgkey=https://${rpm_site}/public.key
 EOF
-    yum -y install "rke2-${INSTALL_RKE2_TYPE}"
+    if [ -z ${INSTALL_RKE2_VERSION} ]; then
+        yum -y install "rke2-${INSTALL_RKE2_TYPE}"
+    else
+        rke2_rpm_version=$(echo "${INSTALL_RKE2_VERSION}" | sed -E -e "s/[\+-]/~/g" | sed -E -e "s/v(.*)/\1/")
+        if [ -n "${INSTALL_RKE2_RPM_RELEASE_VERSION}" ]; then
+            yum -y install "rke2-${INSTALL_RKE2_TYPE}-${rke2_rpm_version}-${INSTALL_RKE2_RPM_RELEASE_VERSION}"
+        else
+            yum -y install "rke2-${INSTALL_RKE2_TYPE}-${rke2_rpm_version}"
+        fi
+    fi
 }
 
 do_install_tar() {
