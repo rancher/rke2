@@ -1,6 +1,6 @@
 # Networking
 
-This page explains how CoreDNS, the Nginx-Ingress controller work within RKE2.
+This page explains how CoreDNS and the Nginx-Ingress controller work within RKE2.
 
 Refer to the [Installation Network Options](install/network_options.md) page for details on Canal configuration options, or how to set up your own CNI.
 
