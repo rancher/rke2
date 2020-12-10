@@ -203,14 +203,6 @@ func Test_deployPodSecurityPolicyFromYaml(t *testing.T) {
 			if err := deployPodSecurityPolicyFromYaml(tt.args.ctx, tt.args.cs, tt.args.pspYaml); (err != nil) != tt.wantErr {
 				t.Errorf("deployPodSecurityPolicyFromYaml() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			//verify that the existing PSP has in fact been updated from the given YAML.
-			if tt.name == "successfully create PSP" || tt.name == "successfully update PSP" {
-				val, _ := tt.args.cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), testPSPName, metav1.GetOptions{})
-				annocationsLen := len(val.Annotations)
-				if annocationsLen != 4 {
-					t.Errorf("expected 4 but got %d", annocationsLen)
-				}
-			}
 		})
 	}
 }
