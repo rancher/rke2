@@ -24,7 +24,7 @@ The remaining RKE2 components include:
 Requirements
 ----
 
-1. RKE2 v1.18.13-beta1+rke2r2 or newer (with image/kubelet override support)
+1. RKE2 v1.18.13+rke2r1 or newer (with image/kubelet override support)
 1. Python 3
 1. Access to AWS ECR (either via AWS CLI IAM keys, or EC2 instance role)
     *This is only necessary if the replacement RKE2 images are stored in ECR*
