@@ -6,17 +6,67 @@ From time to time we need to update the version of Kubernetes used by RKE2. This
 
 ### Container Image
 
-Create a new release tag at https://github.com/rancher/image-build-kube-proxy
+Create a new release tag at the [image-build-kube-proxy](https://github.com/rancher/image-build-kube-proxy) repo.
+
+* Click "Releases"
+* Click "Draft a new release"
+* Enter the new release number (the new k8s version) into the "Tag version" box
+* Click the "Publish release" button. 
+
+This will take a few minutes for CI to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kube-proxy).
 
 ### Helm Chart
 
-Create a new release asset for in the [rke2-charts](github.com/rancher/rke2-charts) repository. Instructions for doing so can be found in the repo. This is necessary as the RKE2 build process will check for that chart and source it into one of its build artifacts.
+RKE2 depends on it's [Helm Charts](https://github.com/rancher/rke2-charts) being up-to-date with the expected versions for the Kubernetes components. The build process downloads these charts and bundles them into the runtime image.
+
+Create a PR in [rke2-charts](https://github.com/rancher/rke2-charts) that increments the version of `kube-proxy` in `packages/rke2-kube-proxy/charts/values.yaml`. Upon getting 2 approvals and merging, CI will create the needed build artifact that RKE2 will use.
 
 ## Update RKE2
 
-The following files have references that will need to be updated in the respective locations. Replace the found version with the desired version.
+The following files have references that will need to be updated in the respective locations. Replace the found version with the desired version. There are also references in documentation that should be updated and kept in sync. 
 
-* Dockerfile: `RUN CHART_VERSION="v1.18.13"     CHART_FILE=/charts/rke2-kube-proxy.yaml`
-* Dockerfile: `FROM rancher/k3s:v1.18.13-k3s1 AS k3s`
-* images.go:  `KubernetesVersion = "v1.18.13"`
-* version.sh: `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.18.13}`
+* channels.yaml: `latest: v1.18.13+rke2r1`
+* Dockerfile:    `RUN CHART_VERSION="v1.18.13"     CHART_FILE=/charts/rke2-kube-proxy.yaml`
+* Dockerfile:    `FROM rancher/k3s:v1.18.13-k3s1 AS k3s`
+* images.go:     `KubernetesVersion = "v1.18.13"`
+* version.sh:    `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.18.13}`
+
+Once these changes are made, submit a PR for review and let CI complete. When CI is finished and 2 approvals are had, merge the PR. CI will run for te master merge. 
+
+## RKE2 Release RC
+
+Next, we need to create a release candidate (RC). 
+
+* Click "Releases"
+* Click "Draft new release"
+* Enter the desired version into the "Tag version" box. 
+    * Example tag: `v1.18.13-rc1+rke2r1`
+
+CI will run and build the release assets as well as kick off an image build for RKE2 Upgrade images](https://hub.docker.com/r/rancher/rke2-upgrade/tags?page=1&ordering=last_updated)
+
+### RKE2 Packaging
+
+Along with creating a new RKE2 release, we need to trigger a new build of the associated RPM. These are found in the [rke2-packaging](https://github.com/rancher/rke2-packaging) repository. We need to create a new release here and the process is nearly identical to the above steps.
+
+* Click "Releases"
+* Click "Draft new release"
+* Enter the desired version into the "Tag version" box. 
+    * Example tag: `v1.18.13-rc1+rke2r1.testing.0`
+    * The first part of the tag here must match the tag created in the RKE2 repo.
+
+When CI completes, let QA know so they can perform testing.
+
+Once QA signs off on the RC, it's time to cut the primary release. Go to the [RKE2](https://github.com/rancher/rke2) repository.
+
+* Click "Releases"
+* Click "Draft new release"
+* Enter the desired version into the "Tag version" box. 
+    * Example tag: `v1.18.13+rke2r1`
+
+Once complete, the process is repeated in the [rke2-packaging](https://github.com/rancher/rke2-packaging) repository.
+
+* Click "Releases"
+* Click "Draft new release"
+* Enter the desired version into the "Tag version" box. 
+    * Example tag: `v1.18.13+rke2r1.testing.0`
+    * The first part of the tag here must match the tag created in the RKE2 repo.
