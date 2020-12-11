@@ -16,7 +16,7 @@ Create a new release asset for in the [rke2-charts](github.com/rancher/rke2-char
 
 The following files have references that will need to be updated in the respective locations. Replace the found version with the desired version.
 
-* Dockerfile: `RUN CHART_VERSION="v1.18.10"     CHART_FILE=/charts/rke2-kube-proxy.yaml`
-* Dockerfile: `FROM rancher/k3s:v1.18.10-k3s1 AS k3s`
-* images.go:  `KubernetesVersion = "v1.18.10"`
-* version.sh: `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.18.10}`
+* Dockerfile: `RUN CHART_VERSION="v1.18.13"     CHART_FILE=/charts/rke2-kube-proxy.yaml`
+* Dockerfile: `FROM rancher/k3s:v1.18.13-k3s1 AS k3s`
+* images.go:  `KubernetesVersion = "v1.18.13"`
+* version.sh: `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.18.13}`

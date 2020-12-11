@@ -24,7 +24,7 @@ The remaining RKE2 components include:
 Requirements
 ----
 
-1. RKE2 v1.18.12-beta1+rke2r2 or newer (with image/kubelet override support)
+1. RKE2 v1.18.13+rke2r1 or newer (with image/kubelet override support)
 1. Python 3
 1. Access to AWS ECR (either via AWS CLI IAM keys, or EC2 instance role)
     *This is only necessary if the replacement RKE2 images are stored in ECR*
@@ -35,7 +35,7 @@ Installing
 On an Ubuntu host:
 
 ```bash
-curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION=v1.18.12-beta1+rke2r2 sh -
+curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION=v1.18.13+rke2r1 sh -
 
 sudo apt update
 sudo apt install -y python3-venv python3-wheel python3-pip
