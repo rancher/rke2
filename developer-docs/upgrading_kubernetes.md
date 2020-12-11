@@ -25,7 +25,6 @@ Create a PR in [rke2-charts](https://github.com/rancher/rke2-charts) that increm
 
 The following files have references that will need to be updated in the respective locations. Replace the found version with the desired version. There are also references in documentation that should be updated and kept in sync. 
 
-* channels.yaml: `latest: v1.18.13+rke2r1`
 * Dockerfile:    `RUN CHART_VERSION="v1.18.13"     CHART_FILE=/charts/rke2-kube-proxy.yaml`
 * Dockerfile:    `FROM rancher/k3s:v1.18.13-k3s1 AS k3s`
 * images.go:     `KubernetesVersion = "v1.18.13"`
@@ -56,7 +55,9 @@ Along with creating a new RKE2 release, we need to trigger a new build of the as
 
 When CI completes, let QA know so they can perform testing.
 
-Once QA signs off on the RC, it's time to cut the primary release. Go to the [RKE2](https://github.com/rancher/rke2) repository.
+### Primary Release
+
+Once QA signs off on the RC, it's time to cut the primary release. Go to the [rke2](https://github.com/rancher/rke2) repository.
 
 * Click "Releases"
 * Click "Draft new release"
@@ -70,3 +71,10 @@ Once complete, the process is repeated in the [rke2-packaging](https://github.co
 * Enter the desired version into the "Tag version" box. 
     * Example tag: `v1.18.13+rke2r1.testing.0`
     * The first part of the tag here must match the tag created in the RKE2 repo.
+
+### Updating Channel Server
+
+After all of the builds are complete and QA has signed off on the release, we need to update the channel server. This is done by editng the `channels.yaml` file at the root of the [rke2](https://github.com/rancher/rke2) repository.
+
+* Update the line: `latest: <release>` to be the recent release. e.g. `v1.18.13+rke2r1`.
+* Verify updated in the JSON output from a call [here](https://update.rke2.io/).
