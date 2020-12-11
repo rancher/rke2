@@ -149,7 +149,7 @@ By default, RKE2 creates these files with `root:root` ownership. No manual remed
 Ensure that the etcd pod specification file permissions are set to `644` or more restrictive (Scored)
 <details>
 <summary>Rationale</summary>
-The etcd pod specification file /var/lib/rancher/rke2/agent/pod-manifests/etcd.yaml controls various parameters that set the behavior of the etcd service in the master node. etcd is a highly- available key-value store which Kubernetes uses for persistent storage of all of its REST API object. You should restrict its file permissions to maintain the integrity of the file. The file should be writable by only the administrators on the system.
+The etcd pod specification file /var/lib/rancher/rke2/agent/pod-manifests/etcd.yaml controls various parameters that set the behavior of the etcd service in the master node. etcd is a highly-available key-value store which Kubernetes uses for persistent storage of all of its REST API object. You should restrict its file permissions to maintain the integrity of the file. The file should be writable by only the administrators on the system.
 </details>
 
 **Result:** Pass
@@ -168,7 +168,7 @@ By default, RKE2 creates these files with `644` permissions. No manual remediati
 Ensure that the etcd pod specification file ownership is set to `root:root` (Scored)
 <details>
 <summary>Rationale</summary>
-The etcd pod specification file /var/lib/rancher/rke2/agent/pod-manifests/etcd.yaml controls various parameters that set the behavior of the etcd service in the master node. etcd is a highly- available key-value store which Kubernetes uses for persistent storage of all of its REST API object. You should set its file ownership to maintain the integrity of the file. The file should be owned by root:root.
+The etcd pod specification file /var/lib/rancher/rke2/agent/pod-manifests/etcd.yaml controls various parameters that set the behavior of the etcd service in the master node. etcd is a highly-available key-value store which Kubernetes uses for persistent storage of all of its REST API object. You should set its file ownership to maintain the integrity of the file. The file should be owned by root:root.
 </details>
 
 **Result:** Pass
@@ -203,7 +203,7 @@ RKE2 deploys the default CNI, Canal, using a Helm chart. The chart is defined as
 
 
 #### 1.1.10
-Ensure that the Container Network Interface file ownership is set to root:root (Not Scored)
+Ensure that the Container Network Interface file ownership is set to `root:root` (Not Scored)
 <details>
 <summary>Rationale</summary>
 Container Network Interface provides various networking options for overlay networking. You should consult their documentation and restrict their respective file permissions to maintain the integrity of those files. Those files should be owned by root:root.
@@ -514,7 +514,7 @@ Run the below command on the master node.
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-Verify that the --basic-auth-file argument does not exist.
+Verify that the `--token-auth-file` argument does not exist.
 
 **Remediation:**
 By default, RKE2 does not run with basic authentication enabled. No manual remediation is needed.
@@ -559,7 +559,7 @@ Run the below command on the master node.
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-Verify that the --kubelet-client-certificate and --kubelet-client-key arguments exist and they are set as appropriate.
+Verify that the `--kubelet-client-certificate` and `--kubelet-client-key` arguments exist and they are set as appropriate.
 
 **Remediation:**
 By default, RKE2 kube-apiserver is ran with these arguments for secure communication with kubelet. No manual remediation is needed.
@@ -1832,7 +1832,7 @@ root:root
 ```
 
 **Remediation:**
-By default, RKE2 creates `/var/lib/rancher/rke2/server/tls/client-ca.crt` with root:root ownership.
+By default, RKE2 creates `/var/lib/rancher/rke2/server/tls/client-ca.crt` with `root:root` ownership.
 
 
 #### 4.1.9
