@@ -22,13 +22,28 @@ If you don't install CoreDNS, you will need to install a cluster DNS provider yo
 
 # Nginx Ingress Controller
 
-[nginx-ingress](https://github.com/kubernetes/ingress-nginx) is an Ingress controller that uses ConfigMap to store the nginx configuration.
+[nginx-ingress](https://github.com/kubernetes/ingress-nginx) is an Ingress controller powered by NGINX that uses a ConfigMap to store the NGINX configuration.
 
-Nginx-ingress is deployed by default when starting the server. The ingress controller will use ports 80, and 443 on the host (i.e. these will not be usable for HostPort or NodePort).
+`nginx-ingress` is deployed by default when starting the server. Ports 80 and 443 will be bound by the ingress controller in its default configuration, making these unusable for HostPort or NodePort services in the cluster.
 
-Nginx-ingress can be configured by creating a [HelmChartConfig manifest](helm.md#customizing-packaged-components-with-helmchartconfig) to customize the `rke2-nginx-ingress` HelmChart values. For more information, refer to the official [nginx-ingress Helm Configuration Parameters](https://github.com/helm/charts/tree/cfcf87ac254dcbb2d4aa1c866e20dd7e8e55b8e5/stable/nginx-ingress#configuration).
+Configuration options can be specified by creating a [HelmChartConfig manifest](helm.md#customizing-packaged-components-with-helmchartconfig) to customize the `rke2-ingress-nginx` HelmChart values. For example, a HelmChartConfig at `/var/lib/rancher/rke2/server/manifests/rke2-ingress-nginx-config.yaml` with the following contents sets `use-forwarded-headers` to `"true"` in the ConfigMap storing the NGINX config:
+```yaml
+# /var/lib/rancher/rke2/server/manifests/rke2-ingress-nginx-config.yaml
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-ingress-nginx
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    controller:
+      config:
+        use-forwarded-headers: "true"
+```
+For more information, refer to the official [nginx-ingress Helm Configuration Parameters](https://github.com/kubernetes/ingress-nginx/tree/9c0a39636da11b7e262ddf0b4548c79ae9fa1667/charts/ingress-nginx#configuration).
 
-To disable it, start each server with the `disable: rke2-ingress-nginx` option in your configuration file.
+To disable the NGINX ingress controller, start each server with the `disable: rke2-ingress-nginx` option in your configuration file.
 
 # Nodes Without a Hostname
 
