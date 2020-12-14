@@ -7,7 +7,11 @@ if [ ! $(id -u) -eq 0 ]; then
     exit 1
 fi
 
-: "${INSTALL_RKE2_ROOT:="/usr/local"}"
+if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
+    : "${INSTALL_RKE2_ROOT:="/usr"}"
+else
+    : "${INSTALL_RKE2_ROOT:="/usr/local"}"
+fi
 
 uninstall_killall()
 {
@@ -30,6 +34,13 @@ uninstall_disable_services()
 
 uninstall_remove_files()
 {
+    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
+        rm -f /etc/yum.repos.d/rancher-rke2*.repo
+        rm -f /etc/sysconfig/rke2-server
+
+        yum remove -y rke2-*
+    fi
+
     find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.service -type f -delete
     rm -f "${INSTALL_RKE2_ROOT}/bin/rke2"
     rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
