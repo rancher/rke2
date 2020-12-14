@@ -43,7 +43,7 @@ uninstall_remove_files()
     rm -rf /var/lib/kubelet
     rm -rf /var/lib/rancher/rke2
 
-    if [ -f "/etc/redhat-release" ]; then
+    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
         rm -f /etc/yum.repos.d/rancher-rke2.repo
         rm -f /etc/sysconfig/rke2-server
 
