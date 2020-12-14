@@ -40,7 +40,7 @@ uninstall_remove_files()
 
         yum remove -y rke2-*
     fi
-    
+
     find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.service -type f -delete
     rm -f "${INSTALL_RKE2_ROOT}/bin/rke2"
     rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
@@ -48,8 +48,6 @@ uninstall_remove_files()
     rm -rf /etc/rancher/rke2
     rm -rf /var/lib/kubelet
     rm -rf /var/lib/rancher/rke2
-
-
 }
 
 uninstall_remove_self()
