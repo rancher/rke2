@@ -7,7 +7,11 @@ if [ ! $(id -u) -eq 0 ]; then
     exit 1
 fi
 
-: "${INSTALL_RKE2_ROOT:="/usr/local"}"
+if [ -f "/etc/redhat-release" ]; then
+    : "${INSTALL_RKE2_ROOT:="/usr"}"
+else
+    : "${INSTALL_RKE2_ROOT:="/usr/local"}"
+fi
 
 uninstall_killall()
 {
@@ -30,6 +34,7 @@ uninstall_disable_services()
 
 uninstall_remove_files()
 {
+
     find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.service -type f -delete
     rm -f "${INSTALL_RKE2_ROOT}/bin/rke2"
     rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
@@ -37,6 +42,13 @@ uninstall_remove_files()
     rm -rf /etc/rancher/rke2
     rm -rf /var/lib/kubelet
     rm -rf /var/lib/rancher/rke2
+
+    if [ -f "/etc/redhat-release" ]; then
+        rm -f /etc/yum.repos.d/rancher-rke2.repo
+        rm -f /etc/sysconfig/rke2-server
+
+        yum remove rke2-server
+    fi
 }
 
 uninstall_remove_self()
