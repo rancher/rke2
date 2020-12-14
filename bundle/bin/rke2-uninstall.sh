@@ -7,7 +7,7 @@ if [ ! $(id -u) -eq 0 ]; then
     exit 1
 fi
 
-if [ -f "/etc/redhat-release" ]; then
+if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
     : "${INSTALL_RKE2_ROOT:="/usr"}"
 else
     : "${INSTALL_RKE2_ROOT:="/usr/local"}"
