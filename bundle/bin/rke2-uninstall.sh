@@ -35,10 +35,9 @@ uninstall_disable_services()
 uninstall_remove_files()
 {
     if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
-        rm -f /etc/yum.repos.d/rancher-rke2*.repo
-        rm -f /etc/sysconfig/rke2-server
+        yum remove -y "rke2-*"
 
-        yum remove -y rke2-*
+        rm -f /etc/yum.repos.d/rancher-rke2*.repo
     fi
 
     find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.service -type f -delete
