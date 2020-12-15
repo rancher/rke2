@@ -71,8 +71,12 @@ Once complete, the process is repeated in the [rke2-packaging](https://github.co
 * Click "Releases"
 * Click "Draft new release"
 * Enter the desired version into the "Tag version" box. 
-    * Example tag: `v1.18.13+rke2r1.latest.0`
+    * Example tag: `v1.18.13+rke2r1.testing.0`
     * The first part of the tag here must match the tag created in the RKE2 repo.
+
+Make sure that CI passes. This is for RPM availabilty in the testing channel.
+
+Once complete, perform the steps above again however this time, use the tag "latest" tag. E.g. `v1.18.13+rke2r1.latest.0`.
 
 We choose "latest" here since we want to wait at least 24 hours in case the community finds an issue. Patches will need at least 24 hours. We'll then wait up to 7 days until marking the release as "stable".
 
