@@ -238,6 +238,7 @@ do_install_rpm() {
             rke2_rpm_channel=$(echo "${INSTALL_RKE2_CHANNEL}" | sed -E -e "s/^v[0-9]+\.[0-9]+-(.*)/\1/")
             # If our regex fails to capture a "sane" channel out of the specified channel, fall back to `stable`
             if [ "${rke2_rpm_channel}" = ${INSTALL_RKE2_CHANNEL} ]; then
+                info "using stable RPM repositories"
                 rke2_rpm_channel="stable"
             fi
             ;;
