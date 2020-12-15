@@ -50,7 +50,7 @@ To uninstall RKE2 installed via the RPM method from your system, simply run the 
 
     ```
 
-    Now run the rke2-uninstall.sh script. This will call also the rke2-killall.sh.
+    Now run the rke2-uninstall.sh script. This will also call the rke2-killall.sh.
     
     ```bash
     /usr/local/bin/rke2-uninstall.sh
