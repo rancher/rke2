@@ -64,13 +64,17 @@ Once QA signs off on the RC, it's time to cut the primary release. Go to the [rk
 * Enter the desired version into the "Tag version" box. 
     * Example tag: `v1.18.13+rke2r1`
 
+Leave the release as "prerelease". This will be unchecked as soon as CI completes successfully.
+
 Once complete, the process is repeated in the [rke2-packaging](https://github.com/rancher/rke2-packaging) repository.
 
 * Click "Releases"
 * Click "Draft new release"
 * Enter the desired version into the "Tag version" box. 
-    * Example tag: `v1.18.13+rke2r1.testing.0`
+    * Example tag: `v1.18.13+rke2r1.latest.0`
     * The first part of the tag here must match the tag created in the RKE2 repo.
+
+We choose "latest" here since we want to wait at least 24 hours in case the community finds an issue. Patches will need at least 24 hours. We'll then wait up to 7 days until marking the release as "stable".
 
 ### Updating Channel Server
 
