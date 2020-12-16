@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	DisableItems = "rke2-canal, rke2-coredns, rke2-ingress, rke2-kube-proxy, rke2-metrics-server"
+	DisableItems = "rke2-canal, rke2-coredns, rke2-ingress-nginx, rke2-kube-proxy, rke2-metrics-server"
 	rke2Path     = "/var/lib/rancher/rke2"
 )
 
