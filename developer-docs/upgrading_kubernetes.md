@@ -25,10 +25,10 @@ Create a PR in [rke2-charts](https://github.com/rancher/rke2-charts) that increm
 
 The following files have references that will need to be updated in the respective locations. Replace the found version with the desired version. There are also references in documentation that should be updated and kept in sync. 
 
-* Dockerfile:    `RUN CHART_VERSION="v1.19.5"     CHART_FILE=/charts/rke2-kube-proxy.yaml`
-* Dockerfile:    `FROM rancher/k3s:v1.19.5-k3s1 AS k3s`
-* images.go:     `KubernetesVersion = "v1.19.5"`
-* version.sh:    `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.19.5}`
+* Dockerfile: `RUN CHART_VERSION="v1.19.5"     CHART_FILE=/charts/rke2-kube-proxy.yaml`
+* Dockerfile: `FROM rancher/k3s:v1.19.5-k3s1 AS k3s`
+* images.go:  `KubernetesVersion = "v1.19.5"`
+* version.sh: `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.19.5}`
 
 Once these changes are made, submit a PR for review and let CI complete. When CI is finished and 2 approvals are had, merge the PR. CI will run for te master merge. 
 
