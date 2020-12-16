@@ -86,3 +86,8 @@ After all of the builds are complete and QA has signed off on the release, we ne
 
 * Update the line: `latest: <release>` to be the recent release. e.g. `v1.18.13+rke2r1`.
 * Verify updated in the JSON output from a call [here](https://update.rke2.io/).
+
+### Promoting to Stable
+
+After 24 hours, we'll promote the release to stable by updating the channel server's config as we did at above, however this time changing "latest" to "stable". We need to do the same thing for RPM's too. This involves the same steps for RPM releases but changing "latest" to "stable" in the release name. E.g. `v1.18.13+rke2r1.stable.0`.
+
