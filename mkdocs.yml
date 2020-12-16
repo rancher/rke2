@@ -16,6 +16,8 @@ plugins:
 markdown_extensions:
 - codehilite
 - admonition
+- pymdownx.tabbed
+- pymdownx.superfences
 - toc:
     permalink: true
 nav:

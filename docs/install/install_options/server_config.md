@@ -37,7 +37,7 @@ OPTIONS:
    --etcd-snapshot-schedule-cron value  (db) Snapshot interval time in cron spec. eg. every 5 hours '* */5 * * *' (default: "0 */12 * * *")
    --etcd-snapshot-retention value      (db) Number of snapshots to retain (default: 5)
    --etcd-snapshot-dir value            (db) Directory to save db snapshots. (Default location: ${data-dir}/db/snapshots)
-   --disable value                      (components) Do not deploy packaged components and delete any deployed components (valid items: rke2-canal, rke2-coredns, rke2-ingress, rke2-kube-proxy, rke2-metrics-server)
+   --disable value                      (components) Do not deploy packaged components and delete any deployed components (valid items: rke2-canal, rke2-coredns, rke2-ingress-nginx, rke2-kube-proxy, rke2-metrics-server)
    --node-name value                    (agent/node) Node name [$RKE2_NODE_NAME]
    --node-label value                   (agent/node) Registering and starting kubelet with set of labels
    --node-taint value                   (agent/node) Registering kubelet with set of taints
