@@ -53,8 +53,8 @@ require (
 	github.com/containerd/containerd v1.4.3 // indirect
 	github.com/docker/docker v17.12.0-ce-rc1.0.20200916142827-bd33bbf0497b+incompatible // indirect
 	github.com/google/go-containerregistry v0.0.0-20190617215043-876b8855d23c
+	github.com/k3s-io/helm-controller v0.8.0
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/helm-controller v0.7.3
 	github.com/rancher/k3s v1.19.2-0.20201208230637-989c936993fb
 	github.com/rancher/wrangler v0.6.1
 	github.com/sirupsen/logrus v1.6.0

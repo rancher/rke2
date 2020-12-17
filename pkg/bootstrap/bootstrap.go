@@ -18,9 +18,9 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/mutate"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
+	helmv1 "github.com/k3s-io/helm-controller/pkg/apis/helm.cattle.io/v1"
+	"github.com/k3s-io/helm-controller/pkg/helm"
 	errors2 "github.com/pkg/errors"
-	helmv1 "github.com/rancher/helm-controller/pkg/apis/helm.cattle.io/v1"
-	"github.com/rancher/helm-controller/pkg/helm"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/wrangler/pkg/merr"
 	"github.com/rancher/wrangler/pkg/schemes"
@@ -124,9 +124,9 @@ func Stage(dataDir string, imageConf images.Images) (string, error) {
 		}
 	}
 
-	// Fix up HelmCharts to set default registry
+	// Fix up HelmCharts to pass through configured values
 	// This needs to be done every time in order to sync values from the CLI
-	if err := setSystemDefaultRegistry(manifestsDir, imageConf.SystemDefaultRegistry); err != nil {
+	if err := setChartValues(dataDir, imageConf.SystemDefaultRegistry); err != nil {
 		return "", err
 	}
 
@@ -307,13 +307,14 @@ func preloadBootstrapImage(dataDir string, imageName string) (v1.Image, error) {
 	return nil, nil
 }
 
-// setSystemDefaultRegistry scans the directory at manifestDir. It attempts to load all manifests
+// setChartValues scans the directory at manifestDir. It attempts to load all manifests
 // in that directory as HelmCharts. Any manifests that contain a HelmChart are modified to
-// pass through the systemDefaultRegistry setting to both the Helm job and the chart values.
+// pass through settings to both the Helm job and the chart values.
 // NOTE: This will probably fail if any manifest contains multiple documents. This should
 // not matter for any of our packaged components, but may prevent this from working on user manifests.
-func setSystemDefaultRegistry(manifestsDir string, systemDefaultRegistry string) error {
+func setChartValues(dataDir string, systemDefaultRegistry string) error {
 	serializer := json.NewSerializerWithOptions(json.DefaultMetaFactory, schemes.All, schemes.All, json.SerializerOptions{Yaml: true, Pretty: true, Strict: true})
+	manifestsDir := manifestsDir(dataDir)
 
 	files := map[string]os.FileInfo{}
 	if err := filepath.Walk(manifestsDir, func(path string, info os.FileInfo, err error) error {
@@ -336,17 +337,17 @@ func setSystemDefaultRegistry(manifestsDir string, systemDefaultRegistry string)
 
 	var errs []error
 	for fileName, info := range files {
-		if err := rewriteChart(fileName, info, systemDefaultRegistry, serializer); err != nil {
+		if err := rewriteChart(fileName, info, dataDir, systemDefaultRegistry, serializer); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	return merr.NewErrors(errs...)
 }
 
-// rewriteChart applies systemDefaultRegistry settings to the file at fileName with associated info.
+// rewriteChart applies dataDir and systemDefaultRegistry settings to the file at fileName with associated info.
 // If the file cannot be decoded as a HelmChart, it is silently skipped. Any other IO error is considered
 // a failure.
-func rewriteChart(fileName string, info os.FileInfo, systemDefaultRegistry string, serializer *json.Serializer) error {
+func rewriteChart(fileName string, info os.FileInfo, dataDir, systemDefaultRegistry string, serializer *json.Serializer) error {
 	chartChanged := false
 
 	bytes, err := ioutil.ReadFile(fileName)
@@ -364,16 +365,22 @@ func rewriteChart(fileName string, info os.FileInfo, systemDefaultRegistry strin
 	// Ignore manifest if it is not a HelmChart
 	chart, ok := obj.(*helmv1.HelmChart)
 	if !ok {
-		logrus.Debugf("Manifest %q is not a HelmChart", fileName)
+		logrus.Debugf("Manifest %q is %T, not HelmChart", fileName, obj)
 		return nil
 	}
 
 	// Generally we should avoid using Set on HelmCharts since it cannot be overridden by HelmChartConfig,
 	// but in this case we need to do it in order to avoid potentially mangling the ValuesContent field by
-	// blindly appending content to it in order to set the global.systemDefaultRegistry value.
+	// blindly appending content to it in order to set values.
 	if chart.Spec.Set == nil {
 		chart.Spec.Set = map[string]intstr.IntOrString{}
 	}
+
+	if chart.Spec.Set["global.rke2DataDir"].StrVal != dataDir {
+		chart.Spec.Set["global.rke2DataDir"] = intstr.FromString(dataDir)
+		chartChanged = true
+	}
+
 	if chart.Spec.Set["global.systemDefaultRegistry"].StrVal != systemDefaultRegistry {
 		chart.Spec.Set["global.systemDefaultRegistry"] = intstr.FromString(systemDefaultRegistry)
 		chartChanged = true
