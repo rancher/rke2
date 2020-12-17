@@ -133,7 +133,7 @@ On server nodes, the `helm-controller` can now apply to the cluster any [charts]
 
 The RKE2 process will now run indefinitely until it receives a SIGTERM or SIGKILL or if the `containerd` process exits.
 
-[gh-k3s]: <https://github.com/rancher/k3s> "K3s - Lightweight Kubernetes"
+[gh-k3s]: <https://github.com/k3s-io/k3s> "K3s - Lightweight Kubernetes"
 [io-k3s]: <https://k3s.io> "K3s - Lightweight Kubernetes"
 [gh-kubernetes]: <https://github.com/kubernetes/kubernetes> "Production-Grade Container Orchestration"
 [io-kubernetes]: <https://kubernetes.io> "Production-Grade Container Orchestration"
