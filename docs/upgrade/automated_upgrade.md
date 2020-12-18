@@ -47,7 +47,8 @@ metadata:
 spec:
   concurrency: 1
   cordon: true
-   matchExpressions:
+  nodeSelector:
+    matchExpressions:
        - {key: rke2-upgrade, operator: Exists}
        - {key: rke2-upgrade, operator: NotIn, values: ["disabled", "false"]}
        - {key: node-role.kubernetes.io/master, operator: In, values: ["true"]}
