@@ -23,8 +23,8 @@ markdown_extensions:
 nav:
   - index.md
   - Installation:
-    - install/quickstart.md
     - install/requirements.md
+    - install/quickstart.md
     - install/ha.md
     - Install Options:
       - install/install_options/install_options.md
