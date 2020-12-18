@@ -14,11 +14,11 @@ This section covers the following topics:
 
 Any Kubernetes manifests found in `/var/lib/rancher/rke2/server/manifests` will automatically be deployed to RKE2 in a manner similar to `kubectl apply`. Manifests deployed in this manner are managed as AddOn custom resources, and can be viewed by running `kubectl get addon -A`. You will find AddOns for packaged components such as CoreDNS, Local-Storage, Nginx-Ingress, etc. AddOns are created automatically by the deploy controller, and are named based on their filename in the manifests directory.
 
-It is also possible to deploy Helm charts as AddOns. RKE2 includes a [Helm Controller](https://github.com/rancher/helm-controller/) that manages Helm charts using a HelmChart Custom Resource Definition (CRD).
+It is also possible to deploy Helm charts as AddOns. RKE2 includes a [Helm Controller](https://github.com/k3s-io/helm-controller/) that manages Helm charts using a HelmChart Custom Resource Definition (CRD).
 
 ### Using the Helm CRD
 
-The [HelmChart resource definition](https://github.com/rancher/helm-controller#helm-controller) captures most of the options you would normally pass to the `helm` command-line tool. Here's an example of how you might deploy Grafana from the default chart repository, overriding some of the default chart values. Note that the HelmChart resource itself is in the `kube-system` namespace, but the chart's resources will be deployed to the `monitoring` namespace.
+The [HelmChart resource definition](https://github.com/k3s-io/helm-controller#helm-controller) captures most of the options you would normally pass to the `helm` command-line tool. Here's an example of how you might deploy Grafana from the default chart repository, overriding some of the default chart values. Note that the HelmChart resource itself is in the `kube-system` namespace, but the chart's resources will be deployed to the `monitoring` namespace.
 
 ```yaml
 apiVersion: helm.cattle.io/v1
