@@ -151,7 +151,6 @@ get_release_version() {
         esac
         INSTALL_RKE2_VERSION="${version}"
     fi
-    info "using ${INSTALL_RKE2_VERSION} as release"
 }
 
 # download downloads from github url.
@@ -243,10 +242,12 @@ do_install_rpm() {
             fi
             ;;
         *)
-            rke2_majmin="1.18"
+            get_release_version
+            rke2_majmin=$(echo "${INSTALL_RKE2_VERSION}" | sed -E -e "s/^v([0-9]+\.[0-9]+).*/\1/")
             rke2_rpm_channel=${1}
             ;;
     esac
+    info "using ${rke2_majmin} series from channel ${rke2_rpm_channel}"
     rpm_site="rpm.rancher.io"
     if [ "${rke2_rpm_channel}" = "testing" ]; then
         rpm_site="rpm-${rke2_rpm_channel}.rancher.io"
@@ -279,9 +280,9 @@ EOF
 }
 
 do_install_tar() {
-    verify_downloader curl || verify_downloader wget || fatal "can not find curl or wget for downloading files"
     setup_tmp
     get_release_version
+    info "using ${INSTALL_RKE2_VERSION} as release"
     download_checksums
     download_tarball
     verify_tarball
@@ -291,6 +292,7 @@ do_install_tar() {
 do_install() {
     setup_env
     setup_arch
+    verify_downloader curl || verify_downloader wget || fatal "can not find curl or wget for downloading files"
 
     case ${INSTALL_RKE2_METHOD} in
     yum | rpm | dnf)
