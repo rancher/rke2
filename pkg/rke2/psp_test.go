@@ -50,7 +50,7 @@ var testRoleBinding = &rbacv1.RoleBinding{
 	},
 }
 
-// fakeWithNonretriableError recieves a value of type runtime.Object,
+// fakeWithNonretriableError receives a value of type runtime.Object,
 // determines underlying underlying type, and creates a new value of
 // type fake.Clientset pointer and sets a Reactor to return an error
 // that is not retriable.

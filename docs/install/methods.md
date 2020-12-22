@@ -33,7 +33,7 @@ INSTALL_RKE2_CHANNEL=latest ./install.sh
 
 When the install script is executed, it makes a determination of what type of system it is. If it's an OS that uses RPMs (such as CentOS or RHEL), it will perform an RPM based installation, otherwise the script defaults to tarball. RPM based installation is covered below.
 
-Next, the installation script downloads the tarball, verifies it by comparing SHA256 hashes, and lastly, extracts the contents to `/usr/local`. An operator is free to move the files after installtion if desired. This operation simply extracts the tarball and no other system modifications are made.
+Next, the installation script downloads the tarball, verifies it by comparing SHA256 hashes, and lastly, extracts the contents to `/usr/local`. An operator is free to move the files after installation if desired. This operation simply extracts the tarball and no other system modifications are made.
 
 Tarball structure / contents
 
