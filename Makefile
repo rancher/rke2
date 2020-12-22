@@ -120,7 +120,11 @@ package-bundle: build				## Package the tarball bundle
 	./scripts/package-bundle
 
 .PHONY: test
-test: unit-tests integration-tests
+test: codespell-test unit-tests integration-tests
+
+.PHONY: codespell-test
+codespell-test:
+	./scripts/codespell.sh
 
 .PHONY: unit-tests
 unit-tests:

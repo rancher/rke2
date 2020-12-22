@@ -97,7 +97,7 @@ func checkPreloadedImages(dir string) (bool, error) {
 		if fileInfo.IsDir() {
 			continue
 		}
-		// return true if there is a file that doesnt end with .txt
+		// return true if there is a file that doesn't end with .txt
 		if !strings.HasSuffix(fileInfo.Name(), ".txt") {
 			return true, nil
 		}

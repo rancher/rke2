@@ -90,7 +90,7 @@ var networkDNSPolicy = v1.NetworkPolicy{
 
 // setNetworkPolicy applies the default network policy for the given namespace and updates
 // the given namespaces' annotation. First, the namespaces' annotation is checked for existence.
-// If the annotation exists, we move on. If the annoation doesnt' exist, we check to see if the
+// If the annotation exists, we move on. If the annotation doesn't exist, we check to see if the
 // policy exists. If it does, we delete it, and create the new default policy.
 func setNetworkPolicy(ctx context.Context, namespace string, cs *kubernetes.Clientset) error {
 	ns, err := cs.CoreV1().Namespaces().Get(ctx, namespace, metav1.GetOptions{})

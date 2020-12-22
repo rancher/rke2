@@ -8,7 +8,8 @@ RUN set -x \
     file \
     git \
     libseccomp-dev \
-    rsync
+    rsync \
+    py-pip
 
 # Dapper/Drone/CI environment
 FROM build AS dapper
@@ -27,7 +28,8 @@ RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
 RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
             curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt \
         )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
-    chmod a+x /usr/local/bin/kubectl
+    chmod a+x /usr/local/bin/kubectl; \
+    pip install codespell
 
 RUN curl -sL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.27.0
 RUN set -x \
