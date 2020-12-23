@@ -10,7 +10,7 @@ Create a new release tag at the [image-build-kube-proxy](https://github.com/ranc
 
 * Click "Releases"
 * Click "Draft a new release"
-* Enter the new release number (the new k8s version) into the "Tag version" box
+* Enter the new release version (the new k8s version) into the "Tag version" box
 * Click the "Publish release" button. 
 
 This will take a few minutes for CI to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kube-proxy).
@@ -41,7 +41,7 @@ Next, we need to create a release candidate (RC).
 * Enter the desired version into the "Tag version" box. 
     * Example tag: `v1.19.5-rc1+rke2r1`
 
-CI will run and build the release assets as well as kick off an image build for RKE2 Upgrade images](https://hub.docker.com/r/rancher/rke2-upgrade/tags?page=1&ordering=last_updated)
+CI will run and build the release assets as well as kick off an image build for [RKE2 Upgrade images](https://hub.docker.com/r/rancher/rke2-upgrade/tags?page=1&ordering=last_updated).
 
 ### RKE2 Packaging
 
@@ -74,7 +74,7 @@ Once complete, the process is repeated in the [rke2-packaging](https://github.co
     * Example tag: `v1.19.5+rke2r1.testing.0`
     * The first part of the tag here must match the tag created in the RKE2 repo.
 
-Make sure that CI passes. This is for RPM availabilty in the testing channel.
+Make sure that CI passes. This is for RPM availability in the testing channel.
 
 Once complete, perform the steps above again however this time, use the tag "latest" tag. E.g. `v1.19.5+rke2r1.latest.0`.
 
@@ -82,7 +82,7 @@ We choose "latest" here since we want to wait at least 24 hours in case the comm
 
 ### Updating Channel Server
 
-After all of the builds are complete and QA has signed off on the release, we need to update the channel server. This is done by editng the `channels.yaml` file at the root of the [rke2](https://github.com/rancher/rke2) repository.
+After all of the builds are complete and QA has signed off on the release, we need to update the channel server. This is done by editing the `channels.yaml` file at the root of the [rke2](https://github.com/rancher/rke2) repository.
 
 * Update the line: `latest: <release>` to be the recent release. e.g. `v1.19.5+rke2r1`.
 * Verify updated in the JSON output from a call [here](https://update.rke2.io/).
