@@ -19,7 +19,7 @@ This will take a few minutes for CI to run but upon completion, a new image will
 
 RKE2 depends on it's [Helm Charts](https://github.com/rancher/rke2-charts) being up-to-date with the expected versions for the Kubernetes components. The build process downloads these charts and bundles them into the runtime image.
 
-Create a PR in [rke2-charts](https://github.com/rancher/rke2-charts) that increments the version of `kube-proxy` in `packages/rke2-kube-proxy/charts/values.yaml`. Upon getting 2 approvals and merging, CI will create the needed build artifact that RKE2 will use.
+Create a PR in [rke2-charts](https://github.com/rancher/rke2-charts) that updates the version of the `kube-proxy` image in both the `image.tag` field of `packages/rke2-kube-proxy/charts/values.yaml`, and also in `packages/rke2-kube-proxy/charts/Chart.yaml`. Upon getting 2 approvals and merging, CI will create the needed build artifact that RKE2 will use.
 
 ## Update RKE2
 
@@ -90,4 +90,3 @@ After all of the builds are complete and QA has signed off on the release, we ne
 ### Promoting to Stable
 
 After 24 hours, we'll promote the release to stable by updating the channel server's config as we did at above, however this time changing "latest" to "stable". We need to do the same thing for RPM's too. This involves the same steps for RPM releases but changing "latest" to "stable" in the release name. E.g. `v1.19.5+rke2r1.stable.0`.
-
