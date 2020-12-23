@@ -30,7 +30,7 @@ The following files have references that will need to be updated in the respecti
 * images.go:  `KubernetesVersion = "v1.19.5"`
 * version.sh: `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.19.5}`
 
-Once these changes are made, submit a PR for review and let CI complete. When CI is finished and 2 approvals are had, merge the PR. CI will run for te master merge. 
+Once these changes are made, submit a PR for review and let CI complete. When CI is finished and 2 approvals are had, merge the PR. CI will run for the master merge. 
 
 ## RKE2 Release RC
 
