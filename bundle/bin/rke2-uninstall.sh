@@ -45,8 +45,11 @@ uninstall_remove_files()
     rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
     rm -rf "${INSTALL_RKE2_ROOT}/share/rke2"
     rm -rf /etc/rancher/rke2
+    rm -rf /etc/rancher/node
+    rm -d /etc/rancher || true
     rm -rf /var/lib/kubelet
     rm -rf /var/lib/rancher/rke2
+    rm -d /var/lib/rancher || true
 }
 
 uninstall_remove_self()
