@@ -479,8 +479,8 @@ github.com/k3s-io/containerd v1.4.3-k3s2/go.mod h1:qHmUrsocqXRZQBvPKgoYfsBDfZ/tC
 github.com/k3s-io/cri v1.4.0-k3s.2/go.mod h1:fGPUUHMKQik/vIegSe05DtX/m4miovdtvVLqRUFAkK0=
 github.com/k3s-io/etcd v0.5.0-alpha.5.0.20201208200253-50621aee4aea h1:7cwby0GoNAi8IsVrT0q+JfQpB6V76ZaEGhj6qts/mvU=
 github.com/k3s-io/etcd v0.5.0-alpha.5.0.20201208200253-50621aee4aea/go.mod h1:yVHk9ub3CSBatqGNg7GRmsnfLWtoW60w4eDYfh7vHDg=
-github.com/k3s-io/helm-controller v0.8.0 h1:ZxnXRMiVjerBqpTkZeR0soEtsC3Bcv3Sbq2AIZQPlhk=
-github.com/k3s-io/helm-controller v0.8.0/go.mod h1:nZP8FH3KZrNNUf5r+SwwiMR63HS6lxdHdpHijgPfF74=
+github.com/k3s-io/helm-controller v0.8.3 h1:GWxavyMz7Bw2ClxH5okkeOL8o5U6IBK7uauc44SDCjU=
+github.com/k3s-io/helm-controller v0.8.3/go.mod h1:nZP8FH3KZrNNUf5r+SwwiMR63HS6lxdHdpHijgPfF74=
 github.com/k3s-io/kine v0.6.0 h1:4l7wjgCxb2oD+7Hyf3xIhkGd/6s1sXpRFdQiyy+7Ki8=
 github.com/k3s-io/kine v0.6.0/go.mod h1:rzCs93+rQHZGOiewMd84PDrER92QeZ6eeHbWkfEy4+w=
 github.com/k3s-io/kubernetes v1.19.5-k3s1 h1:BKdjKyO8LzVo94lVX40lGd6v+mn8phLzYsGoeNGW2eg=
