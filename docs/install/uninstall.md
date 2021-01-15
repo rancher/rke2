@@ -11,15 +11,15 @@ Depending on the method used to install RKE2, the uninstallation process varies.
 ## RPM Method
 To uninstall RKE2 installed via the RPM method from your system, simply run the commands corresponding to the version of RKE2 you have installed. This will shutdown RKE2 process, remove the RKE2 RPMs, and clean up files used by RKE2.
 
-=== "RKE2 v1.18.15+rke2r1 and newer"
-    Starting with RKE2 `v1.18.15+rke2r1`, the bundled `rke2-uninstall.sh` script will remove the corresponding RPM packages during the uninstall process. Simply run the following command:
+=== "RKE2 v1.18.13+rke2r1 and newer"
+    Starting with RKE2 `v1.18.13+rke2r1`, the bundled `rke2-uninstall.sh` script will remove the corresponding RPM packages during the uninstall process. Simply run the following command:
 
     ```bash
     /usr/bin/rke2-uninstall.sh
     ```
 
-=== "RKE2 Prior to v1.18.15+rke2r1"
-    If you are running a version of RKE2 that is older than `v1.18.15+rke2r1`, you will need to manually remove the RKE2 RPMs after calling the `rke2-uninstall.sh` script.
+=== "RKE2 Prior to v1.18.13+rke2r1"
+    If you are running a version of RKE2 that is older than `v1.18.13+rke2r1`, you will need to manually remove the RKE2 RPMs after calling the `rke2-uninstall.sh` script.
     
     ```bash
     /usr/bin/rke2-uninstall.sh
