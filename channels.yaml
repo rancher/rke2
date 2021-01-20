@@ -4,6 +4,9 @@ channels:
 - name: latest
   latestRegexp: .*
   excludeRegexp: ^[^+]+-
+- name: v1.18
+  latestRegexp: v1\.18\..*
+  excludeRegexp: ^[^+]+-
 - name: testing
   latestRegexp: -(alpha|beta|rc)
 github:
