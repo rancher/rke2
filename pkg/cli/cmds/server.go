@@ -70,6 +70,7 @@ var (
 		"etcd-snapshot-schedule-cron": copy,
 		"etcd-snapshot-retention":     copy,
 		"etcd-snapshot-dir":           copy,
+		"etcd-snapshot-name":          copy,
 		"node-name":                   copy,
 		"with-node-id":                drop,
 		"node-label":                  copy,
