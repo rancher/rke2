@@ -36,7 +36,7 @@ var (
 		"flannel-iface":              drop,
 		"flannel-conf":               drop,
 		"kubelet-arg":                copy,
-		"kube-proxy-arg":             copy,
+		"kube-proxy-arg":             drop,
 		"rootless":                   drop,
 		"server":                     copy,
 		"no-flannel":                 drop,

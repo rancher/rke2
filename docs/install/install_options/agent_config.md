@@ -31,7 +31,6 @@ OPTIONS:
    --node-ip value, -i value           (agent/networking) IP address to advertise for node
    --resolv-conf value                 (agent/networking) Kubelet resolv.conf file [$RKE2_RESOLV_CONF]
    --kubelet-arg value                 (agent/flags) Customized flag for kubelet process
-   --kube-proxy-arg value              (agent/flags) Customized flag for kube-proxy process
    --protect-kernel-defaults           (agent/node) Kernel tuning behavior. If set, error if kernel tunables are different than kubelet defaults.
    --selinux                           (agent/node) Enable SELinux in containerd [$RKE2_SELINUX]
    --system-default-registry value     (image) Private registry to be used for all system Docker images [$RKE2_SYSTEM_DEFAULT_REGISTRY]
