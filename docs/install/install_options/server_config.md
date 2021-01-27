@@ -47,7 +47,6 @@ OPTIONS:
    --node-ip value, -i value            (agent/networking) IP address to advertise for node
    --resolv-conf value                  (agent/networking) Kubelet resolv.conf file [$RKE2_RESOLV_CONF]
    --kubelet-arg value                  (agent/flags) Customized flag for kubelet process
-   --kube-proxy-arg value               (agent/flags) Customized flag for kube-proxy process
    --protect-kernel-defaults            (agent/node) Kernel tuning behavior. If set, error if kernel tunables are different than kubelet defaults.
    --agent-token value                  (experimental/cluster) Shared secret used to join agents to the cluster, but not servers [$RKE2_AGENT_TOKEN]
    --agent-token-file value             (experimental/cluster) File containing the agent secret [$RKE2_AGENT_TOKEN_FILE]
