@@ -281,6 +281,7 @@ github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMo
 github.com/fsnotify/fsnotify v1.4.9 h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWoS4=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/fullsailor/pkcs7 v0.0.0-20190404230743-d7302db945fa/go.mod h1:KnogPXtdwXqoenmZCw6S+25EAm2MkxbG0deNDu4cbSA=
+github.com/fvbommel/sortorder v1.0.1 h1:dSnXLt4mJYH25uDDGa3biZNQsozaUWDSWeKJ0qqFfzE=
 github.com/fvbommel/sortorder v1.0.1/go.mod h1:uk88iVf1ovNn1iLfgUVU2F9o5eO30ui720w+kxuqRs0=
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
@@ -540,6 +541,7 @@ github.com/k3s-io/kubernetes/staging/src/k8s.io/apimachinery v1.20.2-k3s1 h1:1MS
 github.com/k3s-io/kubernetes/staging/src/k8s.io/apimachinery v1.20.2-k3s1/go.mod h1:0y+U/8BmQoVgMGE+0/gge588aGi4gmbN3lxoCG+3ADo=
 github.com/k3s-io/kubernetes/staging/src/k8s.io/apiserver v1.20.2-k3s1 h1:XtapVXr6neBNhf1bajvh9MHzfJkD7Od4i+0mOaxpxpc=
 github.com/k3s-io/kubernetes/staging/src/k8s.io/apiserver v1.20.2-k3s1/go.mod h1:NsoqXeT+WOthrid9HxmbcdWoodnkGiwyPN2n3Xl4mzk=
+github.com/k3s-io/kubernetes/staging/src/k8s.io/cli-runtime v1.20.2-k3s1 h1:hTpT+J4KeDqah93ZEYxMQlyTlDjljC9n8ll5wnU9Z7s=
 github.com/k3s-io/kubernetes/staging/src/k8s.io/cli-runtime v1.20.2-k3s1/go.mod h1:nlZrhzrCcFv6W/jOigxyAFPNDg3aMkPDT2W62PpcGWI=
 github.com/k3s-io/kubernetes/staging/src/k8s.io/client-go v1.20.2-k3s1 h1:80VWRcsuFD6YqfM2JW8sPeHLrH5C+AVvxP+b9lN9mFE=
 github.com/k3s-io/kubernetes/staging/src/k8s.io/client-go v1.20.2-k3s1/go.mod h1:aYCqdW6DxKJzKkgoUBLWHRy9L2PEEMBfHfl79/Dw3vU=
@@ -582,6 +584,7 @@ github.com/karrick/godirwalk v1.16.1/go.mod h1:j4mkqPuvaLI8mp1DroR3P6ad7cyYd4c1q
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
+github.com/klauspost/compress v1.11.7/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/klauspost/cpuid v1.2.0/go.mod h1:Pj4uuM528wm8OyEC2QMXAi2YiTZ96dNQPGgoMS4s3ek=
 github.com/knative/build v0.6.0/go.mod h1:/sU74ZQkwlYA5FwYDJhYTy61i/Kn+5eWfln2jDbw3Qo=
 github.com/knative/pkg v0.0.0-20190514205332-5e4512dcb2ca/go.mod h1:7Ijfhw7rfB+H9VtosIsDYvZQ+qYTz7auK3fHW/5z4ww=
@@ -781,8 +784,8 @@ github.com/rancher/go-powershell v0.0.0-20200701182037-6845e6fcfa79 h1:UeC0rjrIe
 github.com/rancher/go-powershell v0.0.0-20200701182037-6845e6fcfa79/go.mod h1:xi4WpK6Op4m1Lknq61/e+VSjYlTs9bulVOaDNyBdzvk=
 github.com/rancher/go-powershell v0.0.0-20200701184732-233247d45373 h1:BePi97poJ4hXnkP9yX96EmNQgMg+dGScvB1sqIheJ7w=
 github.com/rancher/go-powershell v0.0.0-20200701184732-233247d45373/go.mod h1:Vz8oLnHgttpo/aZrTpjbcpZEDzzElqNau2zmorToY0E=
-github.com/rancher/k3s v1.20.3-0.20210121210915-13229019f8d4 h1:g7KoTzCqN+L6m0tlALc7YGF/2TnTnllv5TobPa99ktM=
-github.com/rancher/k3s v1.20.3-0.20210121210915-13229019f8d4/go.mod h1:/r7AkOr7y43xelsOu/gG9c3toSHi6ynXCp2v/P5ANMw=
+github.com/rancher/k3s v1.20.3-0.20210212153557-5749f66aa3c4 h1:mAfBf/lWiwn/avx74jCpghoZeFH1NwCW/rt8GmIZo54=
+github.com/rancher/k3s v1.20.3-0.20210212153557-5749f66aa3c4/go.mod h1:09yg1tpqoJujuOhYZrMDyKRhEpEPz6VBPGr86c1Rfp8=
 github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009/go.mod h1:wpITyDPTi/Na5h73XkbuEf2AP9fbgrIGqqxVzFhYD6U=
 github.com/rancher/remotedialer v0.2.0 h1:xD7t3K6JYwTdAsxmGtTHQMkEkFgKouQ1foLxVW424Dc=
 github.com/rancher/remotedialer v0.2.0/go.mod h1:tkU8ZvrR5lRgaKWaX71nAy6daeqvPFx/lJEnbW7tXSI=

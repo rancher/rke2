@@ -58,7 +58,7 @@ require (
 	github.com/google/go-containerregistry v0.0.0-20190617215043-876b8855d23c
 	github.com/k3s-io/helm-controller v0.8.3
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.20.3-0.20210121210915-13229019f8d4
+	github.com/rancher/k3s v1.20.3-0.20210212153557-5749f66aa3c4
 	github.com/rancher/wrangler v0.6.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/urfave/cli v1.22.2
