@@ -121,7 +121,7 @@ func NewServerCommand() cli.Command {
 
 func ServerRun(clx *cli.Context) error {
 	switch profile {
-	case rke2.CISProfile:
+	case "cis-1.5", "cis-1.6":
 		if err := validateCISReqs("server"); err != nil {
 			logrus.Fatal(err)
 		}
@@ -129,7 +129,7 @@ func ServerRun(clx *cli.Context) error {
 			logrus.Fatal(err)
 		}
 	case "":
-		logrus.Warn("not running in CIS 1.5 mode")
+		logrus.Warn("not running in CIS mode")
 	default:
 		logrus.Fatal("invalid value provided for --profile flag")
 	}

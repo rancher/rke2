@@ -30,9 +30,9 @@ type Config struct {
 }
 
 var cisMode bool
+var CISProfile string
 
 const (
-	CISProfile             = "cis-1.5"
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
 )
 
@@ -77,7 +77,11 @@ func Agent(clx *cli.Context, cfg Config) error {
 }
 
 func setup(clx *cli.Context, cfg Config) error {
-	cisMode = clx.String("profile") == CISProfile
+	profile := clx.String("profile")
+	cisMode = profile == "cis-1.5" || profile == "cis-1.6"
+	if cisMode {
+		CISProfile = profile
+	}
 	dataDir := clx.String("data-dir")
 	privateRegistry := clx.String("private-registry")
 
