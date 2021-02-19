@@ -11,6 +11,7 @@ for IMAGE in $(cat build/images.txt); do
       --volume trivy-cache:/root/.cache/trivy \
   docker.io/aquasec/trivy:${TRIVY_VERSION:=0.16.0} \
       --quiet image \
+      --light \
       --exit-code 1 \
       --severity ${SEVERITIES:-HIGH,CRITICAL} \
       --no-progress \
