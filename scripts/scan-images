@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -x
+
+cd $(dirname $0)/..
+
+EXITCODE=0
+for IMAGE in $(cat build/images.txt); do
+  docker container run --rm \
+      --name=scan-rancher-kubernetes \
+      --volume /var/run/docker.sock:/var/run/docker.sock \
+      --volume trivy-cache:/root/.cache/trivy \
+  docker.io/aquasec/trivy:${TRIVY_VERSION:=0.16.0} \
+      --quiet image \
+      --exit-code 1 \
+      --severity ${SEVERITIES:-HIGH,CRITICAL} \
+      --no-progress \
+      --ignore-unfixed \
+      ${IMAGE}
+  RC=$?
+  if [[ ${RC} -gt ${EXITCODE} ]]; then
+    EXITCODE=${RC}
+  fi
+done
+
+exit ${EXITCODE}
