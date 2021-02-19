@@ -30,7 +30,7 @@ REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code;
 PLATFORM=${GOOS}-${GOARCH}
 RELEASE=${PROG}.${PLATFORM}
 # hardcode k8s version unless its set specifically
-KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.19.7}
+KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.19.8}
 
 if [ -d .git ]; then
     if [ -z "$GIT_TAG" ]; then
