@@ -87,6 +87,15 @@ After all of the builds are complete and QA has signed off on the release, we ne
 * Update the line: `latest: <release>` to be the recent release. e.g. `v1.20.2+rke2r1`.
 * Verify updated in the JSON output from a call [here](https://update.rke2.io/).
 
+## Update Rancher KDM
+
+This step is specific to Rancher and serves to update Rancher's [Kontainer Driver Metadata](https://github.com/rancher/kontainer-driver-metadata/).
+
+* Create a PR in the latest [KDM](https://github.com/rancher/kontainer-driver-metadata/) dev branch to update the kubernetes versions in channels.yaml. The PR should consist of two commits. The first being the change made to channels.yaml to update the kubernetes versions. The second being go generate. To do this, run `go generate` and commit the changes this caused to data/data.json. Title this second commit "go generate".
+    * Please note if this is a new minor release of kubernetes, then a new entry will need to be created in channels.yaml. Ensure to set the min/max versions accordingly. If you are not certain what they should be, reach out to the team for input on this as it will depend on what Rancher will be supporting.
+* Create a backport PR in any additional dev branches as necessary.
+* The PRs should be merged in a timely manner, within about a day; however, they do not need to be merged before RC releases and they typically do not need to block the final release.
+
 ### Promoting to Stable
 
 After 24 hours, we'll promote the release to stable by updating the channel server's config as we did at above, however this time changing "latest" to "stable". We need to do the same thing for RPM's too. This involves the same steps for RPM releases but changing "latest" to "stable" in the release name. E.g. `v1.20.2+rke2r1.stable.0`.
