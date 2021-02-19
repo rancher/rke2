@@ -14,16 +14,18 @@ for IMAGE in $(cat build/images.txt); do
     --ignore-unfixed \
     ${IMAGE}
   RC=$?
-  if [[ ${RC} -gt ${EXITCODE} ]]; then
+  if [ ${RC} -gt ${EXITCODE} ]; then
     EXITCODE=${RC}
   fi
-  echo -e "\nSev\tPackage\tVulnID\tInstalled\tFixed"
-  jq -rc '.[0].Vulnerabilities[] | "\(.Severity)\t\(.PkgName)\t\(.VulnerabilityID)\t\(.InstalledVersion)\t\(.FixedVersion)"' trivy.json
+  if [ ${RC} -gt 0 ]; then
+    echo -e "\nSev\tPackage\tVulnID\tInstalled\tFixed"
+    jq -rc '.[0].Vulnerabilities[] | "\(.Severity)\t\(.PkgName)\t\(.VulnerabilityID)\t\(.InstalledVersion)\t\(.FixedVersion)"' trivy.json
+  fi
   echo
   rm trivy.json
 done
 
-if [[ ${EXITCODE} -gt 0 ]]; then
+if [ ${EXITCODE} -gt 0 ]; then
   echo "VULNERABILITIES FOUND"
 fi
 
