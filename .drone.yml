@@ -9,7 +9,7 @@ platform:
 
 steps:
 - name: build-and-package
-  image: rancher/dapper:v0.5.3
+  image: rancher/dapper:v0.5.5
   commands:
   - docker pull --quiet rancher/hardened-build-base:v1.15.8b5
   - dapper -f Dockerfile --target dapper make dapper-ci
@@ -17,8 +17,17 @@ steps:
   - name: docker
     path: /var/run/docker.sock
 
+- name: scan
+  image: rancher/dapper:v0.5.5
+  failure: ignore
+  commands:
+  - dapper -f Dockerfile --target dapper make scan-images
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+
 - name: test
-  image: rancher/dapper:v0.5.0
+  image: rancher/dapper:v0.5.5
   secrets: [ gcloud_auth ]
   environment:
     GCLOUD_AUTH:
@@ -197,7 +206,7 @@ platform:
 
 steps:
 - name: dispatch
-  image: rancher/dapper:v0.5.0
+  image: rancher/dapper:v0.5.5
   commands:
   - dapper -f Dockerfile --target dapper make dispatch
   environment:
