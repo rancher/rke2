@@ -18,7 +18,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images.txt
     docker.io/rancher/klipper-helm:v0.4.3
     docker.io/rancher/pause:3.2
     docker.io/rancher/nginx-ingress-controller-defaultbackend:1.5-rancher1
-    docker.io/rancher/nginx-ingress-controller:nginx-0.30.0-rancher1
+    docker.io/rancher/nginx-ingress-controller:nginx-0.35.0-rancher2
 EOF
 echo "docker.io/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}" >> build/images.txt
 echo "docker.io/${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}" >> build/images.txt
