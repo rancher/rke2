@@ -114,8 +114,14 @@ func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, 
 		// If we didn't find the requested image in a tarball, pull it from the remote registry.
 		// Note that this will fail (potentially after a long delay) if the registry cannot be reached.
 		if img == nil {
-			logrus.Infof("Pulling runtime image %s", ref)
-			img, err = remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
+			registries, err := getPrivateRegistries(privateRegistry)
+			if err != nil {
+				return "", errors.Wrapf(err, "failed to load private registry configuration from %s", privateRegistry)
+			}
+			multiKeychain := authn.NewMultiKeychain(registries, authn.DefaultKeychain)
+
+			logrus.Infof("Pulling runtime image %s", ref.Name())
+			img, err = remote.Image(ref, remote.WithAuthFromKeychain(multiKeychain), remote.WithTransport(registries))
 			if err != nil {
 				return "", errors.Wrapf(err, "failed to get runtime image %s", ref)
 			}
@@ -129,7 +135,6 @@ func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, 
 		if err := extractToDirs(img, dataDir, extractPaths); err != nil {
 			return "", errors.Wrap(err, "failed to extract runtime image")
 		}
-
 		// Ensure correct permissions on bin dir
 		if err := os.Chmod(refBinDir, 0755); err != nil {
 			return "", err
@@ -228,7 +233,7 @@ func releaseRefDigest(ref name.Reference) (string, error) {
 		}
 		return parts[0], nil
 	}
-	return "", fmt.Errorf("Runtime image %s is not a not a reference to a digest or version tag matching pattern %s", ref, releasePattern)
+	return "", fmt.Errorf("Runtime image %s is not a not a reference to a digest or version tag matching pattern %s", ref.Name(), releasePattern)
 }
 
 // extractToDirs extracts to targetDir all content from img, then moves the content into place using the directory map.
@@ -347,18 +352,20 @@ func preloadBootstrapFromRuntime(dataDir string, resolver *images.Resolver) (v1.
 func preloadBootstrapImage(dataDir string, imageRef name.Reference) (v1.Image, error) {
 	imageTag, ok := imageRef.(name.Tag)
 	if !ok {
-		logrus.Debugf("No local image available for %s: reference is not a tag", imageRef)
+		logrus.Debugf("No local image available for %s: reference is not a tag", imageRef.Name())
 		return nil, nil
 	}
 
 	imagesDir := imagesDir(dataDir)
 	if _, err := os.Stat(imagesDir); err != nil {
 		if os.IsNotExist(err) {
-			logrus.Debugf("No local image available for %s: directory %s does not exist", imageTag, imagesDir)
+			logrus.Debugf("No local image available for %s: directory %s does not exist", imageTag.Name(), imagesDir)
 			return nil, nil
 		}
 		return nil, err
 	}
+
+	logrus.Infof("Checking local image archives in %s for %s", imagesDir, imageRef.Name())
 
 	// Walk the images dir to get a list of tar files
 	files := map[string]os.FileInfo{}
@@ -378,14 +385,14 @@ func preloadBootstrapImage(dataDir string, imageRef name.Reference) (v1.Image, e
 	for fileName := range files {
 		img, err := preloadFile(imageTag, fileName)
 		if img != nil {
-			logrus.Debugf("Found %s in %s", imageTag, fileName)
+			logrus.Debugf("Found %s in %s", imageTag.Name(), fileName)
 			return img, nil
 		}
 		if err != nil {
 			logrus.Infof("Failed to check %s: %v", fileName, err)
 		}
 	}
-	logrus.Debugf("No local image available for %s: not found in any file in %s", imageTag, imagesDir)
+	logrus.Debugf("No local image available for %s: not found in any file in %s", imageTag.Name(), imagesDir)
 	return nil, nil
 }
 

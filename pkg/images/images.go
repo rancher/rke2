@@ -31,7 +31,7 @@ var (
 )
 
 // ResolverOpt is an option to modify image resolution behavior.
-type ResolverOpt func(name.Reference) error
+type ResolverOpt func(name.Reference) (name.Reference, error)
 
 // Resolver provides functionality to resolve an RKE2 image name to a reference.
 type Resolver struct {
@@ -120,27 +120,33 @@ func (r *Resolver) SetOverride(i string, n name.Reference) {
 // otherwise the compile-time default is retrieved and default-registry settings applied.
 // Options can be passed to modify the reference before it is returned.
 func (r *Resolver) GetReference(i string, opts ...ResolverOpt) (name.Reference, error) {
-	// Return unmodified override if set
-	if ref, ok := r.overrides[i]; ok {
-		return ref, nil
-	}
+	var ref name.Reference
+	if o, ok := r.overrides[i]; ok {
+		// Use override if set
+		ref = o
+	} else {
+		// No override; get compile-time default
+		d, err := getDefaultImage(i)
+		if err != nil {
+			return nil, err
+		}
+		ref = d
 
-	// No override; get compile-time default
-	ref, err := getDefaultImage(i)
-	if err != nil {
-		return nil, err
-	}
-
-	// Apply registry override
-	if err := setRegistry(ref, r.Registry); err != nil {
-		return nil, err
+		// Apply registry override
+		d, err = setRegistry(ref, r.Registry)
+		if err != nil {
+			return nil, err
+		}
+		ref = d
 	}
 
 	// Apply additional options
 	for _, o := range opts {
-		if err := o(ref); err != nil {
+		r, err := o(ref)
+		if err != nil {
 			return nil, err
 		}
+		ref = r
 	}
 	return ref, nil
 }
@@ -155,30 +161,30 @@ func (r *Resolver) MustGetReference(i string, opts ...ResolverOpt) name.Referenc
 
 // WithRegistry overrides the registry when resolving the reference to an image.
 func WithRegistry(s string) ResolverOpt {
-	return func(r name.Reference) error {
+	return func(r name.Reference) (name.Reference, error) {
 		registry, err := name.NewRegistry(s)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		err = setRegistry(r, registry)
+		s, err := setRegistry(r, registry)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		return nil
+		return s, nil
 	}
 }
 
 // setRegistry sets the registry on an image reference. This is necessary
 // because the Reference type doesn't expose the Registry field.
-func setRegistry(ref name.Reference, registry name.Registry) error {
+func setRegistry(ref name.Reference, registry name.Registry) (name.Reference, error) {
 	if t, ok := ref.(name.Tag); ok {
 		t.Registry = registry
-		return nil
+		return t, nil
 	} else if d, ok := ref.(name.Digest); ok {
 		d.Registry = registry
-		return nil
+		return d, nil
 	}
-	return errors.Errorf("unhandled Reference type: %T", ref)
+	return ref, errors.Errorf("unhandled Reference type: %T", ref)
 }
 
 // getDefaultImage gets the compile-time default image for a given name.

@@ -66,6 +66,7 @@ require (
 	github.com/sirupsen/logrus v1.7.0
 	github.com/urfave/cli v1.22.2
 	google.golang.org/grpc v1.33.2
+	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.19.0
 	k8s.io/apimachinery v0.19.0
 	k8s.io/apiserver v0.19.0
