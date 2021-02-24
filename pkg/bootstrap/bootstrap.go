@@ -20,7 +20,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	helmv1 "github.com/k3s-io/helm-controller/pkg/apis/helm.cattle.io/v1"
 	"github.com/k3s-io/helm-controller/pkg/helm"
-	errors2 "github.com/pkg/errors"
+	"github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/wrangler/pkg/merr"
 	"github.com/rancher/wrangler/pkg/schemes"
@@ -88,7 +88,7 @@ func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, 
 
 	// Skip content extraction if the bin dir for this runtime image already exists
 	if dirExists(refBinDir) {
-		logrus.Infof("Runtime image %q bin dir already exists at %q; skipping extract", ref, refBinDir)
+		logrus.Infof("Runtime image %s bin dir already exists at %s; skipping extract", ref, refBinDir)
 	} else {
 		// Try to use configured runtime image from an airgap tarball
 		img, err = preloadBootstrapFromRuntime(dataDir, resolver)
@@ -99,10 +99,10 @@ func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, 
 		// If we didn't find the requested image in a tarball, pull it from the remote registry.
 		// Note that this will fail (potentially after a long delay) if the registry cannot be reached.
 		if img == nil {
-			logrus.Infof("Pulling runtime image %q", ref)
+			logrus.Infof("Pulling runtime image %s", ref)
 			img, err = remote.Image(ref, remote.WithAuthFromKeychain(authn.DefaultKeychain))
 			if err != nil {
-				return "", errors2.Wrapf(err, "Failed to pull runtime image %q", ref)
+				return "", errors.Wrapf(err, "Failed to pull runtime image %s", ref)
 			}
 		}
 
@@ -145,7 +145,7 @@ func extract(imageName string, targetDir string, prefix string, reader io.Reader
 	for {
 		h, err := t.Next()
 		if err == io.EOF {
-			logrus.Infof("Done extracting %q", imageName)
+			logrus.Infof("Done extracting %s", imageName)
 			return nil
 		} else if err != nil {
 			return err
@@ -160,7 +160,7 @@ func extract(imageName string, targetDir string, prefix string, reader io.Reader
 			continue
 		}
 
-		logrus.Infof("Extracting file %q", h.Name)
+		logrus.Infof("Extracting file %s", h.Name)
 
 		targetName := filepath.Join(targetDir, filepath.Base(n))
 		mode := h.FileInfo().Mode() & 0755
@@ -195,14 +195,14 @@ func releaseRefDigest(ref name.Reference) (string, error) {
 		}
 		return parts[0], nil
 	}
-	return "", fmt.Errorf("Bootstrap image %q is not a not a reference to a digest or version tag (%q)", ref, releasePattern)
+	return "", fmt.Errorf("Bootstrap image %s is not a not a reference to a digest or version tag matching pattern %s", ref, releasePattern)
 }
 
 // extractToDir extracts to targetDir all content from img where the filename is prefixed with prefix.
 // The imageName argument is used solely for logging.
 // Extracted content is staged through a temporary directory and moved into place, overwriting any existing files.
 func extractToDir(dir, prefix string, img v1.Image, imageName string) error {
-	logrus.Infof("Extracting %q %q to %q", imageName, prefix, dir)
+	logrus.Infof("Extracting %s %s to %s", imageName, prefix, dir)
 	if err := os.MkdirAll(filepath.Dir(dir), 0755); err != nil {
 		return err
 	}
@@ -243,16 +243,16 @@ func extractToDir(dir, prefix string, img v1.Image, imageName string) error {
 		if err := os.Rename(src, dst); os.IsExist(err) {
 			// Can't rename because dst already exists, remove it...
 			if err = os.RemoveAll(dst); err != nil {
-				errs = append(errs, errors2.Wrapf(err, "failed to remove %q", dst))
+				errs = append(errs, errors.Wrapf(err, "failed to remove %s", dst))
 				continue
 			}
 			// ...then try renaming again
 			if err = os.Rename(src, dst); err != nil {
-				errs = append(errs, errors2.Wrapf(err, "failed to rename %q to %q", src, dst))
+				errs = append(errs, errors.Wrapf(err, "failed to rename %s to %s", src, dst))
 			}
 		} else if err != nil {
 			// Other error while renaming src to dst.
-			errs = append(errs, errors2.Wrapf(err, "failed to rename %q to %q", src, dst))
+			errs = append(errs, errors.Wrapf(err, "failed to rename %s to %s", src, dst))
 		}
 	}
 	return merr.NewErrors(errs...)
@@ -383,20 +383,20 @@ func rewriteChart(fileName string, info os.FileInfo, dataDir, systemDefaultRegis
 
 	bytes, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		return errors2.Wrapf(err, "Failed to read manifest %q", fileName)
+		return errors.Wrapf(err, "Failed to read manifest %s", fileName)
 	}
 
 	// Ignore manifest if it cannot be decoded
 	obj, _, err := serializer.Decode(bytes, nil, nil)
 	if err != nil {
-		logrus.Debugf("Failed to decode manifest %q: %s", fileName, err)
+		logrus.Debugf("Failed to decode manifest %s: %s", fileName, err)
 		return nil
 	}
 
 	// Ignore manifest if it is not a HelmChart
 	chart, ok := obj.(*helmv1.HelmChart)
 	if !ok {
-		logrus.Debugf("Manifest %q is %T, not HelmChart", fileName, obj)
+		logrus.Debugf("Manifest %s is %T, not HelmChart", fileName, obj)
 		return nil
 	}
 
@@ -430,19 +430,19 @@ func rewriteChart(fileName string, info os.FileInfo, dataDir, systemDefaultRegis
 	if chartChanged {
 		f, err := os.OpenFile(fileName, os.O_RDWR|os.O_TRUNC, info.Mode())
 		if err != nil {
-			return errors2.Wrapf(err, "Unable to open HelmChart %q", fileName)
+			return errors.Wrapf(err, "Unable to open HelmChart %s", fileName)
 		}
 
 		if err := serializer.Encode(chart, f); err != nil {
 			_ = f.Close()
-			return errors2.Wrapf(err, "Failed to serialize modified HelmChart %q", fileName)
+			return errors.Wrapf(err, "Failed to serialize modified HelmChart %s", fileName)
 		}
 
 		if err := f.Close(); err != nil {
-			return errors2.Wrapf(err, "Failed to write modified HelmChart %q", fileName)
+			return errors.Wrapf(err, "Failed to write modified HelmChart %s", fileName)
 		}
 
-		logrus.Infof("Updated HelmChart %q to apply --system-default-registry modifications", fileName)
+		logrus.Infof("Updated HelmChart %s to apply --system-default-registry modifications", fileName)
 	}
 	return nil
 }
