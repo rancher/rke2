@@ -58,6 +58,8 @@ require (
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e
 	github.com/google/go-containerregistry v0.4.0
 	github.com/k3s-io/helm-controller v0.8.4
+	github.com/klauspost/compress v1.11.7
+	github.com/pierrec/lz4 v2.5.2+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/k3s v1.20.3-0.20210224073108-fad2a046c37e
 	github.com/rancher/wrangler v0.6.1
