@@ -127,11 +127,11 @@ ARG CHARTS_REPO="https://rke2-charts.rancher.io"
 ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
-RUN CHART_VERSION="v3.13.3"     CHART_FILE=/charts/rke2-canal.yaml             CHART_BOOTSTRAP=true    /charts/build-chart.sh
-RUN CHART_VERSION="1.10.101"    CHART_FILE=/charts/rke2-coredns.yaml           CHART_BOOTSTRAP=true    /charts/build-chart.sh
-RUN CHART_VERSION="1.36.300"    CHART_FILE=/charts/rke2-ingress-nginx.yaml     CHART_BOOTSTRAP=false   /charts/build-chart.sh
+RUN CHART_VERSION="v3.13.300-build20210223"   CHART_FILE=/charts/rke2-canal.yaml             CHART_BOOTSTRAP=true    /charts/build-chart.sh
+RUN CHART_VERSION="1.10.101-build2021022301"  CHART_FILE=/charts/rke2-coredns.yaml           CHART_BOOTSTRAP=true    /charts/build-chart.sh
+RUN CHART_VERSION="1.36.300"                  CHART_FILE=/charts/rke2-ingress-nginx.yaml     CHART_BOOTSTRAP=false   /charts/build-chart.sh
 RUN CHART_VERSION="v1.20.2"     CHART_FILE=/charts/rke2-kube-proxy.yaml        CHART_BOOTSTRAP=true    /charts/build-chart.sh
-RUN CHART_VERSION="2.11.100"    CHART_FILE=/charts/rke2-metrics-server.yaml    CHART_BOOTSTRAP=false   /charts/build-chart.sh
+RUN CHART_VERSION="2.11.100-build2021022300"  CHART_FILE=/charts/rke2-metrics-server.yaml    CHART_BOOTSTRAP=false   /charts/build-chart.sh
 RUN rm -vf /charts/*.sh /charts/*.md
 
 # rke-runtime image
@@ -139,9 +139,9 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM rancher/k3s:v1.20.2-k3s1 AS k3s
-FROM rancher/hardened-containerd:v1.4.3-k3s3 AS containerd
-FROM rancher/hardened-crictl:v1.19.0 AS crictl
-FROM rancher/hardened-runc:v1.0.0-rc92 AS runc
+FROM rancher/hardened-containerd:v1.4.3-k3s3-build20210223 AS containerd
+FROM rancher/hardened-crictl:v1.19.0-build20210223 AS crictl
+FROM rancher/hardened-runc:v1.0.0-rc93-build20210223 AS runc
 
 FROM scratch AS runtime
 COPY --from=k3s \
