@@ -2,6 +2,8 @@ package bootstrap
 
 import (
 	"archive/tar"
+	"compress/bzip2"
+	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -21,7 +23,11 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	helmv1 "github.com/k3s-io/helm-controller/pkg/apis/helm.cattle.io/v1"
 	"github.com/k3s-io/helm-controller/pkg/helm"
+	"github.com/klauspost/compress/zstd"
+	"github.com/pierrec/lz4"
 	"github.com/pkg/errors"
+	"github.com/rancher/k3s/pkg/agent/util"
+	"github.com/rancher/k3s/pkg/untar"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/wrangler/pkg/merr"
 	"github.com/rancher/wrangler/pkg/schemes"
@@ -32,7 +38,10 @@ import (
 
 var releasePattern = regexp.MustCompile("^v[0-9]")
 
-const bufferSize = 4096
+const (
+	bufferSize    = 4096
+	extensionList = ".tar .tar.lz4 .tar.bz2 .tbz .tar.gz .tgz .tar.zst .tzst" // keep this in sync with the decompressor list
+)
 
 // binDirForDigest returns the path to dataDir/data/refDigest/bin.
 func binDirForDigest(dataDir string, refDigest string) string {
@@ -367,7 +376,7 @@ func preloadBootstrapImage(dataDir string, imageRef name.Reference) (v1.Image, e
 
 	// Try to find the requested tag in each file, moving on to the next if there's an error
 	for fileName := range files {
-		img, err := tarball.ImageFromPath(fileName, &imageTag)
+		img, err := preloadFile(imageTag, fileName)
 		if img != nil {
 			logrus.Debugf("Found %s in %s", imageTag, fileName)
 			return img, nil
@@ -378,6 +387,70 @@ func preloadBootstrapImage(dataDir string, imageRef name.Reference) (v1.Image, e
 	}
 	logrus.Debugf("No local image available for %s: not found in any file in %s", imageTag, imagesDir)
 	return nil, nil
+}
+
+// preloadFile handles loading images from a single tarball.
+func preloadFile(imageTag name.Tag, fileName string) (v1.Image, error) {
+	var opener tarball.Opener
+	switch {
+	case util.HasSuffixI(fileName, ".txt"):
+		return nil, nil
+	case util.HasSuffixI(fileName, ".tar"):
+		opener = func() (io.ReadCloser, error) {
+			return os.Open(fileName)
+		}
+	case util.HasSuffixI(fileName, ".tar.lz4"):
+		opener = func() (io.ReadCloser, error) {
+			file, err := os.Open(fileName)
+			if err != nil {
+				return nil, err
+			}
+			zr := lz4.NewReader(file)
+			return SplitReadCloser(zr, file), nil
+		}
+	case util.HasSuffixI(fileName, ".tar.bz2", ".tbz"):
+		opener = func() (io.ReadCloser, error) {
+			file, err := os.Open(fileName)
+			if err != nil {
+				return nil, err
+			}
+			zr := bzip2.NewReader(file)
+			return SplitReadCloser(zr, file), nil
+		}
+	case util.HasSuffixI(fileName, ".tar.gz", ".tgz"):
+		opener = func() (io.ReadCloser, error) {
+			file, err := os.Open(fileName)
+			if err != nil {
+				return nil, err
+			}
+			zr, err := gzip.NewReader(file)
+			if err != nil {
+				return nil, err
+			}
+			return MultiReadCloser(zr, file), nil
+		}
+	case util.HasSuffixI(fileName, "tar.zst", ".tzst"):
+		opener = func() (io.ReadCloser, error) {
+			file, err := os.Open(fileName)
+			if err != nil {
+				return nil, err
+			}
+			zr, err := zstd.NewReader(file, zstd.WithDecoderMaxMemory(untar.MaxDecoderMemory))
+			if err != nil {
+				return nil, err
+			}
+			return ZstdReadCloser(zr, file), nil
+		}
+	default:
+		return nil, fmt.Errorf("unhandled file type; supported extensions: " + extensionList)
+	}
+
+	img, err := tarball.Image(opener, &imageTag)
+	if err != nil {
+		logrus.Debugf("Did not find %s in %s: %s", imageTag, fileName, err)
+		return nil, nil
+	}
+	return img, nil
 }
 
 // setChartValues scans the directory at manifestDir. It attempts to load all manifests

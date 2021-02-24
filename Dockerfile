@@ -34,6 +34,8 @@ RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
 RUN curl -sL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.27.0
 RUN set -x \
  && apk --no-cache add \
+    libarchive-tools \
+    zstd \
     jq \
     python2
 RUN VERSION=0.16.0 && \
