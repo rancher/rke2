@@ -26,7 +26,7 @@ type Config struct {
 	CloudProviderConfig string
 	AuditPolicyFile     string
 	KubeletPath         string
-	Images              images.Images
+	Images              images.ImageOverrideConfig
 }
 
 var cisMode bool
@@ -73,18 +73,28 @@ func Agent(clx *cli.Context, cfg Config) error {
 func setup(clx *cli.Context, cfg Config) error {
 	cisMode = clx.String("profile") == CISProfile
 	dataDir := clx.String("data-dir")
+	privateRegistry := clx.String("private-registry")
 
 	auditPolicyFile := clx.String("audit-policy-file")
 	if auditPolicyFile == "" {
 		auditPolicyFile = defaultAuditPolicyFile
 	}
 
-	cfg.Images.SetDefaults()
-	if err := defaults.Set(clx, cfg.Images, dataDir); err != nil {
+	resolver, err := images.NewResolver(cfg.Images)
+	if err != nil {
 		return err
 	}
 
-	execPath, err := bootstrap.Stage(dataDir, cfg.Images)
+	pauseImage, err := resolver.GetReference(images.Pause)
+	if err != nil {
+		return err
+	}
+
+	if err := defaults.Set(clx, pauseImage, dataDir); err != nil {
+		return err
+	}
+
+	execPath, err := bootstrap.Stage(dataDir, privateRegistry, resolver)
 	if err != nil {
 		return err
 	}
@@ -120,7 +130,7 @@ func setup(clx *cli.Context, cfg Config) error {
 	}
 
 	sp := podexecutor.StaticPodConfig{
-		Images:          cfg.Images,
+		Resolver:        resolver,
 		ImagesDir:       agentImagesDir,
 		ManifestsDir:    agentManifestsDir,
 		CISMode:         cisMode,

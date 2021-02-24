@@ -20,10 +20,14 @@ BUILDTAGS="selinux netgo osusergo no_stage static_build sqlite_omit_load_extensi
 GO_BUILDTAGS="${GO_BUILDTAGS} ${BUILDTAGS} ${DEBUG_TAGS}"
 
 VERSION_FLAGS="
-        -X ${RKE2_PKG}/pkg/images.KubernetesVersion=${DOCKERIZED_VERSION}
+        -X ${K3S_PKG}/pkg/version.GitCommit=${REVISION}
         -X ${K3S_PKG}/pkg/version.Program=${PROG}
         -X ${K3S_PKG}/pkg/version.Version=${VERSION}
-        -X ${K3S_PKG}/pkg/version.GitCommit=${REVISION}
+        -X ${RKE2_PKG}/pkg/images.DefaultRegistry=${REGISTRY}
+        -X ${RKE2_PKG}/pkg/images.DefaultEtcdImage=rancher/hardened-etcd:${ETCD_VERSION}-${IMAGE_BUILD_VERSION}
+        -X ${RKE2_PKG}/pkg/images.DefaultKubernetesImage=${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}
+        -X ${RKE2_PKG}/pkg/images.DefaultPauseImage=rancher/pause:${PAUSE_VERSION}
+        -X ${RKE2_PKG}/pkg/images.DefaultRuntimeImage=${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
 "
 
 #STATIC_FLAGS='-extldflags "-static -Wl,--fatal-warnings"'

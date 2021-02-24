@@ -99,6 +99,7 @@ var (
 		"selinux":                     copy,
 		"service-node-port-range":     copy,
 		"etcd-expose-metrics":         copy,
+		"airgap-extra-registry":       copy,
 	})
 )
 

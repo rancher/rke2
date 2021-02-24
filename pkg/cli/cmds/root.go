@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/rancher/k3s/pkg/version"
+	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -28,37 +29,37 @@ var (
 			Destination: &config.Images.SystemDefaultRegistry,
 		},
 		&cli.StringFlag{
-			Name:        "kube-apiserver-image",
+			Name:        images.KubeAPIServer,
 			Usage:       "(image) Override image to use for kube-apiserver",
 			EnvVar:      "RKE2_KUBE_APISERVER_IMAGE",
 			Destination: &config.Images.KubeAPIServer,
 		},
 		&cli.StringFlag{
-			Name:        "kube-controller-manager-image",
+			Name:        images.KubeControllerManager,
 			Usage:       "(image) Override image to use for kube-controller-manager",
 			EnvVar:      "RKE2_KUBE_CONTROLLER_MANAGER_IMAGE",
-			Destination: &config.Images.KubeControllManager,
+			Destination: &config.Images.KubeControllerManager,
 		},
 		&cli.StringFlag{
-			Name:        "kube-scheduler-image",
+			Name:        images.KubeScheduler,
 			Usage:       "(image) Override image to use for kube-scheduler",
 			EnvVar:      "RKE2_KUBE_SCHEDULER_IMAGE",
 			Destination: &config.Images.KubeScheduler,
 		},
 		&cli.StringFlag{
-			Name:        "pause-image",
+			Name:        images.Pause,
 			Usage:       "(image) Override image to use for pause",
 			EnvVar:      "RKE2_PAUSE_IMAGE",
 			Destination: &config.Images.Pause,
 		},
 		&cli.StringFlag{
-			Name:        "runtime-image",
+			Name:        images.Runtime,
 			Usage:       "(image) Override image to use for runtime binaries (containerd, kubectl, crictl, etc)",
 			EnvVar:      "RKE2_RUNTIME_IMAGE",
 			Destination: &config.Images.Runtime,
 		},
 		&cli.StringFlag{
-			Name:        "etcd-image",
+			Name:        images.ETCD,
 			Usage:       "(image) Override image to use for etcd",
 			EnvVar:      "RKE2_ETCD_IMAGE",
 			Destination: &config.Images.ETCD,

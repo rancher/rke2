@@ -44,6 +44,7 @@ var (
 		"protect-kernel-defaults":    copy,
 		"snapshotter":                copy,
 		"selinux":                    copy,
+		"airgap-extra-registry":      copy,
 	})
 )
 
