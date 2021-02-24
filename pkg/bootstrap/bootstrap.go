@@ -62,17 +62,18 @@ func dirExists(dir string) bool {
 	return false
 }
 
-// Stage extracts binaries and manifests from the runtime image specified in imageConf into the directory
-// at dataDir. It attempts to load the runtime image from a tarball at dataDir/agent/images,
-// falling back to a remote image pull if the image is not found within a tarball.
-// Extraction is skipped if a bin directory for the specified image already exists. It also rewrites
-// any HelmCharts to pass through the --system-default-registry value.
-// Unique image detection is accomplished by hashing the image name and tag, or the image digest,
-// depending on what the runtime image reference points at.
-// If the bin directory already exists, or content is successfully extracted, the bin directory path is returned.
-func Stage(dataDir string, imageConf images.Images) (string, error) {
+// Stage extracts binaries and manifests from the runtime image specified in the image configuration
+// into the directory at dataDir. It attempts to load the runtime image from a tarball at
+// dataDir/agent/images, falling back to a remote image pull if the image is not found within a
+// tarball.  Extraction is skipped if a bin directory for the specified image already exists. It
+// also rewrites any HelmCharts to pass through the --system-default-registry value.  Unique image
+// detection is accomplished by hashing the image name and tag, or the image digest, depending on
+// what the runtime image reference points at.  If the bin directory already exists, or content is
+// successfully extracted, the bin directory path is returned.
+func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, error) {
 	var img v1.Image
-	ref, err := name.ParseReference(imageConf.Runtime)
+
+	ref, err := resolver.GetReference(images.Runtime)
 	if err != nil {
 		return "", err
 	}
@@ -89,15 +90,10 @@ func Stage(dataDir string, imageConf images.Images) (string, error) {
 	if dirExists(refBinDir) {
 		logrus.Infof("Runtime image %q bin dir already exists at %q; skipping extract", ref, refBinDir)
 	} else {
-		// Try to use configured runtime image from an airgap tarball, unless we're using a
-		// private registry in which case it's not supported since the images won't have the correct name.
-		if imageConf.SystemDefaultRegistry == "" {
-			img, err = preloadBootstrapImage(dataDir, ref.String())
-			if err != nil {
-				return "", err
-			}
-		} else {
-			logrus.Infof("Runtime image tarball preload disabled by --system-default-registry=%s", imageConf.SystemDefaultRegistry)
+		// Try to use configured runtime image from an airgap tarball
+		img, err = preloadBootstrapFromRuntime(dataDir, resolver)
+		if err != nil {
+			return "", err
 		}
 
 		// If we didn't find the requested image in a tarball, pull it from the remote registry.
@@ -126,7 +122,7 @@ func Stage(dataDir string, imageConf images.Images) (string, error) {
 
 	// Fix up HelmCharts to pass through configured values
 	// This needs to be done every time in order to sync values from the CLI
-	if err := setChartValues(dataDir, imageConf.SystemDefaultRegistry); err != nil {
+	if err := setChartValues(dataDir, resolver.Registry.Name()); err != nil {
 		return "", err
 	}
 
@@ -262,13 +258,53 @@ func extractToDir(dir, prefix string, img v1.Image, imageName string) error {
 	return merr.NewErrors(errs...)
 }
 
-// preloadBootstrapImage attempts return an image named imageName from a tarball
+// preloadBootstrapFromRuntime tries to load the runtime image from tarballs, using both the
+// default registry, and the user-configured registry (on the off chance they've retagged the
+// images in the tarball to match their private registry).
+func preloadBootstrapFromRuntime(dataDir string, resolver *images.Resolver) (v1.Image, error) {
+	var refs []name.Reference
+	runtimeRef, err := resolver.GetReference(images.Runtime)
+	if err != nil {
+		return nil, err
+	}
+
+	if runtimeRef.Context().Registry.Name() == images.DefaultRegistry {
+		// If the image is from the default registry, only check for that.
+		refs = []name.Reference{runtimeRef}
+	} else {
+		// If the image is from a different registry, check the default first, then the configured registry.
+		defaultRef, err := resolver.GetReference(images.Runtime, images.WithRegistry(images.DefaultRegistry))
+		if err != nil {
+			return nil, err
+		}
+		refs = []name.Reference{defaultRef, runtimeRef}
+	}
+
+	for _, ref := range refs {
+		img, err := preloadBootstrapImage(dataDir, ref)
+		if img != nil {
+			return img, err
+		}
+		if err != nil {
+			logrus.Errorf("Failed to load for bootstrap image %s: %v", ref.Name(), err)
+		}
+	}
+	return nil, nil
+}
+
+// preloadBootstrapImage attempts return an image matching the given reference from a tarball
 // within imagesDir.
-func preloadBootstrapImage(dataDir string, imageName string) (v1.Image, error) {
+func preloadBootstrapImage(dataDir string, imageRef name.Reference) (v1.Image, error) {
+	imageTag, ok := imageRef.(name.Tag)
+	if !ok {
+		logrus.Debugf("No local image available for %s: reference is not a tag", imageRef)
+		return nil, nil
+	}
+
 	imagesDir := imagesDir(dataDir)
 	if _, err := os.Stat(imagesDir); err != nil {
 		if os.IsNotExist(err) {
-			logrus.Debugf("No local image available for %q: dir %q does not exist", imageName, imagesDir)
+			logrus.Debugf("No local image available for %s: directory %s does not exist", imageTag, imagesDir)
 			return nil, nil
 		}
 		return nil, err
@@ -288,22 +324,17 @@ func preloadBootstrapImage(dataDir string, imageName string) (v1.Image, error) {
 		return nil, err
 	}
 
-	imageTag, err := name.NewTag(imageName, name.WeakValidation)
-	if err != nil {
-		return nil, err
-	}
-
 	// Try to find the requested tag in each file, moving on to the next if there's an error
 	for fileName := range files {
 		img, err := tarball.ImageFromPath(fileName, &imageTag)
 		if err != nil {
-			logrus.Debugf("Did not find %q in %q: %s", imageName, fileName, err)
+			logrus.Debugf("Did not find %s in %s: %s", imageTag, fileName, err)
 			continue
 		}
-		logrus.Debugf("Found %q in %q", imageName, fileName)
+		logrus.Debugf("Found %s in %s", imageTag, fileName)
 		return img, nil
 	}
-	logrus.Debugf("No local image available for %q: not found in any file in %q", imageName, imagesDir)
+	logrus.Debugf("No local image available for %s: not found in any file in %s", imageTag, imagesDir)
 	return nil, nil
 }
 
