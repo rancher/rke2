@@ -13,7 +13,7 @@ replace (
 	github.com/docker/libnetwork => github.com/docker/libnetwork v0.8.0-dev.2.0.20190624125649-f0e46a78ea34
 	github.com/golang/protobuf => github.com/golang/protobuf v1.3.5
 	github.com/juju/errors => github.com/k3s-io/nocode v0.0.0-20200630202308-cb097102c09f
-	github.com/k3s-io/helm-controller => github.com/k3s-io/helm-controller v0.8.3
+	github.com/k3s-io/helm-controller => github.com/k3s-io/helm-controller v0.8.4
 	github.com/kubernetes-sigs/cri-tools => github.com/rancher/cri-tools v1.19.0-k3s1
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc92
@@ -53,7 +53,7 @@ replace (
 require (
 	github.com/containerd/containerd v1.4.3 // indirect
 	github.com/google/go-containerregistry v0.0.0-20190617215043-876b8855d23c
-	github.com/k3s-io/helm-controller v0.8.3
+	github.com/k3s-io/helm-controller v0.8.4
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/k3s v1.19.8-rc1.0.20210218212206-95fc76b206b1
 	github.com/rancher/wrangler v0.6.1
