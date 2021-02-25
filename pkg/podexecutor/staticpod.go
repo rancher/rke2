@@ -54,9 +54,11 @@ type CloudProviderConfig struct {
 // Kubelet starts the kubelet in a subprocess with watching goroutine.
 func (s *StaticPodConfig) Kubelet(args []string) error {
 	if s.CloudProvider != nil {
-		args = append(args,
-			"--cloud-provider="+s.CloudProvider.Name,
-			"--cloud-config="+s.CloudProvider.Path)
+		extraArgs := []string{
+			"--cloud-provider=" + s.CloudProvider.Name,
+			"--cloud-config=" + s.CloudProvider.Path,
+		}
+		args = append(extraArgs, args...)
 	}
 	go func() {
 		for {
@@ -84,22 +86,25 @@ func (s *StaticPodConfig) KubeProxy(args []string) error {
 func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) (authenticator.Request, http.Handler, error) {
 	auditLogFile := filepath.Join(s.DataDir, "server/logs/audit.log")
 	if s.CloudProvider != nil {
-		args = append(args,
-			"--cloud-provider="+s.CloudProvider.Name,
-			"--cloud-config="+s.CloudProvider.Path)
+		extraArgs := []string{
+			"--cloud-provider=" + s.CloudProvider.Name,
+			"--cloud-config=" + s.CloudProvider.Path,
+		}
+		args = append(extraArgs, args...)
 	}
 	if err := images.Pull(s.ImagesDir, "kube-apiserver", s.Images.KubeAPIServer); err != nil {
 		return nil, nil, err
 	}
 
 	if s.CISMode {
-		args = append(args,
-			"--audit-policy-file="+s.AuditPolicyFile,
-			"--audit-log-path="+auditLogFile,
+		extraArgs := []string{
+			"--audit-policy-file=" + s.AuditPolicyFile,
+			"--audit-log-path=" + auditLogFile,
 			"--audit-log-maxage=30",
 			"--audit-log-maxbackup=10",
 			"--audit-log-maxsize=100",
-		)
+		}
+		args = append(extraArgs, args...)
 		if err := writeDefaultPolicyFile(s.AuditPolicyFile); err != nil {
 			return nil, nil, err
 		}
@@ -159,21 +164,25 @@ func after(after <-chan struct{}, f func() error) error {
 // ControllerManager starts the kube-controller-manager static pod, once the apiserver is available.
 func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []string) error {
 	if s.CloudProvider != nil {
-		args = append(args,
-			"--cloud-provider="+s.CloudProvider.Name,
-			"--cloud-config="+s.CloudProvider.Path)
+		extraArgs := []string{
+			"--cloud-provider=" + s.CloudProvider.Name,
+			"--cloud-config=" + s.CloudProvider.Path,
+		}
+		args = append(extraArgs, args...)
 	}
 
 	if err := images.Pull(s.ImagesDir, "kube-controller-manager", s.Images.KubeControllManager); err != nil {
 		return err
 	}
 	return after(apiReady, func() error {
+		extraArgs := []string{
+			"--flex-volume-plugin-dir=/usr/libexec/kubernetes/kubelet-plugins/volume/exec",
+			"--terminated-pod-gc-threshold=1000",
+		}
+		args = append(extraArgs, args...)
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command: "kube-controller-manager",
-			Args: append(args,
-				"--flex-volume-plugin-dir=/usr/libexec/kubernetes/kubelet-plugins/volume/exec",
-				"--terminated-pod-gc-threshold=1000",
-			),
+			Command:     "kube-controller-manager",
+			Args:        args,
 			Image:       s.Images.KubeControllManager,
 			HealthPort:  10252,
 			HealthProto: "HTTP",
