@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/containerd/continuity/fs"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -36,6 +37,11 @@ const bufferSize = 4096
 // binDirForDigest returns the path to dataDir/data/refDigest/bin.
 func binDirForDigest(dataDir string, refDigest string) string {
 	return filepath.Join(dataDir, "data", refDigest, "bin")
+}
+
+// chartsDirForDigest returns the path to dataDir/data/refDigest/charts.
+func chartsDirForDigest(dataDir string, refDigest string) string {
+	return filepath.Join(dataDir, "data", refDigest, "charts")
 }
 
 // manifestsDir returns the path to dataDir/server/manifests.
@@ -84,10 +90,11 @@ func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, 
 	}
 
 	refBinDir := binDirForDigest(dataDir, refDigest)
+	refChartsDir := chartsDirForDigest(dataDir, refDigest)
 	manifestsDir := manifestsDir(dataDir)
 
-	if dirExists(refBinDir) {
-		logrus.Infof("Runtime image %s bin dir already exists at %s; skipping extract", ref, refBinDir)
+	if dirExists(refBinDir) && dirExists(refChartsDir) {
+		logrus.Infof("Runtime image %s bin and charts directories already exist; skipping extract", ref)
 	} else {
 		// Try to use configured runtime image from an airgap tarball
 		img, err = preloadBootstrapFromRuntime(dataDir, resolver)
@@ -108,7 +115,7 @@ func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, 
 		// Extract binaries and charts
 		extractPaths := map[string]string{
 			"bin":    refBinDir,
-			"charts": manifestsDir,
+			"charts": refChartsDir,
 		}
 		if err := extractToDirs(img, dataDir, extractPaths); err != nil {
 			return "", errors.Wrap(err, "failed to extract runtime image")
@@ -120,7 +127,18 @@ func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, 
 		}
 	}
 
-	// Fix up HelmCharts to pass through configured values
+	// Ensure manifests directory exists
+	if err := os.MkdirAll(manifestsDir, 0755); err != nil && !os.IsExist(err) {
+		return "", err
+	}
+
+	// Recursively copy all charts into the manifests directory, since the K3s
+	// deploy controller will delete them if they are disabled.
+	if err := fs.CopyDir(manifestsDir, refChartsDir); err != nil {
+		return "", errors.Wrap(err, "failed to copy runtime charts")
+	}
+
+	// Fix up HelmCharts to pass through configured values.
 	// This needs to be done every time in order to sync values from the CLI
 	if err := setChartValues(dataDir, resolver.Registry.Name()); err != nil {
 		return "", errors.Wrap(err, "failed to set system-default-registry on HelmCharts")

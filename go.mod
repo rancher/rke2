@@ -55,6 +55,7 @@ replace (
 
 require (
 	github.com/containerd/containerd v1.4.3 // indirect
+	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e
 	github.com/google/go-containerregistry v0.4.0
 	github.com/k3s-io/helm-controller v0.8.4
 	github.com/pkg/errors v0.9.1
