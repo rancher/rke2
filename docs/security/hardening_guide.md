@@ -99,7 +99,7 @@ Ensure that a minimal audit policy is created (Scored)
 Logging is an important detective control for all systems, to detect potential unauthorised access.
 </details>
 
-RKE2 supports configuring audit logging by passing --profile=cis-1.5, it enables a default policy which doesn't log anything, to configure a customize policy you should pass --audit-policy-file argument to rke2 server process. This argument specify the path for audit logging policy configuration. For more information about the logging policy you can checkout the [official docs](https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#audit-policy).
+RKE2 supports configuring audit logging by passing `--profile=cis-1.5`. It enables a default policy which doesn't log anything. To configure a customize policy, you should pass the `--audit-policy-file` argument to the RKE2 server process. This argument specifies the path for audit logging policy configuration. For more information about the logging policy, you can checkout the [official docs](https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#audit-policy).
 
 ### Control 5.1.5
 Ensure that default service accounts are not actively used. (Scored)
