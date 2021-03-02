@@ -32,22 +32,22 @@ var _ http.RoundTripper = &registry{}
 
 // getPrivateRegistries loads private registry configuration from registries.yaml
 func getPrivateRegistries(path string) (*registry, error) {
-	privRegistries := &templates.Registry{}
+	registry := &registry{
+		r: &templates.Registry{},
+		t: map[string]*http.Transport{},
+	}
 	privRegistryFile, err := ioutil.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, nil
+			return registry, nil
 		}
 		return nil, err
 	}
 	logrus.Infof("Using registry config file at %s", path)
-	if err := yaml.Unmarshal(privRegistryFile, &privRegistries); err != nil {
+	if err := yaml.Unmarshal(privRegistryFile, registry.r); err != nil {
 		return nil, err
 	}
-	return &registry{
-		r: privRegistries,
-		t: map[string]*http.Transport{},
-	}, nil
+	return registry, nil
 }
 
 // Resolve returns an authenticator for the authn.Keychain interface. The authenticator
