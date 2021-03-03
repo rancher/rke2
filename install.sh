@@ -33,7 +33,12 @@ fi
 #     Version of the rke2 RPM release to install.
 #     Format would be like "1.el7" or "2.el8"
 #
+#   - INSTALL_RKE2_TAR_PREFIX
+#     Installation prefix when using the tar installation method.
+#     Default is /usr/local, unless /usr/local is read-only or has a dedicated mount point,
+#     in which case /opt/rke2 is used instead.
 
+DEFAULT_TAR_PREFIX=/usr/local
 
 # info logs the given argument at info log level.
 info() {
@@ -53,6 +58,18 @@ fatal() {
     fi
     exit 1
 }
+
+# check_target_mountpoint return success if the target directory is on a dedicated mount point
+check_target_mountpoint() {
+    mountpoint -q ${INSTALL_RKE2_TAR_PREFIX}
+}
+
+# check_target_ro returns success if the target directory is read-only
+check_target_ro() {
+    touch ${INSTALL_RKE2_TAR_PREFIX}/.rke2-ro-test && rm -rf ${INSTALL_RKE2_TAR_PREFIX}/.rke2-ro-test
+    test $? -ne 0
+}
+
 
 # setup_env defines needed environment variables.
 setup_env() {
@@ -75,6 +92,16 @@ setup_env() {
     # --- use yum install method if available by default
     if [ -z "${INSTALL_RKE2_METHOD}" ] && command -v yum >/dev/null 2>&1; then
         INSTALL_RKE2_METHOD=yum
+    fi
+
+    # --- install tarball to /usr/local by default, except if /usr/local is on a separate partition or is read-only
+    # --- in which case we go into /opt/rke2.
+    if [ -z "${INSTALL_RKE2_TAR_PREFIX}" ]; then
+        INSTALL_RKE2_TAR_PREFIX=${DEFAULT_TAR_PREFIX}
+        if check_target_mountpoint || check_target_ro; then
+            INSTALL_RKE2_TAR_PREFIX=/opt/rke2
+            warn "${DEFAULT_TAR_PREFIX} is read-only or a mount point; installing to ${INSTALL_RKE2_TAR_PREFIX}"
+        fi
     fi
 }
 
@@ -211,9 +238,16 @@ verify_tarball() {
     fi
 }
 unpack_tarball() {
-    info "unpacking tarball file"
-    mkdir -p /usr/local
-    tar xzf $TMP_TARBALL -C /usr/local
+    info "unpacking tarball file to ${INSTALL_RKE2_TAR_PREFIX}"
+    mkdir -p ${INSTALL_RKE2_TAR_PREFIX}
+    tar xzf $TMP_TARBALL -C ${INSTALL_RKE2_TAR_PREFIX}
+    if [ "${INSTALL_RKE2_TAR_PREFIX}" != "${DEFAULT_TAR_PREFIX}" ]; then
+        info "updating tarball contents to reflect install path"
+        sed -i "s|${DEFAULT_TAR_PREFIX}|${INSTALL_RKE2_TAR_PREFIX}|" ${INSTALL_RKE2_TAR_PREFIX}/lib/systemd/system/rke2-*.service ${INSTALL_RKE2_TAR_PREFIX}/bin/rke2-uninstall.sh
+        info "moving systemd units to /etc/systemd/system"
+        mv -f ${INSTALL_RKE2_TAR_PREFIX}/lib/systemd/system/rke2-*.service /etc/systemd/system/
+        info "install complete; you may want to run:  export PATH=\$PATH:${INSTALL_RKE2_TAR_PREFIX}/bin"
+    fi
 }
 
 do_install_rpm() {
