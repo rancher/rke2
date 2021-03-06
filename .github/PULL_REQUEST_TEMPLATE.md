@@ -4,6 +4,8 @@
 
 <!-- Describe the big picture of your changes here to communicate to the maintainers why we should accept this pull request. -->
 
+<!-- Does this change require an update to documentation? -->
+
 #### Types of Changes ####
 
 <!-- What types of changes does your code introduce to RKE2? Bugfix, New Feature, Breaking Change, etc -->
