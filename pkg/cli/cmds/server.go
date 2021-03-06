@@ -97,9 +97,19 @@ var (
 		"protect-kernel-defaults":     copy,
 		"snapshotter":                 copy,
 		"selinux":                     copy,
+		"lb-server-port":              copy,
 		"service-node-port-range":     copy,
 		"etcd-expose-metrics":         copy,
 		"airgap-extra-registry":       copy,
+		"etcd-s3":                     drop,
+		"etcd-s3-endpoint":            drop,
+		"etcd-s3-endpoint-ca":         drop,
+		"etcd-s3-skip-ssl-verify":     drop,
+		"etcd-s3-access-key":          drop,
+		"etcd-s3-secret-key":          drop,
+		"etcd-s3-bucket":              drop,
+		"etcd-s3-region":              drop,
+		"etcd-s3-folder":              drop,
 	})
 )
 
