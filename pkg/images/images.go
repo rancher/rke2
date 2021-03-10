@@ -17,7 +17,7 @@ const (
 	KubeAPIServer         = "kube-apiserver-image"
 	KubeControllerManager = "kube-controller-manager-image"
 	KubeScheduler         = "kube-scheduler-image"
-	ETCD                  = "etc-image"
+	ETCD                  = "etcd-image"
 	Pause                 = "pause-image"
 )
 
