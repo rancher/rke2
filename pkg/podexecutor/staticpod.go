@@ -29,6 +29,7 @@ import (
 var (
 	ssldirs = []string{
 		"/etc/ssl/certs",
+		"/etc/pki/tls/certs",
 		"/etc/ca-certificates",
 		"/usr/local/share/ca-certificates",
 		"/usr/share/ca-certificates",
@@ -53,13 +54,16 @@ type CloudProviderConfig struct {
 
 // Kubelet starts the kubelet in a subprocess with watching goroutine.
 func (s *StaticPodConfig) Kubelet(args []string) error {
-	if s.CloudProvider != nil {
-		extraArgs := []string{
-			"--cloud-provider=" + s.CloudProvider.Name,
-			"--cloud-config=" + s.CloudProvider.Path,
-		}
-		args = append(extraArgs, args...)
+	extraArgs := []string{
+		"--volume-plugin-dir=/var/lib/kubelet/volumeplugins",
 	}
+	if s.CloudProvider != nil {
+		extraArgs = append(extraArgs,
+			"--cloud-provider="+s.CloudProvider.Name,
+			"--cloud-config="+s.CloudProvider.Path,
+		)
+	}
+	args = append(extraArgs, args...)
 	go func() {
 		for {
 			cmd := exec.Command(s.KubeletPath, args...)
@@ -124,7 +128,7 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 			Command:   "kube-apiserver",
 			Args:      args,
 			Image:     s.Images.KubeAPIServer,
-			Dirs:      append(ssldirs, filepath.Dir(auditLogFile)),
+			Dirs:      append(onlyExisting(ssldirs), filepath.Dir(auditLogFile)),
 			CPUMillis: 250,
 			Files:     []string{etcdNameFile(s.DataDir)},
 		})
@@ -148,6 +152,17 @@ func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) err
 			Files:       []string{etcdNameFile(s.DataDir)},
 		})
 	})
+}
+
+// onlyExisting filters out paths from the list that cannot be accessed
+func onlyExisting(paths []string) []string {
+	existing := []string{}
+	for _, path := range paths {
+		if _, err := os.Stat(path); err == nil {
+			existing = append(existing, path)
+		}
+	}
+	return existing
 }
 
 // after calls a function after a message is received from a channel.
@@ -176,7 +191,7 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 	}
 	return after(apiReady, func() error {
 		extraArgs := []string{
-			"--flex-volume-plugin-dir=/usr/libexec/kubernetes/kubelet-plugins/volume/exec",
+			"--flex-volume-plugin-dir=/var/lib/kubelet/volumeplugins",
 			"--terminated-pod-gc-threshold=1000",
 		}
 		args = append(extraArgs, args...)
