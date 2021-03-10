@@ -23,9 +23,7 @@ Importantly, RKE2 does not rely on Docker as RKE1 does. RKE1 leveraged Docker fo
 ## Why two names?
 It is known as RKE Government in order to convey the primary use cases and sector it currently targets.
 
-It is known as RKE2 because it is the future of the RKE distribution. Right now, it is entirely independent from RKE (also known as "RKE1"), but our next phase of development will focus on a seamless upgrade path and feature parity with RKE1 when integrated with the Rancher multi-cluster management platform. However, we still plan to support and maintain RKE1 for years.
-
-Once we've completed the upgrade path and Rancher-integration feature parity work, we will offer an optional means to upgrade RKE1 to RKE Government.
+It is also known as RKE 2 as it is the next next iteration of the Rancher Kubernetes Engine for datacenter use cases. The distribution runs standalone and integration work into Rancher is underway. We intend to make RKE 2 an option in Rancher once it achieves feature parity with RKE. An upgrade path from RKE to RKE2 is also under development for those that want to migrate.
 
 ## Security
 
