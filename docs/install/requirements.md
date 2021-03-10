@@ -14,6 +14,7 @@ RKE2 has been tested and validated on the following operating systems and their 
 *    Ubuntu 20.04 (amd64)
 *    CentOS/RHEL 7.8 (amd64)
 *    CentOS/RHEL 8.2 (amd64)
+*    SLES 15 SP2 (amd64) (v1.18.16+rke2r1 and newer)
 
 ## Hardware
 
