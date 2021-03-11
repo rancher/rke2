@@ -19,16 +19,23 @@ The file consists of two main sections:
 
 ### Mirrors
 
-Mirrors is a directive that defines the names and endpoints of the private registries, for example:
+Mirrors is a directive that defines the names and endpoints of the private registries. Private registries can be used as a local mirror for the default docker.io registry, or for images where the registry is explicitly specified in the name.
+
+For example, the following configuration would pull from the private registry at `https://registry.example.com:5000` for both `library/busybox:latest` and `registry.example.com/library/busybox:latest`:
 
 ```yaml
 mirrors:
-  mycustomreg.com:
+  docker.io:
     endpoint:
-      - "https://mycustomreg.com:5000"
+      - "https://registry.example.com:5000"
+  registry.example.com:
+    endpoint:
+      - "https://registry.example.com:5000"
 ```
 
 Each mirror must have a name and set of endpoints. When pulling an image from a registry, containerd will try these endpoint URLs one by one, and use the first working one.
+
+**Note:** If no endpoint is configured, containerd assumes that the registry can be accessed anonymously via HTTPS on port 443, and is using a certificate trusted by the host operating system. For more information, you may [consult the containerd documentation](https://github.com/containerd/containerd/blob/master/docs/cri/registry.md#configure-registry-endpoint).
 
 ### Configs
 
@@ -59,9 +66,9 @@ Below are examples showing how you may configure `/etc/rancher/rke2/registries.y
 mirrors:
   docker.io:
     endpoint:
-      - "https://mycustomreg.com:5000"
+      - "https://registry.example.com:5000"
 configs:
-  "mycustomreg:5000":
+  "registry.example.com:5000":
     auth:
       username: xxxxxx # this is the registry username
       password: xxxxxx # this is the registry password
@@ -78,9 +85,9 @@ configs:
 mirrors:
   docker.io:
     endpoint:
-      - "https://mycustomreg.com:5000"
+      - "https://registry.example.com:5000"
 configs:
-  "mycustomreg:5000":
+  "registry.example.com:5000":
     tls:
       cert_file:            # path to the cert file used to authenticate to the registry
       key_file:             # path to the key file for the certificate used to authenticate to the registry
@@ -98,9 +105,9 @@ Below are examples showing how you may configure `/etc/rancher/rke2/registries.y
 mirrors:
   docker.io:
     endpoint:
-      - "http://mycustomreg.com:5000"
+      - "http://registry.example.com:5000"
 configs:
-  "mycustomreg:5000":
+  "registry.example.com:5000":
     auth:
       username: xxxxxx # this is the registry username
       password: xxxxxx # this is the registry password
@@ -112,7 +119,7 @@ configs:
 mirrors:
   docker.io:
     endpoint:
-      - "http://mycustomreg.com:5000"
+      - "http://registry.example.com:5000"
 ```
 
 > If using a registry using plaintext HTTP without TLS, you need to specify `http://` as the endpoint URI scheme, otherwise it will default to `https://`.
