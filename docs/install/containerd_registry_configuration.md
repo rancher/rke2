@@ -6,7 +6,7 @@ Upon startup, RKE2 will check to see if a `registries.yaml` file exists at `/etc
 
 Note that server nodes are schedulable by default. If you have not tainted the server nodes and will be running workloads on them, please ensure you also create the `registries.yaml` file on each server as well.
 
-**Note:** Containerd is not used for the initial RKE2 node bootstrapping. It is only used for Kubernetes workloads that are launched after the node is joined to the cluster. Therefore, in an airgap setup you must follow one of the methods outlined in the [airgap installation documentation](airgap.md), even if you use this containerd registry feature.
+**Note:** Prior to RKE2 v1.20, containerd registry configuration is not honored for the initial RKE2 node bootstrapping, only for Kubernetes workloads that are launched after the node is joined to the cluster. Consult the [airgap installation documentation](airgap.md) if you plan on using this containerd registry feature to bootstrap nodes.
 
 Configuration in containerd can be used to connect to a private registry with a TLS connection and with registries that enable authentication as well. The following section will explain the `registries.yaml` file and give different examples of using private registry configuration in RKE2.
 
@@ -66,9 +66,10 @@ configs:
       username: xxxxxx # this is the registry username
       password: xxxxxx # this is the registry password
     tls:
-      cert_file: # path to the cert file used in the registry
-      key_file:  # path to the key file used in the registry
-      ca_file:   # path to the ca file used in the registry
+      cert_file:            # path to the cert file used to authenticate to the registry
+      key_file:             # path to the key file for the certificate used to authenticate to the registry
+      ca_file:              # path to the ca file used to verify the registry's certificate
+      insecure_skip_verify: # may be set to true to skip verifying the registry's certificate
 ```
 
 *Without Authentication:*
@@ -81,16 +82,17 @@ mirrors:
 configs:
   "mycustomreg:5000":
     tls:
-      cert_file: # path to the cert file used in the registry
-      key_file:  # path to the key file used in the registry
-      ca_file:   # path to the ca file used in the registry
+      cert_file:            # path to the cert file used to authenticate to the registry
+      key_file:             # path to the key file for the certificate used to authenticate to the registry
+      ca_file:              # path to the ca file used to verify the registry's certificate
+      insecure_skip_verify: # may be set to true to skip verifying the registry's certificate
 ```
 
 ### Without TLS
 
 Below are examples showing how you may configure `/etc/rancher/rke2/registries.yaml` on each node when _not_ using TLS.
 
-*With Authentication:*
+*Plaintext HTTP With Authentication:*
 
 ```yaml
 mirrors:
@@ -104,7 +106,7 @@ configs:
       password: xxxxxx # this is the registry password
 ```
 
-*Without Authentication:*
+*Plaintext HTTP Without Authentication:*
 
 ```yaml
 mirrors:
@@ -113,6 +115,6 @@ mirrors:
       - "http://mycustomreg.com:5000"
 ```
 
-> In case of no TLS communication, you need to specify `http://` for the endpoints, otherwise it will default to https.
+> If using a registry using plaintext HTTP without TLS, you need to specify `http://` as the endpoint URI scheme, otherwise it will default to `https://`.
 
 In order for the registry changes to take effect, you need to either configure this file before starting RKE2 on the node, or restart RKE2 on each configured node.
