@@ -7,10 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
+
 	"github.com/rancher/k3s/pkg/agent/config"
 	"github.com/rancher/k3s/pkg/cli/agent"
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/k3s/pkg/cli/server"
+	rawServer "github.com/rancher/k3s/pkg/server"
 	"github.com/rancher/k3s/pkg/cluster/managed"
 	"github.com/rancher/k3s/pkg/daemons/executor"
 	"github.com/rancher/k3s/pkg/etcd"
@@ -60,7 +63,13 @@ func Server(clx *cli.Context, cfg Config) error {
 		setClusterRoles(),
 	)
 
-	return server.Run(clx)
+	var leaderControllers rawServer.CustomControllers
+
+	if cisMode {
+		leaderControllers = append(leaderControllers, cisnetworkpolicy.CISNetworkPolicyController)
+	}
+
+	return server.RunWithControllers(clx, leaderControllers, rawServer.CustomControllers{})
 }
 
 func Agent(clx *cli.Context, cfg Config) error {
