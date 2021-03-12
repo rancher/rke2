@@ -96,8 +96,6 @@ var (
 		"protect-kernel-defaults":     copy,
 		"snapshotter":                 copy,
 		"selinux":                     copy,
-		"service-node-port-range":     copy,
-		"etcd-expose-metrics":         copy,
 	})
 )
 
