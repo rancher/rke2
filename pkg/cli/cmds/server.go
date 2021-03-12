@@ -59,10 +59,13 @@ var (
 			Usage: "(components) Do not deploy packaged components and delete any deployed components (valid items: " + DisableItems + ")",
 		},
 		"disable-selinux":             drop,
-		"disable-scheduler":           drop,
-		"disable-cloud-controller":    drop,
+		"disable-scheduler":           copy,
+		"disable-cloud-controller":    copy,
 		"disable-network-policy":      drop,
 		"disable-kube-proxy":          drop,
+		"disable-api-server":          copy,
+		"disable-controller-manager":  copy,
+		"disable-etcd":                copy,
 		"etcd-disable-snapshots":      copy,
 		"etcd-snapshot-schedule-cron": copy,
 		"etcd-snapshot-retention":     copy,
@@ -93,6 +96,8 @@ var (
 		"protect-kernel-defaults":     copy,
 		"snapshotter":                 copy,
 		"selinux":                     copy,
+		"service-node-port-range":     copy,
+		"etcd-expose-metrics":         copy,
 	})
 )
 
