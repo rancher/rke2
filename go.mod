@@ -56,11 +56,13 @@ replace (
 )
 
 require (
+	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/google/go-containerregistry v0.0.0-20190617215043-876b8855d23c
+	github.com/k3s-io/helm-controller v0.8.4
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/helm-controller v0.7.3
-	github.com/rancher/k3s v1.19.2-0.20201028222356-523ccaf3f22a
+	github.com/rancher/k3s v1.19.9-0.20210312152751-64017c5272cf
 	github.com/rancher/wrangler v0.6.1
+	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.6.0
 	github.com/urfave/cli v1.22.2
 	google.golang.org/grpc v1.31.1
