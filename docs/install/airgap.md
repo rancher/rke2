@@ -17,10 +17,10 @@ If running on an SELinux enforcing air-gapped node, you must first install the n
 ## Private Registry Method
 As of RKE2 v1.20, private registry support honors all settings from the [containerd registry configuration](containerd_registry_configuration.md). This includes endpoint override and transport protocol (HTTP/HTTPS), authentication, certificate verification, etc.
 
-Prior to RKE2 v1.20, private registries must use using TLS, with a cert trusted by the host CA bundle. If the registry is using a self-signed cert, you can add the cert to the host CA bundle with `update-ca-certificates`. The registry must also allow anonymous (unauthenticated) access.
+Prior to RKE2 v1.20, private registries must use TLS, with a cert trusted by the host CA bundle. If the registry is using a self-signed cert, you can add the cert to the host CA bundle with `update-ca-certificates`. The registry must also allow anonymous (unauthenticated) access.
 
 1. Add all the required system images to your private registry. A list of images can be obtained from the `rke2-images.linux-amd64.txt` file, or you may `docker load` the airgap image tarball referenced above, then tag and push the loaded images.
-2. Add the registry's CA cert to the containerd registry configuration, oroperating system's trusted certs for releases prior to v1.20.
+2. Add the registry's CA cert to the containerd registry configuration, or operating system's trusted certs for releases prior to v1.20.
 3. [Install RKE2](#install-rke2) using the `system-default-registry` parameter.
 
 ## Install RKE2
