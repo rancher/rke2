@@ -9,9 +9,9 @@ If running on an SELinux enforcing air-gapped node, you must first install the n
 
 ## Tarball Method
 1. Download the airgap images tarball from the RKE release artifacts list for the version of RKE2 you are using.
-    Use `rke2-airgap-images-amd64.tar.zstd`, or `rke2-airgap-images-amd64.tar.gz` for releases prior to v1.20.
+    Use `rke2-airgap-images-amd64.tar.zstd`, or `rke2-airgap-images-amd64.tar.gz` for releases prior to v1.20. Zstandard offers better compression ratios and faster decompression speeds compared to gzip.
 2. Ensure that the `/var/lib/rancher/rke2/agent/images/` directory exists on the node.
-3. Copy the compressed archive to `/var/lib/rancher/rke2/agent/images/` on the node.
+3. Copy the compressed archive to `/var/lib/rancher/rke2/agent/images/` on the node, ensuring that the file extension is retained.
 4. [Install RKE2](#install-rke2)
 
 ## Private Registry Method
@@ -33,4 +33,4 @@ These steps should only be performed after completing one of either the [Tarball
 system-default-registry: "registry.example.com:5000"
 ```
 
-**Note:** The `system-default-registry` parameter must specify only valid RFC 3986 URI authorities, ie a host and optional port.
+**Note:** The `system-default-registry` parameter must specify only valid RFC 3986 URI authorities, i.e. a host and optional port.
