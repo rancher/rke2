@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -ex
-
 [ -n "$GCLOUD_AUTH" ] || {
   exit 0
 }
