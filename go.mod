@@ -5,8 +5,8 @@ go 1.15
 replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.8.9
 	github.com/benmoss/go-powershell => github.com/rancher/go-powershell v0.0.0-20200701184732-233247d45373
-	github.com/containerd/containerd => github.com/k3s-io/containerd v1.4.3-k3s3
-	github.com/containerd/cri => github.com/k3s-io/cri v1.4.0-k3s.2 // k3s-release/1.4
+	github.com/containerd/containerd => github.com/k3s-io/containerd v1.4.3-k3s4
+	github.com/containerd/cri => github.com/k3s-io/cri v1.4.0-k3s.3 // k3s-release/1.4
 	github.com/coreos/flannel => github.com/rancher/flannel v0.12.0-k3s1
 	github.com/docker/distribution => github.com/docker/distribution v2.7.1-0.20190205005809-0d3efadf0154+incompatible
 	github.com/docker/docker => github.com/docker/docker v17.12.0-ce-rc1.0.20200310163718-4634ce647cf2+incompatible
@@ -58,7 +58,7 @@ require (
 	github.com/rancher/k3s v1.19.9-0.20210312152751-64017c5272cf
 	github.com/rancher/wrangler v0.6.1
 	github.com/rancher/wrangler-api v0.6.0
-	github.com/sirupsen/logrus v1.6.0
+	github.com/sirupsen/logrus v1.7.0
 	github.com/urfave/cli v1.22.2
 	google.golang.org/grpc v1.31.1
 	k8s.io/api v0.19.0
