@@ -48,12 +48,6 @@ func Server(clx *cli.Context, cfg Config) error {
 		return err
 	}
 
-	// If system-default-registry is set, retag images imported from tarballs to appear to
-	// come from this registry.
-	if cfg.Images.SystemDefaultRegistry != "" {
-		clx.Set("airgap-extra-registry", cfg.Images.SystemDefaultRegistry)
-	}
-
 	// Disable all disableable k3s packaged components. In addition to manifests,
 	// this also disables several integrated controllers.
 	disableItems := strings.Split(cmds.DisableItems, ",")
@@ -107,6 +101,12 @@ func setup(clx *cli.Context, cfg Config) error {
 
 	if err := defaults.Set(clx, pauseImage, dataDir); err != nil {
 		return err
+	}
+
+	// If system-default-registry is set, add the same value to airgap-extra-registry so that images
+	// imported from tarballs are tagged to appear to come from the same registry.
+	if cfg.Images.SystemDefaultRegistry != "" {
+		clx.Set("airgap-extra-registry", cfg.Images.SystemDefaultRegistry)
 	}
 
 	execPath, err := bootstrap.Stage(dataDir, privateRegistry, resolver)
