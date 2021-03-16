@@ -56,7 +56,7 @@ replace (
 require (
 	github.com/containerd/containerd v1.4.3 // indirect
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e
-	github.com/google/go-containerregistry v0.4.0
+	github.com/google/go-containerregistry v0.4.2-0.20210316173552-70c58c0e4786
 	github.com/k3s-io/helm-controller v0.8.4
 	github.com/klauspost/compress v1.11.7
 	github.com/pierrec/lz4 v2.5.2+incompatible

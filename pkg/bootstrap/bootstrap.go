@@ -132,7 +132,7 @@ func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, 
 			"bin":    refBinDir,
 			"charts": refChartsDir,
 		}
-		if err := extractToDirs(img, dataDir, extractPaths); err != nil {
+		if err := extract(img, extractPaths); err != nil {
 			return "", errors.Wrap(err, "failed to extract runtime image")
 		}
 		// Ensure correct permissions on bin dir
@@ -165,12 +165,11 @@ func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, 
 	return refBinDir, nil
 }
 
-// extract extracts image content to targetDir using a tar interface.
+// extract extracts image content to target directories using a tar interface.
 // Only files within subdirectories present in the dirs map are extracted.
-func extract(targetDir string, dirs map[string]string, reader io.Reader) error {
-	if err := os.MkdirAll(targetDir, 0755); err != nil {
-		return err
-	}
+func extract(img v1.Image, dirs map[string]string) error {
+	reader := mutate.Extract(img)
+	defer reader.Close()
 
 	t := tar.NewReader(reader)
 	for {
@@ -181,24 +180,20 @@ func extract(targetDir string, dirs map[string]string, reader io.Reader) error {
 			return err
 		}
 
-		targetName := filepath.Join(targetDir, h.Name)
-		targetDir := filepath.Dir(h.Name)
+		sourceDir := filepath.Dir(h.Name)
+		targetDir, ok := dirs[sourceDir]
+		if !ok {
+			continue
+		}
 
 		switch h.Typeflag {
 		case tar.TypeDir:
-			if _, ok := dirs[targetDir]; !ok {
-				continue
-			}
-			if _, err := os.Stat(targetName); err != nil {
-				if err := os.MkdirAll(targetName, 0755); err != nil {
-					return err
-				}
+			if err := os.MkdirAll(targetDir, 0755); err != nil {
+				return err
 			}
 		case tar.TypeReg:
-			if _, ok := dirs[targetDir]; !ok {
-				continue
-			}
-			logrus.Infof("Extracting file %s", h.Name)
+			targetName := filepath.Join(targetDir, filepath.Base(h.Name))
+			logrus.Infof("Extracting file %s to %s", h.Name, targetName)
 
 			mode := h.FileInfo().Mode() & 0755
 			f, err := os.OpenFile(targetName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, mode)
@@ -234,83 +229,6 @@ func releaseRefDigest(ref name.Reference) (string, error) {
 		return parts[0], nil
 	}
 	return "", fmt.Errorf("Runtime image %s is not a not a reference to a digest or version tag matching pattern %s", ref.Name(), releasePattern)
-}
-
-// extractToDirs extracts to targetDir all content from img, then moves the content into place using the directory map.
-// Extracted content is staged through a temporary directory and moved into place, overwriting any existing files.
-func extractToDirs(img v1.Image, dataDir string, dirs map[string]string) error {
-	tempDir, err := ioutil.TempDir(dataDir, "runtime-*")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(tempDir)
-
-	imageReader := mutate.Extract(img)
-	defer imageReader.Close()
-
-	// Extract image contents to temporary directory.
-	if err := extract(tempDir, dirs, imageReader); err != nil {
-		return err
-	}
-
-	var errs []error
-
-	// Move the extracted content into place.
-	for source, dest := range dirs {
-		tempSource := filepath.Join(tempDir, source)
-		if _, err := os.Stat(tempSource); err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		logrus.Debugf("Moving extracted content from %s to %s", tempSource, dest)
-
-		// Ensure the parent directory exists before renaming into the target location
-		destParent := filepath.Dir(dest)
-		if _, err := os.Stat(destParent); err != nil {
-			if err := os.MkdirAll(destParent, 0755); err != nil {
-				return err
-			}
-		}
-
-		// Try to rename the temp dir into its target location.
-		if err := os.Rename(tempSource, dest); err == nil {
-			// Successfully renamed into place, nothing else to do.
-			continue
-		} else if !os.IsExist(err) {
-			// Failed to rename, but not because the destination already exists.
-			errs = append(errs, err)
-			continue
-		}
-
-		// Target directory already exists (got ErrExist above), fall back list/rename files into place.
-		files, err := ioutil.ReadDir(tempSource)
-		if err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		for _, file := range files {
-			src := filepath.Join(tempSource, file.Name())
-			dst := filepath.Join(dest, file.Name())
-			if err := os.Rename(src, dst); os.IsExist(err) {
-				// Can't rename because dst already exists, remove it...
-				if err = os.RemoveAll(dst); err != nil {
-					errs = append(errs, errors.Wrapf(err, "failed to remove %s", dst))
-					continue
-				}
-				// ...then try renaming again
-				if err = os.Rename(src, dst); err != nil {
-					errs = append(errs, errors.Wrapf(err, "failed to rename %s to %s", src, dst))
-				}
-			} else if err != nil {
-				// Other error while renaming src to dst.
-				errs = append(errs, errors.Wrapf(err, "failed to rename %s to %s", src, dst))
-			}
-		}
-	}
-
-	return merr.NewErrors(errs...)
 }
 
 // preloadBootstrapFromRuntime tries to load the runtime image from tarballs, using both the
