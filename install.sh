@@ -210,7 +210,22 @@ get_release_version() {
     fi
 }
 
-# download downloads from github url.
+# check_download performs a HEAD request to see if a file exists at a given url
+check_download() {
+    case ${DOWNLOADER} in
+    *curl)
+        curl -o "/dev/null" -fsSLI -X HEAD "$1"
+        ;;
+    *wget)
+        wget -q --spider "$1"
+        ;;
+    *)
+        fatal "downloader executable not supported: '${DOWNLOADER}'"
+        ;;
+    esac
+}
+
+# download downloads a file from a url using either curl or wget
 download() {
     if [ $# -ne 2 ]; then
         fatal "download needs exactly 2 arguments"
@@ -287,9 +302,13 @@ download_airgap_checksums() {
         return
     fi
     AIRGAP_CHECKSUMS_URL=${STORAGE_URL}/rke2-images.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.zst.sha256sum
+    # try for zst first; if that fails use gz for older release branches
+    if ! check_download "${AIRGAP_CHECKSUMS_URL}"; then
+        AIRGAP_CHECKSUMS_URL=${STORAGE_URL}/rke2-images.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.gz.sha256sum
+    fi
     info "downloading airgap checksums at ${AIRGAP_CHECKSUMS_URL}"
     download "${TMP_AIRGAP_CHECKSUMS}" "${AIRGAP_CHECKSUMS_URL}"
-    AIRGAP_CHECKSUM_EXPECTED=$(grep "rke2-images.${SUFFIX}.tar.zst" "${TMP_AIRGAP_CHECKSUMS}" | awk '{print $1}')
+    AIRGAP_CHECKSUM_EXPECTED=$(grep "rke2-images.${SUFFIX}.tar" "${TMP_AIRGAP_CHECKSUMS}" | awk '{print $1}')
 }
 
 # download_airgap_tarball downloads the airgap image tarball.
@@ -298,6 +317,10 @@ download_airgap_tarball() {
         return
     fi
     AIRGAP_TARBALL_URL=${STORAGE_URL}/rke2-images.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.zst
+    # try for zst first; if that fails use gz for older release branches
+    if ! check_download "${AIRGAP_TARBALL_URL}"; then
+        AIRGAP_TARBALL_URL=${STORAGE_URL}/rke2-images.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.gz
+    fi
     info "downloading airgap tarball at ${AIRGAP_TARBALL_URL}"
     download "${TMP_AIRGAP_TARBALL}" "${AIRGAP_TARBALL_URL}"
 }
@@ -320,9 +343,16 @@ install_airgap_tarball() {
     if [ -z "${INSTALL_RKE2_COMMIT}" ]; then
         return
     fi
-    info "installing airgap tarball"
     mkdir -p "${INSTALL_RKE2_AGENT_IMAGES_DIR}"
-    mv -f "${TMP_AIRGAP_TARBALL}" "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images.${SUFFIX}.tar.zst"
+    # releases that provide zst artifacts can read from the compressed archive; older releases
+    # that produce only gzip artifacts need to have the tarball decompressed ahead of time
+    if grep -qF '.tar.zst' ${TMP_AIRGAP_CHECKSUMS}; then
+        info "installing airgap tarball"
+        mv -f "${TMP_AIRGAP_TARBALL}" "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images.${SUFFIX}.tar.zst"
+    else
+        info "decompressing airgap tarball"
+        gzip -dc "${TMP_AIRGAP_TARBALL}" > "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images.${SUFFIX}.tar"
+    fi
 }
 
 # do_install_rpm builds a yum repo config from the channel and version to be installed,
@@ -397,10 +427,10 @@ do_install_tar() {
     download_checksums
     download_tarball
     verify_tarball
+    unpack_tarball
     download_airgap_checksums
     download_airgap_tarball
     verify_airgap_tarball
-    unpack_tarball
     install_airgap_tarball
 }
 
