@@ -24,6 +24,11 @@ This will install the `rke2-server` service and the `rke2` binary onto your mach
 ```
 systemctl enable rke2-server.service
 ```
+```  
+For a Tarball installation, systemd service is not automatically installed.  
+Activate it like so:
+```
+systemctl enable /usr/local/lib/systemd/system/rke2-server.service
 
 #### 3. Start the service
 ```
