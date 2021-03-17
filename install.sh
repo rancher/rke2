@@ -46,6 +46,13 @@ fi
 #   - INSTALL_RKE2_AGENT_IMAGES_DIR
 #     Installation path for airgap images when installing from CI commit
 #     Default is /var/lib/rancher/rke2/agent/images
+#
+#   - INSTALL_RKE2_ARTIFACT_PATH
+#     If set, the install script will use the local path for sourcing the rke2.linux-$SUFFIX and sha256sum-$ARCH.txt files
+#     rather than the downloading the files from the internet.
+#     Default is not set.
+#
+
 
 # info logs the given argument at info log level.
 info() {
@@ -99,7 +106,7 @@ setup_env() {
     fi
 
     # --- use yum install method if available by default
-    if [ -z "${INSTALL_RKE2_COMMIT}" ] && [ -z "${INSTALL_RKE2_METHOD}" ] && command -v yum >/dev/null 2>&1; then
+    if [ -z "${INSTALL_RKE2_ARTIFACT_PATH}" ] && [ -z "${INSTALL_RKE2_COMMIT}" ] && [ -z "${INSTALL_RKE2_METHOD}" ] && command -v yum >/dev/null 2>&1; then
         INSTALL_RKE2_METHOD="yum"
     fi
 
@@ -272,6 +279,37 @@ download_tarball() {
     download "${TMP_TARBALL}" "${TARBALL_URL}"
 }
 
+# stage_local_checksums stages the local checksum hash for validation.
+stage_local_checksums() {
+    info "staging local checksums from ${INSTALL_RKE2_ARTIFACT_PATH}/sha256sum-${ARCH}.txt"
+    cp -f "${INSTALL_RKE2_ARTIFACT_PATH}/sha256sum-${ARCH}.txt" "${TMP_CHECKSUMS}"
+    CHECKSUM_EXPECTED=$(grep "rke2.${SUFFIX}.tar.gz" "${TMP_CHECKSUMS}" | awk '{print $1}')
+    if [ -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images.${SUFFIX}.tar.zst" ]; then
+        AIRGAP_CHECKSUM_EXPECTED=$(grep "rke2-images.${SUFFIX}.tar.zst" "${TMP_CHECKSUMS}" | awk '{print $1}')
+    elif [ -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images.${SUFFIX}.tar.gz" ]; then
+        AIRGAP_CHECKSUM_EXPECTED=$(grep "rke2-images.${SUFFIX}.tar.gz" "${TMP_CHECKSUMS}" | awk '{print $1}')
+    fi
+}
+
+# stage_local_tarball stages the local tarball.
+stage_local_tarball() {
+    info "staging tarball from ${INSTALL_RKE2_ARTIFACT_PATH}/rke2.${SUFFIX}.tar.gz"
+    cp -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2.${SUFFIX}.tar.gz" "${TMP_TARBALL}"
+}
+
+# stage_local_airgap_tarball stages the local checksum hash for validation.
+stage_local_airgap_tarball() {
+    if [ -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images.${SUFFIX}.tar.zst" ]; then
+        info "staging zst airgap image tarball from ${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images.${SUFFIX}.tar.zst"
+        cp -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images.${SUFFIX}.tar.zst" "${TMP_AIRGAP_TARBALL}"
+        AIRGAP_TARBALL_FORMAT=zst
+    elif [ -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images.${SUFFIX}.tar.gz" ]; then
+        info "staging gzip airgap image tarball from ${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images.${SUFFIX}.tar.gz"
+        cp -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images.${SUFFIX}.tar.gz" "${TMP_AIRGAP_TARBALL}"
+        AIRGAP_TARBALL_FORMAT=gz
+    fi
+}
+
 # verify_tarball verifies the downloaded installer checksum.
 verify_tarball() {
     info "verifying tarball"
@@ -328,7 +366,7 @@ download_airgap_tarball() {
 # verify_airgap_tarball compares the airgap image tarball checksum to the value
 # calculated by CI when the file was uploaded.
 verify_airgap_tarball() {
-    if [ -z "${INSTALL_RKE2_COMMIT}" ]; then
+    if [ -z "${AIRGAP_CHECKSUM_EXPECTED}" ]; then
         return
     fi
     info "verifying airgap tarball"
@@ -340,13 +378,13 @@ verify_airgap_tarball() {
 
 # install_airgap_tarball moves the airgap image tarball into place.
 install_airgap_tarball() {
-    if [ -z "${INSTALL_RKE2_COMMIT}" ]; then
+    if [ -z "${AIRGAP_CHECKSUM_EXPECTED}" ]; then
         return
     fi
     mkdir -p "${INSTALL_RKE2_AGENT_IMAGES_DIR}"
     # releases that provide zst artifacts can read from the compressed archive; older releases
     # that produce only gzip artifacts need to have the tarball decompressed ahead of time
-    if grep -qF '.tar.zst' ${TMP_AIRGAP_CHECKSUMS}; then
+    if grep -qF '.tar.zst' ${TMP_AIRGAP_CHECKSUMS} || [ "${AIRGAP_TARBALL_FORMAT}" = "zst" ]; then
         info "installing airgap tarball to ${INSTALL_RKE2_AGENT_IMAGES_DIR}"
         mv -f "${TMP_AIRGAP_TARBALL}" "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images.${SUFFIX}.tar.zst"
     else
@@ -422,14 +460,22 @@ EOF
 
 do_install_tar() {
     setup_tmp
-    get_release_version
-    info "using ${INSTALL_RKE2_VERSION:-commit $INSTALL_RKE2_COMMIT} as release"
-    download_airgap_checksums
-    download_airgap_tarball
+
+    if [ -n "${INSTALL_RKE2_ARTIFACT_PATH}" ]; then
+        stage_local_checksums
+        stage_local_airgap_tarball
+        stage_local_tarball
+    else
+        get_release_version
+        info "using ${INSTALL_RKE2_VERSION:-commit $INSTALL_RKE2_COMMIT} as release"
+        download_airgap_checksums
+        download_airgap_tarball
+        download_checksums
+        download_tarball
+    fi
+
     verify_airgap_tarball
     install_airgap_tarball
-    download_checksums
-    download_tarball
     verify_tarball
     unpack_tarball
 }
@@ -438,7 +484,9 @@ do_install() {
     setup_env
     check_method_conflict
     setup_arch
-    verify_downloader curl || verify_downloader wget || fatal "can not find curl or wget for downloading files"
+    if [ -z "${INSTALL_RKE2_ARTIFACT_PATH}" ]; then
+        verify_downloader curl || verify_downloader wget || fatal "can not find curl or wget for downloading files"
+    fi
 
     case ${INSTALL_RKE2_METHOD} in
     yum | rpm | dnf)
