@@ -57,7 +57,7 @@ func NewAgentCommand() cli.Command {
 
 func AgentRun(clx *cli.Context) error {
 	switch profile {
-	case rke2.CISProfile:
+	case rke2.CISProfile15, rke2.CISProfile16:
 		if err := validateCISReqs("agent"); err != nil {
 			logrus.Fatal(err)
 		}
@@ -65,7 +65,7 @@ func AgentRun(clx *cli.Context) error {
 			logrus.Fatal(err)
 		}
 	case "":
-		logrus.Warn("not running in CIS 1.5 mode")
+		logrus.Warn("not running in CIS mode")
 	default:
 		logrus.Fatal("invalid value provided for --profile flag")
 	}
