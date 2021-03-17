@@ -38,6 +38,11 @@ fi
 #     Default is /usr/local, unless /usr/local is read-only or has a dedicated mount point,
 #     in which case /opt/rke2 is used instead.
 #
+#   - INSTALL_RKE2_COMMIT
+#     Commit of RKE2 to download from temporary cloud storage.
+#     If set, this forces INSTALL_RKE2_METHOD=tar.
+#     * (for developer & QA use)
+#
 #   - INSTALL_RKE2_AGENT_IMAGES_DIR
 #     Installation path for airgap images when installing from CI commit
 #     Default is /var/lib/rancher/rke2/agent/images
