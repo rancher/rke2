@@ -10,10 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/rancher/rke2/pkg/rke2"
-
 	"github.com/rancher/k3s/pkg/version"
 	"github.com/rancher/rke2/pkg/images"
+	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
