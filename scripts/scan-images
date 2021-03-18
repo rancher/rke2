@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+cd $(dirname $0)/..
+
+EXITCODE=0
+for IMAGE in $(cat build/images.txt); do
+  echo -e "\nScanning ${IMAGE}"
+  trivy image \
+    --format json \
+    --output trivy.json \
+    --exit-code 1 \
+    --severity ${SEVERITIES:-HIGH,CRITICAL} \
+    --no-progress \
+    --ignore-unfixed \
+    ${IMAGE}
+  RC=$?
+  if [ ${RC} -gt ${EXITCODE} ]; then
+    EXITCODE=${RC}
+  fi
+  if [ ${RC} -gt 0 ]; then
+    echo -e "\nSev\tPackage\tVulnID\tInstalled\tFixed"
+    jq -rc '.[0].Vulnerabilities[] | "\(.Severity)\t\(.PkgName)\t\(.VulnerabilityID)\t\(.InstalledVersion)\t\(.FixedVersion)"' trivy.json
+  fi
+  echo
+  rm trivy.json
+done
+
+if [ ${EXITCODE} -gt 0 ]; then
+  echo "VULNERABILITIES FOUND"
+fi
+
+exit ${EXITCODE}

@@ -8,7 +8,8 @@ RUN set -x \
     file \
     git \
     libseccomp-dev \
-    rsync
+    rsync \
+    py-pip
 
 # Dapper/Drone/CI environment
 FROM build AS dapper
@@ -18,7 +19,7 @@ ENV ARCH $DAPPER_HOST_ARCH
 ENV DAPPER_OUTPUT ./dist ./bin ./build
 ENV DAPPER_DOCKER_SOCKET true
 ENV DAPPER_TARGET dapper
-ENV DAPPER_RUN_ARGS "--privileged --network host -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build"
+ENV DAPPER_RUN_ARGS "--privileged --network host -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy"
 RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
         VERSION=0.19.0 OS=linux && \
         curl -sL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
@@ -27,13 +28,24 @@ RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
 RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
             curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt \
         )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
-    chmod a+x /usr/local/bin/kubectl
+    chmod a+x /usr/local/bin/kubectl; \
+    pip install codespell
 
 RUN curl -sL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.27.0
 RUN set -x \
  && apk --no-cache add \
     jq \
     python2
+RUN VERSION=0.16.0 && \
+    if [ "${ARCH}" = "arm64" ]; then \
+    wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-ARM64.tar.gz && \
+    tar -zxvf trivy_${VERSION}_Linux-ARM64.tar.gz && \
+    mv trivy /usr/local/bin; \
+    else \
+    wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-64bit.tar.gz && \
+    tar -zxvf trivy_${VERSION}_Linux-64bit.tar.gz && \
+    mv trivy /usr/local/bin; \
+    fi
 WORKDIR /source
 # End Dapper stuff
 
