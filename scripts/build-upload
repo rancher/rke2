@@ -1,0 +1,65 @@
+#!/bin/bash
+
+[ -n "$GCLOUD_AUTH" ] || {
+  exit 0
+}
+[[ $1 =~ rke2\.linux-.+\.tar\.gz ]] || {
+  echo "First argument should be a dist bundle tarball" >&2
+  exit 1
+}
+[[ $2 =~ rke2-images\..+\.tar\.zst ]] || {
+  echo "Second argument should be a compressed airgap images tarball" >&2
+  exit 1
+}
+[ -n "$3" ] || {
+  echo "Third argument should be a commit hash" >&2
+  exit 1
+}
+
+umask 077
+
+TMPDIR=$(mktemp -d)
+cleanup() {
+  exit_code=$?
+  trap - EXIT INT
+  rm -rf ${TMPDIR}
+  exit ${exit_code}
+}
+trap cleanup EXIT INT
+
+GCLOUD_JSON=${TMPDIR}/.gcloud.json
+[ -z "${GCLOUD_AUTH}" ] || echo "${GCLOUD_AUTH}" >${GCLOUD_JSON}
+[ -s "${GCLOUD_JSON}" ] || {
+  echo "gcloud auth not defined" >&2
+  exit 1
+}
+
+BOTO_CONF=${TMPDIR}/.boto
+[ -s "${BOTO_CONF}" ] || cat >${BOTO_CONF} <<END
+[Credentials]
+gs_service_key_file = ${GCLOUD_JSON}
+[Boto]
+https_validate_certificates = True
+[GSUtil]
+content_language = en
+default_api_version = 2
+default_project_id = rancher-dev
+END
+
+BUNDLE_NAME=$(basename $1 .tar.gz)-$3.tar.gz
+(cd $(dirname $1) && sha256sum $(basename $1)) >${TMPDIR}/${BUNDLE_NAME}.sha256sum
+cp $1 ${TMPDIR}/${BUNDLE_NAME}
+
+TARBALL_NAME=$(basename $2 .tar.zst)-$3.tar.zst
+(cd $(dirname $2) && sha256sum $(basename $2)) >${TMPDIR}/${TARBALL_NAME}.sha256sum
+cp $2 ${TMPDIR}/${TARBALL_NAME}
+
+[ -d "${TMPDIR}/gsutil" ] || curl -sfL https://storage.googleapis.com/pub/gsutil.tar.gz | tar xz -C ${TMPDIR}
+
+HOME=${TMPDIR}
+PATH=${PATH}:${HOME}/gsutil
+
+gsutil cp ${TMPDIR}/${BUNDLE_NAME}* ${TMPDIR}/${TARBALL_NAME}* gs://rke2-ci-builds || exit 1
+
+echo "Build uploaded" >&2
+echo "https://storage.googleapis.com/rke2-ci-builds/${BUNDLE_NAME}"

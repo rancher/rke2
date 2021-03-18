@@ -37,8 +37,15 @@ fi
 #     Installation prefix when using the tar installation method.
 #     Default is /usr/local, unless /usr/local is read-only or has a dedicated mount point,
 #     in which case /opt/rke2 is used instead.
-
-DEFAULT_TAR_PREFIX=/usr/local
+#
+#   - INSTALL_RKE2_COMMIT
+#     Commit of RKE2 to download from temporary cloud storage.
+#     If set, this forces INSTALL_RKE2_METHOD=tar.
+#     * (for developer & QA use)
+#
+#   - INSTALL_RKE2_AGENT_IMAGES_DIR
+#     Installation path for airgap images when installing from CI commit
+#     Default is /var/lib/rancher/rke2/agent/images
 
 # info logs the given argument at info log level.
 info() {
@@ -54,7 +61,7 @@ warn() {
 fatal() {
     echo "[ERROR] " "$@" >&2
     if [ -n "${SUFFIX}" ]; then
-        echo "[ALT] Please visit 'https://github.com/rancher/rke2/releases' directly and download the latest rke2-installer.${SUFFIX}.run" >&2
+        echo "[ALT] Please visit 'https://github.com/rancher/rke2/releases' directly and download the latest rke2.${SUFFIX}.tar.gz" >&2
     fi
     exit 1
 }
@@ -73,7 +80,9 @@ check_target_ro() {
 
 # setup_env defines needed environment variables.
 setup_env() {
+    STORAGE_URL="https://storage.googleapis.com/rke2-ci-builds"
     INSTALL_RKE2_GITHUB_URL="https://github.com/rancher/rke2"
+    DEFAULT_TAR_PREFIX="/usr/local"
     # --- bail if we are not root ---
     if [ ! $(id -u) -eq 0 ]; then
         fatal "You need to be root to perform this install"
@@ -90,8 +99,8 @@ setup_env() {
     fi
 
     # --- use yum install method if available by default
-    if [ -z "${INSTALL_RKE2_METHOD}" ] && command -v yum >/dev/null 2>&1; then
-        INSTALL_RKE2_METHOD=yum
+    if [ -z "${INSTALL_RKE2_COMMIT}" ] && [ -z "${INSTALL_RKE2_METHOD}" ] && command -v yum >/dev/null 2>&1; then
+        INSTALL_RKE2_METHOD="yum"
     fi
 
     # --- install tarball to /usr/local by default, except if /usr/local is on a separate partition or is read-only
@@ -99,10 +108,29 @@ setup_env() {
     if [ -z "${INSTALL_RKE2_TAR_PREFIX}" ]; then
         INSTALL_RKE2_TAR_PREFIX=${DEFAULT_TAR_PREFIX}
         if check_target_mountpoint || check_target_ro; then
-            INSTALL_RKE2_TAR_PREFIX=/opt/rke2
+            INSTALL_RKE2_TAR_PREFIX="/opt/rke2"
             warn "${DEFAULT_TAR_PREFIX} is read-only or a mount point; installing to ${INSTALL_RKE2_TAR_PREFIX}"
         fi
     fi
+
+    if [ -z "${INSTALL_RKE2_AGENT_IMAGES_DIR}" ]; then
+        INSTALL_RKE2_AGENT_IMAGES_DIR="/var/lib/rancher/rke2/agent/images"
+    fi
+}
+
+# check_method_conflict will exit with an error if the user attempts to install
+# via tar method on a host with existing RPMs.
+check_method_conflict() {
+    case ${INSTALL_RKE2_METHOD} in
+    yum | rpm | dnf)
+        return
+        ;;
+    *)
+        if rpm -q rke2-common >/dev/null 2>&1; then
+            fatal "Cannot perform ${INSTALL_RKE2_METHOD:-tar} install on host with existing RKE2 RPMs - please run rke2-uninstall.sh first"
+        fi
+        ;;
+    esac
 }
 
 # setup_arch set arch and suffix,
@@ -145,6 +173,8 @@ setup_tmp() {
     TMP_DIR=$(mktemp -d -t rke2-install.XXXXXXXXXX)
     TMP_CHECKSUMS=${TMP_DIR}/rke2.checksums
     TMP_TARBALL=${TMP_DIR}/rke2.tarball
+    TMP_AIRGAP_CHECKSUMS=${TMP_DIR}/rke2-images.checksums
+    TMP_AIRGAP_TARBALL=${TMP_DIR}/rke2-images.tarball
     cleanup() {
         code=$?
         set +e
@@ -180,7 +210,22 @@ get_release_version() {
     fi
 }
 
-# download downloads from github url.
+# check_download performs a HEAD request to see if a file exists at a given url
+check_download() {
+    case ${DOWNLOADER} in
+    *curl)
+        curl -o "/dev/null" -fsLI -X HEAD "$1"
+        ;;
+    *wget)
+        wget -q --spider "$1"
+        ;;
+    *)
+        fatal "downloader executable not supported: '${DOWNLOADER}'"
+        ;;
+    esac
+}
+
+# download downloads a file from a url using either curl or wget
 download() {
     if [ $# -ne 2 ]; then
         fatal "download needs exactly 2 arguments"
@@ -207,8 +252,7 @@ download() {
 # download_checksums downloads hash from github url.
 download_checksums() {
     if [ -n "${INSTALL_RKE2_COMMIT}" ]; then
-        fatal "downloading by commit is currently not supported"
-        # CHECKSUMS_URL=${STORAGE_URL}/rke2${SUFFIX}-${INSTALL_RKE2_COMMIT}.sha256sum
+        CHECKSUMS_URL=${STORAGE_URL}/rke2.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.gz.sha256sum
     else
         CHECKSUMS_URL=${INSTALL_RKE2_GITHUB_URL}/releases/download/${INSTALL_RKE2_VERSION}/sha256sum-${ARCH}.txt
     fi
@@ -220,8 +264,7 @@ download_checksums() {
 # download_tarball downloads binary from github url.
 download_tarball() {
     if [ -n "${INSTALL_RKE2_COMMIT}" ]; then
-        fatal "downloading by commit is currently not supported"
-        # TARBALL_URL=${STORAGE_URL}/rke2-installer.${SUFFIX}-${INSTALL_RKE2_COMMIT}.run
+        TARBALL_URL=${STORAGE_URL}/rke2.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.gz
     else
         TARBALL_URL=${INSTALL_RKE2_GITHUB_URL}/releases/download/${INSTALL_RKE2_VERSION}/rke2.${SUFFIX}.tar.gz
     fi
@@ -231,12 +274,14 @@ download_tarball() {
 
 # verify_tarball verifies the downloaded installer checksum.
 verify_tarball() {
-    info "verifying installer"
+    info "verifying tarball"
     CHECKSUM_ACTUAL=$(sha256sum "${TMP_TARBALL}" | awk '{print $1}')
     if [ "${CHECKSUM_EXPECTED}" != "${CHECKSUM_ACTUAL}" ]; then
         fatal "download sha256 does not match ${CHECKSUM_EXPECTED}, got ${CHECKSUM_ACTUAL}"
     fi
 }
+
+# unpack_tarball extracts the tarball, correcting paths and moving systemd units as necessary
 unpack_tarball() {
     info "unpacking tarball file to ${INSTALL_RKE2_TAR_PREFIX}"
     mkdir -p ${INSTALL_RKE2_TAR_PREFIX}
@@ -250,6 +295,68 @@ unpack_tarball() {
     fi
 }
 
+# download_airgap_checksums downloads the checksum file for the airgap image tarball
+# and prepares the checksum value for later validation.
+download_airgap_checksums() {
+    if [ -z "${INSTALL_RKE2_COMMIT}" ]; then
+        return
+    fi
+    AIRGAP_CHECKSUMS_URL=${STORAGE_URL}/rke2-images.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.zst.sha256sum
+    # try for zst first; if that fails use gz for older release branches
+    if ! check_download "${AIRGAP_CHECKSUMS_URL}"; then
+        AIRGAP_CHECKSUMS_URL=${STORAGE_URL}/rke2-images.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.gz.sha256sum
+    fi
+    info "downloading airgap checksums at ${AIRGAP_CHECKSUMS_URL}"
+    download "${TMP_AIRGAP_CHECKSUMS}" "${AIRGAP_CHECKSUMS_URL}"
+    AIRGAP_CHECKSUM_EXPECTED=$(grep "rke2-images.${SUFFIX}.tar" "${TMP_AIRGAP_CHECKSUMS}" | awk '{print $1}')
+}
+
+# download_airgap_tarball downloads the airgap image tarball.
+download_airgap_tarball() {
+    if [ -z "${INSTALL_RKE2_COMMIT}" ]; then
+        return
+    fi
+    AIRGAP_TARBALL_URL=${STORAGE_URL}/rke2-images.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.zst
+    # try for zst first; if that fails use gz for older release branches
+    if ! check_download "${AIRGAP_TARBALL_URL}"; then
+        AIRGAP_TARBALL_URL=${STORAGE_URL}/rke2-images.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.gz
+    fi
+    info "downloading airgap tarball at ${AIRGAP_TARBALL_URL}"
+    download "${TMP_AIRGAP_TARBALL}" "${AIRGAP_TARBALL_URL}"
+}
+
+# verify_airgap_tarball compares the airgap image tarball checksum to the value
+# calculated by CI when the file was uploaded.
+verify_airgap_tarball() {
+    if [ -z "${INSTALL_RKE2_COMMIT}" ]; then
+        return
+    fi
+    info "verifying airgap tarball"
+    AIRGAP_CHECKSUM_ACTUAL=$(sha256sum "${TMP_AIRGAP_TARBALL}" | awk '{print $1}')
+    if [ "${AIRGAP_CHECKSUM_EXPECTED}" != "${AIRGAP_CHECKSUM_ACTUAL}" ]; then
+        fatal "download sha256 does not match ${AIRGAP_CHECKSUM_EXPECTED}, got ${AIRGAP_CHECKSUM_ACTUAL}"
+    fi
+}
+
+# install_airgap_tarball moves the airgap image tarball into place.
+install_airgap_tarball() {
+    if [ -z "${INSTALL_RKE2_COMMIT}" ]; then
+        return
+    fi
+    mkdir -p "${INSTALL_RKE2_AGENT_IMAGES_DIR}"
+    # releases that provide zst artifacts can read from the compressed archive; older releases
+    # that produce only gzip artifacts need to have the tarball decompressed ahead of time
+    if grep -qF '.tar.zst' ${TMP_AIRGAP_CHECKSUMS}; then
+        info "installing airgap tarball to ${INSTALL_RKE2_AGENT_IMAGES_DIR}"
+        mv -f "${TMP_AIRGAP_TARBALL}" "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images.${SUFFIX}.tar.zst"
+    else
+        info "decompressing airgap tarball to ${INSTALL_RKE2_AGENT_IMAGES_DIR}"
+        gzip -dc "${TMP_AIRGAP_TARBALL}" > "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images.${SUFFIX}.tar"
+    fi
+}
+
+# do_install_rpm builds a yum repo config from the channel and version to be installed,
+# and calls yum to install the required packates.
 do_install_rpm() {
     maj_ver="7"
     if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
@@ -316,7 +423,11 @@ EOF
 do_install_tar() {
     setup_tmp
     get_release_version
-    info "using ${INSTALL_RKE2_VERSION} as release"
+    info "using ${INSTALL_RKE2_VERSION:-commit $INSTALL_RKE2_COMMIT} as release"
+    download_airgap_checksums
+    download_airgap_tarball
+    verify_airgap_tarball
+    install_airgap_tarball
     download_checksums
     download_tarball
     verify_tarball
@@ -325,6 +436,7 @@ do_install_tar() {
 
 do_install() {
     setup_env
+    check_method_conflict
     setup_arch
     verify_downloader curl || verify_downloader wget || fatal "can not find curl or wget for downloading files"
 
