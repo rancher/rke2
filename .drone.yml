@@ -10,6 +10,9 @@ platform:
 steps:
 - name: build-and-package
   image: rancher/dapper:v0.5.5
+  environment:
+    GCLOUD_AUTH:
+      from_secret: gcloud_auth
   commands:
   - docker pull --quiet rancher/hardened-build-base:v1.15.8b5
   - dapper -f Dockerfile --target dapper make dapper-ci
