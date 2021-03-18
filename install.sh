@@ -214,7 +214,7 @@ get_release_version() {
 check_download() {
     case ${DOWNLOADER} in
     *curl)
-        curl -o "/dev/null" -fsSLI -X HEAD "$1"
+        curl -o "/dev/null" -fsLI -X HEAD "$1"
         ;;
     *wget)
         wget -q --spider "$1"
@@ -347,10 +347,10 @@ install_airgap_tarball() {
     # releases that provide zst artifacts can read from the compressed archive; older releases
     # that produce only gzip artifacts need to have the tarball decompressed ahead of time
     if grep -qF '.tar.zst' ${TMP_AIRGAP_CHECKSUMS}; then
-        info "installing airgap tarball"
+        info "installing airgap tarball to ${INSTALL_RKE2_AGENT_IMAGES_DIR}"
         mv -f "${TMP_AIRGAP_TARBALL}" "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images.${SUFFIX}.tar.zst"
     else
-        info "decompressing airgap tarball"
+        info "decompressing airgap tarball to ${INSTALL_RKE2_AGENT_IMAGES_DIR}"
         gzip -dc "${TMP_AIRGAP_TARBALL}" > "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images.${SUFFIX}.tar"
     fi
 }
@@ -424,14 +424,14 @@ do_install_tar() {
     setup_tmp
     get_release_version
     info "using ${INSTALL_RKE2_VERSION:-commit $INSTALL_RKE2_COMMIT} as release"
-    download_checksums
-    download_tarball
-    verify_tarball
-    unpack_tarball
     download_airgap_checksums
     download_airgap_tarball
     verify_airgap_tarball
     install_airgap_tarball
+    download_checksums
+    download_tarball
+    verify_tarball
+    unpack_tarball
 }
 
 do_install() {
