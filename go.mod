@@ -5,8 +5,9 @@ go 1.15
 replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.8.9
 	github.com/benmoss/go-powershell => github.com/rancher/go-powershell v0.0.0-20200701184732-233247d45373
-	github.com/containerd/containerd => github.com/k3s-io/containerd v1.4.3-k3s4
-	github.com/containerd/cri => github.com/k3s-io/cri v1.4.0-k3s.3 // k3s-release/1.4
+	github.com/containerd/containerd => github.com/k3s-io/containerd v1.4.4-k3s1
+	github.com/containerd/continuity => github.com/k3s-io/continuity v0.0.0-20210309170710-f93269e0d5c1
+	github.com/containerd/cri => github.com/k3s-io/cri v1.4.0-k3s.5 // k3s-release/1.4
 	github.com/coreos/flannel => github.com/rancher/flannel v0.12.0-k3s1
 	github.com/docker/distribution => github.com/docker/distribution v2.7.1-0.20190205005809-0d3efadf0154+incompatible
 	github.com/docker/docker => github.com/docker/docker v17.12.0-ce-rc1.0.20200310163718-4634ce647cf2+incompatible
@@ -54,7 +55,7 @@ replace (
 )
 
 require (
-	github.com/containerd/containerd v1.4.3 // indirect
+	github.com/containerd/containerd v1.4.4 // indirect
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e
 	github.com/google/go-containerregistry v0.4.2-0.20210316173552-70c58c0e4786
 	github.com/k3s-io/helm-controller v0.8.4
