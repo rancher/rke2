@@ -19,7 +19,6 @@ func Set(clx *cli.Context, pauseImage name.Reference, dataDir string) error {
 	}
 
 	cmds.ServerConfig.DatastoreEndpoint = "etcd"
-	cmds.ServerConfig.DisableCCM = true
 	cmds.ServerConfig.DisableNPC = true
 	cmds.ServerConfig.FlannelBackend = "none"
 	cmds.ServerConfig.AdvertisePort = 6443
