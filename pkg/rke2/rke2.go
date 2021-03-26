@@ -13,10 +13,10 @@ import (
 	"github.com/rancher/k3s/pkg/cli/agent"
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/k3s/pkg/cli/server"
-	rawServer "github.com/rancher/k3s/pkg/server"
 	"github.com/rancher/k3s/pkg/cluster/managed"
 	"github.com/rancher/k3s/pkg/daemons/executor"
 	"github.com/rancher/k3s/pkg/etcd"
+	rawServer "github.com/rancher/k3s/pkg/server"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
@@ -125,11 +125,11 @@ func setup(clx *cli.Context, cfg Config) error {
 
 	managed.RegisterDriver(&etcd.ETCD{})
 
-	if clx.IsSet("node-external-ip") {
-		if clx.IsSet("cloud-provider-config") || clx.IsSet("cloud-provider-name") {
+	if clx.IsSet("cloud-provider-config") || clx.IsSet("cloud-provider-name") {
+		if clx.IsSet("node-external-ip") {
 			return errors.New("can't set node-external-ip while using cloud provider")
 		}
-		cmds.ServerConfig.DisableCCM = false
+		cmds.ServerConfig.DisableCCM = true
 	}
 	var cpConfig *podexecutor.CloudProviderConfig
 	if cfg.CloudProviderConfig != "" && cfg.CloudProviderName == "" {
