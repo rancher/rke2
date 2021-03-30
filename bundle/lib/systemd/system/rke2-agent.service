@@ -9,9 +9,9 @@ Conflicts=rke2-server.service
 WantedBy=multi-user.target
 
 [Service]
-EnvironmentFile=-/etc/default/rke2-agent
-EnvironmentFile=-/etc/sysconfig/rke2-agent
-EnvironmentFile=-/usr/local/lib/systemd/system/rke2-agent.env
+EnvironmentFile=-/etc/default/%N
+EnvironmentFile=-/etc/sysconfig/%N
+EnvironmentFile=-/usr/local/lib/systemd/system/%N.env
 KillMode=process
 Delegate=yes
 LimitNOFILE=1048576
@@ -24,3 +24,4 @@ RestartSec=5s
 ExecStartPre=-/sbin/modprobe br_netfilter
 ExecStartPre=-/sbin/modprobe overlay
 ExecStart=/usr/local/bin/rke2 agent
+ExecStopPost=-/bin/sh -c "systemd-cgls /system.slice/%n | grep -Eo '[0-9]+ (containerd|kubelet)' | awk '{print $1}' | xargs -r kill"
