@@ -24,3 +24,4 @@ RestartSec=5s
 ExecStartPre=-/sbin/modprobe br_netfilter
 ExecStartPre=-/sbin/modprobe overlay
 ExecStart=/usr/local/bin/rke2 agent
+ExecStopPost=-/bin/sh -c "systemd-cgls /system.slice/rke2-agent.service | grep -Eo '[0-9]+ (containerd|kubelet)' | awk '{print $1}' | xargs -r kill"

@@ -478,6 +478,7 @@ do_install_tar() {
     install_airgap_tarball
     verify_tarball
     unpack_tarball
+    systemctl daemon-reload
 }
 
 do_install() {
@@ -491,9 +492,6 @@ do_install() {
     case ${INSTALL_RKE2_METHOD} in
     yum | rpm | dnf)
         do_install_rpm "${INSTALL_RKE2_CHANNEL}"
-        ;;
-    tar | tarball)
-        do_install_tar "${INSTALL_RKE2_CHANNEL}"
         ;;
     *)
         do_install_tar "${INSTALL_RKE2_CHANNEL}"
