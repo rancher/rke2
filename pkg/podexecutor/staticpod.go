@@ -210,6 +210,7 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 			Command:     "kube-controller-manager",
 			Args:        args,
 			Image:       image,
+			Dirs:        onlyExisting(ssldirs),
 			HealthPort:  10252,
 			HealthProto: "HTTP",
 			CPUMillis:   200,
