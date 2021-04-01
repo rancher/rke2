@@ -1,5 +1,7 @@
 # Air-Gap Install
 
+**Important:** If your node has NetworkManager installed and enabled, [ensure that it is configured to ignore CNI-managed interfaces.](https://docs.rke2.io/known_issues/#networkmanager)
+
 RKE2 can be installed in an air-gapped environment with two different methods.
 You can either deploy via the `rke2-airgap-images` tarball release artifact, or by using a private registry.
 
