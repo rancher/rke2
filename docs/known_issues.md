@@ -8,7 +8,7 @@ Firewalld conflicts with RKE2's default Canal (Calico + Flannel) networking stac
 
 ## NetworkManager
 
-NetworkManager, in stock configuration, does not work well with RKE2 and Canal. As such, if installing RKE2 on a NetworkManager enabled system, it is highly recommended to configure NetworkManager to ignore calico/flannel related network interfaces. In order to do this, create a configuration file called `rke2-canal.conf` in `/etc/NetworkManager/conf.d` with the contents:
+NetworkManager manipulates the routing table for interfaces in the default network namespace where many CNIs, including RKE2's default, create veth pairs for connections to containers. This can interfere with the CNI’s ability to route correctly. As such, if installing RKE2 on a NetworkManager enabled system, it is highly recommended to configure NetworkManager to ignore calico/flannel related network interfaces. In order to do this, create a configuration file called `rke2-canal.conf` in `/etc/NetworkManager/conf.d` with the contents:
 ```bash
 [keyfile]
 unmanaged-devices=interface-name:cali*;interface-name:flannel*
