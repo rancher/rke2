@@ -29,6 +29,8 @@ RKE2 performance depends on the performance of the database, and since RKE2 runs
 
 ## Networking
 
+**Important:** If your node has NetworkManager installed and enabled, [ensure that it is configured to ignore CNI-managed interfaces.](https://docs.rke2.io/known_issues/#networkmanager)
+
 The RKE2 server needs port 6443 and 9345 to be accessible by other nodes in the cluster.
 
 All nodes need to be able to reach other nodes over UDP port 8472 when Flannel VXLAN is used.

@@ -6,6 +6,16 @@ This section contains current known issues and limitations with rke2. If you com
 
 Firewalld conflicts with RKE2's default Canal (Calico + Flannel) networking stack. To avoid unexpected behavior, firewalld should be disabled on systems running RKE2.
 
+## NetworkManager
+
+NetworkManager, in stock configuration, does not work well with RKE2 and Canal. As such, if installing RKE2 on a NetworkManager enabled system, it is highly recommended to configure NetworkManager to ignore calico/flannel related network interfaces. In order to do this, create a configuration file called `rke2-canal.conf` in `/etc/NetworkManager/conf.d` with the contents:
+```bash
+[keyfile]
+unmanaged-devices=interface-name:cali*;interface-name:flannel*
+```
+
+If you have not yet installed RKE2, a simple `systemctl reload NetworkManager` will suffice to install the configuration. If performing this configuration change on a system that already has RKE2 installed, a reboot of the node is necessary to effectively apply the changes.
+
 ## Istio in Selinux Enforcing System Fails by Default
 
 This is due to just-in-time kernel module loading of rke2, which is disallowed under Selinux unless the container is privileged.
