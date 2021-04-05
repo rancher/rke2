@@ -17,6 +17,7 @@ replace (
 	github.com/k3s-io/helm-controller => github.com/k3s-io/helm-controller v0.8.4
 	github.com/kubernetes-sigs/cri-tools => github.com/rancher/cri-tools v1.19.0-k3s1
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
+	github.com/moby/sys/mountinfo => github.com/moby/sys/mountinfo v0.1.3
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc92
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20200728170252-4d89ac9fbff6
 	go.etcd.io/etcd => github.com/k3s-io/etcd v0.5.0-alpha.5.0.20201208200253-50621aee4aea
@@ -55,23 +56,22 @@ replace (
 )
 
 require (
-	github.com/containerd/containerd v1.4.4 // indirect
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e
 	github.com/google/go-containerregistry v0.4.2-0.20210316173552-70c58c0e4786
 	github.com/k3s-io/helm-controller v0.8.4
 	github.com/klauspost/compress v1.11.7
 	github.com/pierrec/lz4 v2.5.2+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.20.3-0.20210311183900-69f96d622580
+	github.com/rancher/k3s v1.20.3-0.20210402005909-a3ec5904ec2c
 	github.com/rancher/wrangler v0.6.1
 	github.com/rancher/wrangler-api v0.6.0
-	github.com/sirupsen/logrus v1.7.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.2
 	google.golang.org/grpc v1.33.2
 	gopkg.in/yaml.v2 v2.3.0
-	k8s.io/api v0.19.0
-	k8s.io/apimachinery v0.19.0
-	k8s.io/apiserver v0.19.0
+	k8s.io/api v1.20.5
+	k8s.io/apimachinery v1.20.5
+	k8s.io/apiserver v1.20.0
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	sigs.k8s.io/yaml v1.2.0
 )
