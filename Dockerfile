@@ -1,6 +1,6 @@
 ARG KUBERNETES_VERSION=dev
 # Build environment
-FROM rancher/hardened-build-base:v1.13.15b4 AS build
+FROM rancher/hardened-build-base:v1.15.8b5 AS build
 RUN set -x \
  && apk --no-cache add \
     bash \
@@ -8,7 +8,8 @@ RUN set -x \
     file \
     git \
     libseccomp-dev \
-    rsync
+    rsync \
+    py-pip
 
 # Dapper/Drone/CI environment
 FROM build AS dapper
@@ -18,7 +19,7 @@ ENV ARCH $DAPPER_HOST_ARCH
 ENV DAPPER_OUTPUT ./dist ./bin ./build
 ENV DAPPER_DOCKER_SOCKET true
 ENV DAPPER_TARGET dapper
-ENV DAPPER_RUN_ARGS "--privileged --network host -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build"
+ENV DAPPER_RUN_ARGS "--privileged --network host -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy"
 RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
         VERSION=0.19.0 OS=linux && \
         curl -sL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
@@ -27,13 +28,26 @@ RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
 RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
             curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt \
         )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
-    chmod a+x /usr/local/bin/kubectl
+    chmod a+x /usr/local/bin/kubectl; \
+    pip install codespell
 
 RUN curl -sL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.27.0
 RUN set -x \
  && apk --no-cache add \
+    libarchive-tools \
+    zstd \
     jq \
     python2
+RUN VERSION=0.16.0 && \
+    if [ "${ARCH}" = "arm64" ]; then \
+    wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-ARM64.tar.gz && \
+    tar -zxvf trivy_${VERSION}_Linux-ARM64.tar.gz && \
+    mv trivy /usr/local/bin; \
+    else \
+    wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-64bit.tar.gz && \
+    tar -zxvf trivy_${VERSION}_Linux-64bit.tar.gz && \
+    mv trivy /usr/local/bin; \
+    fi
 WORKDIR /source
 # End Dapper stuff
 
@@ -59,8 +73,8 @@ VOLUME /var/lib/rancher/k3s
 
 FROM build AS build-k8s-codegen
 ARG KUBERNETES_VERSION
-RUN git clone -b ${KUBERNETES_VERSION} --depth=1 https://github.com/kubernetes/kubernetes.git ${GOPATH}/src/github.com/kubernetes/kubernetes
-WORKDIR ${GOPATH}/src/github.com/kubernetes/kubernetes
+RUN git clone -b ${KUBERNETES_VERSION} --depth=1 https://github.com/kubernetes/kubernetes.git ${GOPATH}/src/kubernetes
+WORKDIR ${GOPATH}/src/kubernetes
 # force code generation
 RUN make WHAT=cmd/kube-apiserver
 ARG TAG
@@ -85,13 +99,12 @@ RUN echo "export GO_LDFLAGS=\"-linkmode=external \
     -X k8s.io/client-go/pkg/version.gitTreeState=clean \
     -X k8s.io/client-go/pkg/version.buildDate=\${BUILD_DATE} \
     \"" >> /usr/local/go/bin/go-build-static-k8s.sh
-RUN echo 'go-build-static.sh -gcflags=-trimpath=${GOPATH}/src/github.com/kubernetes/kubernetes -mod=vendor -tags=selinux,osusergo,netgo ${@}' \
+RUN echo 'go-build-static.sh -gcflags=-trimpath=${GOPATH}/src/kubernetes -mod=vendor -tags=selinux,osusergo,netgo ${@}' \
     >> /usr/local/go/bin/go-build-static-k8s.sh
 RUN chmod -v +x /usr/local/go/bin/go-*.sh
 
 FROM build-k8s-codegen AS build-k8s
 RUN go-build-static-k8s.sh -o bin/kube-apiserver           ./cmd/kube-apiserver
-RUN go-build-static-k8s.sh -o bin/apiextensions-apiserver  ./vendor/k8s.io/apiextensions-apiserver
 RUN go-build-static-k8s.sh -o bin/kube-controller-manager  ./cmd/kube-controller-manager
 RUN go-build-static-k8s.sh -o bin/kube-scheduler           ./cmd/kube-scheduler
 RUN go-build-static-k8s.sh -o bin/kube-proxy               ./cmd/kube-proxy
@@ -116,21 +129,21 @@ ARG CHARTS_REPO="https://rke2-charts.rancher.io"
 ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
-RUN CHART_VERSION="v3.13.3"     CHART_FILE=/charts/rke2-canal.yaml             CHART_BOOTSTRAP=true    /charts/build-chart.sh
-RUN CHART_VERSION="1.10.101"    CHART_FILE=/charts/rke2-coredns.yaml           CHART_BOOTSTRAP=true    /charts/build-chart.sh
-RUN CHART_VERSION="1.36.300"    CHART_FILE=/charts/rke2-ingress-nginx.yaml     CHART_BOOTSTRAP=false   /charts/build-chart.sh
-RUN CHART_VERSION="v1.18.12"    CHART_FILE=/charts/rke2-kube-proxy.yaml        CHART_BOOTSTRAP=true    /charts/build-chart.sh
-RUN CHART_VERSION="2.11.100"    CHART_FILE=/charts/rke2-metrics-server.yaml    CHART_BOOTSTRAP=false   /charts/build-chart.sh
+RUN CHART_VERSION="v3.13.300-build2021022302" CHART_FILE=/charts/rke2-canal.yaml             CHART_BOOTSTRAP=true    /charts/build-chart.sh
+RUN CHART_VERSION="1.10.101-build2021022301"  CHART_FILE=/charts/rke2-coredns.yaml           CHART_BOOTSTRAP=true    /charts/build-chart.sh
+RUN CHART_VERSION="1.36.300"                  CHART_FILE=/charts/rke2-ingress-nginx.yaml     CHART_BOOTSTRAP=false   /charts/build-chart.sh
+RUN CHART_VERSION="v1.20.5-build2021031801"   CHART_FILE=/charts/rke2-kube-proxy.yaml        CHART_BOOTSTRAP=true    /charts/build-chart.sh
+RUN CHART_VERSION="2.11.100-build2021022300"  CHART_FILE=/charts/rke2-metrics-server.yaml    CHART_BOOTSTRAP=false   /charts/build-chart.sh
 RUN rm -vf /charts/*.sh /charts/*.md
 
 # rke-runtime image
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
-FROM rancher/k3s:v1.18.12-k3s1 AS k3s
-FROM rancher/hardened-containerd:v1.3.7-k3s1 AS containerd
-FROM rancher/hardened-crictl:v1.18.0 AS crictl
-FROM rancher/hardened-runc:v1.0.0-rc92 AS runc
+FROM rancher/k3s:v1.20.5-rc1-k3s1 AS k3s
+FROM rancher/hardened-containerd:v1.4.4-k3s1-build20210316 AS containerd
+FROM rancher/hardened-crictl:v1.19.0-build20210223 AS crictl
+FROM rancher/hardened-runc:v1.0.0-rc93-build20210223 AS runc
 
 FROM scratch AS runtime
 COPY --from=k3s \

@@ -20,7 +20,7 @@ RKE2 will generate the `config.toml` for containerd in `/var/lib/rancher/rke2/ag
 
 For advanced customization of this file you can create another file called `config.toml.tmpl` in the same directory and it will be used instead.
 
-The `config.toml.tmpl` will be treated as a Go template file, and the `config.Node` structure is being passed to the template. See [this template](https://github.com/rancher/k3s/blob/master/pkg/agent/templates/templates.go#L16-L32) for an example of how to use the structure to customize the configuration file.
+The `config.toml.tmpl` will be treated as a Go template file, and the `config.Node` structure is being passed to the template. See [this template](https://github.com/k3s-io/k3s/blob/master/pkg/agent/templates/templates.go#L16-L32) for an example of how to use the structure to customize the configuration file.
 
 ## Secrets Encryption Config
 
@@ -67,6 +67,18 @@ Once enabled any created secret will be encrypted with this key. Note that if yo
 RKE2 agents can be configured with the options `node-label` and `node-taint` which adds a label and taint to the kubelet. The two options only add labels and/or taints at registration time, and can only be added once and not removed after that through rke2 commands.
 
 If you want to change node labels and taints after node registration you should use `kubectl`. Refer to the official Kubernetes documentation for details on how to add [taints](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/) and [node labels](https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/#add-a-label-to-a-node).
+
+# How Agent Node Registration Works
+
+Agent nodes are registered via a websocket connection initiated by the `rke2 agent` process, and the connection is maintained by a client-side load balancer running as part of the agent process.
+
+Agents register with the server using the cluster secret portion of the join token, along with a randomly generated node-specific password, which is stored on the agent at `/etc/rancher/node/password`. The server will store the passwords for individual nodes as Kubernetes secrets, and any subsequent attempts must use the same password. Node password secrets are stored in the `kube-system` namespace with names using the template `<host>.node-password.rke2`. These secrets are deleted when the corresponding Kubernetes node is deleted.
+
+Note: Prior to RKE2 v1.20.2 servers stored passwords on disk at `/var/lib/rancher/rke2/server/cred/node-passwd`.
+
+If the `/etc/rancher/node` directory of an agent is removed, the password file should be recreated for the agent prior to startup, or the entry removed from the server or Kubernetes cluster (depending on the RKE2 version).
+
+A unique node ID can be appended to the hostname by launching RKE2 servers or agents using the `--with-node-id` flag.
 
 ## Starting the Server with the Installation Script
 

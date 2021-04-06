@@ -8,20 +8,28 @@ source ./scripts/version.sh
 ./scripts/build-image-kubernetes
 ./scripts/build-image-runtime
 
-xargs -n1 -t docker image pull --quiet << EOF > build/images.txt
-    docker.io/rancher/hardened-calico:v3.13.3
-    docker.io/rancher/hardened-coredns:v1.6.9
-    docker.io/rancher/hardened-etcd:v3.4.13-k3s1
-    docker.io/rancher/hardened-flannel:v0.13.0-rancher1
-    docker.io/rancher/hardened-k8s-metrics-server:v0.3.6
-    docker.io/rancher/hardened-kube-proxy:${KUBERNETES_VERSION}
-    docker.io/rancher/klipper-helm:v0.3.0
-    docker.io/rancher/pause:3.2
-    docker.io/rancher/nginx-ingress-controller-defaultbackend:1.5-rancher1
-    docker.io/rancher/nginx-ingress-controller:nginx-0.30.0-rancher1
+echo "${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}" > build/images.txt
+echo "${REGISTRY}/${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}" >> build/images.txt
+
+xargs -n1 -t docker image pull --quiet << EOF >> build/images.txt
+    ${REGISTRY}/rancher/hardened-calico:v3.13.3-${IMAGE_BUILD_VERSION}
+    ${REGISTRY}/rancher/hardened-coredns:v1.6.9-${IMAGE_BUILD_VERSION}
+    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-${IMAGE_BUILD_VERSION}
+    ${REGISTRY}/rancher/hardened-flannel:v0.13.0-rancher1-${IMAGE_BUILD_VERSION}
+    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.3.6-${IMAGE_BUILD_VERSION}
+    ${REGISTRY}/rancher/hardened-kube-proxy:${KUBERNETES_VERSION}-build20210318
+    ${REGISTRY}/rancher/klipper-helm:v0.4.3-build20210225
+    ${REGISTRY}/rancher/pause:${PAUSE_VERSION}
+    ${REGISTRY}/rancher/nginx-ingress-controller-defaultbackend:1.5-rancher1
+    ${REGISTRY}/rancher/nginx-ingress-controller:nginx-0.30.0-rancher1
 EOF
-echo "docker.io/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}" >> build/images.txt
-echo "docker.io/${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}" >> build/images.txt
-docker image save --output build/images/${PROG}-airgap.tar $(<build/images.txt)
+
+# We reorder the tar file so that the metadata files are at the start of the archive, which should make loading
+# the runtime image faster. By default `docker image save` puts these at the end of the archive, which means the entire
+# tarball needs to be read even if you're just loading a single image.
+docker image save --output build/images/${PROG}-airgap.tar.tmp $(<build/images.txt)
+bsdtar -c -f build/images/${PROG}-airgap.tar --include=manifest.json --include=repositories @build/images/${PROG}-airgap.tar.tmp
+bsdtar -r -f build/images/${PROG}-airgap.tar --exclude=manifest.json --exclude=repositories @build/images/${PROG}-airgap.tar.tmp
+rm -f build/images/${PROG}-airgap.tar.tmp
 
 ./scripts/build-image-test

@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/wrangler/pkg/yaml"
 	v1 "k8s.io/api/core/v1"
@@ -24,7 +25,7 @@ import (
 type Args struct {
 	Command         string
 	Args            []string
-	Image           string
+	Image           name.Reference
 	Dirs            []string
 	Files           []string
 	HealthPort      int32
@@ -121,7 +122,7 @@ func pod(args Args) (*v1.Pod, error) {
 			Containers: []v1.Container{
 				{
 					Command:         append([]string{args.Command}, args.Args...),
-					Image:           args.Image,
+					Image:           args.Image.Name(),
 					ImagePullPolicy: v1.PullIfNotPresent,
 					Env: []v1.EnvVar{
 						{

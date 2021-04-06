@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
+
 	"github.com/rancher/k3s/pkg/agent/config"
 	"github.com/rancher/k3s/pkg/cli/agent"
 	"github.com/rancher/k3s/pkg/cli/cmds"
@@ -14,6 +16,7 @@ import (
 	"github.com/rancher/k3s/pkg/cluster/managed"
 	"github.com/rancher/k3s/pkg/daemons/executor"
 	"github.com/rancher/k3s/pkg/etcd"
+	rawServer "github.com/rancher/k3s/pkg/server"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
@@ -26,13 +29,14 @@ type Config struct {
 	CloudProviderConfig string
 	AuditPolicyFile     string
 	KubeletPath         string
-	Images              images.Images
+	Images              images.ImageOverrideConfig
 }
 
 var cisMode bool
 
 const (
-	CISProfile             = "cis-1.5"
+	CISProfile15           = "cis-1.5"
+	CISProfile16           = "cis-1.6"
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
 )
 
@@ -60,7 +64,13 @@ func Server(clx *cli.Context, cfg Config) error {
 		setClusterRoles(),
 	)
 
-	return server.Run(clx)
+	var leaderControllers rawServer.CustomControllers
+
+	if cisMode {
+		leaderControllers = append(leaderControllers, cisnetworkpolicy.CISNetworkPolicyController)
+	}
+
+	return server.RunWithControllers(clx, leaderControllers, rawServer.CustomControllers{})
 }
 
 func Agent(clx *cli.Context, cfg Config) error {
@@ -71,20 +81,37 @@ func Agent(clx *cli.Context, cfg Config) error {
 }
 
 func setup(clx *cli.Context, cfg Config) error {
-	cisMode = clx.String("profile") == CISProfile
+	profile := clx.String("profile")
+	cisMode = profile == CISProfile15 || profile == CISProfile16
 	dataDir := clx.String("data-dir")
+	privateRegistry := clx.String("private-registry")
 
 	auditPolicyFile := clx.String("audit-policy-file")
 	if auditPolicyFile == "" {
 		auditPolicyFile = defaultAuditPolicyFile
 	}
 
-	cfg.Images.SetDefaults()
-	if err := defaults.Set(clx, cfg.Images, dataDir); err != nil {
+	resolver, err := images.NewResolver(cfg.Images)
+	if err != nil {
 		return err
 	}
 
-	execPath, err := bootstrap.Stage(dataDir, cfg.Images)
+	pauseImage, err := resolver.GetReference(images.Pause)
+	if err != nil {
+		return err
+	}
+
+	if err := defaults.Set(clx, pauseImage, dataDir); err != nil {
+		return err
+	}
+
+	// If system-default-registry is set, add the same value to airgap-extra-registry so that images
+	// imported from tarballs are tagged to appear to come from the same registry.
+	if cfg.Images.SystemDefaultRegistry != "" {
+		clx.Set("airgap-extra-registry", cfg.Images.SystemDefaultRegistry)
+	}
+
+	execPath, err := bootstrap.Stage(dataDir, privateRegistry, resolver)
 	if err != nil {
 		return err
 	}
@@ -98,11 +125,11 @@ func setup(clx *cli.Context, cfg Config) error {
 
 	managed.RegisterDriver(&etcd.ETCD{})
 
-	if clx.IsSet("node-external-ip") {
-		if clx.IsSet("cloud-provider-config") || clx.IsSet("cloud-provider-name") {
+	if clx.IsSet("cloud-provider-config") || clx.IsSet("cloud-provider-name") {
+		if clx.IsSet("node-external-ip") {
 			return errors.New("can't set node-external-ip while using cloud provider")
 		}
-		cmds.ServerConfig.DisableCCM = false
+		cmds.ServerConfig.DisableCCM = true
 	}
 	var cpConfig *podexecutor.CloudProviderConfig
 	if cfg.CloudProviderConfig != "" && cfg.CloudProviderName == "" {
@@ -120,7 +147,7 @@ func setup(clx *cli.Context, cfg Config) error {
 	}
 
 	sp := podexecutor.StaticPodConfig{
-		Images:          cfg.Images,
+		Resolver:        resolver,
 		ImagesDir:       agentImagesDir,
 		ManifestsDir:    agentManifestsDir,
 		CISMode:         cisMode,

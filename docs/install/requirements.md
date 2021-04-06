@@ -14,6 +14,7 @@ RKE2 has been tested and validated on the following operating systems and their 
 *    Ubuntu 20.04 (amd64)
 *    CentOS/RHEL 7.8 (amd64)
 *    CentOS/RHEL 8.2 (amd64)
+*    SLES 15 SP2 (amd64) (v1.18.16+rke2r1 and newer)
 
 ## Hardware
 
@@ -27,6 +28,8 @@ Hardware requirements scale based on the size of your deployments. Minimum recom
 RKE2 performance depends on the performance of the database, and since RKE2 runs etcd embeddedly and it stores the data dir on disk, we recommend using an SSD when possible to ensure optimal performance.
 
 ## Networking
+
+**Important:** If your node has NetworkManager installed and enabled, [ensure that it is configured to ignore CNI-managed interfaces.](https://docs.rke2.io/known_issues/#networkmanager)
 
 The RKE2 server needs port 6443 and 9345 to be accessible by other nodes in the cluster.
 

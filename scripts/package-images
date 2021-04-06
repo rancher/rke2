@@ -8,4 +8,5 @@ source ./scripts/version.sh
 mkdir -p dist/artifacts
 
 cp -f build/images.txt dist/artifacts/${PROG}-images.${PLATFORM}.txt
-gzip < build/images/${PROG}-airgap.tar > dist/artifacts/${PROG}-images.${PLATFORM}.tar.gz
+zstd -T0 -16 -f --long=25 build/images/${PROG}-airgap.tar -o dist/artifacts/${PROG}-images.${PLATFORM}.tar.zst
+gzip -v -c build/images/${PROG}-airgap.tar > dist/artifacts/${PROG}-images.${PLATFORM}.tar.gz

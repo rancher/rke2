@@ -133,7 +133,7 @@ On server nodes, the `helm-controller` can now apply to the cluster any [charts]
 
 The RKE2 process will now run indefinitely until it receives a SIGTERM or SIGKILL or if the `containerd` process exits.
 
-[gh-k3s]: <https://github.com/rancher/k3s> "K3s - Lightweight Kubernetes"
+[gh-k3s]: <https://github.com/k3s-io/k3s> "K3s - Lightweight Kubernetes"
 [io-k3s]: <https://k3s.io> "K3s - Lightweight Kubernetes"
 [gh-kubernetes]: <https://github.com/kubernetes/kubernetes> "Production-Grade Container Orchestration"
 [io-kubernetes]: <https://kubernetes.io> "Production-Grade Container Orchestration"
@@ -156,7 +156,7 @@ The RKE2 process will now run indefinitely until it receives a SIGTERM or SIGKIL
 [io-etcd]: <https://etcd.io> "A distributed, reliable key-value store for the most critical data of a distributed system"
 [gh-helm]: <https://github.com/helm/helm> "The Kubernetes Package Manager"
 [sh-helm]: <https://helm.sh> "The Kubernetes Package Manager"
-[gh-helm-controller]: <https://github.com/rancher/helm-controller> "Helm Chart CRD"
+[gh-helm-controller]: <https://github.com/k3s-io/helm-controller> "Helm Chart CRD"
 [gh-cni]: <https://github.com/containernetworking/cni> "Container Network Interface"
 [gh-runc]: <https://github.com/opencontainers/runc> "CLI tool for spawning and running containers according to the OCI specification"
 [gh-goboring]: <https://github.com/golang/go/tree/dev.boringcrypto/misc/boring> "Go+BoringCrypto"

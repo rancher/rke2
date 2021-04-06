@@ -136,6 +136,7 @@ dump-logs() {
         docker exec $server kubectl describe node/$hostname >$node/logs/kubectl-describe-node.txt
         docker cp $name:/var/lib/rancher/rke2/agent/containerd/containerd.log $node/logs/containerd.log 2>/dev/null
         docker logs $name >$node/logs/system.log 2>&1
+        docker exec $name bash -c 'apt install net-tools -y &>/dev/null && netstat -lntpa' >>$node/logs/netstat.txt
         docker exec $name crictl pods >$node/logs/crictl-pods.txt
         docker exec $name crictl ps -a >$node/logs/crictl-ps.txt
         docker exec $name crictl ps -a -o json >$node/metadata/crictl-ps.json
@@ -442,6 +443,7 @@ provision-agent() {
         --privileged \
         -e RKE2_TOKEN=$(cat $TEST_DIR/metadata/secret) \
         -e RKE2_URL=$RKE2_URL \
+        -e RKE2_DEBUG=true \
         $RKE2_IMAGE agent $ARGS $AGENT_ARGS ${!AGENT_INSTANCE_ARGS}
 
     echo "Started $name"

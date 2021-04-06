@@ -33,11 +33,6 @@ const globalRestrictedPSPTemplate = `apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: %s
-  annotations:
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default,runtime/default'
-    apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
-    seccomp.security.alpha.kubernetes.io/defaultProfileName: 'runtime/default'
-    apparmor.security.beta.kubernetes.io/defaultProfileName: 'runtime/default'
 spec:
   privileged: false                # CIS - 5.2.1
   allowPrivilegeEscalation: false  # CIS - 5.2.5
@@ -88,8 +83,6 @@ const globalUnrestrictedPSPTemplate = `apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: %s
-  annotations:
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
 spec:
   privileged: true
   allowPrivilegeEscalation: true
@@ -131,8 +124,6 @@ const systemUnrestrictedPSPTemplate = `apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: %s
-  annotations:
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
 spec:
   privileged: true
   allowPrivilegeEscalation: true

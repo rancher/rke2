@@ -47,7 +47,8 @@ metadata:
 spec:
   concurrency: 1
   cordon: true
-   matchExpressions:
+  nodeSelector:
+    matchExpressions:
        - {key: rke2-upgrade, operator: Exists}
        - {key: rke2-upgrade, operator: NotIn, values: ["disabled", "false"]}
        - {key: node-role.kubernetes.io/master, operator: In, values: ["true"]}
@@ -57,7 +58,7 @@ spec:
 #    force: true
   upgrade:
     image: rancher/rke2-upgrade
-  version: v1.18.9+rke2r1
+  version: v1.18.13+rke2r1
 ---
 # Agent plan
 apiVersion: upgrade.cattle.io/v1
@@ -77,7 +78,7 @@ spec:
   prepare:
     args:
     - prepare
-    - rke2-server
+    - server-plan
     image: rancher/rke2-upgrade
   serviceAccountName: system-upgrade
   cordon: true
@@ -85,7 +86,7 @@ spec:
     force: true
   upgrade:
     image: rancher/rke2-upgrade
-  version: v1.18.9+rke2r1
+  version: v1.18.13+rke2r1
 
 ```
 

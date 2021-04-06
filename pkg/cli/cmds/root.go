@@ -6,10 +6,12 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 
 	"github.com/rancher/k3s/pkg/version"
+	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -27,44 +29,44 @@ var (
 			Destination: &config.Images.SystemDefaultRegistry,
 		},
 		&cli.StringFlag{
-			Name:        "kube-apiserver-image",
+			Name:        images.KubeAPIServer,
 			Usage:       "(image) Override image to use for kube-apiserver",
 			EnvVar:      "RKE2_KUBE_APISERVER_IMAGE",
 			Destination: &config.Images.KubeAPIServer,
 		},
 		&cli.StringFlag{
-			Name:        "kube-controller-manager-image",
+			Name:        images.KubeControllerManager,
 			Usage:       "(image) Override image to use for kube-controller-manager",
 			EnvVar:      "RKE2_KUBE_CONTROLLER_MANAGER_IMAGE",
-			Destination: &config.Images.KubeControllManager,
+			Destination: &config.Images.KubeControllerManager,
 		},
 		&cli.StringFlag{
-			Name:        "kube-scheduler-image",
+			Name:        images.KubeScheduler,
 			Usage:       "(image) Override image to use for kube-scheduler",
 			EnvVar:      "RKE2_KUBE_SCHEDULER_IMAGE",
 			Destination: &config.Images.KubeScheduler,
 		},
 		&cli.StringFlag{
-			Name:        "pause-image",
+			Name:        images.Pause,
 			Usage:       "(image) Override image to use for pause",
 			EnvVar:      "RKE2_PAUSE_IMAGE",
 			Destination: &config.Images.Pause,
 		},
 		&cli.StringFlag{
-			Name:        "runtime-image",
+			Name:        images.Runtime,
 			Usage:       "(image) Override image to use for runtime binaries (containerd, kubectl, crictl, etc)",
 			EnvVar:      "RKE2_RUNTIME_IMAGE",
 			Destination: &config.Images.Runtime,
 		},
 		&cli.StringFlag{
-			Name:        "etcd-image",
+			Name:        images.ETCD,
 			Usage:       "(image) Override image to use for etcd",
 			EnvVar:      "RKE2_ETCD_IMAGE",
 			Destination: &config.Images.ETCD,
 		},
 		&cli.StringFlag{
 			Name:        "kubelet-path",
-			Usage:       "(agent/node) Override kubelet binary path",
+			Usage:       "(experimental/agent) Override kubelet binary path",
 			EnvVar:      "RKE2_KUBELET_PATH",
 			Destination: &config.KubeletPath,
 		},
@@ -82,7 +84,7 @@ var (
 		},
 		&cli.StringFlag{
 			Name:        "profile",
-			Usage:       "(security) Validate system configuration against the selected benchmark (valid items: " + rke2.CISProfile + ")",
+			Usage:       "(security) Validate system configuration against the selected benchmark (valid items: " + rke2.CISProfile15 + ", " + rke2.CISProfile16 + " )",
 			EnvVar:      "RKE2_CIS_PROFILE",
 			Destination: &profile,
 		},
@@ -191,6 +193,7 @@ func NewApp() *cli.App {
 	app.Version = fmt.Sprintf("%s (%s)", version.Version, version.GitCommit)
 	cli.VersionPrinter = func(c *cli.Context) {
 		fmt.Printf("%s version %s\n", app.Name, app.Version)
+		fmt.Printf("go version %s\n", runtime.Version())
 	}
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{

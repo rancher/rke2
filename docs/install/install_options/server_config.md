@@ -2,7 +2,7 @@
 title: Server Configuration Reference
 ---
 
-This is a reference to all parameters that can be used to configure the rke2 agent. Note that while this is a reference to the command line arguments, the best way to configure RKE2 is using the [configuration file](install_options.md#configuration-file).
+This is a reference to all parameters that can be used to configure the rke2 server. Note that while this is a reference to the command line arguments, the best way to configure RKE2 is using the [configuration file](install_options.md#configuration-file).
 
 ### RKE2 Server CLI Help
 
@@ -37,7 +37,7 @@ OPTIONS:
    --etcd-snapshot-schedule-cron value  (db) Snapshot interval time in cron spec. eg. every 5 hours '* */5 * * *' (default: "0 */12 * * *")
    --etcd-snapshot-retention value      (db) Number of snapshots to retain (default: 5)
    --etcd-snapshot-dir value            (db) Directory to save db snapshots. (Default location: ${data-dir}/db/snapshots)
-   --disable value                      (components) Do not deploy packaged components and delete any deployed components (valid items: rke2-canal, rke2-coredns, rke2-ingress, rke2-kube-proxy, rke2-metrics-server)
+   --disable value                      (components) Do not deploy packaged components and delete any deployed components (valid items: rke2-canal, rke2-coredns, rke2-ingress-nginx, rke2-kube-proxy, rke2-metrics-server)
    --node-name value                    (agent/node) Node name [$RKE2_NODE_NAME]
    --node-label value                   (agent/node) Registering and starting kubelet with set of labels
    --node-taint value                   (agent/node) Registering kubelet with set of taints
@@ -47,7 +47,6 @@ OPTIONS:
    --node-ip value, -i value            (agent/networking) IP address to advertise for node
    --resolv-conf value                  (agent/networking) Kubelet resolv.conf file [$RKE2_RESOLV_CONF]
    --kubelet-arg value                  (agent/flags) Customized flag for kubelet process
-   --kube-proxy-arg value               (agent/flags) Customized flag for kube-proxy process
    --protect-kernel-defaults            (agent/node) Kernel tuning behavior. If set, error if kernel tunables are different than kubelet defaults.
    --agent-token value                  (experimental/cluster) Shared secret used to join agents to the cluster, but not servers [$RKE2_AGENT_TOKEN]
    --agent-token-file value             (experimental/cluster) File containing the agent secret [$RKE2_AGENT_TOKEN_FILE]

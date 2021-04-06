@@ -31,6 +31,10 @@ binary:                             	## Build only the binary using host go tool
 build-debug:                             ## Debug build using host go tools
 	GODEBUG=y ./scripts/build-binary
 
+.PHONY: scan-images
+scan-images:
+	./scripts/scan-images
+
 .PHONY: build-images
 build-images:                             ## Build all images and image tarballs (including airgap)
 	./scripts/build-images
@@ -120,7 +124,11 @@ package-bundle: build				## Package the tarball bundle
 	./scripts/package-bundle
 
 .PHONY: test
-test: unit-tests integration-tests
+test: codespell-test unit-tests integration-tests
+
+.PHONY: codespell-test
+codespell-test:
+	./scripts/codespell.sh
 
 .PHONY: unit-tests
 unit-tests:

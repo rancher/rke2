@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	DisableItems = "rke2-canal, rke2-coredns, rke2-ingress, rke2-kube-proxy, rke2-metrics-server"
+	DisableItems = "rke2-canal, rke2-coredns, rke2-ingress-nginx, rke2-kube-proxy, rke2-metrics-server"
 	rke2Path     = "/var/lib/rancher/rke2"
 )
 
@@ -59,14 +59,18 @@ var (
 			Usage: "(components) Do not deploy packaged components and delete any deployed components (valid items: " + DisableItems + ")",
 		},
 		"disable-selinux":             drop,
-		"disable-scheduler":           drop,
-		"disable-cloud-controller":    drop,
+		"disable-scheduler":           copy,
+		"disable-cloud-controller":    copy,
 		"disable-network-policy":      drop,
 		"disable-kube-proxy":          drop,
+		"disable-api-server":          copy,
+		"disable-controller-manager":  copy,
+		"disable-etcd":                copy,
 		"etcd-disable-snapshots":      copy,
 		"etcd-snapshot-schedule-cron": copy,
 		"etcd-snapshot-retention":     copy,
 		"etcd-snapshot-dir":           copy,
+		"etcd-snapshot-name":          copy,
 		"node-name":                   copy,
 		"with-node-id":                drop,
 		"node-label":                  copy,
@@ -81,7 +85,7 @@ var (
 		"flannel-iface":               drop,
 		"flannel-conf":                drop,
 		"kubelet-arg":                 copy,
-		"kube-proxy-arg":              copy,
+		"kube-proxy-arg":              drop,
 		"rootless":                    drop,
 		"agent-token":                 copy,
 		"agent-token-file":            copy,
@@ -93,6 +97,19 @@ var (
 		"protect-kernel-defaults":     copy,
 		"snapshotter":                 copy,
 		"selinux":                     copy,
+		"lb-server-port":              copy,
+		"service-node-port-range":     copy,
+		"etcd-expose-metrics":         copy,
+		"airgap-extra-registry":       copy,
+		"etcd-s3":                     drop,
+		"etcd-s3-endpoint":            drop,
+		"etcd-s3-endpoint-ca":         drop,
+		"etcd-s3-skip-ssl-verify":     drop,
+		"etcd-s3-access-key":          drop,
+		"etcd-s3-secret-key":          drop,
+		"etcd-s3-bucket":              drop,
+		"etcd-s3-region":              drop,
+		"etcd-s3-folder":              drop,
 	})
 )
 
@@ -104,7 +121,7 @@ func NewServerCommand() cli.Command {
 
 func ServerRun(clx *cli.Context) error {
 	switch profile {
-	case rke2.CISProfile:
+	case rke2.CISProfile15, rke2.CISProfile16:
 		if err := validateCISReqs("server"); err != nil {
 			logrus.Fatal(err)
 		}
@@ -112,7 +129,7 @@ func ServerRun(clx *cli.Context) error {
 			logrus.Fatal(err)
 		}
 	case "":
-		logrus.Warn("not running in CIS 1.5 mode")
+		logrus.Warn("not running in CIS mode")
 	default:
 		logrus.Fatal("invalid value provided for --profile flag")
 	}

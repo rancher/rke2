@@ -6,6 +6,11 @@ This guide will help you quickly launch a cluster with default options.
 
 > New to Kubernetes? The official Kubernetes docs already have some great tutorials outlining the basics [here](https://kubernetes.io/docs/tutorials/kubernetes-basics/).
 
+### Prerequisites
+
+Make sure your environment fulfills the [requirements.](https://docs.rke2.io/install/requirements/)
+If NetworkManager is installed and enabled on your hosts, [ensure that it is configured to ignore CNI-managed interfaces.](https://docs.rke2.io/known_issues/#networkmanager)
+
 ### Server Node Installation
 --------------
 RKE2 provides an installation script that is a convenient way to install it as a service on systemd based systems. This script is available at https://get.rke2.io. To install RKE2 using this method do the following:

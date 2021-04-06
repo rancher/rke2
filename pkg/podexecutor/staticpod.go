@@ -29,6 +29,7 @@ import (
 var (
 	ssldirs = []string{
 		"/etc/ssl/certs",
+		"/etc/pki/tls/certs",
 		"/etc/ca-certificates",
 		"/usr/local/share/ca-certificates",
 		"/usr/share/ca-certificates",
@@ -38,7 +39,7 @@ var (
 type StaticPodConfig struct {
 	ManifestsDir    string
 	ImagesDir       string
-	Images          images.Images
+	Resolver        *images.Resolver
 	CloudProvider   *CloudProviderConfig
 	CISMode         bool
 	DataDir         string
@@ -53,11 +54,16 @@ type CloudProviderConfig struct {
 
 // Kubelet starts the kubelet in a subprocess with watching goroutine.
 func (s *StaticPodConfig) Kubelet(args []string) error {
-	if s.CloudProvider != nil {
-		args = append(args,
-			"--cloud-provider="+s.CloudProvider.Name,
-			"--cloud-config="+s.CloudProvider.Path)
+	extraArgs := []string{
+		"--volume-plugin-dir=/var/lib/kubelet/volumeplugins",
 	}
+	if s.CloudProvider != nil {
+		extraArgs = append(extraArgs,
+			"--cloud-provider="+s.CloudProvider.Name,
+			"--cloud-config="+s.CloudProvider.Path,
+		)
+	}
+	args = append(extraArgs, args...)
 	go func() {
 		for {
 			cmd := exec.Command(s.KubeletPath, args...)
@@ -82,24 +88,31 @@ func (s *StaticPodConfig) KubeProxy(args []string) error {
 
 // APIServer sets up the apiserver static pod once etcd is available, returning the authenticator and request handler.
 func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) (authenticator.Request, http.Handler, error) {
-	auditLogFile := filepath.Join(s.DataDir, "server/logs/audit.log")
-	if s.CloudProvider != nil {
-		args = append(args,
-			"--cloud-provider="+s.CloudProvider.Name,
-			"--cloud-config="+s.CloudProvider.Path)
+	image, err := s.Resolver.GetReference(images.KubeAPIServer)
+	if err != nil {
+		return nil, nil, err
 	}
-	if err := images.Pull(s.ImagesDir, "kube-apiserver", s.Images.KubeAPIServer); err != nil {
+	if err := images.Pull(s.ImagesDir, images.KubeAPIServer, image); err != nil {
 		return nil, nil, err
 	}
 
+	auditLogFile := filepath.Join(s.DataDir, "server/logs/audit.log")
+	if s.CloudProvider != nil {
+		extraArgs := []string{
+			"--cloud-provider=" + s.CloudProvider.Name,
+			"--cloud-config=" + s.CloudProvider.Path,
+		}
+		args = append(extraArgs, args...)
+	}
 	if s.CISMode {
-		args = append(args,
-			"--audit-policy-file="+s.AuditPolicyFile,
-			"--audit-log-path="+auditLogFile,
+		extraArgs := []string{
+			"--audit-policy-file=" + s.AuditPolicyFile,
+			"--audit-log-path=" + auditLogFile,
 			"--audit-log-maxage=30",
 			"--audit-log-maxbackup=10",
 			"--audit-log-maxsize=100",
-		)
+		}
+		args = append(extraArgs, args...)
 		if err := writeDefaultPolicyFile(s.AuditPolicyFile); err != nil {
 			return nil, nil, err
 		}
@@ -118,8 +131,8 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:   "kube-apiserver",
 			Args:      args,
-			Image:     s.Images.KubeAPIServer,
-			Dirs:      append(ssldirs, filepath.Dir(auditLogFile)),
+			Image:     image,
+			Dirs:      append(onlyExisting(ssldirs), filepath.Dir(auditLogFile)),
 			CPUMillis: 250,
 			Files:     []string{etcdNameFile(s.DataDir)},
 		})
@@ -129,20 +142,35 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 
 // Scheduler starts the kube-scheduler static pod, once the apiserver is available.
 func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) error {
-	if err := images.Pull(s.ImagesDir, "kube-scheduler", s.Images.KubeScheduler); err != nil {
+	image, err := s.Resolver.GetReference(images.KubeScheduler)
+	if err != nil {
+		return err
+	}
+	if err := images.Pull(s.ImagesDir, images.KubeScheduler, image); err != nil {
 		return err
 	}
 	return after(apiReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:     "kube-scheduler",
 			Args:        args,
-			Image:       s.Images.KubeScheduler,
+			Image:       image,
 			HealthPort:  10251,
 			HealthProto: "HTTP",
 			CPUMillis:   100,
 			Files:       []string{etcdNameFile(s.DataDir)},
 		})
 	})
+}
+
+// onlyExisting filters out paths from the list that cannot be accessed
+func onlyExisting(paths []string) []string {
+	existing := []string{}
+	for _, path := range paths {
+		if _, err := os.Stat(path); err == nil {
+			existing = append(existing, path)
+		}
+	}
+	return existing
 }
 
 // after calls a function after a message is received from a channel.
@@ -158,23 +186,31 @@ func after(after <-chan struct{}, f func() error) error {
 
 // ControllerManager starts the kube-controller-manager static pod, once the apiserver is available.
 func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []string) error {
-	if s.CloudProvider != nil {
-		args = append(args,
-			"--cloud-provider="+s.CloudProvider.Name,
-			"--cloud-config="+s.CloudProvider.Path)
-	}
-
-	if err := images.Pull(s.ImagesDir, "kube-controller-manager", s.Images.KubeControllManager); err != nil {
+	image, err := s.Resolver.GetReference(images.KubeControllerManager)
+	if err != nil {
 		return err
 	}
+	if err := images.Pull(s.ImagesDir, images.KubeControllerManager, image); err != nil {
+		return err
+	}
+	if s.CloudProvider != nil {
+		extraArgs := []string{
+			"--cloud-provider=" + s.CloudProvider.Name,
+			"--cloud-config=" + s.CloudProvider.Path,
+		}
+		args = append(extraArgs, args...)
+	}
 	return after(apiReady, func() error {
+		extraArgs := []string{
+			"--flex-volume-plugin-dir=/var/lib/kubelet/volumeplugins",
+			"--terminated-pod-gc-threshold=1000",
+		}
+		args = append(extraArgs, args...)
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command: "kube-controller-manager",
-			Args: append(args,
-				"--flex-volume-plugin-dir=/usr/libexec/kubernetes/kubelet-plugins/volume/exec",
-				"--terminated-pod-gc-threshold=1000",
-			),
-			Image:       s.Images.KubeControllManager,
+			Command:     "kube-controller-manager",
+			Args:        args,
+			Image:       image,
+			Dirs:        onlyExisting(ssldirs),
 			HealthPort:  10252,
 			HealthProto: "HTTP",
 			CPUMillis:   200,
@@ -206,7 +242,11 @@ func (s *StaticPodConfig) CurrentETCDOptions() (opts executor.InitialOptions, er
 
 // ETCD starts the etcd static pod.
 func (s *StaticPodConfig) ETCD(args executor.ETCDConfig) error {
-	if err := images.Pull(s.ImagesDir, "etcd", s.Images.ETCD); err != nil {
+	image, err := s.Resolver.GetReference(images.ETCD)
+	if err != nil {
+		return err
+	}
+	if err := images.Pull(s.ImagesDir, images.ETCD, image); err != nil {
 		return err
 	}
 
@@ -228,7 +268,7 @@ func (s *StaticPodConfig) ETCD(args executor.ETCDConfig) error {
 		Args: []string{
 			"--config-file=" + confFile,
 		},
-		Image: s.Images.ETCD,
+		Image: image,
 		Dirs:  []string{args.DataDir},
 		Files: []string{
 			args.ServerTrust.CertFile,
@@ -306,7 +346,7 @@ func writeDefaultPolicyFile(policyFilePath string) error {
 		},
 		ObjectMeta: metav1.ObjectMeta{},
 		Rules: []auditv1.PolicyRule{
-			auditv1.PolicyRule{
+			{
 				Level: "None",
 			},
 		},
@@ -315,20 +355,23 @@ func writeDefaultPolicyFile(policyFilePath string) error {
 	if err != nil {
 		return err
 	}
-	return writeArgFile(policyFilePath, bytes)
+	return writeIfNotExists(policyFilePath, bytes)
 }
 
-func writeArgFile(path string, content []byte) error {
+// writeIfNotExists writes content to a file at a given path, but only if the file does not already exist
+func writeIfNotExists(path string, content []byte) error {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err
 	}
-	if _, err := os.Stat(path); err == nil {
-		return nil
-	} else {
-		if !os.IsNotExist(err) {
-			return err
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		if os.IsExist(err) {
+			return nil
 		}
+		return err
 	}
-	return ioutil.WriteFile(path, content, 0600)
+	defer file.Close()
+	_, err = file.Write(content)
+	return err
 }

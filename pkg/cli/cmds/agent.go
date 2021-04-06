@@ -31,12 +31,12 @@ var (
 		"pause-image":                drop,
 		"private-registry":           copy,
 		"node-ip":                    copy,
-		"node-external-ip":           drop,
+		"node-external-ip":           copy,
 		"resolv-conf":                copy,
 		"flannel-iface":              drop,
 		"flannel-conf":               drop,
 		"kubelet-arg":                copy,
-		"kube-proxy-arg":             copy,
+		"kube-proxy-arg":             drop,
 		"rootless":                   drop,
 		"server":                     copy,
 		"no-flannel":                 drop,
@@ -44,6 +44,8 @@ var (
 		"protect-kernel-defaults":    copy,
 		"snapshotter":                copy,
 		"selinux":                    copy,
+		"lb-server-port":             copy,
+		"airgap-extra-registry":      copy,
 	})
 )
 
@@ -55,7 +57,7 @@ func NewAgentCommand() cli.Command {
 
 func AgentRun(clx *cli.Context) error {
 	switch profile {
-	case rke2.CISProfile:
+	case rke2.CISProfile15, rke2.CISProfile16:
 		if err := validateCISReqs("agent"); err != nil {
 			logrus.Fatal(err)
 		}
@@ -63,7 +65,7 @@ func AgentRun(clx *cli.Context) error {
 			logrus.Fatal(err)
 		}
 	case "":
-		logrus.Warn("not running in CIS 1.5 mode")
+		logrus.Warn("not running in CIS mode")
 	default:
 		logrus.Fatal("invalid value provided for --profile flag")
 	}

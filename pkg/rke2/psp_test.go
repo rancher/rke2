@@ -50,7 +50,7 @@ var testRoleBinding = &rbacv1.RoleBinding{
 	},
 }
 
-// fakeWithNonretriableError recieves a value of type runtime.Object,
+// fakeWithNonretriableError receives a value of type runtime.Object,
 // determines underlying underlying type, and creates a new value of
 // type fake.Clientset pointer and sets a Reactor to return an error
 // that is not retriable.
@@ -202,14 +202,6 @@ func Test_deployPodSecurityPolicyFromYaml(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := deployPodSecurityPolicyFromYaml(tt.args.ctx, tt.args.cs, tt.args.pspYaml); (err != nil) != tt.wantErr {
 				t.Errorf("deployPodSecurityPolicyFromYaml() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			//verify that the existing PSP has in fact been updated from the given YAML.
-			if tt.name == "successfully create PSP" || tt.name == "successfully update PSP" {
-				val, _ := tt.args.cs.PolicyV1beta1().PodSecurityPolicies().Get(context.TODO(), testPSPName, metav1.GetOptions{})
-				annocationsLen := len(val.Annotations)
-				if annocationsLen != 4 {
-					t.Errorf("expected 4 but got %d", annocationsLen)
-				}
 			}
 		})
 	}
