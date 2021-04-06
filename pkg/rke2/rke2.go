@@ -12,6 +12,7 @@ import (
 	"github.com/rancher/k3s/pkg/agent/config"
 	"github.com/rancher/k3s/pkg/cli/agent"
 	"github.com/rancher/k3s/pkg/cli/cmds"
+	"github.com/rancher/k3s/pkg/cli/etcdsnapshot"
 	"github.com/rancher/k3s/pkg/cli/server"
 	"github.com/rancher/k3s/pkg/cluster/managed"
 	"github.com/rancher/k3s/pkg/daemons/executor"
@@ -78,6 +79,11 @@ func Agent(clx *cli.Context, cfg Config) error {
 		return err
 	}
 	return agent.Run(clx)
+}
+
+func EtcdSnapshot(clx *cli.Context, cfg Config) error {
+	cmds.ServerConfig.DatastoreEndpoint = "etcd"
+	return etcdsnapshot.Run(clx)
 }
 
 func setup(clx *cli.Context, cfg Config) error {
