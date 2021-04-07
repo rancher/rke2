@@ -119,16 +119,6 @@ For `default` service accounts in the built-in namespaces (`kube-system`, `kube-
 
 For each namespace including `kube-system`, `kube-public`, `kube-node-lease`, and `default`, on a standard RKE2 install the default service account must set `automountServiceAccountToken: false`.
 
-Save the following yaml to a file called `account_update.yaml`.
-
-```yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: default
-automountServiceAccountToken: false
-```
-
 Create a bash script file called `account_update.sh`. Be sure to `chmod +x account_update.sh` so the script has execute permissions.
 
 ```bash
