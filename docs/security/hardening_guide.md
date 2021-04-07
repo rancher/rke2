@@ -117,11 +117,7 @@ The remediation for this is to update the `automountServiceAccountToken` field t
 
 For `default` service accounts in the built-in namespaces (`kube-system`, `kube-public`, `kube-node-lease`, and `default`), RKE2 does not automatically do this. You can manually update this field on these service accounts to pass the control.
 
-For each namespace including, `kube-system`, `kube-public`, `kube-node-lease`, and `default`, on a standard RKE2 install the default service account must include this value:
-
-```yaml
-automountServiceAccountToken: false
-```
+For each namespace including `kube-system`, `kube-public`, `kube-node-lease`, and `default`, on a standard RKE2 install the default service account must set `automountServiceAccountToken: false`.
 
 Save the following yaml to a file called `account_update.yaml`.
 
