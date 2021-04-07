@@ -12,6 +12,9 @@ channels:
   excludeRegexp: ^[^+]+-
 - name: testing
   latestRegexp: -(alpha|beta|rc)
+- name: v1.20
+  latestRegexp: v1\.20\..*
+  excludeRegexp: ^[^+]+-
 github:
   owner: rancher
   repo: rke2
