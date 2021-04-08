@@ -25,6 +25,7 @@ import (
 type registry struct {
 	r *templates.Registry
 	t map[string]*http.Transport
+	w map[string]bool
 }
 
 // Explicit interface checks
@@ -36,6 +37,7 @@ func getPrivateRegistries(path string) (*registry, error) {
 	registry := &registry{
 		r: &templates.Registry{},
 		t: map[string]*http.Transport{},
+		w: map[string]bool{},
 	}
 	privRegistryFile, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -75,11 +77,14 @@ func (r *registry) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.URL.Host = endpointURL.Host
 	req.URL.Scheme = endpointURL.Scheme
 
-	// prefix request path if necessary
+	// The default base path is /v2/; if a path is included in the endpoint,
+	// replace the /v2/ prefix from the request path with the endpoint path.
+	// This behavior is cribbed from containerd.
 	if endpointURL.Path != "" {
-		req.URL.Path = strings.TrimSuffix(endpointURL.Path, "/") + req.URL.Path
+		req.URL.Path = endpointURL.Path + strings.TrimPrefix(req.URL.Path, "/v2/")
 
-		// if either URL has RawPath set, it needs to be used to set the combined URL
+		// If either URL has RawPath set (due to the path including urlencoded
+		// characters), it also needs to be used to set the combined URL
 		if endpointURL.RawPath != "" || req.URL.RawPath != "" {
 			endpointPath := endpointURL.Path
 			if endpointURL.RawPath != "" {
@@ -89,7 +94,7 @@ func (r *registry) RoundTrip(req *http.Request) (*http.Response, error) {
 			if req.URL.RawPath != "" {
 				reqPath = req.URL.RawPath
 			}
-			req.URL.RawPath = strings.TrimSuffix(endpointPath, "/") + reqPath
+			req.URL.RawPath = endpointPath + strings.TrimPrefix(reqPath, "/v2/")
 		}
 	}
 
@@ -128,7 +133,7 @@ func (r *registry) RoundTrip(req *http.Request) (*http.Response, error) {
 // getEndpointForHost gets endpoint configuration for a host. Because go-containerregistry's
 // Keychain interface does not provide a good hook to check authentication for multiple endpoints,
 // we only use the first endpoint from the mirror list. If no endpoint configuration is found, https
-// is assumed.
+// and the default path are assumed.
 func (r *registry) getEndpointForHost(host string) (*url.URL, error) {
 	keys := []string{host}
 	if host == name.DefaultRegistry {
@@ -141,14 +146,18 @@ func (r *registry) getEndpointForHost(host string) (*url.URL, error) {
 			endpointCount := len(mirror.Endpoints)
 			switch {
 			case endpointCount > 1:
-				logrus.Warnf("Found more than one endpoint for %s; only the first entry will be used", host)
+				// Only warn about multiple endpoints once per host
+				if !r.w[host] {
+					logrus.Warnf("Found more than one endpoint for %s; only the first entry will be used", host)
+					r.w[host] = true
+				}
 				fallthrough
 			case endpointCount == 1:
 				return url.Parse(mirror.Endpoints[0])
 			}
 		}
 	}
-	return url.Parse("https://" + host)
+	return url.Parse("https://" + host + "/v2/")
 }
 
 // getAuthenticatorForHost returns an Authenticator for a given host. This should be the host from
