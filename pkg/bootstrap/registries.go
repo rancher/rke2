@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -18,6 +19,10 @@ import (
 	"github.com/rancher/k3s/pkg/agent/templates"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
+)
+
+var (
+	registryRE = regexp.MustCompile(`^(.*/v2/)(.+)((?:/manifests/|/blobs/|/blobs/uploads/|/tags/list)(?:[^/]*))$`)
 )
 
 // registry stores information necessary to configure authentication and
@@ -72,11 +77,6 @@ func (r *registry) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	// override request host and scheme
-	req.Host = endpointURL.Host
-	req.URL.Host = endpointURL.Host
-	req.URL.Scheme = endpointURL.Scheme
-
 	// The default base path is /v2/; if a path is included in the endpoint,
 	// replace the /v2/ prefix from the request path with the endpoint path.
 	// This behavior is cribbed from containerd.
@@ -98,7 +98,13 @@ func (r *registry) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 	}
 
-	logrus.Debugf("Transformed registry URL: %s => %s", originalURL, req.URL.String())
+	// rewrite repository names in request path
+	r.applyRepositoryRewrites(req)
+
+	// override request host and scheme
+	req.Host = endpointURL.Host
+	req.URL.Host = endpointURL.Host
+	req.URL.Scheme = endpointURL.Scheme
 
 	switch endpointURL.Scheme {
 	case "http":
@@ -219,4 +225,56 @@ func (r *registry) getTLSConfigForHost(host string) (*tls.Config, error) {
 	}
 
 	return tlsConfig, nil
+}
+
+// getRewritesForHost gets the map of rewrite patterns for a given host.
+func (r *registry) getRewritesForHost(host string) map[string]string {
+	keys := []string{host}
+	if host == name.DefaultRegistry {
+		keys = append(keys, "docker.io")
+	}
+	keys = append(keys, "*")
+
+	for _, key := range keys {
+		if mirror, ok := r.r.Mirrors[key]; ok {
+			if len(mirror.Rewrites) > 0 {
+				return mirror.Rewrites
+			}
+		}
+	}
+
+	return nil
+}
+
+// applyRepositoryRewrites applies any rewrite expressions from the mirror's rewrite configuration
+// to the request path.
+func (r *registry) applyRepositoryRewrites(req *http.Request) {
+	rewrites := r.getRewritesForHost(req.URL.Host)
+
+	rewriteURL := func(path string) string {
+		m := registryRE.FindStringSubmatch(path)
+		if len(m) != 4 {
+			return path
+		}
+		prefix, repository, suffix := m[1], m[2], m[3]
+
+		for pattern, replace := range rewrites {
+			exp, err := regexp.Compile(pattern)
+			if err != nil {
+				logrus.Warnf("failed to compile rewrite, `%s`, for %s", pattern, req.URL.Host)
+				continue
+			}
+			if rr := exp.ReplaceAllString(repository, replace); rr != repository {
+				repository = rr
+				break
+			}
+		}
+		return prefix + repository + suffix
+	}
+
+	req.URL.Path = rewriteURL(req.URL.Path)
+	// Also need to fix up the RawPath if set
+	if req.URL.RawPath != "" {
+		req.URL.RawPath = rewriteURL(req.URL.RawPath)
+	}
 }
