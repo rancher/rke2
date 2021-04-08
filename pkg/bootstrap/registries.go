@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -73,6 +74,26 @@ func (r *registry) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Host = endpointURL.Host
 	req.URL.Host = endpointURL.Host
 	req.URL.Scheme = endpointURL.Scheme
+
+	// prefix request path if necessary
+	if endpointURL.Path != "" {
+		req.URL.Path = strings.TrimSuffix(endpointURL.Path, "/") + req.URL.Path
+
+		// if either URL has RawPath set, it needs to be used to set the combined URL
+		if endpointURL.RawPath != "" || req.URL.RawPath != "" {
+			endpointPath := endpointURL.Path
+			if endpointURL.RawPath != "" {
+				endpointPath = endpointURL.RawPath
+			}
+			reqPath := req.URL.Path
+			if req.URL.RawPath != "" {
+				reqPath = req.URL.RawPath
+			}
+			req.URL.RawPath = strings.TrimSuffix(endpointPath, "/") + reqPath
+		}
+	}
+
+	logrus.Debugf("Transformed registry URL: %s => %s", originalURL, req.URL.String())
 
 	switch endpointURL.Scheme {
 	case "http":
