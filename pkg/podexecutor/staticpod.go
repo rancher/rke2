@@ -45,6 +45,7 @@ type StaticPodConfig struct {
 	DataDir         string
 	AuditPolicyFile string
 	KubeletPath     string
+	DisableETCD     bool
 }
 
 type CloudProviderConfig struct {
@@ -127,6 +128,10 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 			args = append(args[:i], args[i+1:]...)
 		}
 	}
+	files := []string{}
+	if !s.DisableETCD {
+		files = append(files, etcdNameFile(s.DataDir))
+	}
 	after(etcdReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:   "kube-apiserver",
@@ -134,7 +139,7 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 			Image:     image,
 			Dirs:      append(onlyExisting(ssldirs), filepath.Dir(auditLogFile)),
 			CPUMillis: 250,
-			Files:     []string{etcdNameFile(s.DataDir)},
+			Files:     files,
 		})
 	})
 	return auth, http.NotFoundHandler(), err
@@ -149,6 +154,10 @@ func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) err
 	if err := images.Pull(s.ImagesDir, images.KubeScheduler, image); err != nil {
 		return err
 	}
+	files := []string{}
+	if !s.DisableETCD {
+		files = append(files, etcdNameFile(s.DataDir))
+	}
 	return after(apiReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:     "kube-scheduler",
@@ -157,7 +166,7 @@ func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) err
 			HealthPort:  10251,
 			HealthProto: "HTTP",
 			CPUMillis:   100,
-			Files:       []string{etcdNameFile(s.DataDir)},
+			Files:       files,
 		})
 	})
 }
@@ -200,6 +209,10 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 		}
 		args = append(extraArgs, args...)
 	}
+	files := []string{}
+	if !s.DisableETCD {
+		files = append(files, etcdNameFile(s.DataDir))
+	}
 	return after(apiReady, func() error {
 		extraArgs := []string{
 			"--flex-volume-plugin-dir=/var/lib/kubelet/volumeplugins",
@@ -214,7 +227,7 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 			HealthPort:  10252,
 			HealthProto: "HTTP",
 			CPUMillis:   200,
-			Files:       []string{etcdNameFile(s.DataDir)},
+			Files:       files,
 		})
 	})
 }
