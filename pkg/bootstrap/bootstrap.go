@@ -152,9 +152,17 @@ func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, 
 		return "", errors.Wrap(err, "failed to copy runtime charts")
 	}
 
+	// Ensure that we inject the default value into helm charts as an empty string, to avoid breaking
+	// things for users that are not setting system-default-registry on the CLI in but instead set
+	// image.repository in the Helm Chart values.
+	systemDefaultRegistry := resolver.Registry.Name()
+	if systemDefaultRegistry == name.DefaultRegistry {
+		systemDefaultRegistry = ""
+	}
+
 	// Fix up HelmCharts to pass through configured values.
 	// This needs to be done every time in order to sync values from the CLI
-	if err := setChartValues(dataDir, resolver.Registry.Name()); err != nil {
+	if err := setChartValues(dataDir, systemDefaultRegistry); err != nil {
 		return "", errors.Wrap(err, "failed to set system-default-registry on HelmCharts")
 	}
 

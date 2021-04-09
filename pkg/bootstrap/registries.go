@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -19,11 +21,16 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var (
+	registryRE = regexp.MustCompile(`^(.*/v2/)(.+)((?:/manifests/|/blobs/|/blobs/uploads/|/tags/list)(?:[^/]*))$`)
+)
+
 // registry stores information necessary to configure authentication and
 // connections to remote registries, including overriding registry endpoints
 type registry struct {
 	r *templates.Registry
 	t map[string]*http.Transport
+	w map[string]bool
 }
 
 // Explicit interface checks
@@ -35,6 +42,7 @@ func getPrivateRegistries(path string) (*registry, error) {
 	registry := &registry{
 		r: &templates.Registry{},
 		t: map[string]*http.Transport{},
+		w: map[string]bool{},
 	}
 	privRegistryFile, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -68,6 +76,30 @@ func (r *registry) RoundTrip(req *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// The default base path is /v2/; if a path is included in the endpoint,
+	// replace the /v2/ prefix from the request path with the endpoint path.
+	// This behavior is cribbed from containerd.
+	if endpointURL.Path != "" {
+		req.URL.Path = endpointURL.Path + strings.TrimPrefix(req.URL.Path, "/v2/")
+
+		// If either URL has RawPath set (due to the path including urlencoded
+		// characters), it also needs to be used to set the combined URL
+		if endpointURL.RawPath != "" || req.URL.RawPath != "" {
+			endpointPath := endpointURL.Path
+			if endpointURL.RawPath != "" {
+				endpointPath = endpointURL.RawPath
+			}
+			reqPath := req.URL.Path
+			if req.URL.RawPath != "" {
+				reqPath = req.URL.RawPath
+			}
+			req.URL.RawPath = endpointPath + strings.TrimPrefix(reqPath, "/v2/")
+		}
+	}
+
+	// rewrite repository names in request path
+	r.applyRepositoryRewrites(req)
 
 	// override request host and scheme
 	req.Host = endpointURL.Host
@@ -107,7 +139,7 @@ func (r *registry) RoundTrip(req *http.Request) (*http.Response, error) {
 // getEndpointForHost gets endpoint configuration for a host. Because go-containerregistry's
 // Keychain interface does not provide a good hook to check authentication for multiple endpoints,
 // we only use the first endpoint from the mirror list. If no endpoint configuration is found, https
-// is assumed.
+// and the default path are assumed.
 func (r *registry) getEndpointForHost(host string) (*url.URL, error) {
 	keys := []string{host}
 	if host == name.DefaultRegistry {
@@ -120,14 +152,18 @@ func (r *registry) getEndpointForHost(host string) (*url.URL, error) {
 			endpointCount := len(mirror.Endpoints)
 			switch {
 			case endpointCount > 1:
-				logrus.Warnf("Found more than one endpoint for %s; only the first entry will be used", host)
+				// Only warn about multiple endpoints once per host
+				if !r.w[host] {
+					logrus.Warnf("Found more than one endpoint for %s; only the first entry will be used", host)
+					r.w[host] = true
+				}
 				fallthrough
 			case endpointCount == 1:
 				return url.Parse(mirror.Endpoints[0])
 			}
 		}
 	}
-	return url.Parse("https://" + host)
+	return url.Parse("https://" + host + "/v2/")
 }
 
 // getAuthenticatorForHost returns an Authenticator for a given host. This should be the host from
@@ -189,4 +225,56 @@ func (r *registry) getTLSConfigForHost(host string) (*tls.Config, error) {
 	}
 
 	return tlsConfig, nil
+}
+
+// getRewritesForHost gets the map of rewrite patterns for a given host.
+func (r *registry) getRewritesForHost(host string) map[string]string {
+	keys := []string{host}
+	if host == name.DefaultRegistry {
+		keys = append(keys, "docker.io")
+	}
+	keys = append(keys, "*")
+
+	for _, key := range keys {
+		if mirror, ok := r.r.Mirrors[key]; ok {
+			if len(mirror.Rewrites) > 0 {
+				return mirror.Rewrites
+			}
+		}
+	}
+
+	return nil
+}
+
+// applyRepositoryRewrites applies any rewrite expressions from the mirror's rewrite configuration
+// to the request path.
+func (r *registry) applyRepositoryRewrites(req *http.Request) {
+	rewrites := r.getRewritesForHost(req.URL.Host)
+
+	rewriteURL := func(path string) string {
+		m := registryRE.FindStringSubmatch(path)
+		if len(m) != 4 {
+			return path
+		}
+		prefix, repository, suffix := m[1], m[2], m[3]
+
+		for pattern, replace := range rewrites {
+			exp, err := regexp.Compile(pattern)
+			if err != nil {
+				logrus.Warnf("failed to compile rewrite, `%s`, for %s", pattern, req.URL.Host)
+				continue
+			}
+			if rr := exp.ReplaceAllString(repository, replace); rr != repository {
+				repository = rr
+				break
+			}
+		}
+		return prefix + repository + suffix
+	}
+
+	req.URL.Path = rewriteURL(req.URL.Path)
+	// Also need to fix up the RawPath if set
+	if req.URL.RawPath != "" {
+		req.URL.RawPath = rewriteURL(req.URL.RawPath)
+	}
 }
