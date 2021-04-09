@@ -91,6 +91,7 @@ func setup(clx *cli.Context, cfg Config) error {
 	cisMode = profile == CISProfile15 || profile == CISProfile16
 	dataDir := clx.String("data-dir")
 	privateRegistry := clx.String("private-registry")
+	disableETCD := clx.Bool("disable-etcd")
 
 	auditPolicyFile := clx.String("audit-policy-file")
 	if auditPolicyFile == "" {
@@ -161,6 +162,7 @@ func setup(clx *cli.Context, cfg Config) error {
 		DataDir:         dataDir,
 		AuditPolicyFile: auditPolicyFile,
 		KubeletPath:     cfg.KubeletPath,
+		DisableETCD:     disableETCD,
 	}
 	executor.Set(&sp)
 
