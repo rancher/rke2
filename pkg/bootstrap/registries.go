@@ -21,10 +21,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var (
-	registryRE = regexp.MustCompile(`^(.*/v2/)(.+)((?:/manifests/|/blobs/|/blobs/uploads/|/tags/list)(?:[^/]*))$`)
-)
-
 // registry stores information necessary to configure authentication and
 // connections to remote registries, including overriding registry endpoints
 type registry struct {
@@ -58,6 +54,37 @@ func getPrivateRegistries(path string) (*registry, error) {
 	return registry, nil
 }
 
+// Rewrite applies repository rewrites to the given image reference.
+func (r *registry) Rewrite(ref name.Reference) name.Reference {
+	host := ref.Context().RegistryStr()
+	rewrites := r.getRewritesForHost(host)
+	repository := ref.Context().RepositoryStr()
+
+	for pattern, replace := range rewrites {
+		exp, err := regexp.Compile(pattern)
+		if err != nil {
+			logrus.Warnf("Failed to compile rewrite `%s` for %s", pattern, host)
+			continue
+		}
+		if rr := exp.ReplaceAllString(repository, replace); rr != repository {
+			newRepo, err := name.NewRepository(rr)
+			if err != nil {
+				logrus.Warnf("Invalid repository rewrite %s for %s", rr, host)
+				continue
+			}
+			if t, ok := ref.(name.Tag); ok {
+				t.Repository = newRepo
+				return t
+			} else if d, ok := ref.(name.Digest); ok {
+				d.Repository = newRepo
+				return d
+			}
+		}
+	}
+
+	return ref
+}
+
 // Resolve returns an authenticator for the authn.Keychain interface. The authenticator
 // provides credentials to a registry by looking up configuration from mirror endpoints.
 func (r *registry) Resolve(target authn.Resource) (authn.Authenticator, error) {
@@ -77,10 +104,12 @@ func (r *registry) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
+	originalURL := req.URL.String()
+
 	// The default base path is /v2/; if a path is included in the endpoint,
 	// replace the /v2/ prefix from the request path with the endpoint path.
 	// This behavior is cribbed from containerd.
-	if endpointURL.Path != "" {
+	if strings.HasPrefix(req.URL.Path, "/v2/") && endpointURL.Path != "" {
 		req.URL.Path = endpointURL.Path + strings.TrimPrefix(req.URL.Path, "/v2/")
 
 		// If either URL has RawPath set (due to the path including urlencoded
@@ -98,13 +127,14 @@ func (r *registry) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 	}
 
-	// rewrite repository names in request path
-	r.applyRepositoryRewrites(req)
-
 	// override request host and scheme
 	req.Host = endpointURL.Host
 	req.URL.Host = endpointURL.Host
 	req.URL.Scheme = endpointURL.Scheme
+
+	if newURL := req.URL.String(); originalURL != newURL {
+		logrus.Debugf("Registry endpoint URL modified: %s => %s", originalURL, newURL)
+	}
 
 	switch endpointURL.Scheme {
 	case "http":
@@ -244,37 +274,4 @@ func (r *registry) getRewritesForHost(host string) map[string]string {
 	}
 
 	return nil
-}
-
-// applyRepositoryRewrites applies any rewrite expressions from the mirror's rewrite configuration
-// to the request path.
-func (r *registry) applyRepositoryRewrites(req *http.Request) {
-	rewrites := r.getRewritesForHost(req.URL.Host)
-
-	rewriteURL := func(path string) string {
-		m := registryRE.FindStringSubmatch(path)
-		if len(m) != 4 {
-			return path
-		}
-		prefix, repository, suffix := m[1], m[2], m[3]
-
-		for pattern, replace := range rewrites {
-			exp, err := regexp.Compile(pattern)
-			if err != nil {
-				logrus.Warnf("failed to compile rewrite, `%s`, for %s", pattern, req.URL.Host)
-				continue
-			}
-			if rr := exp.ReplaceAllString(repository, replace); rr != repository {
-				repository = rr
-				break
-			}
-		}
-		return prefix + repository + suffix
-	}
-
-	req.URL.Path = rewriteURL(req.URL.Path)
-	// Also need to fix up the RawPath if set
-	if req.URL.RawPath != "" {
-		req.URL.RawPath = rewriteURL(req.URL.RawPath)
-	}
 }

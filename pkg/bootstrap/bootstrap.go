@@ -103,7 +103,7 @@ func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, 
 	manifestsDir := manifestsDir(dataDir)
 
 	if dirExists(refBinDir) && dirExists(refChartsDir) {
-		logrus.Infof("Runtime image %s bin and charts directories already exist; skipping extract", ref)
+		logrus.Infof("Runtime image %s bin and charts directories already exist; skipping extract", ref.Name())
 	} else {
 		// Try to use configured runtime image from an airgap tarball
 		img, err = preloadBootstrapFromRuntime(dataDir, resolver)
@@ -121,9 +121,9 @@ func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, 
 			multiKeychain := authn.NewMultiKeychain(registries, authn.DefaultKeychain)
 
 			logrus.Infof("Pulling runtime image %s", ref.Name())
-			img, err = remote.Image(ref, remote.WithAuthFromKeychain(multiKeychain), remote.WithTransport(registries))
+			img, err = remote.Image(registries.Rewrite(ref), remote.WithAuthFromKeychain(multiKeychain), remote.WithTransport(registries))
 			if err != nil {
-				return "", errors.Wrapf(err, "failed to get runtime image %s", ref)
+				return "", errors.Wrapf(err, "failed to get runtime image %s", ref.Name())
 			}
 		}
 
