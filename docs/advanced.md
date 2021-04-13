@@ -107,3 +107,52 @@ To disable any of the bundled system charts, set the `disable` parameter in the 
 - `rke2-metrics-server`
 
 Note that it is the cluster operator's responsibility to ensure that components are disabled or replaced with care, as the server charts play important roles in cluster operability.  Refer to the [architecture overview](architecture/architecture.md#server-charts) for more information on the individual system charts role within the cluster.
+
+## Installation on classified AWS regions or networks with custom AWS API endpoints
+
+In public AWS regions, installing RKE2 with `--cloud-provider-name=aws` will ensure RKE2 is cloud-enabled, and capable of auto-provisioning certain cloud resources.
+
+When installing RKE2 on classified regions (such as SC2S or C2S), there are a few additional pre-requisites to be aware of to ensure RKE2 knows how and where to securely communicate with the appropriate AWS endpoints:
+
+0. Ensure all the common AWS cloud-provider [prerequisites](https://rancher.com/docs/rke/latest/en/config-options/cloud-providers/aws/) are met.  These are independent of regions and are always required.
+
+1. Ensure RKE2 knows where to send API requests for `ec2` and `elasticloadbalancing` services by creating a `cloud.conf` file, the below is an example for the `us-iso-east-1` (C2S) region:
+
+```yaml
+# /etc/rancher/rke2/cloud.conf
+[Global]
+[ServiceOverride "ec2"]
+  Service=ec2
+  Region=us-iso-east-1
+  URL=https://ec2.us-iso-east-1.c2s.ic.gov
+  SigningRegion=us-iso-east-1
+[ServiceOverride "elasticloadbalancing"]
+  Service=elasticloadbalancing
+  Region=us-iso-east-1
+  URL=https://elasticloadbalancing.us-iso-east-1.c2s.ic.gov
+  SigningRegion=us-iso-east-1
+```
+
+Alternatively, if you are using [private AWS endpoints](https://docs.aws.amazon.com/vpc/latest/privatelink/endpoint-services-overview.html), ensure the appropriate `URL` is used for each of the private endpoints.
+
+2. Ensure the appropriate AWS CA bundle is loaded into the system's root ca trust store.  This may already be done for you depending on the AMI you are using.
+
+```bash
+# on CentOS/RHEL 7/8
+cp <ca.pem> /etc/pki/ca-trust/source/anchors/
+update-ca-trust
+```
+
+3. configure RKE2 to use the `aws` cloud-provider with the custom `cloud.conf` created in step 1:
+
+```yaml
+# /etc/rancher/rke2/config.yaml
+...
+cloud-provider-name: aws
+cloud-provider-config: "/etc/rancher/rke2/cloud.conf"
+...
+```
+
+4. [Install](install/methods.md) RKE2 normally (most likely in an [airgapped](install/airgap.md) capacity)
+
+5. Validate successful installation by confirming the existence of AWS metadata on cluster node labels with `kubectl get nodes --show-labels`
