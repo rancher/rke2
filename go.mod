@@ -52,12 +52,11 @@ replace (
 )
 
 require (
-	github.com/containerd/containerd v1.4.4 // indirect
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e // indirect
 	github.com/google/go-containerregistry v0.0.0-20190617215043-876b8855d23c
 	github.com/k3s-io/helm-controller v0.8.4
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.19.9-0.20210312152751-64017c5272cf
+	github.com/rancher/k3s v1.19.10-0.20210414190945-0f3fe02eff4d
 	github.com/rancher/wrangler v0.6.1
 	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.7.0
