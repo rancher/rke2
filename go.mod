@@ -57,18 +57,19 @@ replace (
 
 require (
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e
+	github.com/frankban/quicktest v1.11.3 // indirect
 	github.com/google/go-containerregistry v0.4.2-0.20210316173552-70c58c0e4786
 	github.com/k3s-io/helm-controller v0.8.4
 	github.com/klauspost/compress v1.11.7
 	github.com/pierrec/lz4 v2.5.2+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.20.3-0.20210402005909-a3ec5904ec2c
-	github.com/rancher/wrangler v0.6.1
+	github.com/rancher/k3s v1.21.0-alpha1.0.20210416213554-c2eff9298ca7
+	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.2
-	google.golang.org/grpc v1.33.2
-	gopkg.in/yaml.v2 v2.3.0
+	google.golang.org/grpc v1.37.0
+	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v1.20.5
 	k8s.io/apimachinery v1.20.5
 	k8s.io/apiserver v1.20.0
