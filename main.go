@@ -14,6 +14,7 @@ func main() {
 	app.Commands = []cli.Command{
 		cmds.NewServerCommand(),
 		cmds.NewAgentCommand(),
+		cmds.NewEtcdSnapshotCommand(),
 	}
 
 	if err := app.Run(configfilearg.MustParse(os.Args)); err != nil {
