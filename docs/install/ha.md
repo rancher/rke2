@@ -50,7 +50,7 @@ tls-san:
 By default, server nodes will be schedulable and thus your workloads can get launched on them. If you wish to have a dedicated control plane where no user workloads will run, you can use taints. The `node-taint` parameter will allow you to configure nodes with taints. Here is an example of adding a node taint to the configuration file:
 ```yaml
 node-taint:
-  - "CriticalAddonsOnly=true:NoExecute"
+  - "node-role.kubernetes.io/master:NoSchedule"
 ```
 
 ### 3. Launch additional server nodes
