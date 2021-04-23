@@ -125,15 +125,18 @@ COPY --from=build-k8s \
     /usr/local/bin/
 
 FROM build AS charts
-ARG CHARTS_REPO="https://rke2-charts.rancher.io"
+ARG CHART_REPO="https://rke2-charts.rancher.io"
 ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
-RUN CHART_VERSION="v3.13.300-build2021022302" CHART_FILE=/charts/rke2-canal.yaml             CHART_BOOTSTRAP=true    /charts/build-chart.sh
-RUN CHART_VERSION="1.10.101-build2021022301"  CHART_FILE=/charts/rke2-coredns.yaml           CHART_BOOTSTRAP=true    /charts/build-chart.sh
-RUN CHART_VERSION="1.36.301"                  CHART_FILE=/charts/rke2-ingress-nginx.yaml     CHART_BOOTSTRAP=false   /charts/build-chart.sh
-RUN CHART_VERSION="v1.20.6-build2021041901"   CHART_FILE=/charts/rke2-kube-proxy.yaml        CHART_BOOTSTRAP=true    /charts/build-chart.sh
-RUN CHART_VERSION="2.11.100-build2021022300"  CHART_FILE=/charts/rke2-metrics-server.yaml    CHART_BOOTSTRAP=false   /charts/build-chart.sh
+RUN CHART_VERSION="1.9.403"                   CHART_FILE=/charts/rke2-cilium.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="v3.13.300-build2021022302" CHART_FILE=/charts/rke2-canal.yaml          CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="1.10.101-build2021022301"  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="1.36.301"                  CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
+RUN CHART_VERSION="v1.21.0-build2021041301"   CHART_FILE=/charts/rke2-kube-proxy.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="2.11.100-build2021022300"  CHART_FILE=/charts/rke2-metrics-server.yaml CHART_BOOTSTRAP=false  /charts/build-chart.sh
+RUN CHART_VERSION="1.0.000"                   CHART_FILE=/charts/rancher-vsphere-cpi.yaml CHART_BOOTSTRAP=true   CHART_REPO="https://charts.rancher.io" /charts/build-chart.sh
+RUN CHART_VERSION="2.1.000"                   CHART_FILE=/charts/rancher-vsphere-csi.yaml CHART_BOOTSTRAP=true   CHART_REPO="https://charts.rancher.io" /charts/build-chart.sh
 RUN rm -vf /charts/*.sh /charts/*.md
 
 # rke-runtime image
@@ -145,7 +148,7 @@ FROM rancher/hardened-containerd:v1.4.4-k3s1-build20210316 AS containerd
 FROM rancher/hardened-crictl:v1.19.0-build20210223 AS crictl
 FROM rancher/hardened-runc:v1.0.0-rc94-build20210511 AS runc
 
-FROM scratch AS runtime
+FROM scratch AS runtime-collect
 COPY --from=k3s \
     /bin/socat \
     /bin/
@@ -169,6 +172,9 @@ COPY --from=kubernetes \
 COPY --from=charts \
     /charts/ \
     /charts/
+
+FROM scratch AS runtime
+COPY --from=runtime-collect / /
 
 FROM ubuntu:18.04 AS test
 ARG TARGETARCH

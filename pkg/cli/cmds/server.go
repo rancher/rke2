@@ -1,19 +1,34 @@
 package cmds
 
 import (
+	"strings"
+
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/rke2/pkg/rke2"
+	"github.com/rancher/rke2/pkg/util"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
 const (
-	DisableItems = "rke2-canal, rke2-coredns, rke2-ingress-nginx, rke2-kube-proxy, rke2-metrics-server"
-	rke2Path     = "/var/lib/rancher/rke2"
+	rke2Path = "/var/lib/rancher/rke2"
 )
 
 var (
-	config rke2.Config
+	DisableItems = []string{"rke2-coredns", "rke2-ingress-nginx", "rke2-kube-proxy", "rke2-metrics-server"}
+	CNIItems     = []string{"canal", "cilium"}
+
+	config = rke2.Config{}
+
+	serverFlag = []cli.Flag{
+		&cli.StringFlag{
+			Name:        "cni",
+			Usage:       "(networking) CNI Plugin to deploy, one of none, " + strings.Join(CNIItems, ", "),
+			EnvVar:      "RKE2_CNI",
+			Destination: &config.CNI,
+			Value:       "canal",
+		},
+	}
 
 	k3sServerBase = mustCmdFromK3S(cmds.NewServerCommand(ServerRun), map[string]*K3SFlagOption{
 		"config":            copy,
@@ -56,7 +71,7 @@ var (
 		"datastore-keyfile":                 drop,
 		"default-local-storage-path":        drop,
 		"disable": {
-			Usage: "(components) Do not deploy packaged components and delete any deployed components (valid items: " + DisableItems + ")",
+			Usage: "(components) Do not deploy packaged components and delete any deployed components (valid items: " + strings.Join(DisableItems, ", ") + ")",
 		},
 		"disable-selinux":             drop,
 		"disable-scheduler":           copy,
@@ -115,24 +130,30 @@ var (
 
 func NewServerCommand() cli.Command {
 	cmd := k3sServerBase
+	cmd.Flags = append(cmd.Flags, serverFlag...)
 	cmd.Flags = append(cmd.Flags, commonFlag...)
 	return cmd
 }
 
 func ServerRun(clx *cli.Context) error {
-	switch profile {
-	case rke2.CISProfile15, rke2.CISProfile16:
-		if err := validateCISReqs("server"); err != nil {
-			logrus.Fatal(err)
-		}
-		if err := setCISFlags(clx); err != nil {
-			logrus.Fatal(err)
-		}
-	case "":
-		logrus.Warn("not running in CIS mode")
-	default:
-		logrus.Fatal("invalid value provided for --profile flag")
-	}
-
+	validateCloudProviderName(clx)
+	validateProfile(clx)
+	validateCNI(clx)
 	return rke2.Server(clx, config)
+}
+
+func validateCNI(clx *cli.Context) {
+	cni := clx.String("cni")
+	switch {
+	case cni == "none":
+		fallthrough
+	case util.ContainsString(CNIItems, cni):
+		for _, d := range CNIItems {
+			if cni != d {
+				clx.Set("disable", "rke2-"+d)
+			}
+		}
+	default:
+		logrus.Fatal("invalid value provided for --cni flag")
+	}
 }
