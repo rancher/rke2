@@ -3,7 +3,6 @@ package cmds
 import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/rke2/pkg/rke2"
-	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
@@ -56,19 +55,7 @@ func NewAgentCommand() cli.Command {
 }
 
 func AgentRun(clx *cli.Context) error {
-	switch profile {
-	case rke2.CISProfile15, rke2.CISProfile16:
-		if err := validateCISReqs("agent"); err != nil {
-			logrus.Fatal(err)
-		}
-		if err := setCISFlags(clx); err != nil {
-			logrus.Fatal(err)
-		}
-	case "":
-		logrus.Warn("not running in CIS mode")
-	default:
-		logrus.Fatal("invalid value provided for --profile flag")
-	}
-
+	validateCloudProviderName(clx)
+	validateProfile(clx)
 	return rke2.Agent(clx, config)
 }

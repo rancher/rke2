@@ -171,7 +171,7 @@ func setNetworkDNSPolicy(ctx context.Context, cs *kubernetes.Clientset) error {
 }
 
 // setNetworkPolicies applies a default network policy across the 3 primary namespaces.
-func setNetworkPolicies() func(context.Context, <-chan struct{}, string) error {
+func setNetworkPolicies(cisMode bool) func(context.Context, <-chan struct{}, string) error {
 	return func(ctx context.Context, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
 		// check if we're running in CIS mode and if so,
 		// apply the network policy.

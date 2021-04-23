@@ -57,6 +57,8 @@ type CloudProviderConfig struct {
 func (s *StaticPodConfig) Kubelet(args []string) error {
 	extraArgs := []string{
 		"--volume-plugin-dir=/var/lib/kubelet/volumeplugins",
+		"--file-check-frequency=5s",
+		"--sync-frequency=30s",
 	}
 	if s.CloudProvider != nil {
 		extraArgs = append(extraArgs,

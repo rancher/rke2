@@ -32,14 +32,14 @@ import (
 )
 
 type Config struct {
-	CloudProviderName   string
-	CloudProviderConfig string
 	AuditPolicyFile     string
-	KubeletPath         string
+	CNI                 string
+	CloudProviderConfig string
+	CloudProviderName   string
 	Images              images.ImageOverrideConfig
+	KubeletPath         string
+	Profile             string
 }
-
-var cisMode bool
 
 const (
 	CISProfile15           = "cis-1.5"
@@ -64,10 +64,11 @@ func Server(clx *cli.Context, cfg Config) error {
 			return err
 		}
 	}
+	cisMode := isCISMode(clx)
 
 	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
-		setPSPs(),
-		setNetworkPolicies(),
+		setPSPs(cisMode),
+		setNetworkPolicies(cisMode),
 		setClusterRoles(),
 	)
 
@@ -93,8 +94,6 @@ func EtcdSnapshot(clx *cli.Context, cfg Config) error {
 }
 
 func setup(clx *cli.Context, cfg Config) error {
-	profile := clx.String("profile")
-	cisMode = profile == CISProfile15 || profile == CISProfile16
 	dataDir := clx.String("data-dir")
 	privateRegistry := clx.String("private-registry")
 	disableETCD := clx.Bool("disable-etcd")
@@ -167,7 +166,7 @@ func setup(clx *cli.Context, cfg Config) error {
 		Resolver:        resolver,
 		ImagesDir:       agentImagesDir,
 		ManifestsDir:    agentManifestsDir,
-		CISMode:         cisMode,
+		CISMode:         isCISMode(clx),
 		CloudProvider:   cpConfig,
 		DataDir:         dataDir,
 		AuditPolicyFile: auditPolicyFile,
