@@ -186,10 +186,11 @@ func podManifestsDir(dataDir string) string {
 }
 
 func removeOldPodManifests(dataDir string, disabledItems map[string]bool) error {
-	var (
-		kubeletStandAlone         bool
-		containerdErr, kubeletErr chan error
-	)
+	var kubeletStandAlone bool
+
+	kubeletErr := make(chan error)
+	containerdErr := make(chan error)
+
 	ctx := context.Background()
 
 	for component, disabled := range disabledItems {
@@ -215,24 +216,32 @@ func removeOldPodManifests(dataDir string, disabledItems map[string]bool) error 
 		go startKubelet(ctx, dataDir, kubeletErr, tmpAddress, kubeletCmd)
 
 		// check for any running containers from the disabled items list
-		go checkForRunningContainers(ctx, tmpAddress, disabledItems, kubeletCmd, containerdCmd)
+		go checkForRunningContainers(ctx, tmpAddress, disabledItems, kubeletErr, containerdErr)
 
 		go func() {
-			logrus.Infof("containerd 4 %v", containerdCmd)
+			// kill both temp processes after 5 minutes anyway
+			time.Sleep(5 * time.Minute)
+			logrus.Info("Timeout reached, exiting kubelet and containerd")
+			kubeletErr <- fmt.Errorf("timeout reached")
+			containerdErr <- fmt.Errorf("timeout reached")
+		}()
+
+		for {
+			time.Sleep(5 * time.Second)
 			select {
 			case err := <-kubeletErr:
 				logrus.Infof("kubelet Exited: %v, exiting Containerd", err)
 				// exits containerd if kubelet exits
 				containerdCmd.Process.Kill()
+				kubeletCmd.Process.Kill()
+
 			case err := <-containerdErr:
 				logrus.Infof("Containerd Exited: %v, exiting kubelet", err)
 				kubeletCmd.Process.Kill()
-			case <-time.After(5 * time.Minute):
-				// kill both temp process after 5 minutes anyway
-				kubeletCmd.Process.Kill()
 				containerdCmd.Process.Kill()
 			}
-		}()
+			break
+		}
 	}
 
 	return nil
@@ -244,6 +253,7 @@ func isCISMode(clx *cli.Context) bool {
 }
 
 func startKubelet(ctx context.Context, dataDir string, errChan chan error, tmpAddress string, cmd *exec.Cmd) {
+	logrus.Infof("starting kubelet to clean up old static pods")
 	args := []string{
 		"--fail-swap-on=false",
 		"--container-runtime=remote",
@@ -259,7 +269,6 @@ func startKubelet(ctx context.Context, dataDir string, errChan chan error, tmpAd
 }
 
 func startContainerd(ctx context.Context, dataDir string, errChan chan error, tmpAddress string, cmd *exec.Cmd) {
-	// starting containerd first then kubelet
 	args := []string{
 		"-a", tmpAddress,
 		"--root", filepath.Join(dataDir, "agent", "containerd"),
@@ -271,39 +280,36 @@ func startContainerd(ctx context.Context, dataDir string, errChan chan error, tm
 	errChan <- cmd.Run()
 }
 
-func isContainerRunning(ctx context.Context, name string, address string) (bool, error) {
-	conn, err := containerdk3s.CriConnection(ctx, address)
-	if err != nil {
-		return false, err
-	}
-	c := runtimeapi.NewRuntimeServiceClient(conn)
-	defer conn.Close()
-	resp, err := c.ListContainers(ctx, &runtimeapi.ListContainersRequest{})
-	if err != nil {
-		return false, err
-	}
-
+func isContainerRunning(ctx context.Context, name string, resp *runtimeapi.ListContainersResponse) bool {
 	for _, c := range resp.Containers {
 		if c.Metadata.Name == name {
-			return true, nil
+			return true
 		}
 	}
-	return false, nil
+	return false
 }
 
-func checkForRunningContainers(ctx context.Context, tmpAddress string, disabledItems map[string]bool, kubeletCmd, containerdCmd *exec.Cmd) {
+func checkForRunningContainers(ctx context.Context, tmpAddress string, disabledItems map[string]bool, kubeletErr, containerdErr chan error) {
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 	for range ticker.C {
+		conn, err := containerdk3s.CriConnection(ctx, tmpAddress)
+		if err != nil {
+			logrus.Warnf("Failed to setup cri connection: %v", err)
+			continue
+		}
+		c := runtimeapi.NewRuntimeServiceClient(conn)
+		defer conn.Close()
+		resp, err := c.ListContainers(ctx, &runtimeapi.ListContainersRequest{})
+		if err != nil {
+			logrus.Warnf("Failed to list containers: %v", err)
+			continue
+		}
 		var gc bool
 		for item, disabled := range disabledItems {
 			if disabled {
-				isRunning, err := isContainerRunning(ctx, item, tmpAddress)
-				if err != nil {
-					logrus.Warnf("Failed to setup cri client: %v", err)
-					continue
-				}
-				if isRunning {
+				if isContainerRunning(ctx, item, resp) {
+					logrus.Infof("old static pod %s is running, waiting to delete", item)
 					gc = true
 					break
 				}
@@ -314,8 +320,8 @@ func checkForRunningContainers(ctx context.Context, tmpAddress string, disabledI
 		}
 		// if all disabled items containers has been removed
 		// then terminate kubelet and containerd
-		containerdCmd.Process.Kill()
-		kubeletCmd.Process.Kill()
+		containerdErr <- fmt.Errorf("static pods deleted exiting containerd")
+		kubeletErr <- fmt.Errorf("static pods deleted exiting kubelet")
 		break
 	}
 }
