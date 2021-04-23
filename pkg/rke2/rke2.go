@@ -1,13 +1,18 @@
 package rke2
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
+	containerdk3s "github.com/rancher/k3s/pkg/agent/containerd"
 	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
+	"github.com/sirupsen/logrus"
 
 	"github.com/rancher/k3s/pkg/agent/config"
 	"github.com/rancher/k3s/pkg/cli/agent"
@@ -23,6 +28,7 @@ import (
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
 	"github.com/urfave/cli"
+	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1alpha2"
 )
 
 type Config struct {
@@ -37,6 +43,7 @@ const (
 	CISProfile15           = "cis-1.5"
 	CISProfile16           = "cis-1.6"
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
+	defaultPodManifestPath = "pod-manifests"
 )
 
 func Server(clx *cli.Context, cfg Config) error {
@@ -88,6 +95,9 @@ func EtcdSnapshot(clx *cli.Context, cfg Config) error {
 func setup(clx *cli.Context, cfg Config) error {
 	dataDir := clx.String("data-dir")
 	disableETCD := clx.Bool("disable-etcd")
+	disableScheduler := clx.Bool("disable-scheduler")
+	disableAPIServer := clx.Bool("disable-api-server")
+	disableControllerManager := clx.Bool("disable-controller-manager")
 
 	auditPolicyFile := clx.String("audit-policy-file")
 	if auditPolicyFile == "" {
@@ -162,10 +172,150 @@ func setup(clx *cli.Context, cfg Config) error {
 	}
 	executor.Set(&sp)
 
+	disabledItems := map[string]bool{
+		"kube-apiserver":          disableAPIServer,
+		"kube-scheduler":          disableScheduler,
+		"kube-controller-manager": disableControllerManager,
+		"etcd":                    disableETCD,
+	}
+	return removeOldPodManifests(dataDir, disabledItems)
+}
+
+func podManifestsDir(dataDir string) string {
+	return filepath.Join(dataDir, "agent", defaultPodManifestPath)
+}
+
+func removeOldPodManifests(dataDir string, disabledItems map[string]bool) error {
+	var (
+		kubeletStandAlone         bool
+		containerdErr, kubeletErr chan error
+	)
+	ctx := context.Background()
+
+	for component, disabled := range disabledItems {
+		if disabled {
+			manifestName := filepath.Join(podManifestsDir(dataDir), component+".yaml")
+			if _, err := os.Stat(manifestName); err == nil {
+				kubeletStandAlone = true
+				if err := os.Remove(manifestName); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	if kubeletStandAlone {
+		kubeletCmd := exec.Command("kubelet")
+		containerdCmd := exec.Command("containerd")
+
+		tmpAddress := filepath.Join(os.TempDir(), "containerd.sock")
+
+		// start containerd
+		go startContainerd(ctx, dataDir, containerdErr, tmpAddress, containerdCmd)
+		// start kubelet
+		go startKubelet(ctx, dataDir, kubeletErr, tmpAddress, kubeletCmd)
+
+		// check for any running containers from the disabled items list
+		go checkForRunningContainers(ctx, tmpAddress, disabledItems, kubeletCmd, containerdCmd)
+
+		go func() {
+			logrus.Infof("containerd 4 %v", containerdCmd)
+			select {
+			case err := <-kubeletErr:
+				logrus.Infof("kubelet Exited: %v, exiting Containerd", err)
+				// exits containerd if kubelet exits
+				containerdCmd.Process.Kill()
+			case err := <-containerdErr:
+				logrus.Infof("Containerd Exited: %v, exiting kubelet", err)
+				kubeletCmd.Process.Kill()
+			case <-time.After(5 * time.Minute):
+				// kill both temp process after 5 minutes anyway
+				kubeletCmd.Process.Kill()
+				containerdCmd.Process.Kill()
+			}
+		}()
+	}
+
 	return nil
 }
 
 func isCISMode(clx *cli.Context) bool {
 	profile := clx.String("profile")
 	return profile == CISProfile15 || profile == CISProfile16
+}
+
+func startKubelet(ctx context.Context, dataDir string, errChan chan error, tmpAddress string, cmd *exec.Cmd) {
+	args := []string{
+		"--fail-swap-on=false",
+		"--container-runtime=remote",
+		"--containerd=" + tmpAddress,
+		"--container-runtime-endpoint=unix://" + tmpAddress,
+		"--pod-manifest-path=" + podManifestsDir(dataDir),
+	}
+	cmd.Args = append(cmd.Args, args...)
+	cmd.Stdout = nil
+	cmd.Stderr = nil
+
+	errChan <- cmd.Run()
+}
+
+func startContainerd(ctx context.Context, dataDir string, errChan chan error, tmpAddress string, cmd *exec.Cmd) {
+	// starting containerd first then kubelet
+	args := []string{
+		"-a", tmpAddress,
+		"--root", filepath.Join(dataDir, "agent", "containerd"),
+	}
+	cmd.Args = append(cmd.Args, args...)
+	cmd.Stdout = nil
+	cmd.Stderr = nil
+
+	errChan <- cmd.Run()
+}
+
+func isContainerRunning(ctx context.Context, name string, address string) (bool, error) {
+	conn, err := containerdk3s.CriConnection(ctx, address)
+	if err != nil {
+		return false, err
+	}
+	c := runtimeapi.NewRuntimeServiceClient(conn)
+	defer conn.Close()
+	resp, err := c.ListContainers(ctx, &runtimeapi.ListContainersRequest{})
+	if err != nil {
+		return false, err
+	}
+
+	for _, c := range resp.Containers {
+		if c.Metadata.Name == name {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func checkForRunningContainers(ctx context.Context, tmpAddress string, disabledItems map[string]bool, kubeletCmd, containerdCmd *exec.Cmd) {
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+	for range ticker.C {
+		var gc bool
+		for item, disabled := range disabledItems {
+			if disabled {
+				isRunning, err := isContainerRunning(ctx, item, tmpAddress)
+				if err != nil {
+					logrus.Warnf("Failed to setup cri client: %v", err)
+					continue
+				}
+				if isRunning {
+					gc = true
+					break
+				}
+			}
+		}
+		if gc {
+			continue
+		}
+		// if all disabled items containers has been removed
+		// then terminate kubelet and containerd
+		containerdCmd.Process.Kill()
+		kubeletCmd.Process.Kill()
+		break
+	}
 }
