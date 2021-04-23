@@ -151,7 +151,7 @@ func setSystemUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1
 // - If the globalRestricted annotation does not exist, then check if the PSP exists and
 //   if it doesn't, create it. Check if the associated role and bindings exist and
 //   if they do, delete them.
-func setPSPs() func(context.Context, <-chan struct{}, string) error {
+func setPSPs(cisMode bool) func(context.Context, <-chan struct{}, string) error {
 	return func(ctx context.Context, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
 		go func() {
 			<-apiServerReady
