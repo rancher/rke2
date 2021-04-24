@@ -5,7 +5,7 @@ import (
 
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/rke2/pkg/rke2"
-	"github.com/rancher/rke2/pkg/util"
+	"github.com/rancher/wrangler/pkg/slice"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
@@ -22,11 +22,10 @@ var (
 
 	serverFlag = []cli.Flag{
 		&cli.StringFlag{
-			Name:        "cni",
-			Usage:       "(networking) CNI Plugin to deploy, one of none, " + strings.Join(CNIItems, ", "),
-			EnvVar:      "RKE2_CNI",
-			Destination: &config.CNI,
-			Value:       "canal",
+			Name:   "cni",
+			Usage:  "(networking) CNI Plugin to deploy, one of none, " + strings.Join(CNIItems, ", "),
+			EnvVar: "RKE2_CNI",
+			Value:  "canal",
 		},
 	}
 
@@ -147,7 +146,7 @@ func validateCNI(clx *cli.Context) {
 	switch {
 	case cni == "none":
 		fallthrough
-	case util.ContainsString(CNIItems, cni):
+	case slice.ContainsString(CNIItems, cni):
 		for _, d := range CNIItems {
 			if cni != d {
 				clx.Set("disable", "rke2-"+d)
