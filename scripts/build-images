@@ -8,14 +8,12 @@ source ./scripts/version.sh
 ./scripts/build-image-kubernetes
 ./scripts/build-image-runtime
 
-echo "${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}" > build/images.txt
-echo "${REGISTRY}/${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}" >> build/images.txt
+echo "${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}" > build/images-core.txt
+echo "${REGISTRY}/${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}" >> build/images-core.txt
 
-xargs -n1 -t docker image pull --quiet << EOF >> build/images.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.13.3-${IMAGE_BUILD_VERSION}
+xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-coredns:v1.6.9-${IMAGE_BUILD_VERSION}
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-${IMAGE_BUILD_VERSION}
-    ${REGISTRY}/rancher/hardened-flannel:v0.13.0-rancher1-${IMAGE_BUILD_VERSION}
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.3.6-${IMAGE_BUILD_VERSION}
     ${REGISTRY}/rancher/hardened-kube-proxy:${KUBERNETES_VERSION}-build20210419
     ${REGISTRY}/rancher/klipper-helm:v0.4.3-build20210225
@@ -24,12 +22,40 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images.txt
     ${REGISTRY}/rancher/nginx-ingress-controller:nginx-0.30.0-rancher1
 EOF
 
+xargs -n1 -t docker image pull --quiet << EOF >> build/images-canal.txt
+    ${REGISTRY}/rancher/hardened-calico:v3.13.3-${IMAGE_BUILD_VERSION}
+    ${REGISTRY}/rancher/hardened-flannel:v0.13.0-rancher1-${IMAGE_BUILD_VERSION}
+EOF
+
+xargs -n1 -t docker image pull --quiet << EOF >> build/images-cilium.txt
+    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.9.4
+    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.9.4
+    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.9.4
+    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.9.4
+    ${REGISTRY}/rancher/mirrored-cilium-startup-script:62bfbe88c17778aad7bef9fa57ff9e2d4a9ba0d8
+EOF
+
+xargs -n1 -t docker image pull --quiet << EOF >> build/images-vsphere.txt
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-cpi-release-manager:v1.2.1
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v2.1.0
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v2.1.0
+    ${REGISTRY}/rancher/mirrored-k8scsi-csi-attacher:v3.0.0
+    ${REGISTRY}/rancher/mirrored-k8scsi-csi-node-driver-registrar:v2.0.1
+    ${REGISTRY}/rancher/mirrored-k8scsi-csi-provisioner:v2.0.0
+    ${REGISTRY}/rancher/mirrored-k8scsi-csi-resizer:v1.0.0
+    ${REGISTRY}/rancher/mirrored-k8scsi-livenessprobe:v2.1.0
+EOF
+
 # We reorder the tar file so that the metadata files are at the start of the archive, which should make loading
 # the runtime image faster. By default `docker image save` puts these at the end of the archive, which means the entire
 # tarball needs to be read even if you're just loading a single image.
-docker image save --output build/images/${PROG}-airgap.tar.tmp $(<build/images.txt)
-bsdtar -c -f build/images/${PROG}-airgap.tar --include=manifest.json --include=repositories @build/images/${PROG}-airgap.tar.tmp
-bsdtar -r -f build/images/${PROG}-airgap.tar --exclude=manifest.json --exclude=repositories @build/images/${PROG}-airgap.tar.tmp
-rm -f build/images/${PROG}-airgap.tar.tmp
+for FILE in build/images-*.txt; do
+    BASE=$(basename ${FILE} .txt)
+    DEST=build/images/${PROG}-${BASE}.tar
+    docker image save --output ${DEST}.tmp $(<${FILE})
+    bsdtar -c -f ${DEST} --include=manifest.json --include=repositories @${DEST}.tmp
+    bsdtar -r -f ${DEST} --exclude=manifest.json --exclude=repositories @${DEST}.tmp
+    rm -f ${DEST}.tmp
+done
 
 ./scripts/build-image-test

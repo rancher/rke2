@@ -3,7 +3,7 @@
 cd $(dirname $0)/..
 
 EXITCODE=0
-for IMAGE in $(cat build/images.txt); do
+for IMAGE in $(cat build/images-*.txt); do
   echo -e "\nScanning ${IMAGE}"
   trivy image \
     --format json \
