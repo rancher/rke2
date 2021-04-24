@@ -27,12 +27,10 @@ import (
 
 type Config struct {
 	AuditPolicyFile     string
-	CNI                 string
 	CloudProviderConfig string
 	CloudProviderName   string
 	Images              images.ImageOverrideConfig
 	KubeletPath         string
-	Profile             string
 }
 
 const (

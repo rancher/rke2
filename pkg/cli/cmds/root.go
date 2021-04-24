@@ -13,7 +13,7 @@ import (
 	"github.com/rancher/k3s/pkg/version"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/rke2"
-	"github.com/rancher/rke2/pkg/util"
+	"github.com/rancher/wrangler/pkg/slice"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
@@ -83,10 +83,9 @@ var (
 			Destination: &config.CloudProviderConfig,
 		},
 		&cli.StringFlag{
-			Name:        "profile",
-			Usage:       "(security) Validate system configuration against the selected benchmark (valid items: " + rke2.CISProfile15 + ", " + rke2.CISProfile16 + " )",
-			EnvVar:      "RKE2_CIS_PROFILE",
-			Destination: &config.Profile,
+			Name:   "profile",
+			Usage:  "(security) Validate system configuration against the selected benchmark (valid items: " + rke2.CISProfile15 + ", " + rke2.CISProfile16 + " )",
+			EnvVar: "RKE2_CIS_PROFILE",
 		},
 		&cli.StringFlag{
 			Name:        "audit-policy-file",
@@ -207,7 +206,7 @@ func validateCloudProviderName(clx *cli.Context) {
 	if cloudProvider == "vsphere" {
 		clx.Set("cloud-provider-name", "external")
 	} else {
-		if util.ContainsString(clx.FlagNames(), "disable") {
+		if slice.ContainsString(clx.FlagNames(), "disable") {
 			clx.Set("disable", "rancher-vsphere-cpi")
 			clx.Set("disable", "rancher-vsphere-csi")
 		}
