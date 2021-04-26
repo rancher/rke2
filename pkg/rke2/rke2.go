@@ -87,7 +87,6 @@ func EtcdSnapshot(clx *cli.Context, cfg Config) error {
 
 func setup(clx *cli.Context, cfg Config) error {
 	dataDir := clx.String("data-dir")
-	privateRegistry := clx.String("private-registry")
 	disableETCD := clx.Bool("disable-etcd")
 
 	auditPolicyFile := clx.String("audit-policy-file")
@@ -115,7 +114,7 @@ func setup(clx *cli.Context, cfg Config) error {
 		clx.Set("airgap-extra-registry", cfg.Images.SystemDefaultRegistry)
 	}
 
-	execPath, err := bootstrap.Stage(dataDir, privateRegistry, resolver)
+	execPath, err := bootstrap.Stage(clx, resolver)
 	if err != nil {
 		return err
 	}
