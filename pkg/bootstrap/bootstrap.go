@@ -32,11 +32,22 @@ import (
 	"github.com/rancher/wrangler/pkg/merr"
 	"github.com/rancher/wrangler/pkg/schemes"
 	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-var releasePattern = regexp.MustCompile("^v[0-9]")
+var (
+	releasePattern = regexp.MustCompile("^v[0-9]")
+	flagsToValues  = map[string]string{
+		"cluster-cidr":            "global.clusterCIDR",
+		"cluster-dns":             "global.clusterDNS",
+		"cluster-domain":          "global.clusterDomain",
+		"data-dir":                "global.rke2DataDir",
+		"service-cidr":            "global.serviceCIDR",
+		"system-default-registry": "global.systemDefaultRegistry",
+	}
+)
 
 const (
 	bufferSize    = 4096
@@ -85,7 +96,9 @@ func dirExists(dir string) bool {
 // Unique image detection is accomplished by hashing the image name and tag, or the image digest,
 // depending on what the runtime image reference points at.
 // If the bin directory already exists, or content is successfully extracted, the bin directory path is returned.
-func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, error) {
+func Stage(clx *cli.Context, resolver *images.Resolver) (string, error) {
+	dataDir := clx.String("data-dir")
+	privateRegistry := clx.String("private-registry")
 	var img v1.Image
 
 	ref, err := resolver.GetReference(images.Runtime)
@@ -152,18 +165,10 @@ func Stage(dataDir, privateRegistry string, resolver *images.Resolver) (string, 
 		return "", errors.Wrap(err, "failed to copy runtime charts")
 	}
 
-	// Ensure that we inject the default value into helm charts as an empty string, to avoid breaking
-	// things for users that are not setting system-default-registry on the CLI in but instead set
-	// image.repository in the Helm Chart values.
-	systemDefaultRegistry := resolver.Registry.Name()
-	if systemDefaultRegistry == name.DefaultRegistry {
-		systemDefaultRegistry = ""
-	}
-
 	// Fix up HelmCharts to pass through configured values.
 	// This needs to be done every time in order to sync values from the CLI
-	if err := setChartValues(dataDir, systemDefaultRegistry); err != nil {
-		return "", errors.Wrap(err, "failed to set system-default-registry on HelmCharts")
+	if err := setChartValues(manifestsDir, clx); err != nil {
+		return "", errors.Wrap(err, "failed to rewrite HelmChart manifests to pass through CLI values")
 	}
 
 	// ignore errors on symlink rewrite
@@ -391,10 +396,8 @@ func preloadFile(imageTag name.Tag, fileName string) (v1.Image, error) {
 // pass through settings to both the Helm job and the chart values.
 // NOTE: This will probably fail if any manifest contains multiple documents. This should
 // not matter for any of our packaged components, but may prevent this from working on user manifests.
-func setChartValues(dataDir string, systemDefaultRegistry string) error {
+func setChartValues(manifestsDir string, clx *cli.Context) error {
 	serializer := json.NewSerializerWithOptions(json.DefaultMetaFactory, schemes.All, schemes.All, json.SerializerOptions{Yaml: true, Pretty: true, Strict: true})
-	manifestsDir := manifestsDir(dataDir)
-
 	files := map[string]os.FileInfo{}
 	if err := filepath.Walk(manifestsDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -416,7 +419,7 @@ func setChartValues(dataDir string, systemDefaultRegistry string) error {
 
 	var errs []error
 	for fileName, info := range files {
-		if err := rewriteChart(fileName, info, dataDir, systemDefaultRegistry, serializer); err != nil {
+		if err := rewriteChart(fileName, info, clx, serializer); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -426,7 +429,7 @@ func setChartValues(dataDir string, systemDefaultRegistry string) error {
 // rewriteChart applies dataDir and systemDefaultRegistry settings to the file at fileName with associated info.
 // If the file cannot be decoded as a HelmChart, it is silently skipped. Any other IO error is considered
 // a failure.
-func rewriteChart(fileName string, info os.FileInfo, dataDir, systemDefaultRegistry string, serializer *json.Serializer) error {
+func rewriteChart(fileName string, info os.FileInfo, clx *cli.Context, serializer *json.Serializer) error {
 	chartChanged := false
 
 	bytes, err := ioutil.ReadFile(fileName)
@@ -455,18 +458,27 @@ func rewriteChart(fileName string, info os.FileInfo, dataDir, systemDefaultRegis
 		chart.Spec.Set = map[string]intstr.IntOrString{}
 	}
 
-	if chart.Spec.Set["global.rke2DataDir"].StrVal != dataDir {
-		chart.Spec.Set["global.rke2DataDir"] = intstr.FromString(dataDir)
-		chartChanged = true
-	}
-
-	if chart.Spec.Set["global.systemDefaultRegistry"].StrVal != systemDefaultRegistry {
-		chart.Spec.Set["global.systemDefaultRegistry"] = intstr.FromString(systemDefaultRegistry)
-		chartChanged = true
+	for cliKey, chartKey := range flagsToValues {
+		chartVal, chartSet := chart.Spec.Set[chartKey]
+		if clx.IsSet(cliKey) {
+			// if set on the CLI, ensure that the chart value matches
+			cliVal := clx.String(cliKey)
+			if chartVal.StrVal != cliVal {
+				chart.Spec.Set[chartKey] = intstr.FromString(cliVal)
+				chartChanged = true
+			}
+		} else {
+			// if not set on the CLI, ensure that it is not set on the chart either
+			if chartSet {
+				delete(chart.Spec.Set, chartKey)
+				chartChanged = true
+				continue
+			}
+		}
 	}
 
 	jobImage := helm.DefaultJobImage
-	if systemDefaultRegistry != "" {
+	if systemDefaultRegistry := clx.String("system-default-registry"); systemDefaultRegistry != "" {
 		jobImage = systemDefaultRegistry + "/" + helm.DefaultJobImage
 	}
 
