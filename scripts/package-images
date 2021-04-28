@@ -7,7 +7,7 @@ source ./scripts/version.sh
 
 mkdir -p dist/artifacts
 
-for FILE in build/images-*.txt; do
+for FILE in build/images*.txt; do
     BASE=$(basename ${FILE} .txt)
     TARFILE=build/images/${PROG}-${BASE}.tar
     cp -f ${FILE} dist/artifacts/${PROG}-${BASE}.${PLATFORM}.txt
