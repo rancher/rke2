@@ -26,7 +26,7 @@ RKE2 brings together a number of Open Source technologies to make this all work:
 - [etcd][io-etcd]
 - [runc][gh-runc]
 - [containerd][io-containerd]/[cri][gh-cri-api]
-- [CNI][gh-cni]: Canal a.k.a. [Calico][org-projectcalico] &amp; [Flannel][gh-flannel]
+- [CNI][gh-cni]: Canal ([Calico][org-projectcalico] &amp; [Flannel][gh-flannel]) or [Cilium][io-cilium]
 - [CoreDNS][io-coredns]
 - [NGINX Ingress Controller][io-ingress-nginx]
 - [Metrics Server][gh-metrics-server]
@@ -122,7 +122,7 @@ to connect to the `kube-apiserver` and begin their processing.
 
 On server nodes, the `helm-controller` can now apply to the cluster any [charts](../charts/) found in `/var/lib/rancher/rke2/server/manifests`.
 
-- rke2-canal.yaml (daemonset, bootstrap)
+- rke2-canal.yaml or rke2-cilium.yaml (daemonset, bootstrap)
 - rke2-coredns.yaml (deployment, bootstrap)
 - rke2-ingress-nginx.yaml (deployment)
 - rke2-kube-proxy.yaml (daemonset, bootstrap)
@@ -152,6 +152,7 @@ The RKE2 process will now run indefinitely until it receives a SIGTERM or SIGKIL
 [gh-metrics-server]: <https://github.com/kubernetes-sigs/metrics-server> "Cluster-wide aggregator of resource usage data"
 [org-projectcalico]: <https://docs.projectcalico.org/about/about-calico> "Project Calico"
 [gh-flannel]: <https://github.com/coreos/flannel> "A network fabric for containers, designed for Kubernetes"
+[io-cilium]: <https://cilium.io> "eBPF-based Networking, Observability, and Security"
 [gh-etcd]: <https://github.com/etcd-io/etcd> "A distributed, reliable key-value store for the most critical data of a distributed system"
 [io-etcd]: <https://etcd.io> "A distributed, reliable key-value store for the most critical data of a distributed system"
 [gh-helm]: <https://github.com/helm/helm> "The Kubernetes Package Manager"
