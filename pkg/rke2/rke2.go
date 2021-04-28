@@ -43,7 +43,6 @@ const (
 	CISProfile15           = "cis-1.5"
 	CISProfile16           = "cis-1.6"
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
-	defaultPodManifestPath = "pod-manifests"
 )
 
 func Server(clx *cli.Context, cfg Config) error {
@@ -182,7 +181,7 @@ func setup(clx *cli.Context, cfg Config) error {
 }
 
 func podManifestsDir(dataDir string) string {
-	return filepath.Join(dataDir, "agent", defaultPodManifestPath)
+	return filepath.Join(dataDir, "agent", config.DefaultPodManifestPath)
 }
 
 func removeOldPodManifests(dataDir string, disabledItems map[string]bool) error {
@@ -191,11 +190,13 @@ func removeOldPodManifests(dataDir string, disabledItems map[string]bool) error 
 	kubeletErr := make(chan error)
 	containerdErr := make(chan error)
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), (5 * time.Minute))
+	defer cancel()
 
+	manifestDir := podManifestsDir(dataDir)
 	for component, disabled := range disabledItems {
 		if disabled {
-			manifestName := filepath.Join(podManifestsDir(dataDir), component+".yaml")
+			manifestName := filepath.Join(manifestDir, component+".yaml")
 			if _, err := os.Stat(manifestName); err == nil {
 				kubeletStandAlone = true
 				if err := os.Remove(manifestName); err != nil {
@@ -218,14 +219,6 @@ func removeOldPodManifests(dataDir string, disabledItems map[string]bool) error 
 		// check for any running containers from the disabled items list
 		go checkForRunningContainers(ctx, tmpAddress, disabledItems, kubeletErr, containerdErr)
 
-		go func() {
-			// kill both temp processes after 5 minutes anyway
-			time.Sleep(5 * time.Minute)
-			logrus.Info("Timeout reached, exiting kubelet and containerd")
-			kubeletErr <- fmt.Errorf("timeout reached")
-			containerdErr <- fmt.Errorf("timeout reached")
-		}()
-
 		for {
 			time.Sleep(5 * time.Second)
 			select {
@@ -237,6 +230,11 @@ func removeOldPodManifests(dataDir string, disabledItems map[string]bool) error 
 
 			case err := <-containerdErr:
 				logrus.Infof("Containerd Exited: %v, exiting kubelet", err)
+				kubeletCmd.Process.Kill()
+				containerdCmd.Process.Kill()
+
+			case <-ctx.Done():
+				logrus.Info("Timeout reached, exiting kubelet and containerd")
 				kubeletCmd.Process.Kill()
 				containerdCmd.Process.Kill()
 			}
