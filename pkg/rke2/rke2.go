@@ -206,8 +206,8 @@ func removeOldPodManifests(dataDir string, disabledItems map[string]bool) error 
 		}
 	}
 	if kubeletStandAlone {
-		kubeletCmd := exec.Command("kubelet")
-		containerdCmd := exec.Command("containerd")
+		kubeletCmd := exec.CommandContext(ctx, "kubelet")
+		containerdCmd := exec.CommandContext(ctx, "containerd")
 
 		tmpAddress := filepath.Join(os.TempDir(), "containerd.sock")
 
@@ -307,7 +307,7 @@ func checkForRunningContainers(ctx context.Context, tmpAddress string, disabledI
 		for item, disabled := range disabledItems {
 			if disabled {
 				if isContainerRunning(ctx, item, resp) {
-					logrus.Infof("old static pod %s is running, waiting to delete", item)
+					logrus.Infof("Waiting for deletion of %s static pod", item)
 					gc = true
 					break
 				}
@@ -318,8 +318,8 @@ func checkForRunningContainers(ctx context.Context, tmpAddress string, disabledI
 		}
 		// if all disabled items containers has been removed
 		// then terminate kubelet and containerd
-		containerdErr <- fmt.Errorf("static pods deleted exiting containerd")
-		kubeletErr <- fmt.Errorf("static pods deleted exiting kubelet")
+		containerdErr <- fmt.Errorf("static pods deleted")
+		kubeletErr <- fmt.Errorf("static pods deleted")
 		break
 	}
 }
