@@ -212,9 +212,9 @@ func removeOldPodManifests(dataDir string, disabledItems map[string]bool) error 
 		tmpAddress := filepath.Join(os.TempDir(), "containerd.sock")
 
 		// start containerd
-		go startContainerd(ctx, dataDir, containerdErr, tmpAddress, containerdCmd)
+		go startContainerd(dataDir, containerdErr, tmpAddress, containerdCmd)
 		// start kubelet
-		go startKubelet(ctx, dataDir, kubeletErr, tmpAddress, kubeletCmd)
+		go startKubelet(dataDir, kubeletErr, tmpAddress, kubeletCmd)
 
 		// check for any running containers from the disabled items list
 		go checkForRunningContainers(ctx, tmpAddress, disabledItems, kubeletErr, containerdErr)
@@ -250,7 +250,7 @@ func isCISMode(clx *cli.Context) bool {
 	return profile == CISProfile15 || profile == CISProfile16
 }
 
-func startKubelet(ctx context.Context, dataDir string, errChan chan error, tmpAddress string, cmd *exec.Cmd) {
+func startKubelet(dataDir string, errChan chan error, tmpAddress string, cmd *exec.Cmd) {
 	logrus.Infof("starting kubelet to clean up old static pods")
 	args := []string{
 		"--fail-swap-on=false",
@@ -266,7 +266,7 @@ func startKubelet(ctx context.Context, dataDir string, errChan chan error, tmpAd
 	errChan <- cmd.Run()
 }
 
-func startContainerd(ctx context.Context, dataDir string, errChan chan error, tmpAddress string, cmd *exec.Cmd) {
+func startContainerd(dataDir string, errChan chan error, tmpAddress string, cmd *exec.Cmd) {
 	args := []string{
 		"-a", tmpAddress,
 		"--root", filepath.Join(dataDir, "agent", "containerd"),
