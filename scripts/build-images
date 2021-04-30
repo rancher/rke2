@@ -37,6 +37,16 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-startup-script:62bfbe88c17778aad7bef9fa57ff9e2d4a9ba0d8
 EOF
 
+xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
+    ${REGISTRY}/rancher/mirrored-calico-operator:v1.15.1
+    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.18.1
+    ${REGISTRY}/calico/kube-controllers:v3.18.1
+    ${REGISTRY}/calico/typha:v3.18.1
+    ${REGISTRY}/calico/node:v3.18.1
+    ${REGISTRY}/calico/pod2daemon-flexvol:v3.18.1
+    ${REGISTRY}/calico/cni:v3.18.1
+EOF
+
 xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-cpi-release-manager:v1.2.1
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v2.1.0

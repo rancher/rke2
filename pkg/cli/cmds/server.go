@@ -16,7 +16,7 @@ const (
 
 var (
 	DisableItems = []string{"rke2-coredns", "rke2-ingress-nginx", "rke2-kube-proxy", "rke2-metrics-server"}
-	CNIItems     = []string{"canal", "cilium"}
+	CNIItems     = []string{"calico", "canal", "cilium"}
 
 	config = rke2.Config{}
 
@@ -150,6 +150,7 @@ func validateCNI(clx *cli.Context) {
 		for _, d := range CNIItems {
 			if cni != d {
 				clx.Set("disable", "rke2-"+d)
+				clx.Set("disable", "rke2-"+d+"-crd")
 			}
 		}
 	default:
