@@ -488,9 +488,15 @@ export -f provision-cluster
 
 provision-registry-proxy() {
     set -e -o pipefail
+    local image="docker.io/library/registry:2.7.1"
+    local prefix="docker-registry-"
+    local registries="docker.io:registry-1.docker.io k8s.gcr.io gcr.io quay.io ghcr.io"
     local registries_yaml="$TEST_DIR/registries.yaml"
+    local seeder_registry="[https://seeder.int.rancher.io:5000/]"
+    local docker_info_registry_config=$(docker info --format '{{ .RegistryConfig.Mirrors  }}')
 
-    cat << EOF > $registries_yaml
+    if [ "${seeder_registry}" == "${docker_info_registry_config}" ]; then
+        cat << EOF > $registries_yaml
 mirrors:
   docker.io:
     endpoint:
@@ -508,7 +514,35 @@ mirrors:
     endpoint:
     - https://seeder.int.rancher.io:5005
 EOF
+    else
+        echo "mirrors:" > $registries_yaml
 
+        for registry in $registries; do
+            IFS=: read registry_name registry_endpoint <<< $registry
+            if [ -z "$registry_endpoint" ]; then
+                registry_endpoint=$registry_name
+            fi
+
+            local name="registry_${registry_name//./_}"
+            local status=$(docker inspect $name --format '{{ .State.Status }} {{ .Config.Image }} {{ (index .HostConfig.PortBindings "5000/tcp" 0).HostPort }}' 2>/dev/null || true)
+
+            read state_status config_image hostport <<< $status
+            if [ "$state_status" != "running" ] || [ "$config_image" != "$image" ]; then
+                hostport=$(timeout --foreground 5s bash -c get-port)
+                docker rm --force $name 2>/dev/null || true
+                docker run \
+                    -d --name $name \
+                    -p 0.0.0.0:$hostport:5000 \
+                    -v "registry-cache:/var/lib/registry" \
+                    -e "REGISTRY_HTTP_SECRET=shared-secret" \
+                    -e "REGISTRY_PROXY_REMOTEURL=https://$registry_endpoint" \
+                    -e "REGISTRY_STORAGE_CACHE_BLOBDESCRIPTOR=inmemory" \
+                    -e "REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/var/lib/registry/$registry_name" \
+                    $image
+            fi
+            echo -e "  $registry_name:\n    endpoint:\n    - http://172.17.0.1:$hostport" >> $registries_yaml
+        done
+    fi
     echo "Using registry mirror with cluster registries.yaml:"
     cat $registries_yaml
 
