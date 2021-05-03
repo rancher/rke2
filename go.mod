@@ -61,7 +61,7 @@ require (
 	github.com/klauspost/compress v1.11.7
 	github.com/pierrec/lz4 v2.5.2+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.1-0.20210501013842-259d7ce6558c
+	github.com/rancher/k3s v1.21.1-0.20210501033840-245efe0d6658
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.8.1
@@ -72,5 +72,6 @@ require (
 	k8s.io/apimachinery v0.21.0
 	k8s.io/apiserver v0.21.0
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
+	k8s.io/cri-api v0.21.0
 	sigs.k8s.io/yaml v1.2.0
 )
