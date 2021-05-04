@@ -11,6 +11,6 @@ for FILE in build/images*.txt; do
     BASE=$(basename ${FILE} .txt)
     TARFILE=build/images/${PROG}-${BASE}.tar
     cp -f ${FILE} dist/artifacts/${PROG}-${BASE}.${PLATFORM}.txt
-    zstd -T0 -16 -f --long=25 ${TARFILE} -o dist/artifacts/${PROG}-${BASE}.${PLATFORM}.tar.zst
+    zstd -T0 -16 -f --long=25 --no-progress ${TARFILE} -o dist/artifacts/${PROG}-${BASE}.${PLATFORM}.tar.zst
     gzip -v -c ${TARFILE} > dist/artifacts/${PROG}-${BASE}.${PLATFORM}.tar.gz
 done
