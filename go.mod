@@ -13,7 +13,7 @@ replace (
 	github.com/docker/libnetwork => github.com/docker/libnetwork v0.8.0-dev.2.0.20190624125649-f0e46a78ea34
 	github.com/golang/protobuf => github.com/k3s-io/protobuf v1.4.3-k3s1
 	github.com/juju/errors => github.com/k3s-io/nocode v0.0.0-20200630202308-cb097102c09f
-	github.com/k3s-io/helm-controller => github.com/k3s-io/helm-controller v0.8.4
+	github.com/k3s-io/helm-controller => github.com/k3s-io/helm-controller v0.9.0
 	github.com/kubernetes-sigs/cri-tools => github.com/k3s-io/cri-tools v1.21.0-k3s1
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc93.0.20210414171415-3397a09ee932
@@ -57,7 +57,7 @@ require (
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e
 	github.com/frankban/quicktest v1.12.0 // indirect
 	github.com/google/go-containerregistry v0.4.2-0.20210316173552-70c58c0e4786
-	github.com/k3s-io/helm-controller v0.8.4
+	github.com/k3s-io/helm-controller v0.9.0
 	github.com/klauspost/compress v1.11.7
 	github.com/pierrec/lz4 v2.5.2+incompatible
 	github.com/pkg/errors v0.9.1
@@ -65,7 +65,7 @@ require (
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/urfave/cli v1.22.2
+	github.com/urfave/cli v1.22.5
 	google.golang.org/grpc v1.37.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.21.0
