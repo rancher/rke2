@@ -101,6 +101,7 @@ func setup(clx *cli.Context, cfg Config) error {
 	disableScheduler := clx.Bool("disable-scheduler")
 	disableAPIServer := clx.Bool("disable-api-server")
 	disableControllerManager := clx.Bool("disable-controller-manager")
+	clusterReset := clx.Bool("cluster-reset")
 
 	auditPolicyFile := clx.String("audit-policy-file")
 	if auditPolicyFile == "" {
@@ -181,14 +182,14 @@ func setup(clx *cli.Context, cfg Config) error {
 		"kube-controller-manager": disableControllerManager,
 		"etcd":                    disableETCD,
 	}
-	return removeOldPodManifests(dataDir, disabledItems)
+	return removeOldPodManifests(dataDir, disabledItems, clusterReset)
 }
 
 func podManifestsDir(dataDir string) string {
 	return filepath.Join(dataDir, "agent", config.DefaultPodManifestPath)
 }
 
-func removeOldPodManifests(dataDir string, disabledItems map[string]bool) error {
+func removeOldPodManifests(dataDir string, disabledItems map[string]bool, clusterReset bool) error {
 	var kubeletStandAlone bool
 
 	kubeletErr := make(chan error)
@@ -207,6 +208,17 @@ func removeOldPodManifests(dataDir string, disabledItems map[string]bool) error 
 					return err
 				}
 			}
+		}
+	}
+	if clusterReset {
+		// deleting old etcd if cluster reset is passed
+		manifestName := filepath.Join(manifestDir, "etcd.yaml")
+		if _, err := os.Stat(manifestName); err == nil {
+			kubeletStandAlone = true
+			if err := os.Remove(manifestName); err != nil {
+				return err
+			}
+			disabledItems["etcd"] = true
 		}
 	}
 	if kubeletStandAlone {

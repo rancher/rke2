@@ -63,7 +63,7 @@ require (
 	github.com/klauspost/compress v1.11.7
 	github.com/pierrec/lz4 v2.5.2+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.1-0.20210501033840-245efe0d6658
+	github.com/rancher/k3s v1.21.1-0.20210505154004-f410fc7d1e95
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.8.1
