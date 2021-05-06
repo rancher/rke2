@@ -204,24 +204,25 @@ func removeOldPodManifests(dataDir string, disabledItems map[string]bool, cluste
 			manifestName := filepath.Join(manifestDir, component+".yaml")
 			if _, err := os.Stat(manifestName); err == nil {
 				kubeletStandAlone = true
-				if err := os.Remove(manifestName); err != nil {
-					return err
-				}
 			}
 		}
 	}
+
 	if clusterReset {
 		// deleting old etcd if cluster reset is passed
 		manifestName := filepath.Join(manifestDir, "etcd.yaml")
 		if _, err := os.Stat(manifestName); err == nil {
 			kubeletStandAlone = true
-			if err := os.Remove(manifestName); err != nil {
-				return err
-			}
-			disabledItems["etcd"] = true
 		}
 	}
 	if kubeletStandAlone {
+		// delete all manifests
+		for component := range disabledItems {
+			manifestName := filepath.Join(manifestDir, component+".yaml")
+			if err := os.RemoveAll(manifestName); err != nil {
+				return err
+			}
+		}
 		kubeletCmd := exec.CommandContext(ctx, "kubelet")
 		containerdCmd := exec.CommandContext(ctx, "containerd")
 
@@ -320,13 +321,11 @@ func checkForRunningContainers(ctx context.Context, tmpAddress string, disabledI
 			continue
 		}
 		var gc bool
-		for item, disabled := range disabledItems {
-			if disabled {
-				if isContainerRunning(ctx, item, resp) {
-					logrus.Infof("Waiting for deletion of %s static pod", item)
-					gc = true
-					break
-				}
+		for item, _ := range disabledItems {
+			if isContainerRunning(ctx, item, resp) {
+				logrus.Infof("Waiting for deletion of %s static pod", item)
+				gc = true
+				break
 			}
 		}
 		if gc {
