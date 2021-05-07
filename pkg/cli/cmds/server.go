@@ -21,11 +21,10 @@ var (
 	config = rke2.Config{}
 
 	serverFlag = []cli.Flag{
-		&cli.StringFlag{
+		&cli.StringSliceFlag{
 			Name:   "cni",
-			Usage:  "(networking) CNI Plugin to deploy, one of none, " + strings.Join(CNIItems, ", "),
+			Usage:  "(networking) CNI Plugins to deploy, one of none, " + strings.Join(CNIItems, ", ") + "; optionally with multus as the first value to enable the multus meta-plugin (default: canal)",
 			EnvVar: "RKE2_CNI",
-			Value:  "canal",
 		},
 	}
 
@@ -142,13 +141,38 @@ func ServerRun(clx *cli.Context) error {
 }
 
 func validateCNI(clx *cli.Context) {
-	cni := clx.String("cni")
-	switch {
-	case cni == "none":
+	cnis := []string{}
+	for _, cni := range clx.StringSlice("cni") {
+		for _, v := range strings.Split(cni, ",") {
+			cnis = append(cnis, v)
+		}
+	}
+
+	switch len(cnis) {
+	case 0:
+		cnis = append(cnis, "canal")
 		fallthrough
-	case slice.ContainsString(CNIItems, cni):
+	case 1:
+		if cnis[0] == "multus" {
+			logrus.Fatal("invalid value provided for --cni flag: multus must be used alongside another primary cni selection")
+		}
+		clx.Set("disable", "rke2-multus")
+	case 2:
+		if cnis[0] == "multus" {
+			cnis = cnis[:1]
+		} else {
+			logrus.Fatal("invalid values provided for --cni flag: may only provide multiple values if multus is the first value")
+		}
+	default:
+		logrus.Fatal("invalid values provided for --cni flag: may not provide more than two values")
+	}
+
+	switch {
+	case cnis[0] == "none":
+		fallthrough
+	case slice.ContainsString(CNIItems, cnis[0]):
 		for _, d := range CNIItems {
-			if cni != d {
+			if cnis[0] != d {
 				clx.Set("disable", "rke2-"+d)
 				clx.Set("disable", "rke2-"+d+"-crd")
 			}

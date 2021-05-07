@@ -58,6 +58,17 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-k8scsi-livenessprobe:v2.1.0
 EOF
 
+xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
+    ${REGISTRY}/rancher/hardened-multus-cni:v3.7.1-build20210416
+    ${REGISTRY}/rancher/hardened-sriov-network-operator:v1.0.0-build20210429
+    ${REGISTRY}/rancher/hardened-sriov-network-config-daemon:v1.0.0-build20210429
+    ${REGISTRY}/rancher/hardened-sriov-network-device-plugin:v3.3.1-build20210310
+    ${REGISTRY}/rancher/hardened-sriov-cni:v2.6-build20210310
+    ${REGISTRY}/rancher/hardened-ib-sriov-cni:v1.0.0-build20210310
+    ${REGISTRY}/rancher/hardened-sriov-network-resources-injector:v1-build20210310
+    ${REGISTRY}/rancher/hardened-sriov-network-webhook:v1.0.0-build20210429
+EOF
+
 # Continue to provide a legacy airgap archive set with the default CNI images
 cat build/images-core.txt build/images-canal.txt > build/images.txt
 
