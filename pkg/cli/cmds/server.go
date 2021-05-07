@@ -159,7 +159,7 @@ func validateCNI(clx *cli.Context) {
 		clx.Set("disable", "rke2-multus")
 	case 2:
 		if cnis[0] == "multus" {
-			cnis = cnis[:1]
+			cnis = cnis[1:]
 		} else {
 			logrus.Fatal("invalid values provided for --cni flag: may only provide multiple values if multus is the first value")
 		}
