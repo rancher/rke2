@@ -13,11 +13,11 @@ replace (
 	github.com/docker/libnetwork => github.com/docker/libnetwork v0.8.0-dev.2.0.20190624125649-f0e46a78ea34
 	github.com/golang/protobuf => github.com/k3s-io/protobuf v1.4.3-k3s1
 	github.com/juju/errors => github.com/k3s-io/nocode v0.0.0-20200630202308-cb097102c09f
-	github.com/k3s-io/helm-controller => github.com/k3s-io/helm-controller v0.9.0
 	github.com/kubernetes-sigs/cri-tools => github.com/k3s-io/cri-tools v1.21.0-k3s1
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc93.0.20210414171415-3397a09ee932
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20210316141917-a8c4a9ee0f6b
+	github.com/rancher/wharfie => github.com/rancher/wharfie v0.3.5
 	go.etcd.io/etcd => github.com/k3s-io/etcd v0.5.0-alpha.5.0.20201208200253-50621aee4aea
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 	google.golang.org/grpc => google.golang.org/grpc v1.27.1
@@ -55,19 +55,16 @@ replace (
 
 require (
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e
-	github.com/frankban/quicktest v1.12.0 // indirect
-	github.com/google/go-containerregistry v0.4.2-0.20210316173552-70c58c0e4786
-	github.com/k3s-io/helm-controller v0.9.0
-	github.com/klauspost/compress v1.11.7
-	github.com/pierrec/lz4 v2.5.2+incompatible
+	github.com/google/go-containerregistry v0.5.0
+	github.com/k3s-io/helm-controller v0.9.1
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.1-0.20210510220633-948295e8e842
+	github.com/rancher/k3s v1.21.1-0.20210513091809-079620ded0c0
+	github.com/rancher/wharfie v0.3.5
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.5
 	google.golang.org/grpc v1.37.0
-	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.21.0
 	k8s.io/apimachinery v0.21.0
 	k8s.io/apiserver v0.21.0
