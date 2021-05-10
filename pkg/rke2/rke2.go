@@ -23,7 +23,6 @@ import (
 	"github.com/rancher/k3s/pkg/daemons/executor"
 	"github.com/rancher/k3s/pkg/etcd"
 	rawServer "github.com/rancher/k3s/pkg/server"
-	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
@@ -46,7 +45,7 @@ const (
 )
 
 func Server(clx *cli.Context, cfg Config) error {
-	if err := setup(clx, cfg); err != nil {
+	if err := setup(clx, cfg, true); err != nil {
 		return err
 	}
 
@@ -80,7 +79,7 @@ func Server(clx *cli.Context, cfg Config) error {
 }
 
 func Agent(clx *cli.Context, cfg Config) error {
-	if err := setup(clx, cfg); err != nil {
+	if err := setup(clx, cfg, false); err != nil {
 		return err
 	}
 	return agent.Run(clx)
@@ -91,7 +90,7 @@ func EtcdSnapshot(clx *cli.Context, cfg Config) error {
 	return etcdsnapshot.Run(clx)
 }
 
-func setup(clx *cli.Context, cfg Config) error {
+func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	dataDir := clx.String("data-dir")
 	disableETCD := clx.Bool("disable-etcd")
 	disableScheduler := clx.Bool("disable-scheduler")
@@ -104,32 +103,15 @@ func setup(clx *cli.Context, cfg Config) error {
 		auditPolicyFile = defaultAuditPolicyFile
 	}
 
+	// This flag will only be set on servers, on agents this is a no-op and the
+	// resolver's default registry will get updated later when bootstrapping
+	cfg.Images.SystemDefaultRegistry = clx.String("system-default-registry")
 	resolver, err := images.NewResolver(cfg.Images)
 	if err != nil {
 		return err
 	}
 
-	pauseImage, err := resolver.GetReference(images.Pause)
-	if err != nil {
-		return err
-	}
-
-	if err := defaults.Set(clx, pauseImage, dataDir); err != nil {
-		return err
-	}
-
-	// If system-default-registry is set, add the same value to airgap-extra-registry so that images
-	// imported from tarballs are tagged to appear to come from the same registry.
-	if cfg.Images.SystemDefaultRegistry != "" {
-		clx.Set("airgap-extra-registry", cfg.Images.SystemDefaultRegistry)
-	}
-
-	execPath, err := bootstrap.Stage(clx, resolver)
-	if err != nil {
-		return err
-	}
-
-	if err := os.Setenv("PATH", execPath+":"+os.Getenv("PATH")); err != nil {
+	if err := defaults.Set(clx, dataDir); err != nil {
 		return err
 	}
 
@@ -169,6 +151,7 @@ func setup(clx *cli.Context, cfg Config) error {
 		AuditPolicyFile: auditPolicyFile,
 		KubeletPath:     cfg.KubeletPath,
 		DisableETCD:     disableETCD,
+		IsServer:        isServer,
 	}
 	executor.Set(&sp)
 
