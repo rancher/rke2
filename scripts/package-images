@@ -14,3 +14,5 @@ for FILE in build/images*.txt; do
     zstd -T0 -16 -f --long=25 --no-progress ${TARFILE} -o dist/artifacts/${PROG}-${BASE}.${PLATFORM}.tar.zst
     gzip -v -c ${TARFILE} > dist/artifacts/${PROG}-${BASE}.${PLATFORM}.tar.gz
 done
+
+cat build/images*.txt | sort -V | uniq > dist/artifacts/${PROG}-images-all.${PLATFORM}.txt
