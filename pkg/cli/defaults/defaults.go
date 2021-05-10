@@ -5,14 +5,13 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/pkg/errors"
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/urfave/cli"
 	"google.golang.org/grpc/grpclog"
 )
 
-func Set(clx *cli.Context, pauseImage name.Reference, dataDir string) error {
+func Set(clx *cli.Context, dataDir string) error {
 	logsDir := filepath.Join(dataDir, "agent", "logs")
 	if err := os.MkdirAll(logsDir, 0755); err != nil {
 		return errors.Wrapf(err, "failed to create directory %s", logsDir)
@@ -27,7 +26,6 @@ func Set(clx *cli.Context, pauseImage name.Reference, dataDir string) error {
 	cmds.ServerConfig.APIServerPort = 6443
 	cmds.ServerConfig.APIServerBindAddress = "0.0.0.0"
 	cmds.ServerConfig.DisableKubeProxy = true
-	cmds.AgentConfig.PauseImage = pauseImage.Name()
 	cmds.AgentConfig.NoFlannel = true
 	cmds.ServerConfig.ExtraAPIArgs = append(
 		[]string{

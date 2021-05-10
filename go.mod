@@ -14,11 +14,11 @@ replace (
 	github.com/docker/libnetwork => github.com/docker/libnetwork v0.8.0-dev.2.0.20190624125649-f0e46a78ea34
 	github.com/golang/protobuf => github.com/golang/protobuf v1.3.5
 	github.com/juju/errors => github.com/k3s-io/nocode v0.0.0-20200630202308-cb097102c09f
-	github.com/kubernetes-sigs/cri-tools => github.com/rancher/cri-tools v1.19.0-k3s1
+	github.com/kubernetes-sigs/cri-tools => github.com/k3s-io/cri-tools v1.21.0-k3s1
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
-	github.com/moby/sys/mountinfo => github.com/moby/sys/mountinfo v0.1.3
-	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc92
-	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20200728170252-4d89ac9fbff6
+	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc93.0.20210414171415-3397a09ee932
+	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20210316141917-a8c4a9ee0f6b
+	github.com/rancher/wharfie => github.com/rancher/wharfie v0.3.5
 	go.etcd.io/etcd => github.com/k3s-io/etcd v0.5.0-alpha.5.0.20201208200253-50621aee4aea
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200224152610-e50cd9704f63
 	google.golang.org/grpc => google.golang.org/grpc v1.27.1
@@ -58,19 +58,17 @@ require (
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e
 	github.com/google/go-containerregistry v0.5.0
 	github.com/k3s-io/helm-controller v0.9.1
-	github.com/klauspost/compress v1.12.2
-	github.com/pierrec/lz4 v2.6.0+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.1-0.20210512220011-24474c57341c
+	github.com/rancher/k3s v1.21.1-0.20210513091809-079620ded0c0
+	github.com/rancher/wharfie v0.3.5
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.2
 	google.golang.org/grpc v1.37.0
-	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v1.20.5
-	k8s.io/apimachinery v1.20.5
-	k8s.io/apiserver v1.20.0
+	k8s.io/api v0.21.0
+	k8s.io/apimachinery v0.21.0
+	k8s.io/apiserver v0.21.0
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/cri-api v0.21.0
 	sigs.k8s.io/yaml v1.2.0
