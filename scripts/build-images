@@ -20,8 +20,8 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-kube-proxy:${KUBERNETES_VERSION}-build20210413
     ${REGISTRY}/rancher/klipper-helm:v0.5.0-build20210505
     ${REGISTRY}/rancher/pause:${PAUSE_VERSION}
-    ${REGISTRY}/rancher/nginx-ingress-controller-defaultbackend:1.5-rancher1
-    ${REGISTRY}/rancher/nginx-ingress-controller:nginx-0.30.0-rancher1
+    ${REGISTRY}/rancher/mirrored-jettech-kube-webhook-certgen:v1.5.1
+    ${REGISTRY}/rancher/nginx-ingress-controller:nginx-0.46.0-rancher1
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
