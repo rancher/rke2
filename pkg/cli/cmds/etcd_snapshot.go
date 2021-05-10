@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	k3sEtcdSnapshotBase = mustCmdFromK3S(cmds.NewEtcdSnapshotCommand(EtcdSnapshotRun), map[string]*K3SFlagOption{
+	k3sEtcdSnapshotBase = mustCmdFromK3S(cmds.NewEtcdSnapshotCommand(EtcdSnapshotRun, []cli.Command{}), map[string]*K3SFlagOption{
 		"debug":           copy,
 		"log":             copy,
 		"alsologtostderr": copy,
