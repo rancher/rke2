@@ -804,8 +804,8 @@ github.com/quobyte/api v0.1.8/go.mod h1:jL7lIHrmqQ7yh05OJ+eEEdHr0u/kmT1Ff9iHd+4H
 github.com/rancher/cri-tools v1.19.0-k3s1/go.mod h1:bitvtZRi5F7t505Yw3zPzp22LOao1lqJKHfx6x0hnpw=
 github.com/rancher/dynamiclistener v0.2.3 h1:FHn0Gkx+kIUqsFs3zMMR2QC9ufH/AoBLqO5zH5hbtqw=
 github.com/rancher/dynamiclistener v0.2.3/go.mod h1:9WusTANoiRr8cDWCTtf5txieulezHbpv4vhLADPp0zU=
-github.com/rancher/k3s v1.21.1-0.20210505154004-f410fc7d1e95 h1:8nAKED+GQnRzeBCeMoBHvjeghkLNGagOm/x+S4Er1Cs=
-github.com/rancher/k3s v1.21.1-0.20210505154004-f410fc7d1e95/go.mod h1:Iw1ZUukfS3dxh70NmdO8xD3jvRaip0ZCaQ+gqphLEDo=
+github.com/rancher/k3s v1.21.1-0.20210510220633-948295e8e842 h1:9IQqFi1WpYrUM/cHbNip+eywfa1NFEIVD8M/QFRey6o=
+github.com/rancher/k3s v1.21.1-0.20210510220633-948295e8e842/go.mod h1:Iw1ZUukfS3dxh70NmdO8xD3jvRaip0ZCaQ+gqphLEDo=
 github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009/go.mod h1:wpITyDPTi/Na5h73XkbuEf2AP9fbgrIGqqxVzFhYD6U=
 github.com/rancher/remotedialer v0.2.0 h1:xD7t3K6JYwTdAsxmGtTHQMkEkFgKouQ1foLxVW424Dc=
 github.com/rancher/remotedialer v0.2.0/go.mod h1:tkU8ZvrR5lRgaKWaX71nAy6daeqvPFx/lJEnbW7tXSI=
