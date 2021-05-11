@@ -11,7 +11,6 @@ all_services=(
     kube-scheduler
     metrics-server
     rke2-ingress-nginx-controller
-    rke2-ingress-nginx-default-backend
 )
 
 export NUM_SERVERS=1
