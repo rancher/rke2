@@ -1,6 +1,6 @@
 ARG KUBERNETES_VERSION=dev
 # Build environment
-FROM rancher/hardened-build-base:v1.16.2b7 AS build
+FROM rancher/hardened-build-base:v1.16.4b7 AS build
 RUN set -x \
  && apk --no-cache add \
     bash \
