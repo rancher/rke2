@@ -15,7 +15,7 @@ steps:
     GCLOUD_AUTH:
       from_secret: gcloud_auth
   commands:
-  - docker pull --quiet rancher/hardened-build-base:v1.16.2b7
+  - docker pull --quiet rancher/hardened-build-base:v1.16.4b7
   - dapper -f Dockerfile --target dapper make dapper-ci
   volumes:
   - name: docker
@@ -65,7 +65,7 @@ steps:
     - refs/tags/*
 
 - name: publish-image-kubernetes
-  image: rancher/hardened-build-base:v1.16.2b7
+  image: rancher/hardened-build-base:v1.16.4b7
   commands:
   - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
   - DRONE_TAG=${DRONE_TAG} make publish-image-kubernetes
@@ -87,7 +87,7 @@ steps:
     - refs/tags/*
 
 - name: publish-image-runtime
-  image: rancher/hardened-build-base:v1.16.2b7
+  image: rancher/hardened-build-base:v1.16.4b7
   commands:
   - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
   - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
@@ -124,7 +124,7 @@ platform:
 
 steps:
 - name: go-mod-tidy
-  image: rancher/hardened-build-base:v1.16.2b7
+  image: rancher/hardened-build-base:v1.16.4b7
   commands:
   - go mod tidy
   - git diff --exit-code
@@ -148,7 +148,7 @@ platform:
 
 steps:
 - name: manifest-runtime
-  image: rancher/hardened-build-base:v1.16.2b7
+  image: rancher/hardened-build-base:v1.16.4b7
   commands:
   - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
   - DRONE_TAG=${DRONE_TAG} make publish-manifest-runtime
@@ -170,7 +170,7 @@ steps:
     - refs/tags/*
 
 - name: manifest-kubernetes
-  image: rancher/hardened-build-base:v1.16.2b7
+  image: rancher/hardened-build-base:v1.16.4b7
   commands:
   - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
   - DRONE_TAG=${DRONE_TAG} make publish-manifest-kubernetes
