@@ -76,7 +76,7 @@ var (
 		"disable-cloud-controller":    copy,
 		"disable-network-policy":      drop,
 		"disable-kube-proxy":          drop,
-		"disable-api-server":          copy,
+		"disable-apiserver":           copy,
 		"disable-controller-manager":  copy,
 		"disable-etcd":                copy,
 		"etcd-disable-snapshots":      copy,

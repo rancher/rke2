@@ -95,7 +95,7 @@ func setup(clx *cli.Context, cfg Config) error {
 	dataDir := clx.String("data-dir")
 	disableETCD := clx.Bool("disable-etcd")
 	disableScheduler := clx.Bool("disable-scheduler")
-	disableAPIServer := clx.Bool("disable-api-server")
+	disableAPIServer := clx.Bool("disable-apiserver")
 	disableControllerManager := clx.Bool("disable-controller-manager")
 	clusterReset := clx.Bool("cluster-reset")
 
