@@ -699,6 +699,8 @@ github.com/rancher/go-powershell v0.0.0-20200701184732-233247d45373 h1:BePi97poJ
 github.com/rancher/go-powershell v0.0.0-20200701184732-233247d45373/go.mod h1:Vz8oLnHgttpo/aZrTpjbcpZEDzzElqNau2zmorToY0E=
 github.com/rancher/k3s v1.19.11-0.20210416091524-72e8196c9b9e h1:A/DJ+TXeep/NSllCvVN7JsDOtbkJPL7zDQIpsapxyBY=
 github.com/rancher/k3s v1.19.11-0.20210416091524-72e8196c9b9e/go.mod h1:+5pgHiZuiFi/IEz5wWKVZB+895FrnHVOgU9rGyHXasA=
+github.com/rancher/k3s v1.19.11-0.20210512222549-519651b65342 h1:22M9svu0mdNcSDrTJRjNQ0I2ePJbPRwcuB6kUmpBFW8=
+github.com/rancher/k3s v1.19.11-0.20210512222549-519651b65342/go.mod h1:+5pgHiZuiFi/IEz5wWKVZB+895FrnHVOgU9rGyHXasA=
 github.com/rancher/kine v0.5.1 h1:pBAD9LVU3oCuRWzY6lKEVqhNi1nZlJV3bbD4G2mrE1c=
 github.com/rancher/kine v0.5.1/go.mod h1:NoqDMfN0Q+Wu23Kk3MfXfgLO2fE6abLaetejZs9HAYo=
 github.com/rancher/kubernetes v1.19.0-k3s1 h1:TPFj4qlQgZ2E9xE/ScFLtBQoymxPNCXAYHJpSZYRW3o=
