@@ -26,6 +26,7 @@ var (
 		"s3-bucket":          copy,
 		"s3-region":          copy,
 		"s3-folder":          copy,
+		"node-name":          copy,
 	})
 )
 
