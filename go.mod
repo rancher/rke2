@@ -14,7 +14,6 @@ replace (
 	github.com/docker/libnetwork => github.com/docker/libnetwork v0.8.0-dev.2.0.20190624125649-f0e46a78ea34
 	github.com/golang/protobuf => github.com/golang/protobuf v1.3.5
 	github.com/juju/errors => github.com/k3s-io/nocode v0.0.0-20200630202308-cb097102c09f
-	github.com/k3s-io/helm-controller => github.com/k3s-io/helm-controller v0.8.4
 	github.com/kubernetes-sigs/cri-tools => github.com/rancher/cri-tools v1.19.0-k3s1
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
 	github.com/moby/sys/mountinfo => github.com/moby/sys/mountinfo v0.1.3
@@ -57,13 +56,12 @@ replace (
 
 require (
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e
-	github.com/frankban/quicktest v1.11.3 // indirect
-	github.com/google/go-containerregistry v0.4.2-0.20210316173552-70c58c0e4786
-	github.com/k3s-io/helm-controller v0.8.4
-	github.com/klauspost/compress v1.11.7
-	github.com/pierrec/lz4 v2.5.2+incompatible
+	github.com/google/go-containerregistry v0.5.0
+	github.com/k3s-io/helm-controller v0.9.1
+	github.com/klauspost/compress v1.12.2
+	github.com/pierrec/lz4 v2.6.0+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.1-0.20210510220633-948295e8e842
+	github.com/rancher/k3s v1.21.1-0.20210512220011-24474c57341c
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.8.1
