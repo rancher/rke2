@@ -142,7 +142,7 @@ RUN rm -vf /charts/*.sh /charts/*.md
 FROM rancher/k3s:v1.18.18-k3s1 AS k3s
 FROM rancher/hardened-containerd:v1.3.10-k3s4-build20210401 AS containerd
 FROM rancher/hardened-crictl:v1.18.0 AS crictl
-FROM rancher/hardened-runc:v1.0.0-rc94-build20210511 AS runc
+FROM rancher/hardened-runc:v1.0.0-rc95-build20210519 AS runc
 
 FROM scratch AS runtime
 COPY --from=k3s \
