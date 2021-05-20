@@ -39,7 +39,7 @@ const (
 // the associated role and rolebinding.
 func setGlobalUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1.Namespace) error {
 	if _, ok := ns.Annotations[namespaceAnnotationGlobalUnrestricted]; !ok {
-		if _, err := cs.RbacV1().ClusterRoles().Get(ctx, globalUnrestrictedPSPName, metav1.GetOptions{}); err != nil {
+		if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(ctx, globalUnrestrictedPSPName, metav1.GetOptions{}); err != nil {
 			if apierrors.IsNotFound(err) {
 				logrus.Infof("Setting PSP: %s", globalUnrestrictedPSPName)
 				tmpl := fmt.Sprintf(globalUnrestrictedPSPTemplate, globalUnrestrictedPSPName)
@@ -81,7 +81,7 @@ func setGlobalUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1
 // the associated role and rolebinding.
 func setSystemUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1.Namespace) error {
 	if _, ok := ns.Annotations[namespaceAnnotationSystemUnrestricted]; !ok {
-		if _, err := cs.RbacV1().ClusterRoles().Get(ctx, systemUnrestrictedPSPName, metav1.GetOptions{}); err != nil {
+		if _, err := cs.PolicyV1beta1().PodSecurityPolicies().Get(ctx, systemUnrestrictedPSPName, metav1.GetOptions{}); err != nil {
 			if apierrors.IsNotFound(err) {
 				logrus.Infof("Setting PSP: %s", systemUnrestrictedPSPName)
 				tmpl := fmt.Sprintf(systemUnrestrictedPSPTemplate, systemUnrestrictedPSPName)
