@@ -88,6 +88,7 @@ func (s *StaticPodConfig) KubeProxy(args []string) error {
 
 // APIServer sets up the apiserver static pod once etcd is available, returning the authenticator and request handler.
 func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) (authenticator.Request, http.Handler, error) {
+	args = append([]string{"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}, args...)
 	auditLogFile := filepath.Join(s.DataDir, "server/logs/audit.log")
 	if s.CloudProvider != nil {
 		extraArgs := []string{
