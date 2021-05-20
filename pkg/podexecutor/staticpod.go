@@ -135,6 +135,7 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 		return nil, nil, err
 	}
 
+	args = append([]string{"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}, args...)
 	auditLogFile := filepath.Join(s.DataDir, "server/logs/audit.log")
 	if s.CloudProvider != nil {
 		extraArgs := []string{
