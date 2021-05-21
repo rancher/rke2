@@ -7,6 +7,8 @@ import (
 	"github.com/urfave/cli"
 )
 
+const defaultSnapshotRentention = 5
+
 var k3sFlags = map[string]*K3SFlagOption{
 	"debug":           copy,
 	"log":             copy,
@@ -31,12 +33,41 @@ var k3sFlags = map[string]*K3SFlagOption{
 
 var subcommands = []cli.Command{
 	{
+		Name:            "delete",
+		Usage:           "Delete given snapshot(s)",
+		SkipFlagParsing: false,
+		SkipArgReorder:  true,
+		Action:          etcdsnapshot.Delete,
+		Flags:           cmds.EtcdSnapshotFlags,
+	},
+	{
 		Name:            "ls",
 		Aliases:         []string{"list", "l"},
 		Usage:           "List snapshots",
 		SkipFlagParsing: false,
 		SkipArgReorder:  true,
 		Action:          etcdsnapshot.List,
+		Flags:           cmds.EtcdSnapshotFlags,
+	},
+	{
+		Name:            "prune",
+		Usage:           "Remove snapshots that exceed the configured retention count",
+		SkipFlagParsing: false,
+		SkipArgReorder:  true,
+		Action:          etcdsnapshot.Prune,
+		Flags: append(cmds.EtcdSnapshotFlags, &cli.IntFlag{
+			Name:        "snapshot-retention",
+			Usage:       "(db) Number of snapshots to retain. Default: 5",
+			Destination: &cmds.ServerConfig.EtcdSnapshotRetention,
+			Value:       defaultSnapshotRentention,
+		}),
+	},
+	{
+		Name:            "save",
+		Usage:           "Trigger an immediate etcd snapshot",
+		SkipFlagParsing: false,
+		SkipArgReorder:  true,
+		Action:          etcdsnapshot.Run,
 		Flags:           cmds.EtcdSnapshotFlags,
 	},
 }
