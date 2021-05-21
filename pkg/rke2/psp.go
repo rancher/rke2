@@ -37,17 +37,17 @@ const (
 
 // setGlobalUnrestricted sets the global unrestricted podSecurityPolicy with
 // the associated role and rolebinding.
-func setGlobalUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1.Namespace) error {
+func setGlobalUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1.Namespace) (bool, error) {
 	if _, ok := ns.Annotations[namespaceAnnotationGlobalUnrestricted]; !ok {
 		if _, err := cs.RbacV1().ClusterRoles().Get(ctx, globalUnrestrictedPSPName, metav1.GetOptions{}); err != nil {
 			if apierrors.IsNotFound(err) {
 				logrus.Infof("Setting PSP: %s", globalUnrestrictedPSPName)
 				tmpl := fmt.Sprintf(globalUnrestrictedPSPTemplate, globalUnrestrictedPSPName)
 				if err := deployPodSecurityPolicyFromYaml(ctx, cs, tmpl); err != nil {
-					return err
+					return false, err
 				}
 			} else {
-				return err
+				return false, err
 			}
 		}
 		if _, err := cs.RbacV1().ClusterRoles().Get(ctx, globalUnrestrictedRoleName, metav1.GetOptions{}); err != nil {
@@ -55,10 +55,10 @@ func setGlobalUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1
 				logrus.Infof("Setting Cluster Role: %s", globalUnrestrictedRoleName)
 				tmpl := fmt.Sprintf(roleTemplate, globalUnrestrictedRoleName, globalUnrestrictedPSPName)
 				if err := deployClusterRoleFromYaml(ctx, cs, tmpl); err != nil {
-					return err
+					return false, err
 				}
 			} else {
-				return err
+				return false, err
 			}
 		}
 		if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, globalUnrestrictedRoleBindingName, metav1.GetOptions{}); err != nil {
@@ -66,30 +66,31 @@ func setGlobalUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1
 				logrus.Infof("Setting Cluster RoleBinding: %s", globalUnrestrictedRoleBindingName)
 				tmpl := fmt.Sprintf(globalUnrestrictedRoleBindingTemplate, globalUnrestrictedRoleBindingName, globalUnrestrictedRoleName)
 				if err := deployClusterRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
-					return err
+					return false, err
 				}
 			} else {
-				return err
+				return false, err
 			}
 		}
 		ns.Annotations[namespaceAnnotationGlobalUnrestricted] = cisAnnotationValue
+		return true, nil
 	}
-	return nil
+	return false, nil
 }
 
 // setSystemUnrestricted sets the system unrestricted podSecurityPolicy as
 // the associated role and rolebinding.
-func setSystemUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1.Namespace) error {
+func setSystemUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1.Namespace) (bool, error) {
 	if _, ok := ns.Annotations[namespaceAnnotationSystemUnrestricted]; !ok {
 		if _, err := cs.RbacV1().ClusterRoles().Get(ctx, systemUnrestrictedPSPName, metav1.GetOptions{}); err != nil {
 			if apierrors.IsNotFound(err) {
 				logrus.Infof("Setting PSP: %s", systemUnrestrictedPSPName)
 				tmpl := fmt.Sprintf(systemUnrestrictedPSPTemplate, systemUnrestrictedPSPName)
 				if err := deployPodSecurityPolicyFromYaml(ctx, cs, tmpl); err != nil {
-					return err
+					return false, err
 				}
 			} else {
-				return err
+				return false, err
 			}
 		}
 		if _, err := cs.RbacV1().ClusterRoles().Get(ctx, systemUnrestrictedRoleName, metav1.GetOptions{}); err != nil {
@@ -97,10 +98,10 @@ func setSystemUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1
 				logrus.Infof("Setting Cluster Role: %s", systemUnrestrictedRoleName)
 				tmpl := fmt.Sprintf(roleTemplate, systemUnrestrictedRoleName, systemUnrestrictedPSPName)
 				if err := deployClusterRoleFromYaml(ctx, cs, tmpl); err != nil {
-					return err
+					return false, err
 				}
 			} else {
-				return err
+				return false, err
 			}
 		}
 		if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, systemUnrestrictedRoleBindingName, metav1.GetOptions{}); err != nil {
@@ -108,25 +109,26 @@ func setSystemUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1
 				logrus.Infof("Setting Cluster RoleBinding: %s", systemUnrestrictedRoleBindingName)
 				tmpl := fmt.Sprintf(systemUnrestrictedNodesRoleBindingTemplate, systemUnrestrictedRoleBindingName, systemUnrestrictedRoleName)
 				if err := deployClusterRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
-					return err
+					return false, err
 				}
 			} else {
-				return err
+				return false, err
 			}
 		}
 		if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, systemUnrestrictedSvcAcctRoleBindingName, metav1.GetOptions{}); err != nil {
 			if apierrors.IsNotFound(err) {
 				logrus.Infof("Setting Cluster RoleBinding: %s", systemUnrestrictedSvcAcctRoleBindingName)
 				if err := deployRoleBindingFromYaml(ctx, cs, systemUnrestrictedServiceAcctRoleBindingTemplate); err != nil {
-					return err
+					return false, err
 				}
 			} else {
-				return err
+				return false, err
 			}
 		}
 		ns.Annotations[namespaceAnnotationSystemUnrestricted] = cisAnnotationValue
+		return true, nil
 	}
-	return nil
+	return false, nil
 }
 
 // setPSPs sets the default PSP's based on the mode that RKE2 is running in. There is either CIS or non
@@ -157,6 +159,7 @@ func setPSPs() func(context.Context, <-chan struct{}, string) error {
 			<-apiServerReady
 			logrus.Info("Applying Pod Security Policies")
 
+			nsChanged := false
 			cs, err := newClient(kubeConfigAdmin, nil)
 			if err != nil {
 				logrus.Fatalf("psp: new k8s client: %s", err.Error())
@@ -168,15 +171,20 @@ func setPSPs() func(context.Context, <-chan struct{}, string) error {
 			}
 			if ns.Annotations == nil {
 				ns.Annotations = make(map[string]string)
+				nsChanged = true
 			}
 
 			if !cisMode { // non-CIS mode
-				if err := setGlobalUnrestricted(ctx, cs, ns); err != nil {
+				if changed, err := setGlobalUnrestricted(ctx, cs, ns); err != nil {
 					logrus.Fatalf("psp: set globalUnrestricted: %s", err.Error())
+				} else if changed {
+					nsChanged = true
 				}
 
-				if err := setSystemUnrestricted(ctx, cs, ns); err != nil {
+				if changed, err := setSystemUnrestricted(ctx, cs, ns); err != nil {
 					logrus.Fatalf("psp: set systemUnrestricted: %s", err.Error())
+				} else if changed {
+					nsChanged = true
 				}
 
 				if _, ok := ns.Annotations[namespaceAnnotationGlobalRestricted]; !ok {
@@ -227,6 +235,7 @@ func setPSPs() func(context.Context, <-chan struct{}, string) error {
 						}
 					}
 					ns.Annotations[namespaceAnnotationGlobalRestricted] = cisAnnotationValue
+					nsChanged = true
 				}
 
 				if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, nodeClusterRoleBindingName, metav1.GetOptions{}); err != nil {
@@ -268,10 +277,13 @@ func setPSPs() func(context.Context, <-chan struct{}, string) error {
 						}
 					}
 					ns.Annotations[namespaceAnnotationGlobalRestricted] = cisAnnotationValue
+					nsChanged = true
 				}
 
-				if err := setSystemUnrestricted(ctx, cs, ns); err != nil {
+				if changed, err := setSystemUnrestricted(ctx, cs, ns); err != nil {
 					logrus.Fatalf("psp: set systemUnrestricted: %s", err.Error())
+				} else if changed {
+					nsChanged = true
 				}
 
 				if _, ok := ns.Annotations[namespaceAnnotationGlobalUnrestricted]; !ok {
@@ -318,6 +330,7 @@ func setPSPs() func(context.Context, <-chan struct{}, string) error {
 						}
 					}
 					ns.Annotations[namespaceAnnotationGlobalUnrestricted] = cisAnnotationValue
+					nsChanged = true
 				}
 
 				if _, err := cs.RbacV1().ClusterRoleBindings().Get(ctx, nodeClusterRoleBindingName, metav1.GetOptions{}); err != nil {
@@ -332,16 +345,19 @@ func setPSPs() func(context.Context, <-chan struct{}, string) error {
 				}
 			}
 
-			if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-				if err := updateNamespaceRef(ctx, cs, ns); err != nil {
+			if nsChanged {
+				logrus.Infof("Updating annotations on %s namespace", ns.Name)
+				if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+					if err := updateNamespaceRef(ctx, cs, ns); err != nil {
+						return err
+					}
+					_, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{})
 					return err
+				}); err != nil {
+					logrus.Fatalf("psp: update namespace: %s - %s", ns.Name, err.Error())
 				}
-
-				_, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{})
-				return err
-			}); err != nil {
-				logrus.Fatalf("psp: update namespace: %s - %s", ns.Name, err.Error())
 			}
+
 			logrus.Info("Pod Security Policies applied successfully")
 		}()
 		return nil
