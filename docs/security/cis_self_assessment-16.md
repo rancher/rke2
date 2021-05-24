@@ -2,13 +2,13 @@
 title: CIS Self-Assessment Guide
 ---
 
-### CIS Kubernetes Benchmark v1.5 - RKE2 v1.18
+### CIS Kubernetes Benchmark v1.6 - RKE2 v1.20
 
 #### Overview
 
 This document is a companion to the RKE2 security hardening guide. The hardening guide provides prescriptive guidance for hardening a production installation of RKE2, and this benchmark guide is meant to help you evaluate the level of security of the hardened cluster against each control in the CIS Kubernetes benchmark. It is to be used by RKE2 operators, security teams, auditors, and decision makers.
 
-This guide is specific to the **v1.18** release line of RKE2 and the **v1.5.1** release of the CIS Kubernetes Benchmark.
+This guide is specific to the **v1.20** release line of RKE2 and the **v1.6.1** release of the CIS Kubernetes Benchmark.
 
 For more detail about each control, including more detailed descriptions and remediations for failing tests, you can refer to the corresponding section of the CIS Kubernetes Benchmark v1.5. You can download the benchmark after logging in to [CISecurity.org]( https://www.cisecurity.org/benchmark/kubernetes/).
 
@@ -256,7 +256,7 @@ etcd:etcd
 ```
 
 **Remediation:**
-When running RKE2 with the `profile` flag set to `cis-1.5`, RKE2 will refuse to start if the `etcd` user and group doesn't exist on the host. If it does exist, RKE2 will automatically set the ownership of the etcd data directory to `etcd:etcd` and ensure the etcd static pod is started with that user and group.
+When running RKE2 with the `profile` flag set to `cis-1.6`, RKE2 will refuse to start if the `etcd` user and group doesn't exist on the host. If it does exist, RKE2 will automatically set the ownership of the etcd data directory to `etcd:etcd` and ensure the etcd static pod is started with that user and group.
 
 
 #### 1.1.13
@@ -1992,7 +1992,7 @@ Run the below command on the master node.
 ```
 
 **Remediation:**
-When running with the `profile` flag set to `cis-1.5`, RKE2 starts the kubelet process with the `--protect-kernel-defaults` argument set to true.
+When running with the `profile` flag set to `cis-1.6`, RKE2 starts the kubelet process with the `--protect-kernel-defaults` argument set to true.
 
 
 #### 4.2.7
@@ -2257,7 +2257,7 @@ Run the below command on the master node.
 Verify that the result is `Rule:  MustRunAsNonRoot`.
 
 **Remediation:**
-RKE2, when run with the `--profile=cis-1.5` argument, will disallow the use of privileged containers.
+RKE2, when run with the `--profile=cis-1.6` argument, will disallow the use of privileged containers.
 
 #### 5.2.2
 Minimize the admission of containers wishing to share the host process ID namespace (Automated)
@@ -2443,7 +2443,7 @@ Run the below command on the master node.
 Verify that there are no PSPs present which have `allowedCapabilities` set to anything other than an empty array.
 
 **Remediation:**
-When run with the `--profile=cis-1.5` argument RKE2 applies a PodSecurityPolicy that sets `requiredDropCapabilities` to `ALL`. No manual remediation needed.
+When run with the `--profile=cis-1.6` argument RKE2 applies a PodSecurityPolicy that sets `requiredDropCapabilities` to `ALL`. No manual remediation needed.
 
 
 #### 5.2.9
@@ -2465,7 +2465,7 @@ Run the below command on the master node.
 ```
 
 **Remediation:**
-When run with the `--profile=cis-1.5` argument RKE2 applies a PodSecurityPolicy that sets `requiredDropCapabilities` to `ALL`. No manual remediation needed.
+When run with the `--profile=cis-1.6` argument RKE2 applies a PodSecurityPolicy that sets `requiredDropCapabilities` to `ALL`. No manual remediation needed.
 
 
 ### 5.3 Network Policies and CNI
@@ -2510,7 +2510,7 @@ done
 Verify that there are network policies applied to each of the namespaces.
 
 **Remediation:**
-RKE2, when executed with the `--profile=cis-1.5` argument applies a secure network policy that only allows intra-namespace traffic and DNS to kube-system. No manual remediation needed.
+RKE2, when executed with the `--profile=cis-1.6` argument applies a secure network policy that only allows intra-namespace traffic and DNS to kube-system. No manual remediation needed.
 
 ### 5.4 Secrets Management
 
