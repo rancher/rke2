@@ -2,21 +2,21 @@
 
 This document provides prescriptive guidance for hardening a production installation of RKE2. It outlines the configurations and controls required to address Kubernetes benchmark controls from the Center for Information Security (CIS).
 
-For more detail about evaluating a hardened cluster against the official CIS benchmark, refer to the [CIS Benchmark Rancher Self-Assessment Guide](cis_self_assessment.md).
+For more detail about evaluating a hardened cluster against the official CIS benchmark, refer to the CIS Benchmark Rancher Self-Assessment Guide [v1.5](cis_self_assessment15.md) or [v1.6](cis_self_assessment16.md).
 
 RKE2 is designed to be "hardened by default" and pass the majority of the Kubernetes CIS controls without modification. There are a few notable exceptions to this that require manual intervention to fully pass the CIS Benchmark:
 
 1. RKE2 will not modify the host operating system. Therefore, you, the operator, must make a few Host-level modifications.
 2. Certain CIS policy controls for PodSecurityPolicies and NetworkPolicies will restrict the functionality of this cluster. You must opt into having RKE2 configuring these out of the box.
 
-To help ensure these above requirements are met, RKE2 can be started with the `profile` flag set to `cis-1.5`. This flag generally does two things:
+To help ensure these above requirements are met, RKE2 can be started with the `profile` flag set to `cis-1.5` or `cis-1.6`. This flag generally does two things:
 
 1. Checks that host-level requirements have been met. If they haven't, RKE2 will exit with a fatal error describing the unmet requirements.
 2. Configures runtime Pod Security Policies and Network Policies that allow the cluster to pass associated controls.
 
-> **Note:** The profile's flag only valid value is `cis-1.5`. It accepts a string value to allow for other profiles in the future.
+> **Note:** The profile's flag only valid values are `cis-1.5` or `cis-1.6`. It accepts a string value to allow for other profiles in the future.
 
-The following section outlines the specific actions that are taken when the `profile` flag is set to `cis-1.5`.
+The following section outlines the specific actions that are taken when the `profile` flag is set to `cis-1.5` or `cis-1.6`.
 
 ## Host-level Requirements
 
@@ -27,7 +27,7 @@ This is a kubelet flag that will cause the kubelet to exit if the required kerne
 
 When the `profile` flag is set, RKE2 will set the flag to true.
 
-> **Note:** `protect-kernel-defaults` is exposed a top-level flag for RKE2. If you have set `profile` to "cis-1.5" and `protect-kernel-defaults` to false explicitly, RKE2 will exit with an error.
+> **Note:** `protect-kernel-defaults` is exposed a top-level flag for RKE2. If you have set `profile` to "cis-1.x" and `protect-kernel-defaults` to false explicitly, RKE2 will exit with an error.
 
 RKE2 will also check the same kernel parameters that the kubelet does and exit with an error following the same rules as the kubelet. This is done as a convenience to help the operator more quickly and easily identify what kernel parameters are violating the kubelet defaults.
 
@@ -131,4 +131,4 @@ done
 
 ## Conclusion
 
-If you have followed this guide, your RKE2 cluster will be configured to pass the CIS Kubernetes Benchmark. You can review our [CIS Benchmark Self-Assessment Guide](cis_self_assessment.md) to understand how we verified each of the benchmarks and how you can do the same on your cluster.
+If you have followed this guide, your RKE2 cluster will be configured to pass the CIS Kubernetes Benchmark. You can review our CIS Benchmark Self-Assessment Guide [v1.5](cis_self_assessment15.md) or [v1.6](cis_self_assessment16.md) to understand how we verified each of the benchmarks and how you can do the same on your cluster.

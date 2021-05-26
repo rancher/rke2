@@ -41,7 +41,8 @@ nav:
     - upgrade/automated_upgrade.md
   - Security:
     - security/hardening_guide.md
-    - security/cis_self_assessment.md
+    - security/cis_self_assessment15.md
+    - security/cis_self_assessment16.md
     - security/fips_support.md
     - security/policies.md
     - security/selinux.md
