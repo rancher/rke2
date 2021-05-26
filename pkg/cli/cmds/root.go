@@ -179,10 +179,10 @@ func setCISFlags(clx *cli.Context) error {
 	return clx.Set(pkdFlagName, "true")
 }
 
-func validateProfile(clx *cli.Context) {
+func validateProfile(clx *cli.Context, nodeType string) {
 	switch clx.String("profile") {
 	case rke2.CISProfile15, rke2.CISProfile16:
-		if err := validateCISReqs("server"); err != nil {
+		if err := validateCISReqs(nodeType); err != nil {
 			logrus.Fatal(err)
 		}
 		if err := setCISFlags(clx); err != nil {
