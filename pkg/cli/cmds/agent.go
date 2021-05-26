@@ -67,6 +67,6 @@ func NewAgentCommand() cli.Command {
 
 func AgentRun(clx *cli.Context) error {
 	validateCloudProviderName(clx)
-	validateProfile(clx)
+	validateProfile(clx, "agent")
 	return rke2.Agent(clx, config)
 }
