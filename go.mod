@@ -59,17 +59,17 @@ require (
 	github.com/google/go-containerregistry v0.5.0
 	github.com/k3s-io/helm-controller v0.9.2
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.1-0.20210513091809-079620ded0c0
+	github.com/rancher/k3s v1.21.1-rc1.0.20210519025830-ecbf17e2ede8
 	github.com/rancher/wharfie v0.3.5
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.5
 	google.golang.org/grpc v1.37.0
-	k8s.io/api v0.21.0
-	k8s.io/apimachinery v0.21.0
-	k8s.io/apiserver v0.21.0
+	k8s.io/api v0.21.1
+	k8s.io/apimachinery v0.21.1
+	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/cri-api v0.21.0
+	k8s.io/cri-api v0.21.1
 	sigs.k8s.io/yaml v1.2.0
 )
