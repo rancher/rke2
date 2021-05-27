@@ -1,5 +1,5 @@
 ---
-title: CIS v1.5 Self-Assessment Guide
+title: CIS 1.5 Self-Assessment
 ---
 
 ### CIS Kubernetes Benchmark v1.5 - RKE2 v1.18
