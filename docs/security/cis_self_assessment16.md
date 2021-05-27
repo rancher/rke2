@@ -1643,7 +1643,7 @@ Ensure that a minimal audit policy is created (Automated)
 Logging is an important detective control for all systems, to detect potential unauthorised access.
 </details>
 
-**Result:** Does not pass. See the [known issue](hardening_guide.md#control-321) for details.
+**Result:** Pass
 
 **Audit:**
 Run the below command on the master node.
@@ -1652,7 +1652,7 @@ Run the below command on the master node.
 /bin/ps -ef | grep kube-apiserver | grep -v grep
 ```
 
-Verify that the `--audit-policy-file` is set. Review the contents of the file specified and ensure that it contains avalid audit policy.
+Verify that the `--audit-policy-file` is set. Review the contents of the file specified and ensure that it contains a valid audit policy.
 
 **Remediation:**
 Create an audit policy file for your cluster.

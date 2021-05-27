@@ -92,15 +92,6 @@ The NetworkPolicy used will only allow pods within the same namespace to talk to
 ## Known Issues
 The following are controls that RKE2 currently does not pass. Each gap will be explained and whether it can be passed through manual operator intervention or if it will be addressed in a future release.
 
-### Control 3.2.1
-Ensure that a minimal audit policy is created (Scored)
-<details>
-<summary>Rationale</summary>
-Logging is an important detective control for all systems, to detect potential unauthorised access.
-</details>
-
-RKE2 supports configuring audit logging by passing `--profile=cis-1.5`. It enables a default policy which doesn't log anything. To configure a customize policy, you should pass the `--audit-policy-file` argument to the RKE2 server process. This argument specifies the path for audit logging policy configuration. For more information about the logging policy, you can checkout the [official docs](https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#audit-policy).
-
 ### Control 5.1.5
 Ensure that default service accounts are not actively used. (Scored)
 <details>
