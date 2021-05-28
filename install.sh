@@ -26,6 +26,10 @@ fi
 #     Type of rke2 service. Can be either "server" or "agent".
 #     Default is "server".
 #
+#   - INSTALL_RKE2_EXEC
+#     This is an alias for INSTALL_RKE2_TYPE, included for compatibility with K3s.
+#     If both are set, INSTALL_RKE2_TYPE is preferred.
+#
 #   - INSTALL_RKE2_VERSION
 #     Version of rke2 to download from github.
 #
@@ -102,7 +106,7 @@ setup_env() {
 
     # --- make sure install type has a value
     if [ -z "${INSTALL_RKE2_TYPE}" ]; then
-        INSTALL_RKE2_TYPE="server"
+        INSTALL_RKE2_TYPE="${INSTALL_RKE2_EXEC:-server}"
     fi
 
     # --- use yum install method if available by default
