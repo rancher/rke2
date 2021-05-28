@@ -2,6 +2,9 @@
 kind: pipeline
 type: docker
 name: build-amd64
+node:
+  org: "rancher"
+  repo: "rke2"
 
 platform:
   os: linux
@@ -117,6 +120,10 @@ volumes:
 kind: pipeline
 type: docker
 name: check
+node:
+  org: "rancher"
+  repo: "rke2"
+
 
 platform:
   os: linux
@@ -141,6 +148,9 @@ volumes:
 kind: pipeline
 type: docker
 name: manifest
+node:
+  org: "rancher"
+  repo: "rke2"
 
 platform:
   os: linux
@@ -204,6 +214,9 @@ depends_on:
 kind: pipeline
 type: docker
 name: dispatch
+node:
+  org: "rancher"
+  repo: "rke2"
 
 platform:
   os: linux
