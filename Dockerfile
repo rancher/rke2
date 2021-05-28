@@ -2,7 +2,7 @@ ARG KUBERNETES_VERSION=dev
 # Build environment
 FROM rancher/hardened-build-base:v1.16.4b7 AS build
 RUN set -x \
- && apk --no-cache add \
+    && apk --no-cache add \
     bash \
     curl \
     file \
@@ -21,19 +21,19 @@ ENV DAPPER_DOCKER_SOCKET true
 ENV DAPPER_TARGET dapper
 ENV DAPPER_RUN_ARGS "--privileged --network host -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy"
 RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
-        VERSION=0.19.0 OS=linux && \
-        curl -sL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
-        tar -xzf - -C /usr/local/bin; \
-   fi
+    VERSION=0.19.0 OS=linux && \
+    curl -sL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
+    tar -xzf - -C /usr/local/bin; \
+    fi
 RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
-            curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt \
-        )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
+    curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+    )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
     chmod a+x /usr/local/bin/kubectl; \
     pip install codespell
 
 RUN curl -sL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.27.0
 RUN set -x \
- && apk --no-cache add \
+    && apk --no-cache add \
     libarchive-tools \
     zstd \
     jq \
@@ -54,7 +54,7 @@ WORKDIR /source
 # Shell used for debugging
 FROM dapper AS shell
 RUN set -x \
- && apk --no-cache add \
+    && apk --no-cache add \
     bash-completion \
     iptables \
     less \
@@ -129,15 +129,15 @@ ARG CHART_REPO="https://rke2-charts.rancher.io"
 ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
-RUN CHART_VERSION="1.9.604"                   CHART_FILE=/charts/rke2-cilium.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="1.9.607"                   CHART_FILE=/charts/rke2-cilium.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="v3.13.300-build2021022306" CHART_FILE=/charts/rke2-canal.yaml          CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="v3.18.1-103"               CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="v1.0.003"                  CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="1.10.101-build2021022303"  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="v3.19.1-105"               CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="v1.0.005"                  CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="1.10.101-build2021022304"  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="3.30.002"                  CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
 RUN CHART_VERSION="v1.21.1-build2021052004"   CHART_FILE=/charts/rke2-kube-proxy.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="2.11.100-build2021022300"  CHART_FILE=/charts/rke2-metrics-server.yaml CHART_BOOTSTRAP=false  /charts/build-chart.sh
-RUN CHART_VERSION="v3.7.1-build2021041601"    CHART_FILE=/charts/rke2-multus.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="v3.7.1-build2021041602"    CHART_FILE=/charts/rke2-multus.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.0.000"                   CHART_FILE=/charts/rancher-vsphere-cpi.yaml CHART_BOOTSTRAP=true   CHART_REPO="https://charts.rancher.io" /charts/build-chart.sh
 RUN CHART_VERSION="2.1.000"                   CHART_FILE=/charts/rancher-vsphere-csi.yaml CHART_BOOTSTRAP=true   CHART_REPO="https://charts.rancher.io" /charts/build-chart.sh
 RUN rm -vf /charts/*.sh /charts/*.md
@@ -204,10 +204,10 @@ RUN mkdir -p /etc && \
 # for conformance testing
 RUN chmod 1777 /tmp
 RUN set -x \
- && export DEBIAN_FRONTEND=noninteractive \
- && apt-get -y update \
- && apt-get -y upgrade \
- && apt-get -y install \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y update \
+    && apt-get -y upgrade \
+    && apt-get -y install \
     bash \
     bash-completion \
     ca-certificates \
