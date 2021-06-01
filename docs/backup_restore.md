@@ -33,7 +33,6 @@ When RKE2 is restored from backup, the old data directory will be moved to `/var
 To restore the cluster from backup, run RKE2 with the `--cluster-reset` option, with the `--cluster-reset-restore-path` also given:
 
 ```
-systemctl stop rke2-server
 rke2 server \
   --cluster-reset \
   --cluster-reset-restore-path=<PATH-TO-SNAPSHOT>
