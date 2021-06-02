@@ -1,5 +1,6 @@
 # RKE2
 ![RKE2](docs/assets/logo-horizontal-rke.svg)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Francher%2Frke2.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Francher%2Frke2?ref=badge_shield)
 
 RKE2, also known as RKE Government, is Rancher's next-generation Kubernetes distribution.
 
@@ -70,3 +71,7 @@ Finally, the location of the config file can be changed either through the cli a
 ## Security
 
 Security issues in RKE2 can be reported by sending an email to [security@rancher.com](mailto:security@rancher.com). Please do not open security issues here.
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Francher%2Frke2.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Francher%2Frke2?ref=badge_large)
