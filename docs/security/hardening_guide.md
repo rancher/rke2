@@ -65,8 +65,10 @@ sysctl -p /usr/local/share/rke2/rke2-cis-sysctl.conf
 ```
 
 #### Create the etcd user
+On some Linux distributions, the `useradd` command will not create a group. The `-U` flag is included below to account for that. This flag tells `useradd` to create a group with the same name as the user.
+ 
 ```bash
-useradd -r -c "etcd user" -s /sbin/nologin -M etcd
+useradd -r -c "etcd user" -s /sbin/nologin -M etcd -U
 ```
 
 ## Kubernetes Runtime Requirements
