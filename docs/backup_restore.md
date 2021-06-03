@@ -41,7 +41,7 @@ rke2 server \
 
 **Result:**  A message in the logs says that RKE2 can be restarted without the flags. Start RKE2 again and should run successfully and be restored from the specified snapshot.
 
-When rke2 resets the cluster, it creates a file at `/var/lib/rancher/rke2/server/db/etc/reset-file`. If you want to reset the cluster again, you will need to delete this file.
+When rke2 resets the cluster, it creates an empty file at `/var/lib/rancher/rke2/server/db/reset-flag`. This file is harmless to leave in place, but must be removed in order to perform subsequent resets or restores. This file is deleted when rke2 starts normally.
 
 ### Options
 
