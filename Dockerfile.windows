@@ -1,0 +1,66 @@
+FROM alpine AS build
+
+# windows runtime image
+ENV KUBERNETES_VERSION="v1.21.0"
+ENV CONTAINERD_VERSION="1.5.2"
+ENV WINS_VERSION="0.1.1"
+ENV FLANNEL_VERSION="v0.14.0"
+ENV CALICO_VERSION="v3.19.1"
+ENV CNI_PLUGIN_VERSION="v0.9.1"
+
+RUN apk --no-cache add curl unzip
+
+RUN mkdir -p rancher
+
+RUN curl -sLO https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz 
+RUN curl -sLO https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz.sha256sum 
+RUN sha256sum -c containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz.sha256sum
+
+RUN curl -sLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${KUBERNETES_VERSION}/crictl-${KUBERNETES_VERSION}-windows-amd64.tar.gz 
+RUN curl -SLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${KUBERNETES_VERSION}/crictl-${KUBERNETES_VERSION}-windows-amd64.tar.gz.sha256 
+RUN sha256sum -c ./crictl-${KUBERNETES_VERSION}-windows-amd64.tar.gz.sha256
+
+RUN curl -sLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz 
+RUN curl -sLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz.sha256 
+RUN sha256sum -c cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz.sha256
+
+RUN curl -sLO https://github.com/rancher/wins/releases/download/v${WINS_VERSION}/wins.exe
+RUN curl -sLO https://github.com/rancher/wins/releases/download/v${WINS_VERSION}/sha256sum.txt
+RUN cat sha256sum.txt | head -n1 | awk '{print $1"  wins.exe"}' >> wins.exe.sha256
+RUN sha256sum -c wins.exe.sha256
+RUN mv wins.exe rancher/
+
+RUN curl -sLO https://dl.k8s.io/release/${KUBERNETES_VERSION}/bin/windows/amd64/kubectl.exe
+RUN curl -sLO https://dl.k8s.io/${KUBERNETES_VERSION}/bin/windows/amd64/kubectl.exe.sha256
+RUN echo "  kubectl.exe" >> kubectl.exe.sha256
+RUN sha256sum -c kubectl.exe.sha256
+RUN mv kubectl.exe rancher/
+
+RUN curl -sLO https://dl.k8s.io/release/${KUBERNETES_VERSION}/bin/windows/amd64/kubelet.exe
+RUN curl -sLO https://dl.k8s.io/${KUBERNETES_VERSION}/bin/windows/amd64/kubelet.exe.sha256
+RUN echo "  kubelet.exe" >> kubelet.exe.sha256
+RUN sha256sum -c kubelet.exe.sha256
+RUN mv kubelet.exe rancher/
+
+RUN curl -sLO https://dl.k8s.io/release/${KUBERNETES_VERSION}/bin/windows/amd64/kube-proxy.exe
+RUN curl -sLO https://dl.k8s.io/${KUBERNETES_VERSION}/bin/windows/amd64/kube-proxy.exe.sha256
+RUN echo "  kube-proxy.exe" >> kube-proxy.exe.sha256
+RUN sha256sum -c kube-proxy.exe.sha256
+RUN mv kube-proxy.exe rancher/
+
+RUN curl -sLO https://github.com/flannel-io/flannel/releases/download/${FLANNEL_VERSION}/flannel-${FLANNEL_VERSION}-windows-amd64.tar.gz
+RUN curl -sLO https://github.com/projectcalico/calico/releases/download/${CALICO_VERSION}/calico-windows-${CALICO_VERSION}.zip
+RUN curl -sL https://github.com/Microsoft/SDN/raw/master/Kubernetes/windows/hns.psm1 -o rancher/hns.psm1
+
+RUN tar xzvf crictl-${KUBERNETES_VERSION}-windows-amd64.tar.gz crictl.exe -C rancher/
+RUN tar xvzf containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz -C rancher/
+RUN tar xzvf cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz ./flannel.exe ./win-overlay.exe -C rancher/
+RUN tar xzvf flannel-${FLANNEL_VERSION}-windows-amd64.tar.gz flanneld.exe -C rancher/
+
+RUN unzip calico-windows-${CALICO_VERSION}.zip
+RUN mv CalicoWindows/calico-node.exe rancher/
+RUN mv CalicoWindows/cni/calico.exe rancher/
+RUN mv CalicoWindows/cni/calico-ipam.exe rancher/
+
+FROM scratch 
+COPY --from=build ./rancher/* /bin/
