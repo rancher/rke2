@@ -30,10 +30,10 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
-    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.9.6
-    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.9.6
-    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.9.6
-    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.9.6
+    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.9.8
+    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.9.8
+    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.9.8
+    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.9.8
     ${REGISTRY}/rancher/mirrored-cilium-startup-script:62bfbe88c17778aad7bef9fa57ff9e2d4a9ba0d8
 EOF
 
