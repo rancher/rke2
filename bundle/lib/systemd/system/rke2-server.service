@@ -9,6 +9,7 @@ Conflicts=rke2-agent.service
 WantedBy=multi-user.target
 
 [Service]
+Type=notify
 EnvironmentFile=-/etc/default/%N
 EnvironmentFile=-/etc/sysconfig/%N
 EnvironmentFile=-/usr/local/lib/systemd/system/%N.env
