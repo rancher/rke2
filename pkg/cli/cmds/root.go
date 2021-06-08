@@ -197,7 +197,7 @@ func validateProfile(clx *cli.Context, nodeType string) {
 
 func validateCloudProviderName(clx *cli.Context) {
 	cloudProvider := clx.String("cloud-provider-name")
-	if cloudProvider == "vsphere" {
+	if cloudProvider == "rancher-vsphere" {
 		clx.Set("cloud-provider-name", "external")
 	} else {
 		if slice.ContainsString(clx.FlagNames(), "disable") {

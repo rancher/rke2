@@ -15,7 +15,7 @@ If running on an SELinux enforcing air-gapped node, you must first install the n
     * If using the default Canal CNI (`--cni=canal`), you can use either the `rke2-image` legacy archive as described above, or `rke2-images-core` and `rke2-images-canal` archives.
     * If using the alternative Cilium CNI (`--cni=cilium`), you must download the `rke2-images-core` and `rke2-images-cilium` archives instead.
     * If using your own CNI (`--cni=none`), you can download only the `rke2-images-core` archive.
-    * If enabling the vSphere CPI/CSI charts (`--cloud-provider-name=vsphere`), you must also download the `rke2-images-vsphere` archive.
+    * If enabling the vSphere CPI/CSI charts (`--cloud-provider-name=rancher-vsphere`), you must also download the `rke2-images-vsphere` archive.
 2. Ensure that the `/var/lib/rancher/rke2/agent/images/` directory exists on the node.
 3. Copy the compressed archive to `/var/lib/rancher/rke2/agent/images/` on the node, ensuring that the file extension is retained.
 4. [Install RKE2](#install-rke2)
