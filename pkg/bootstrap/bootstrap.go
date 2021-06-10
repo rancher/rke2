@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/containerd/continuity/fs"
@@ -129,7 +130,14 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 			multiKeychain := authn.NewMultiKeychain(kcs...)
 
 			logrus.Infof("Pulling runtime image %s", ref.Name())
-			img, err = remote.Image(registry.Rewrite(ref), remote.WithAuthFromKeychain(multiKeychain), remote.WithTransport(registry))
+			img, err = remote.Image(registry.Rewrite(ref),
+				remote.WithAuthFromKeychain(multiKeychain),
+				remote.WithTransport(registry),
+				remote.WithPlatform(v1.Platform{
+					Architecture: runtime.GOARCH,
+					OS:           runtime.GOOS,
+				}),
+			)
 			if err != nil {
 				return "", errors.Wrapf(err, "failed to get runtime image %s", ref.Name())
 			}
