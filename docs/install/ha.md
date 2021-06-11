@@ -38,7 +38,10 @@ If you do not specify a pre-shared secret, RKE2 will generate one and place it a
 
 To avoid certificate errors with the fixed registration address, you should launch the server with the `tls-san` parameter set. This option adds an additional hostname or IP as a Subject Alternative Name in the server's TLS cert, and it can be specified as a list if you would like to access via both the IP and the hostname.
 
-Here is an example of what the RKE2 config file (at `/etc/rancher/rke2/config.yaml`) would look like if you are following this guide:
+Here is an example of what the RKE2 config file (at `/etc/rancher/rke2/config.yaml`) would look like if you are following this guide.
+
+**Note** The RKE2 config file needs to be created manually. You can do that by running `touch /etc/rancher/rke2/config.yaml` as a priviledged user.
+
 ```yaml
 token: my-shared-secret
 tls-san:
