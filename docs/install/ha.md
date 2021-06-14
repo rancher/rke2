@@ -40,7 +40,7 @@ To avoid certificate errors with the fixed registration address, you should laun
 
 Here is an example of what the RKE2 config file (at `/etc/rancher/rke2/config.yaml`) would look like if you are following this guide.
 
-**Note** The RKE2 config file needs to be created manually. You can do that by running `touch /etc/rancher/rke2/config.yaml` as a priviledged user.
+**Note** The RKE2 config file needs to be created manually. You can do that by running `touch /etc/rancher/rke2/config.yaml` as a privileged user.
 
 ```yaml
 token: my-shared-secret
