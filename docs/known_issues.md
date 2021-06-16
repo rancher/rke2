@@ -16,6 +16,8 @@ unmanaged-devices=interface-name:cali*;interface-name:flannel*
 
 If you have not yet installed RKE2, a simple `systemctl reload NetworkManager` will suffice to install the configuration. If performing this configuration change on a system that already has RKE2 installed, a reboot of the node is necessary to effectively apply the changes.
 
+In some operating systems like RHEL 8.4, NetworkManager includes two extra services called `nm-cloud-setup.service` and `nm-cloud-setup.timer`. These services add a routing table that interfere with the CNI plugin's configuration. Unfortunately, there is no config that can avoid that as explained in the [issue](https://github.com/rancher/rke2/issues/1053). Therefore, if those services exist, they should be disabled and the node must be rebooted.
+
 ## Istio in Selinux Enforcing System Fails by Default
 
 This is due to just-in-time kernel module loading of rke2, which is disallowed under Selinux unless the container is privileged.
