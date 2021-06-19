@@ -9,6 +9,9 @@ RUN set -x \
     git \
     libseccomp-dev \
     rsync \
+    mingw-w64-gcc \
+    gcc \
+    bsd-compat-headers \
     py-pip
 
 # Dapper/Drone/CI environment

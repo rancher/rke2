@@ -6,7 +6,6 @@ cd $(dirname $0)/..
 source ./scripts/version.sh
 
 mkdir -p dist/artifacts
-
 for FILE in build/images*.txt; do
     BASE=$(basename ${FILE} .txt)
     TARFILE=build/images/${PROG}-${BASE}.tar
