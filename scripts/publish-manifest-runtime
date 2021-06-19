@@ -8,6 +8,7 @@ export DOCKER_CLI_EXPERIMENTAL=enabled
 
 docker manifest create \
     --amend ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
-    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH}
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-linux-${GOARCH} \
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-${GOARCH}
 
 docker manifest push ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}

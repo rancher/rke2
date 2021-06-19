@@ -11,13 +11,24 @@ DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
     --build-arg MAJOR=${VERSION_MAJOR} \
     --build-arg MINOR=${VERSION_MINOR} \
     --build-arg CACHEBUST="$(date +%s%N)" \
-    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
-    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH} \
+    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-linux-${GOARCH} \
     --target runtime \
-.
+    --file Dockerfile \
+    .
+
+DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
+    --build-arg TAG=${VERSION} \
+    --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
+    --build-arg MAJOR=${VERSION_MAJOR} \
+    --build-arg MINOR=${VERSION_MINOR} \
+    --build-arg CACHEBUST="$(date +%s%N)" \
+    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-${GOARCH} \
+    --target windows-runtime \
+    --file Dockerfile.windows \
+    .
 
 mkdir -p build/images
 docker image save \
     --output build/images/${PROG}-runtime.tar \
-    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
-    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH}
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-linux-${GOARCH} \
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-${GOARCH}
