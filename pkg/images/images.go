@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Image defaults overridden by config passed in and ImageOverrideConfig below
 const (
 	dockerRegistry = "docker.io"
 )
@@ -69,11 +70,8 @@ func Pull(dir, name, image string) error {
 	}
 
 	dest := filepath.Join(dir, name+".txt")
-	if err := ioutil.WriteFile(dest, []byte(image+"\n"), 0644); err != nil {
-		return err
-	}
 
-	return nil
+	return ioutil.WriteFile(dest, []byte(image.Name()+"\n"), 0644)
 }
 
 // checkPreloadedImages returns true if there are any files in dir that do not
