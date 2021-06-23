@@ -1,14 +1,12 @@
 package rke2
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
-
+	"github.com/pkg/errors"
 	"github.com/rancher/k3s/pkg/agent/config"
 	"github.com/rancher/k3s/pkg/cli/agent"
 	"github.com/rancher/k3s/pkg/cli/cmds"
@@ -20,6 +18,7 @@ import (
 	rawServer "github.com/rancher/k3s/pkg/server"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/cli/defaults"
+	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
 	"github.com/urfave/cli"
@@ -35,6 +34,7 @@ type Config struct {
 
 var cisMode bool
 
+// Valid CIS Profile versions
 const (
 	CISProfile15           = "cis-1.5"
 	CISProfile16           = "cis-1.6"
@@ -68,7 +68,7 @@ func Server(clx *cli.Context, cfg Config) error {
 	var leaderControllers rawServer.CustomControllers
 
 	if cisMode {
-		leaderControllers = append(leaderControllers, cisnetworkpolicy.CISNetworkPolicyController)
+		leaderControllers = append(leaderControllers, cisnetworkpolicy.Controller)
 	}
 
 	return server.RunWithControllers(clx, leaderControllers, rawServer.CustomControllers{})
