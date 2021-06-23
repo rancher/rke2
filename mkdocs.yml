@@ -1,6 +1,8 @@
 site_name: RKE2 - Rancher's Next Generation Kubernetes Distribution
 repo_url: https://github.com/rancher/rke2
+site_url: https://docs.rke2.io
 strict: false
+use_directory_urls: true
 theme:
   name: material
   palette:
