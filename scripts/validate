@@ -1,29 +1,28 @@
 #!/usr/bin/env bash
 set -ex
 
-if [ -n ${SKIP_VALIDATE} ]; then
+if [ -n "${SKIP_VALIDATE}" ]; then
     echo "skipping validation. continuing..."
     exit 0
 fi
 
-cd $(dirname $0)/..
-
-GO=${GO-go}
-
-echo Running validation
-
-echo Running: go fmt
-go fmt ./
-echo Running: go vet
-go vet ./
-
-echo Running: golangci-lint
 if ! command -v golangci-lint; then
     echo Skipping validation: no golangci-lint available
     exit
 fi
+
+cd $(dirname $0)/..
+GO=${GO-go}
+
+echo Running validation
+
+echo Running: golangci-lint
 golangci-lint run
 
+echo Running: go fmt
+go fmt ./
+
+echo Running: go mod tidy
 go mod tidy
 
 . ./scripts/version.sh

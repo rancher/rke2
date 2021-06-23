@@ -10,12 +10,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-
-	containerdk3s "github.com/rancher/k3s/pkg/agent/containerd"
-	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
-	"github.com/sirupsen/logrus"
-
 	"github.com/rancher/k3s/pkg/agent/config"
+	containerdk3s "github.com/rancher/k3s/pkg/agent/containerd"
 	"github.com/rancher/k3s/pkg/cli/agent"
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/k3s/pkg/cli/etcdsnapshot"
@@ -26,8 +22,10 @@ import (
 	"github.com/rancher/k3s/pkg/etcd"
 	rawServer "github.com/rancher/k3s/pkg/server"
 	"github.com/rancher/rke2/pkg/cli/defaults"
+	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1alpha2"
@@ -41,6 +39,7 @@ type Config struct {
 	KubeletPath         string
 }
 
+// Valid CIS Profile versions
 const (
 	CISProfile15           = "cis-1.5"
 	CISProfile16           = "cis-1.6"
@@ -76,7 +75,7 @@ func Server(clx *cli.Context, cfg Config) error {
 	var leaderControllers rawServer.CustomControllers
 
 	if cisMode {
-		leaderControllers = append(leaderControllers, cisnetworkpolicy.CISNetworkPolicyController)
+		leaderControllers = append(leaderControllers, cisnetworkpolicy.Controller)
 	}
 
 	return server.RunWithControllers(clx, leaderControllers, rawServer.CustomControllers{})
