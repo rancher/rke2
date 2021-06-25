@@ -11,7 +11,8 @@ for FILE in build/images*.txt; do
     BASE=$(basename ${FILE} .txt)
     TARFILE=build/images/${PROG}-${BASE}.tar
     cp -f ${FILE} dist/artifacts/${PROG}-${BASE}.${PLATFORM}.txt
-    zstd -T0 -8 -f --exclude-compressed --no-progress ${TARFILE} -o dist/artifacts/${PROG}-${BASE}.${PLATFORM}.tar.zst
+    # zstd --long=25 required for device compatibility: https://github.com/rancher/wharfie/blob/main/pkg/tarfile/tarfile.go#L28-L33
+    zstd -T0 -8 -f --long=25 --exclude-compressed --no-progress ${TARFILE} -o dist/artifacts/${PROG}-${BASE}.${PLATFORM}.tar.zst
     pigz -v -c ${TARFILE} > dist/artifacts/${PROG}-${BASE}.${PLATFORM}.tar.gz
 done
 
