@@ -16,7 +16,7 @@ var (
 		Hide: true,
 	}
 )
-var copy *K3SFlagOption
+var copy *K3SFlagOption = nil
 
 type K3SFlagOption struct {
 	Hide    bool

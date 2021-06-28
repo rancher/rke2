@@ -1,24 +1,25 @@
 package rke2
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
+	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
+
 	"github.com/rancher/k3s/pkg/agent/config"
 	"github.com/rancher/k3s/pkg/cli/agent"
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/k3s/pkg/cli/etcdsnapshot"
 	"github.com/rancher/k3s/pkg/cli/server"
+	rawServer "github.com/rancher/k3s/pkg/server"
 	"github.com/rancher/k3s/pkg/cluster/managed"
 	"github.com/rancher/k3s/pkg/daemons/executor"
 	"github.com/rancher/k3s/pkg/etcd"
-	rawServer "github.com/rancher/k3s/pkg/server"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/cli/defaults"
-	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
 	"github.com/urfave/cli"
@@ -34,7 +35,6 @@ type Config struct {
 
 var cisMode bool
 
-// Valid CIS Profile versions
 const (
 	CISProfile             = "cis-1.5"
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
@@ -67,7 +67,7 @@ func Server(clx *cli.Context, cfg Config) error {
 	var leaderControllers rawServer.CustomControllers
 
 	if cisMode {
-		leaderControllers = append(leaderControllers, cisnetworkpolicy.Controller)
+		leaderControllers = append(leaderControllers, cisnetworkpolicy.CISNetworkPolicyController)
 	}
 
 	return server.RunWithControllers(clx, leaderControllers, rawServer.CustomControllers{})
