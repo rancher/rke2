@@ -7,6 +7,7 @@ import (
 	"github.com/urfave/cli"
 )
 
+// Valid list of items that can be disabled
 const (
 	DisableItems = "rke2-canal, rke2-coredns, rke2-ingress-nginx, rke2-kube-proxy, rke2-metrics-server"
 	rke2Path     = "/var/lib/rancher/rke2"
