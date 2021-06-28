@@ -331,7 +331,7 @@ func writeDefaultPolicyFile(policyFilePath string) error {
 		},
 		ObjectMeta: metav1.ObjectMeta{},
 		Rules: []auditv1.PolicyRule{
-			auditv1.PolicyRule{
+			{
 				Level: "None",
 			},
 		},
@@ -348,12 +348,12 @@ func writeArgFile(path string, content []byte) error {
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err
 	}
-	if _, err := os.Stat(path); err == nil {
+	_, err := os.Stat(path)
+	if err == nil {
 		return nil
-	} else {
-		if !os.IsNotExist(err) {
-			return err
-		}
+	}
+	if !os.IsNotExist(err) {
+		return err
 	}
 	return ioutil.WriteFile(path, content, 0600)
 }
