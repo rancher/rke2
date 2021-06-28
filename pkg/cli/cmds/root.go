@@ -13,21 +13,15 @@ import (
 	"github.com/rancher/k3s/pkg/version"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/rke2"
+	"github.com/rancher/wrangler/pkg/slice"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
 var (
 	debug      bool
-	profile    string
 	appName    = filepath.Base(os.Args[0])
 	commonFlag = []cli.Flag{
-		&cli.StringFlag{
-			Name:        "system-default-registry",
-			Usage:       "(image) Private registry to be used for all system Docker images",
-			EnvVar:      "RKE2_SYSTEM_DEFAULT_REGISTRY",
-			Destination: &config.Images.SystemDefaultRegistry,
-		},
 		&cli.StringFlag{
 			Name:        images.KubeAPIServer,
 			Usage:       "(image) Override image to use for kube-apiserver",
@@ -83,10 +77,9 @@ var (
 			Destination: &config.CloudProviderConfig,
 		},
 		&cli.StringFlag{
-			Name:        "profile",
-			Usage:       "(security) Validate system configuration against the selected benchmark (valid items: " + rke2.CISProfile15 + ", " + rke2.CISProfile16 + " )",
-			EnvVar:      "RKE2_CIS_PROFILE",
-			Destination: &profile,
+			Name:   "profile",
+			Usage:  "(security) Validate system configuration against the selected benchmark (valid items: " + rke2.CISProfile15 + ", " + rke2.CISProfile16 + " )",
+			EnvVar: "RKE2_CIS_PROFILE",
 		},
 		&cli.StringFlag{
 			Name:        "audit-policy-file",
@@ -181,9 +174,37 @@ func validateCISReqs(nodeType string) error {
 func setCISFlags(clx *cli.Context) error {
 	// If the user has specifically set this to false, raise an error
 	if clx.IsSet(pkdFlagName) && !clx.Bool(pkdFlagName) {
-		return fmt.Errorf("--%s must be true when using --profile=%s", pkdFlagName, profile)
+		return fmt.Errorf("--%s must be true when using --profile=%s", pkdFlagName, clx.String("profile"))
 	}
 	return clx.Set(pkdFlagName, "true")
+}
+
+func validateProfile(clx *cli.Context, nodeType string) {
+	switch clx.String("profile") {
+	case rke2.CISProfile15, rke2.CISProfile16:
+		if err := validateCISReqs(nodeType); err != nil {
+			logrus.Fatal(err)
+		}
+		if err := setCISFlags(clx); err != nil {
+			logrus.Fatal(err)
+		}
+	case "":
+		logrus.Warn("not running in CIS mode")
+	default:
+		logrus.Fatal("invalid value provided for --profile flag")
+	}
+}
+
+func validateCloudProviderName(clx *cli.Context) {
+	cloudProvider := clx.String("cloud-provider-name")
+	if cloudProvider == "rancher-vsphere" {
+		clx.Set("cloud-provider-name", "external")
+	} else {
+		if slice.ContainsString(clx.FlagNames(), "disable") {
+			clx.Set("disable", "rancher-vsphere-cpi")
+			clx.Set("disable", "rancher-vsphere-csi")
+		}
+	}
 }
 
 func NewApp() *cli.App {

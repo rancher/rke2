@@ -14,8 +14,10 @@ import (
 	"time"
 
 	"github.com/rancher/k3s/pkg/cli/cmds"
+	daemonconfig "github.com/rancher/k3s/pkg/daemons/config"
 	"github.com/rancher/k3s/pkg/daemons/executor"
 	"github.com/rancher/rke2/pkg/auth"
+	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/staticpod"
 	"github.com/sirupsen/logrus"
@@ -46,6 +48,7 @@ type StaticPodConfig struct {
 	AuditPolicyFile string
 	KubeletPath     string
 	DisableETCD     bool
+	IsServer        bool
 }
 
 type CloudProviderConfig struct {
@@ -53,10 +56,45 @@ type CloudProviderConfig struct {
 	Path string
 }
 
+// Bootstrap prepares the static executor to run components by setting the system default registry
+// and staging the kubelet and containerd binaries.  On servers, it also ensures that manifests are
+// copied in to place and in sync with the system configuration.
+func (s *StaticPodConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
+	// On servers this is set to an initial value from the CLI when the resolver is created, so that
+	// static pod manifests can be created before the agent bootstrap is complete. The agent itself
+	// really only needs to know about the runtime and pause images, all of which are configured after the
+	// default registry has been set by the server.
+	if nodeConfig.AgentConfig.SystemDefaultRegistry != "" {
+		if err := s.Resolver.ParseAndSetDefaultRegistry(nodeConfig.AgentConfig.SystemDefaultRegistry); err != nil {
+			return err
+		}
+	}
+	pauseImage, err := s.Resolver.GetReference(images.Pause)
+	if err != nil {
+		return err
+	}
+	nodeConfig.AgentConfig.PauseImage = pauseImage.Name()
+
+	// stage bootstrap content from runtime image
+	execPath, err := bootstrap.Stage(s.Resolver, nodeConfig, cfg)
+	if err != nil {
+		return err
+	}
+	if err := os.Setenv("PATH", execPath+":"+os.Getenv("PATH")); err != nil {
+		return err
+	}
+	if s.IsServer {
+		return bootstrap.UpdateManifests(s.Resolver, nodeConfig, cfg)
+	}
+	return nil
+}
+
 // Kubelet starts the kubelet in a subprocess with watching goroutine.
 func (s *StaticPodConfig) Kubelet(args []string) error {
 	extraArgs := []string{
 		"--volume-plugin-dir=/var/lib/kubelet/volumeplugins",
+		"--file-check-frequency=5s",
+		"--sync-frequency=30s",
 	}
 	if s.CloudProvider != nil {
 		extraArgs = append(extraArgs,
@@ -97,6 +135,7 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 		return nil, nil, err
 	}
 
+	args = append([]string{"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}, args...)
 	auditLogFile := filepath.Join(s.DataDir, "server/logs/audit.log")
 	if s.CloudProvider != nil {
 		extraArgs := []string{

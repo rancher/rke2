@@ -7,6 +7,10 @@ source ./scripts/version.sh
 
 mkdir -p dist/artifacts
 
-cp -f build/images.txt dist/artifacts/${PROG}-images.${PLATFORM}.txt
-zstd -T0 -16 -f --long=25 build/images/${PROG}-airgap.tar -o dist/artifacts/${PROG}-images.${PLATFORM}.tar.zst
-gzip -v -c build/images/${PROG}-airgap.tar > dist/artifacts/${PROG}-images.${PLATFORM}.tar.gz
+for FILE in build/images*.txt; do
+    BASE=$(basename ${FILE} .txt)
+    TARFILE=build/images/${PROG}-${BASE}.tar
+    cp -f ${FILE} dist/artifacts/${PROG}-${BASE}.${PLATFORM}.txt
+    zstd -T0 -16 -f --long=25 ${TARFILE} -o dist/artifacts/${PROG}-${BASE}.${PLATFORM}.tar.zst
+    gzip -v -c ${TARFILE} > dist/artifacts/${PROG}-${BASE}.${PLATFORM}.tar.gz
+done

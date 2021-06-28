@@ -36,7 +36,7 @@ type ResolverOpt func(name.Reference) (name.Reference, error)
 
 // Resolver provides functionality to resolve an RKE2 image name to a reference.
 type Resolver struct {
-	Registry  name.Registry
+	registry  name.Registry
 	overrides map[string]name.Reference
 }
 
@@ -59,7 +59,7 @@ func NewResolver(c ImageOverrideConfig) (*Resolver, error) {
 	}
 
 	r := Resolver{
-		Registry:  registry,
+		registry:  registry,
 		overrides: map[string]name.Reference{},
 	}
 
@@ -87,9 +87,20 @@ func NewResolver(c ImageOverrideConfig) (*Resolver, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to parse system-default-registry")
 		}
-		r.Registry = registry
+		r.registry = registry
 	}
 	return &r, nil
+}
+
+// ParseAndSetDefaultRegistry updates the default registry, if it can be parsed
+// as a valid Registry
+func (r *Resolver) ParseAndSetDefaultRegistry(s string) error {
+	registry, err := name.NewRegistry(s)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse system-default-registry")
+	}
+	r.registry = registry
+	return nil
 }
 
 // ParseAndSetOverride sets an image override from a string, if it can be parsed as
@@ -134,7 +145,7 @@ func (r *Resolver) GetReference(i string, opts ...ResolverOpt) (name.Reference, 
 		ref = d
 
 		// Apply registry override
-		d, err = setRegistry(ref, r.Registry)
+		d, err = setRegistry(ref, r.registry)
 		if err != nil {
 			return nil, err
 		}
