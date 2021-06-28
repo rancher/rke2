@@ -12,7 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Image defaults overridden by config passed in and ImageOverrideConfig below
 const (
 	Runtime               = "runtime-image"
 	KubeAPIServer         = "kube-apiserver-image"
@@ -237,7 +236,11 @@ func Pull(dir, name string, image name.Reference) error {
 	}
 
 	dest := filepath.Join(dir, name+".txt")
-	return ioutil.WriteFile(dest, []byte(image.Name()+"\n"), 0644)
+	if err := ioutil.WriteFile(dest, []byte(image.Name()+"\n"), 0644); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // checkPreloadedImages returns true if there are any files in dir that do not

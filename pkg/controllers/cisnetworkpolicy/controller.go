@@ -22,7 +22,7 @@ const (
 	flannelHostNetworkPolicyName = "rke2-flannel-host-networking"
 )
 
-func Controller(ctx context.Context, sc *server.Context) error {
+func CISNetworkPolicyController(ctx context.Context, sc *server.Context) error {
 	return register(ctx, sc.Core.Core().V1().Node(), sc.K8s)
 }
 

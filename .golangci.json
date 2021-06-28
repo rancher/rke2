@@ -3,7 +3,7 @@
 		"disable-all": true,
 		"enable": [
 			"govet",
-			"revive",
+			"golint",
 			"goimports",
 			"misspell",
 			"ineffassign",
@@ -15,13 +15,5 @@
 			"/zz_generated_"
 		],
 		"deadline": "5m"
-	},
-	"issues": {
-		"exclude-rules": [
-			{
-				"linters": "typecheck",
-				"text": "imported but not used"
-			}
-		]
 	}
 }
