@@ -29,7 +29,7 @@ export -f start-test
 verify-airgap-images() {
     local expected="$TEST_DIR/logs/images-expected.txt"
     local actual="$TEST_DIR/logs/images-actual.txt"
-    docker exec $(cat $TEST_DIR/servers/1/metadata/name) cat /airgap-images.txt | sort -u >$expected
+    docker exec $(cat $TEST_DIR/servers/1/metadata/name) cat /images.txt | sort -u >$expected
 
     for name in $@; do
         docker exec $name crictl images -o json \

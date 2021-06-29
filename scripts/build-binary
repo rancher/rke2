@@ -20,7 +20,6 @@ BUILDTAGS="selinux netgo osusergo no_stage static_build sqlite_omit_load_extensi
 GO_BUILDTAGS="${GO_BUILDTAGS} ${BUILDTAGS} ${DEBUG_TAGS}"
 
 VERSION_FLAGS="
-        -X ${RKE2_PKG}/pkg/images.KubernetesVersion=${DOCKERIZED_VERSION}
         -X ${K3S_PKG}/pkg/version.Program=${PROG}
         -X ${K3S_PKG}/pkg/version.Version=${VERSION}
         -X ${K3S_PKG}/pkg/version.GitCommit=${REVISION}

@@ -8,18 +8,32 @@ platform:
   arch: amd64
 
 steps:
-- name: build-and-package
+- name: build
   image: rancher/dapper:v0.5.5
   environment:
     ENABLE_REGISTRY: 'true'
     GCLOUD_AUTH:
       from_secret: gcloud_auth
   commands:
-  - docker pull --quiet rancher/hardened-build-base:v1.15.8b5
+  - docker pull --quiet rancher/hardened-build-base:v1.16.4b7
   - dapper -f Dockerfile --target dapper make dapper-ci
   volumes:
   - name: docker
     path: /var/run/docker.sock
+
+- name: package-images
+  image: rancher/dapper:v0.5.5
+  commands:
+    - docker pull --quiet rancher/hardened-build-base:v1.16.4b7
+    - dapper -f Dockerfile --target dapper make package-images
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  when:
+    event:
+      - tag
+    instance:
+      - drone-publish.rancher.io
 
 - name: scan
   image: rancher/dapper:v0.5.5
@@ -29,6 +43,9 @@ steps:
   volumes:
   - name: docker
     path: /var/run/docker.sock
+  when:
+    instance:
+      - drone-publish.rancher.io
 
 - name: test
   image: rancher/dapper:v0.5.5
@@ -65,7 +82,7 @@ steps:
     - refs/tags/*
 
 - name: publish-image-kubernetes
-  image: rancher/hardened-build-base:v1.15.8b5
+  image: rancher/hardened-build-base:v1.16.4b7
   commands:
   - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
   - DRONE_TAG=${DRONE_TAG} make publish-image-kubernetes
@@ -87,7 +104,7 @@ steps:
     - refs/tags/*
 
 - name: publish-image-runtime
-  image: rancher/hardened-build-base:v1.15.8b5
+  image: rancher/hardened-build-base:v1.16.4b7
   commands:
   - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
   - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
@@ -112,31 +129,6 @@ volumes:
 - name: docker
   host:
     path: /var/run/docker.sock
-
----
-kind: pipeline
-type: docker
-name: check
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: go-mod-tidy
-  image: rancher/hardened-build-base:v1.15.8b5
-  commands:
-  - go mod tidy
-  - git diff --exit-code
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-
-volumes:
-- name: docker
-  host:
-    path: /var/run/docker.sock
-
 ---
 kind: pipeline
 type: docker
@@ -148,7 +140,7 @@ platform:
 
 steps:
 - name: manifest-runtime
-  image: rancher/hardened-build-base:v1.15.8b5
+  image: rancher/hardened-build-base:v1.16.4b7
   commands:
   - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
   - DRONE_TAG=${DRONE_TAG} make publish-manifest-runtime
@@ -170,7 +162,7 @@ steps:
     - refs/tags/*
 
 - name: manifest-kubernetes
-  image: rancher/hardened-build-base:v1.15.8b5
+  image: rancher/hardened-build-base:v1.16.4b7
   commands:
   - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
   - DRONE_TAG=${DRONE_TAG} make publish-manifest-kubernetes
@@ -198,7 +190,6 @@ volumes:
 
 depends_on:
 - build-amd64
-- check
 
 ---
 kind: pipeline

@@ -1,6 +1,6 @@
 ARG KUBERNETES_VERSION=dev
 # Build environment
-FROM rancher/hardened-build-base:v1.15.8b5 AS build
+FROM rancher/hardened-build-base:v1.16.4b7 AS build
 RUN set -x \
  && apk --no-cache add \
     bash \
@@ -9,7 +9,8 @@ RUN set -x \
     git \
     libseccomp-dev \
     rsync \
-    py-pip
+    py-pip \
+    pigz
 
 # Dapper/Drone/CI environment
 FROM build AS dapper
@@ -33,7 +34,9 @@ RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
 
 RUN curl -sL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.41.0
 RUN set -x \
- && apk --no-cache add \
+    && apk --no-cache add \
+    libarchive-tools \
+    zstd \
     jq \
     python2
 RUN VERSION=0.16.0 && \
@@ -69,59 +72,6 @@ VOLUME /var/lib/rancher/rke2
 # This makes it so we can run and debug k3s too
 VOLUME /var/lib/rancher/k3s
 
-FROM build AS build-k8s-codegen
-ARG KUBERNETES_VERSION
-RUN git clone -b ${KUBERNETES_VERSION} --depth=1 https://github.com/kubernetes/kubernetes.git ${GOPATH}/src/kubernetes
-WORKDIR ${GOPATH}/src/kubernetes
-# force code generation
-RUN make WHAT=cmd/kube-apiserver
-ARG TAG
-ARG MAJOR
-ARG MINOR
-# build statically linked executables
-RUN echo "export GIT_COMMIT=$(git rev-parse HEAD)" \
-    >> /usr/local/go/bin/go-build-static-k8s.sh
-RUN echo "export BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-    >> /usr/local/go/bin/go-build-static-k8s.sh
-RUN echo "export GO_LDFLAGS=\"-linkmode=external \
-    -X k8s.io/component-base/version.gitVersion=${TAG} \
-    -X k8s.io/component-base/version.gitMajor=${MAJOR} \
-    -X k8s.io/component-base/version.gitMinor=${MINOR} \
-    -X k8s.io/component-base/version.gitCommit=\${GIT_COMMIT} \
-    -X k8s.io/component-base/version.gitTreeState=clean \
-    -X k8s.io/component-base/version.buildDate=\${BUILD_DATE} \
-    -X k8s.io/client-go/pkg/version.gitVersion=${TAG} \
-    -X k8s.io/client-go/pkg/version.gitMajor=${MAJOR} \
-    -X k8s.io/client-go/pkg/version.gitMinor=${MINOR} \
-    -X k8s.io/client-go/pkg/version.gitCommit=\${GIT_COMMIT} \
-    -X k8s.io/client-go/pkg/version.gitTreeState=clean \
-    -X k8s.io/client-go/pkg/version.buildDate=\${BUILD_DATE} \
-    \"" >> /usr/local/go/bin/go-build-static-k8s.sh
-RUN echo 'go-build-static.sh -gcflags=-trimpath=${GOPATH}/src/kubernetes -mod=vendor -tags=selinux,osusergo,netgo ${@}' \
-    >> /usr/local/go/bin/go-build-static-k8s.sh
-RUN chmod -v +x /usr/local/go/bin/go-*.sh
-
-FROM build-k8s-codegen AS build-k8s
-RUN go-build-static-k8s.sh -o bin/kube-apiserver           ./cmd/kube-apiserver
-RUN go-build-static-k8s.sh -o bin/kube-controller-manager  ./cmd/kube-controller-manager
-RUN go-build-static-k8s.sh -o bin/kube-scheduler           ./cmd/kube-scheduler
-RUN go-build-static-k8s.sh -o bin/kube-proxy               ./cmd/kube-proxy
-RUN go-build-static-k8s.sh -o bin/kubeadm                  ./cmd/kubeadm
-RUN go-build-static-k8s.sh -o bin/kubectl                  ./cmd/kubectl
-RUN go-build-static-k8s.sh -o bin/kubelet                  ./cmd/kubelet
-RUN go-assert-static.sh bin/*
-RUN go-assert-boring.sh bin/*
-RUN install -s bin/* /usr/local/bin/
-RUN kube-proxy --version
-
-FROM registry.access.redhat.com/ubi7/ubi-minimal:latest AS kubernetes
-RUN microdnf update -y           && \
-    microdnf install -y iptables && \
-    rm -rf /var/cache/yum
-COPY --from=build-k8s \
-    /usr/local/bin/ \
-    /usr/local/bin/
-
 FROM build AS charts
 ARG CHARTS_REPO="https://rke2-charts.rancher.io"
 ARG CACHEBUST="cachebust"
@@ -141,6 +91,7 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM rancher/k3s:v1.19.12-rc1-k3s1 AS k3s
+FROM rancher/hardened-kubernetes:v1.19.12-rke2r1-build20210714 AS kubernetes
 FROM rancher/hardened-containerd:v1.4.4-k3s2-build20210520 AS containerd
 FROM rancher/hardened-crictl:v1.19.0-build20210223 AS crictl
 FROM rancher/hardened-runc:v1.0.0-rc95-build20210519 AS runc
@@ -178,8 +129,9 @@ VOLUME /var/lib/cni
 VOLUME /var/log
 COPY bin/rke2 /bin/
 # use built air-gap images
-COPY build/images/rke2-images.linux-amd64.tar.zst /var/lib/rancher/rke2/agent/images/
+COPY build/images/rke2-runtime.tar /var/lib/rancher/rke2/agent/images/
 COPY build/images.txt /images.txt
+
 # use rke2 bundled binaries
 ENV PATH=/var/lib/rancher/rke2/bin:$PATH
 # for kubectl
