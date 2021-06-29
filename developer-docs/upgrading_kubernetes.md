@@ -13,7 +13,7 @@ Create a new release tag at the [image-build-kube-proxy](https://github.com/ranc
 * Enter the new release version (the new k8s version) into the "Tag version" box
 * Click the "Publish release" button. 
 
-This will take a few minutes for CI to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kube-proxy).
+This will take a few minutes for CI to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kubernetes).
 
 ### Helm Chart
 

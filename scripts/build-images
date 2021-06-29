@@ -5,19 +5,18 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-./scripts/build-image-kubernetes
 ./scripts/build-image-runtime
 
 awk '{print $1}' << EOF > build/images-core.txt
     ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
-    ${REGISTRY}/${REPO}/hardened-kubernetes:v1.20.8-rke2r1-build20210714
+    ${REGISTRY}/${REPO}/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-coredns:v1.6.9-${IMAGE_BUILD_VERSION}
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-${IMAGE_BUILD_VERSION}
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.3.6-${IMAGE_BUILD_VERSION}
-    ${REGISTRY}/rancher/hardened-kube-proxy:${KUBERNETES_VERSION}-build20210714
+    ${REGISTRY}/rancher/hardened-kube-proxy:v1.20.9-build20210716
     ${REGISTRY}/rancher/klipper-helm:v0.5.0-build20210505
     ${REGISTRY}/rancher/pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/nginx-ingress-controller-defaultbackend:1.5-rancher1
@@ -26,16 +25,26 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.13.3-${IMAGE_BUILD_VERSION}
-    ${REGISTRY}/rancher/hardened-flannel:v0.13.0-rancher1-${IMAGE_BUILD_VERSION}
+    ${REGISTRY}/rancher/hardened-calico:v3.13.3-build20210223
+    ${REGISTRY}/rancher/hardened-flannel:v0.13.0-rancher1-build20210223
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
-    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.9.6
-    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.9.6
-    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.9.6
-    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.9.6
+    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.9.8
+    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.9.8
+    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.9.8
+    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.9.8
     ${REGISTRY}/rancher/mirrored-cilium-startup-script:62bfbe88c17778aad7bef9fa57ff9e2d4a9ba0d8
+EOF
+
+xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
+    ${REGISTRY}/rancher/mirrored-calico-operator:v1.17.4
+    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.19.1
+    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.19.1
+    ${REGISTRY}/rancher/mirrored-calico-typha:v3.19.1
+    ${REGISTRY}/rancher/mirrored-calico-node:v3.19.1
+    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.19.1
+    ${REGISTRY}/rancher/mirrored-calico-cni:v3.19.1
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
@@ -49,19 +58,16 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-k8scsi-livenessprobe:v2.1.0
 EOF
 
+xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
+    ${REGISTRY}/rancher/hardened-multus-cni:v3.7.1-build20210416
+    ${REGISTRY}/rancher/hardened-sriov-network-operator:v1.0.0-build20210429
+    ${REGISTRY}/rancher/hardened-sriov-network-config-daemon:v1.0.0-build20210429
+    ${REGISTRY}/rancher/hardened-sriov-network-device-plugin:v3.3.1-build20210310
+    ${REGISTRY}/rancher/hardened-sriov-cni:v2.6-build20210310
+    ${REGISTRY}/rancher/hardened-ib-sriov-cni:v1.0.0-build20210310
+    ${REGISTRY}/rancher/hardened-sriov-network-resources-injector:v1-build20210310
+    ${REGISTRY}/rancher/hardened-sriov-network-webhook:v1.0.0-build20210429
+EOF
+
 # Continue to provide a legacy airgap archive set with the default CNI images
 cat build/images-core.txt build/images-canal.txt > build/images.txt
-
-# We reorder the tar file so that the metadata files are at the start of the archive, which should make loading
-# the runtime image faster. By default `docker image save` puts these at the end of the archive, which means the entire
-# tarball needs to be read even if you're just loading a single image.
-for FILE in build/images*.txt; do
-    BASE=$(basename ${FILE} .txt)
-    DEST=build/images/${PROG}-${BASE}.tar
-    docker image save --output ${DEST}.tmp $(<${FILE})
-    bsdtar -c -f ${DEST} --include=manifest.json --include=repositories @${DEST}.tmp
-    bsdtar -r -f ${DEST} --exclude=manifest.json --exclude=repositories @${DEST}.tmp
-    rm -f ${DEST}.tmp
-done
-
-./scripts/build-image-test
