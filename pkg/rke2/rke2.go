@@ -101,6 +101,7 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	disableScheduler := clx.Bool("disable-scheduler")
 	disableAPIServer := clx.Bool("disable-apiserver")
 	disableControllerManager := clx.Bool("disable-controller-manager")
+	disableCloudControllerManager := clx.Bool("disable-cloud-controller")
 	clusterReset := clx.Bool("cluster-reset")
 
 	auditPolicyFile := clx.String("audit-policy-file")
@@ -161,10 +162,11 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	executor.Set(&sp)
 
 	disabledItems := map[string]bool{
-		"kube-apiserver":          disableAPIServer,
-		"kube-scheduler":          disableScheduler,
-		"kube-controller-manager": disableControllerManager,
-		"etcd":                    disableETCD,
+		"kube-apiserver":           disableAPIServer,
+		"kube-scheduler":           disableScheduler,
+		"kube-controller-manager":  disableControllerManager,
+		"cloud-controller-manager": disableCloudControllerManager,
+		"etcd":                     disableETCD,
 	}
 	return removeOldPodManifests(dataDir, disabledItems, clusterReset)
 }
