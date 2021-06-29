@@ -127,6 +127,7 @@ var (
 		"etcd-s3-bucket":                    copy,
 		"etcd-s3-region":                    copy,
 		"etcd-s3-folder":                    copy,
+		"disable-helm-controller":           drop,
 	})
 )
 
