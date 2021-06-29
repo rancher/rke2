@@ -14,7 +14,7 @@ Create a new release tag at the [image-build-kube-proxy](https://github.com/ranc
 * Check box, "This is a pre-release".
 * Click the "Publish release" button. 
 
-This will take a few minutes for CI to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kube-proxy).
+This will take a few minutes for CI to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kubernetes).
 
 ### Helm Chart
 

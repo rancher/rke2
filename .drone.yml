@@ -8,7 +8,7 @@ platform:
   arch: amd64
 
 steps:
-- name: build-and-package
+- name: build
   image: rancher/dapper:v0.5.5
   environment:
     ENABLE_REGISTRY: 'true'
@@ -21,6 +21,20 @@ steps:
   - name: docker
     path: /var/run/docker.sock
 
+- name: package-images
+  image: rancher/dapper:v0.5.5
+  commands:
+    - docker pull --quiet rancher/hardened-build-base:v1.16.4b7
+    - dapper -f Dockerfile --target dapper make package-images
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  when:
+    event:
+      - tag
+    instance:
+      - drone-publish.rancher.io
+
 - name: scan
   image: rancher/dapper:v0.5.5
   failure: ignore
@@ -29,6 +43,9 @@ steps:
   volumes:
   - name: docker
     path: /var/run/docker.sock
+  when:
+    instance:
+      - drone-publish.rancher.io
 
 - name: test
   image: rancher/dapper:v0.5.5
@@ -64,28 +81,6 @@ steps:
     - refs/head/master
     - refs/tags/*
 
-- name: publish-image-kubernetes
-  image: rancher/hardened-build-base:v1.16.4b7
-  commands:
-  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-  - DRONE_TAG=${DRONE_TAG} make publish-image-kubernetes
-  environment:
-    DOCKER_PASSWORD:
-      from_secret: docker_password
-    DOCKER_USERNAME:
-      from_secret: docker_username
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-  when:
-    event:
-    - tag
-    instance:
-    - drone-publish.rancher.io
-    ref:
-    - refs/head/master
-    - refs/tags/*
-
 - name: publish-image-runtime
   image: rancher/hardened-build-base:v1.16.4b7
   commands:
@@ -107,30 +102,6 @@ steps:
     ref:
     - refs/head/master
     - refs/tags/*
-
-volumes:
-- name: docker
-  host:
-    path: /var/run/docker.sock
-
----
-kind: pipeline
-type: docker
-name: check
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: go-mod-tidy
-  image: rancher/hardened-build-base:v1.16.4b7
-  commands:
-  - go mod tidy
-  - git diff --exit-code
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
 
 volumes:
 - name: docker
@@ -198,7 +169,6 @@ volumes:
 
 depends_on:
 - build-amd64
-- check
 
 ---
 kind: pipeline
