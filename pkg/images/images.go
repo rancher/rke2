@@ -14,21 +14,23 @@ import (
 
 // Image defaults overridden by config passed in and ImageOverrideConfig below
 const (
-	Runtime               = "runtime-image"
-	KubeAPIServer         = "kube-apiserver-image"
-	KubeControllerManager = "kube-controller-manager-image"
-	KubeScheduler         = "kube-scheduler-image"
-	ETCD                  = "etcd-image"
-	Pause                 = "pause-image"
+	Runtime                = "runtime-image"
+	KubeAPIServer          = "kube-apiserver-image"
+	KubeControllerManager  = "kube-controller-manager-image"
+	KubeScheduler          = "kube-scheduler-image"
+	ETCD                   = "etcd-image"
+	Pause                  = "pause-image"
+	CloudControllerManager = "cloud-controller-manager-image"
 )
 
 // These defaults are overridden at build time and do not need to be updated here
 var (
-	DefaultRegistry        = name.DefaultRegistry
-	DefaultEtcdImage       = "rancher/hardened-etcd"
-	DefaultKubernetesImage = "rancher/hardened-kubernetes"
-	DefaultPauseImage      = "rancher/pause"
-	DefaultRuntimeImage    = "rancher/rke2-runtime"
+	DefaultRegistry                    = name.DefaultRegistry
+	DefaultEtcdImage                   = "rancher/hardened-etcd"
+	DefaultKubernetesImage             = "rancher/hardened-kubernetes"
+	DefaultPauseImage                  = "rancher/pause"
+	DefaultRuntimeImage                = "rancher/rke2-runtime"
+	DefaultCloudControllerManagerImage = "rancher/rke2-cloud-provider"
 )
 
 // ResolverOpt is an option to modify image resolution behavior.
@@ -42,13 +44,14 @@ type Resolver struct {
 
 // ImageOverrideConfig stores configuration from the CLI.
 type ImageOverrideConfig struct {
-	SystemDefaultRegistry string
-	KubeAPIServer         string
-	KubeControllerManager string
-	KubeScheduler         string
-	Pause                 string
-	Runtime               string
-	ETCD                  string
+	SystemDefaultRegistry  string
+	KubeAPIServer          string
+	KubeControllerManager  string
+	KubeScheduler          string
+	Pause                  string
+	Runtime                string
+	ETCD                   string
+	CloudControllerManager string
 }
 
 // NewResolver creates a new image resolver, with options to modify the resolver behavior.
@@ -74,6 +77,7 @@ func NewResolver(c ImageOverrideConfig) (*Resolver, error) {
 		{KubeScheduler, c.KubeScheduler},
 		{Pause, c.Pause},
 		{Runtime, c.Runtime},
+		{CloudControllerManager, c.CloudControllerManager},
 	}
 	for _, s := range config {
 		if err := r.ParseAndSetOverride(s.i, s.n); err != nil {
@@ -209,6 +213,8 @@ func getDefaultImage(i string) (name.Reference, error) {
 		s = DefaultRuntimeImage
 	case Pause:
 		s = DefaultPauseImage
+	case CloudControllerManager:
+		s = DefaultCloudControllerManagerImage
 	case KubeAPIServer, KubeControllerManager, KubeScheduler:
 		s = DefaultKubernetesImage
 	default:
