@@ -5,7 +5,6 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-./scripts/build-image-kubernetes
 ./scripts/build-image-runtime
 
 awk '{print $1}' << EOF > build/images-core.txt
@@ -17,3 +16,4 @@ echo "docker.io/${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}" >> build/imag
 docker image save --output build/images/${PROG}-airgap.tar $(<build/images.txt)
 
 ./scripts/build-image-test
+

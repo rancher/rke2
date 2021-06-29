@@ -23,7 +23,16 @@ VERSION_FLAGS="
         -X ${RKE2_PKG}/pkg/images.KubernetesVersion=${DOCKERIZED_VERSION}
         -X ${K3S_PKG}/pkg/version.Program=${PROG}
         -X ${K3S_PKG}/pkg/version.Version=${VERSION}
+<<<<<<< HEAD
         -X ${K3S_PKG}/pkg/version.GitCommit=${REVISION}
+=======
+        -X ${RKE2_PKG}/pkg/images.DefaultRegistry=${REGISTRY}
+        -X ${RKE2_PKG}/pkg/images.DefaultEtcdImage=rancher/hardened-etcd:${ETCD_VERSION}-${IMAGE_BUILD_VERSION}
+        -X ${RKE2_PKG}/pkg/images.DefaultKubernetesImage=${REPO}/hardened-kubernetes:${KUBERNETES_VERSION}
+        -X ${RKE2_PKG}/pkg/images.DefaultPauseImage=rancher/pause:${PAUSE_VERSION}
+        -X ${RKE2_PKG}/pkg/images.DefaultRuntimeImage=${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
+        -X ${RKE2_PKG}/pkg/images.DefaultCloudControllerManagerImage=rancher/rke2-cloud-provider:${CCM_VERSION}
+>>>>>>> 9bbb253 (switch to using hardened k8s image)
 "
 
 #STATIC_FLAGS='-extldflags "-static -Wl,--fatal-warnings"'
