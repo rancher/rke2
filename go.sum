@@ -549,8 +549,8 @@ github.com/k3s-io/etcd v0.5.0-alpha.5.0.20201208200253-50621aee4aea h1:7cwby0GoN
 github.com/k3s-io/etcd v0.5.0-alpha.5.0.20201208200253-50621aee4aea/go.mod h1:yVHk9ub3CSBatqGNg7GRmsnfLWtoW60w4eDYfh7vHDg=
 github.com/k3s-io/helm-controller v0.9.3 h1:MeQkGSwmUHt/kmLFhaLrgbqR86fg6STr25puvWByBuY=
 github.com/k3s-io/helm-controller v0.9.3/go.mod h1:nZP8FH3KZrNNUf5r+SwwiMR63HS6lxdHdpHijgPfF74=
-github.com/k3s-io/kine v0.6.0 h1:4l7wjgCxb2oD+7Hyf3xIhkGd/6s1sXpRFdQiyy+7Ki8=
-github.com/k3s-io/kine v0.6.0/go.mod h1:rzCs93+rQHZGOiewMd84PDrER92QeZ6eeHbWkfEy4+w=
+github.com/k3s-io/kine v0.6.1 h1:GcxxxtfmXIRiVqImZoGCHgJl6+S4Be3tY9nm2ArY7/U=
+github.com/k3s-io/kine v0.6.1/go.mod h1:rzCs93+rQHZGOiewMd84PDrER92QeZ6eeHbWkfEy4+w=
 github.com/k3s-io/kubernetes v1.21.1-k3s1 h1:X8nEv12/bI3iR2+ARLuzvosPW8iMOisMlklOAeovISw=
 github.com/k3s-io/kubernetes v1.21.1-k3s1/go.mod h1:ef++isEL1PW0taH6z7DXrSztPglrZ7jQhyvcMEtm0gQ=
 github.com/k3s-io/kubernetes/staging/src/k8s.io/api v1.21.1-k3s1 h1:7iwn62FGlOqG9oRHwTY/+AbFlSZffWMqx6WUXjRpQPk=
@@ -828,8 +828,8 @@ github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40T
 github.com/quobyte/api v0.1.8/go.mod h1:jL7lIHrmqQ7yh05OJ+eEEdHr0u/kmT1Ff9iHd+4H6VI=
 github.com/rancher/dynamiclistener v0.2.3 h1:FHn0Gkx+kIUqsFs3zMMR2QC9ufH/AoBLqO5zH5hbtqw=
 github.com/rancher/dynamiclistener v0.2.3/go.mod h1:9WusTANoiRr8cDWCTtf5txieulezHbpv4vhLADPp0zU=
-github.com/rancher/k3s v1.21.1-rc1.0.20210616205435-4b2ab8b51506 h1:FuBDHssO5Z4NedzmGeyoD3fokZvic49oSDo0lhIQG/g=
-github.com/rancher/k3s v1.21.1-rc1.0.20210616205435-4b2ab8b51506/go.mod h1:Xbggk9XPxJ7+N3yGOlBbR/KX9wCdkVEX3oCYvivwUtY=
+github.com/rancher/k3s v1.21.1-rc1.0.20210629142838-04398a2582a3 h1:T3o/YPsVhrurXchMmdx9REn+FxK/LC49TBqcjfSvLm0=
+github.com/rancher/k3s v1.21.1-rc1.0.20210629142838-04398a2582a3/go.mod h1:ute8aw+UomXzCeA2HluJVpWphxu6zXSL0F+EhiYjEw0=
 github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009/go.mod h1:wpITyDPTi/Na5h73XkbuEf2AP9fbgrIGqqxVzFhYD6U=
 github.com/rancher/remotedialer v0.2.0 h1:xD7t3K6JYwTdAsxmGtTHQMkEkFgKouQ1foLxVW424Dc=
 github.com/rancher/remotedialer v0.2.0/go.mod h1:tkU8ZvrR5lRgaKWaX71nAy6daeqvPFx/lJEnbW7tXSI=
