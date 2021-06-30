@@ -271,6 +271,30 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 	})
 }
 
+// CloudControllerManager starts the cloud-controller-manager static pod, once the cloud controller manager RBAC
+// (and subsequently, the api server) is available.
+func (s *StaticPodConfig) CloudControllerManager(ccmRBACReady <-chan struct{}, args []string) error {
+	image, err := s.Resolver.GetReference(images.CloudControllerManager)
+	if err != nil {
+		return err
+	}
+	if err := images.Pull(s.ImagesDir, images.CloudControllerManager, image); err != nil {
+		return err
+	}
+	return after(ccmRBACReady, func() error {
+		return staticpod.Run(s.ManifestsDir, staticpod.Args{
+			Command:     "cloud-controller-manager",
+			Args:        args,
+			Image:       image,
+			Dirs:        onlyExisting(ssldirs),
+			HealthPort:  10252,
+			HealthProto: "HTTP",
+			CPUMillis:   200,
+			Files:       []string{},
+		})
+	})
+}
+
 // CurrentETCDOptions retrieves the etcd configuration from the static pod definition at etcd.yaml
 // in the manifests directory, if it exists.
 func (s *StaticPodConfig) CurrentETCDOptions() (opts executor.InitialOptions, err error) {

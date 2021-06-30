@@ -23,6 +23,7 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/mirrored-jettech-kube-webhook-certgen:v1.5.1
     ${REGISTRY}/rancher/nginx-ingress-controller:nginx-0.46.0-rancher1
+    ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt

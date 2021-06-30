@@ -28,6 +28,7 @@ VERSION_FLAGS="
         -X ${RKE2_PKG}/pkg/images.DefaultKubernetesImage=${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}
         -X ${RKE2_PKG}/pkg/images.DefaultPauseImage=rancher/pause:${PAUSE_VERSION}
         -X ${RKE2_PKG}/pkg/images.DefaultRuntimeImage=${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-linux-${GOARCH}
+        -X ${RKE2_PKG}/pkg/images.DefaultCloudControllerManagerImage=rancher/rke2-cloud-provider:${CCM_VERSION}
 "
 
 #STATIC_FLAGS='-extldflags "-static -Wl,--fatal-warnings"'
