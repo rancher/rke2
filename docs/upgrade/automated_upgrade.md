@@ -34,7 +34,7 @@ The controller can be configured and customized via the previously mentioned con
 
 
 ### Configure plans
-It is recommended that you minimally create two plans: a plan for upgrading server (master) nodes and a plan for upgrading agent (worker) nodes. As needed, you can create additional plans to control the rollout of the upgrade across nodes. The following two example plans will upgrade your cluster to rke2 v1.17.4+k3s1. Once the plans are created, the controller will pick them up and begin to upgrade your cluster.
+It is recommended that you minimally create two plans: a plan for upgrading server (master) nodes and a plan for upgrading agent (worker) nodes. As needed, you can create additional plans to control the rollout of the upgrade across nodes. The following two example plans will upgrade your cluster to rke2 v1.21.2+rke2r1. Once the plans are created, the controller will pick them up and begin to upgrade your cluster.
 ```
 # Server plan
 apiVersion: upgrade.cattle.io/v1
@@ -58,7 +58,7 @@ spec:
 #    force: true
   upgrade:
     image: rancher/rke2-upgrade
-  version: v1.18.13+rke2r1
+  version: v1.21.2+rke2r1
 ---
 # Agent plan
 apiVersion: upgrade.cattle.io/v1
@@ -86,7 +86,7 @@ spec:
     force: true
   upgrade:
     image: rancher/rke2-upgrade
-  version: v1.18.13+rke2r1
+  version: v1.21.2+rke2r1
 
 ```
 
@@ -97,11 +97,11 @@ First, the plans must be created in the same namespace where the controller was 
 
 Second, the `concurrency` field indicates how many nodes can be upgraded at the same time. 
 
-Third, the server-plan targets server nodes by specifying a label selector that selects nodes with the `node-role.kubernetes.io/master` label. The agent-plan targets agent nodes by specifying a label selector that select nodes without that label.
+Third, the server-plan targets server nodes by specifying a label selector that selects nodes with the `node-role.kubernetes.io/master` label. The agent-plan targets agent nodes by specifying a label selector that select nodes without that label. Optionally, additional labels can be included, like in the example above, which requires label "rke2-upgrade" to exist and not have the value "disabled" or "false".
 
 Fourth, the `prepare` step in the agent-plan will cause upgrade jobs for that plan to wait for the server-plan to complete before they execute.
 
-Fifth, both plans have the `version` field set to v1.18.9+rke2. Alternatively, you can omit the `version` field and set the `channel` field to a URL that resolves to a release of rke2. This will cause the controller to monitor that URL and upgrade the cluster any time it resolves to a new release. This works well with the [release channels](basic_upgrade.md/#release-channels). Thus, you can configure your plans with the following channel to ensure your cluster is always automatically upgraded to the newest stable release of rke2:
+Fifth, both plans have the `version` field set to v1.21.2+rke2r1. Alternatively, you can omit the `version` field and set the `channel` field to a URL that resolves to a release of rke2. This will cause the controller to monitor that URL and upgrade the cluster any time it resolves to a new release. This works well with the [release channels](basic_upgrade.md/#release-channels). Thus, you can configure your plans with the following channel to ensure your cluster is always automatically upgraded to the newest stable release of rke2:
 ```
 apiVersion: upgrade.cattle.io/v1
 kind: Plan
