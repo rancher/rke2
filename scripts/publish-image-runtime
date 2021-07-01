@@ -5,5 +5,5 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-docker image push ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-linux-${GOARCH}
-docker image push ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-${GOARCH}
+docker image push ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH}
+docker image push ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64

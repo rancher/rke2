@@ -42,6 +42,19 @@ RUN set -x \
     zstd \
     jq \
     python2
+RUN GOCR_VERSION="v0.5.1" && \
+        if [ "${ARCH}" = "arm64" ]; then \
+        wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_arm64.tar.gz && \
+        tar -zxvf go-containerregistry_Linux_arm64.tar.gz && \
+        mv crane /usr/local/bin && \
+        chmod a+x /usr/local/bin/crane; \
+        else \
+        wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_x86_64.tar.gz && \
+        tar -zxvf go-containerregistry_Linux_x86_64.tar.gz && \
+        mv crane /usr/local/bin && \
+        chmod a+x /usr/local/bin/crane; \
+        fi
+
 RUN VERSION=0.16.0 && \
     if [ "${ARCH}" = "arm64" ]; then \
     wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-ARM64.tar.gz && \

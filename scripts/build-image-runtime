@@ -11,7 +11,7 @@ DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
     --build-arg MAJOR=${VERSION_MAJOR} \
     --build-arg MINOR=${VERSION_MINOR} \
     --build-arg CACHEBUST="$(date +%s%N)" \
-    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-linux-${GOARCH} \
+    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH} \
     --target runtime \
     --file Dockerfile \
     .
@@ -22,7 +22,7 @@ DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
     --build-arg MAJOR=${VERSION_MAJOR} \
     --build-arg MINOR=${VERSION_MINOR} \
     --build-arg CACHEBUST="$(date +%s%N)" \
-    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-${GOARCH} \
+    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
     --target windows-runtime \
     --file Dockerfile.windows \
     .
@@ -30,5 +30,5 @@ DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
 mkdir -p build/images
 docker image save \
     --output build/images/${PROG}-runtime.tar \
-    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-linux-${GOARCH} \
-    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-${GOARCH}
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH} \
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64
