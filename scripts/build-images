@@ -5,13 +5,12 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-./scripts/build-image-kubernetes
 ./scripts/build-image-runtime
 
 awk '{print $1}' << EOF > build/images-core.txt
     ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-linux-${GOARCH}
     ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-${GOARCH}
-    ${REGISTRY}/${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}
+    ${REGISTRY}/${REPO}/hardened-kubernetes:${KUBERNETES_VERSION}
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
@@ -73,17 +72,3 @@ EOF
 
 # Continue to provide a legacy airgap archive set with the default CNI images
 cat build/images-core.txt build/images-canal.txt > build/images.txt
-
-# We reorder the tar file so that the metadata files are at the start of the archive, which should make loading
-# the runtime image faster. By default `docker image save` puts these at the end of the archive, which means the entire
-# tarball needs to be read even if you're just loading a single image.
-for FILE in build/images*.txt; do
-    BASE=$(basename ${FILE} .txt)
-    DEST=build/images/${PROG}-${BASE}.tar
-    docker image save --output ${DEST}.tmp $(<${FILE})
-    bsdtar -c -f ${DEST} --include=manifest.json --include=repositories @${DEST}.tmp
-    bsdtar -r -f ${DEST} --exclude=manifest.json --exclude=repositories @${DEST}.tmp
-    rm -f ${DEST}.tmp
-done
-
-./scripts/build-image-test
