@@ -8,16 +8,16 @@ source ./scripts/version.sh
 mkdir -p dist/artifacts
 
 # 1809
-crane pull --platform windows/amd64 ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rke2-windows-1809-images.tar.gz
-crane pull --platform windows/amd64 mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-1809-amd64 rke2-windows-1809-images.tar.gz
+crane --platform windows/amd64 pull ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rke2-windows-1809-images.tar.gz
+crane --platform windows/amd64 pull mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-1809-amd64 rke2-windows-1809-images.tar.gz
 
 # 2004
-crane pull --platform windows/amd64 ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rke2-windows-2004-images.tar.gz
-crane pull --platform windows/amd64 mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-2004-amd64 rke2-windows-2004-images.tar.gz
+crane --platform windows/amd64 pull ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rke2-windows-2004-images.tar.gz
+crane --platform windows/amd64 pull mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-2004-amd64 rke2-windows-2004-images.tar.gz
 
 # 20H2
-crane pull --platform windows/amd64 ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rke2-windows-20H2-images.tar.gz
-crane pull --platform windows/amd64 mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-2004-amd64 rke2-windows-20H2-images.tar.gz
+crane --platform windows/amd64 pull ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rke2-windows-20H2-images.tar.gz
+crane --platform windows/amd64 pull mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-2004-amd64 rke2-windows-20H2-images.tar.gz
 
 
 WINDOWS_TARFILES=(rke2-windows-1809-images.tar.gz rke2-windows-2004-images.tar.gz rke2-windows-20H2-images.tar.gz)
