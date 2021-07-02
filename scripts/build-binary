@@ -27,7 +27,7 @@ VERSION_FLAGS="
         -X ${RKE2_PKG}/pkg/images.DefaultEtcdImage=rancher/hardened-etcd:${ETCD_VERSION}-${IMAGE_BUILD_VERSION}
         -X ${RKE2_PKG}/pkg/images.DefaultKubernetesImage=${REPO}/hardened-kubernetes:${KUBERNETES_VERSION}
         -X ${RKE2_PKG}/pkg/images.DefaultPauseImage=rancher/pause:${PAUSE_VERSION}
-        -X ${RKE2_PKG}/pkg/images.DefaultRuntimeImage=${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
+        -X ${RKE2_PKG}/pkg/images.DefaultRuntimeImage=${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH}
         -X ${RKE2_PKG}/pkg/images.DefaultCloudControllerManagerImage=rancher/rke2-cloud-provider:${CCM_VERSION}
 "
 

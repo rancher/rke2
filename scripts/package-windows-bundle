@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -ex
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+
+mkdir -p dist/bundle/share/${PROG}-windows
+
+### bundle underlay
+rsync -a bundle/ dist/bundle/
+
+### bin/rke2.exe
+install -s bin/${PROG}.exe dist/bundle/bin/
+
+### share/rke2/LICENSE
+cp -vf LICENSE dist/bundle/share/${PROG}/LICENSE.txt
+
+### (setup directory)
+mkdir -p dist/artifacts
+
+### (make the tarball)
+if [ -z "${PACKAGE_SKIP_TARBALL}" ]; then
+  tar -czf dist/artifacts/${PROG}.windows-amd64.tar.gz -C dist/bundle $(find dist/bundle -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
+fi

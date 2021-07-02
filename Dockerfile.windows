@@ -1,27 +1,64 @@
-FROM alpine AS build
+FROM alpine:3.12 AS build
 
+RUN apk --no-cache add \
+    curl \
+    unzip
+
+# Dapper/Drone/CI environment
+FROM rancher/hardened-build-base:v1.16.4b7 AS dapper
+ENV DAPPER_ENV GODEBUG REPO TAG DRONE_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME GCLOUD_AUTH ENABLE_REGISTRY
+ARG DAPPER_HOST_ARCH
+ENV ARCH $DAPPER_HOST_ARCH
+ENV DAPPER_OUTPUT ./dist ./bin ./build
+ENV DAPPER_DOCKER_SOCKET true
+ENV DAPPER_TARGET dapper
+ENV DAPPER_RUN_ARGS "--privileged --network host -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build"
+RUN apk update
+RUN set -x \
+    && apk add --no-cache \
+    mingw-w64-gcc \
+    libarchive-tools \
+    gcc \
+    bsd-compat-headers \
+    zstd \
+    jq \
+    python2 \
+    git \
+    libseccomp-dev \
+    rsync \
+    file \
+    bash \
+    py-pip
+RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
+    curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+    )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
+    chmod a+x /usr/local/bin/kubectl; \
+    pip install codespell
+RUN curl -sL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.27.0
+WORKDIR /source
+# End Dapper stuff
+
+FROM build as windows-runtime-collect
 # windows runtime image
-ENV KUBERNETES_VERSION="v1.21.0"
+ENV KUBERNETES_VERSION="v1.21.2"
+ENV CRICTL_VERSION="v1.21.0"
 ENV CONTAINERD_VERSION="1.5.2"
 ENV WINS_VERSION="0.1.1"
 ENV FLANNEL_VERSION="v0.14.0"
 ENV CALICO_VERSION="v3.19.1"
 ENV CNI_PLUGIN_VERSION="v0.9.1"
 
-RUN apk --no-cache add curl unzip
-
 RUN mkdir -p rancher
-
-RUN curl -sLO https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz 
-RUN curl -sLO https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz.sha256sum 
+RUN curl -sLO https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz
+RUN curl -sLO https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz.sha256sum
 RUN sha256sum -c containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz.sha256sum
 
-RUN curl -sLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${KUBERNETES_VERSION}/crictl-${KUBERNETES_VERSION}-windows-amd64.tar.gz 
-RUN curl -SLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${KUBERNETES_VERSION}/crictl-${KUBERNETES_VERSION}-windows-amd64.tar.gz.sha256 
-RUN sha256sum -c ./crictl-${KUBERNETES_VERSION}-windows-amd64.tar.gz.sha256
+RUN curl -sLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-windows-amd64.tar.gz
+RUN curl -SLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-windows-amd64.tar.gz.sha256
+RUN sha256sum -c ./crictl-${CRICTL_VERSION}-windows-amd64.tar.gz.sha256
 
-RUN curl -sLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz 
-RUN curl -sLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz.sha256 
+RUN curl -sLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz
+RUN curl -sLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz.sha256
 RUN sha256sum -c cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz.sha256
 
 RUN curl -sLO https://github.com/rancher/wins/releases/download/v${WINS_VERSION}/wins.exe
@@ -52,9 +89,9 @@ RUN curl -sLO https://github.com/flannel-io/flannel/releases/download/${FLANNEL_
 RUN curl -sLO https://github.com/projectcalico/calico/releases/download/${CALICO_VERSION}/calico-windows-${CALICO_VERSION}.zip
 RUN curl -sL https://github.com/Microsoft/SDN/raw/master/Kubernetes/windows/hns.psm1 -o rancher/hns.psm1
 
-RUN tar xzvf crictl-${KUBERNETES_VERSION}-windows-amd64.tar.gz crictl.exe -C rancher/
+RUN tar xzvf crictl-${CRICTL_VERSION}-windows-amd64.tar.gz crictl.exe -C rancher/
 RUN tar xvzf containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz -C rancher/
-RUN tar xzvf cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz ./flannel.exe ./win-overlay.exe -C rancher/
+RUN tar xzvf cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz ./flannel.exe ./win-overlay.exe ./host-local.exe -C rancher/
 RUN tar xzvf flannel-${FLANNEL_VERSION}-windows-amd64.tar.gz flanneld.exe -C rancher/
 
 RUN unzip calico-windows-${CALICO_VERSION}.zip
@@ -62,5 +99,5 @@ RUN mv CalicoWindows/calico-node.exe rancher/
 RUN mv CalicoWindows/cni/calico.exe rancher/
 RUN mv CalicoWindows/cni/calico-ipam.exe rancher/
 
-FROM scratch 
-COPY --from=build ./rancher/* /bin/
+FROM scratch AS windows-runtime
+COPY --from=windows-runtime-collect ./rancher/* /bin/
