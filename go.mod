@@ -19,7 +19,7 @@ replace (
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc93.0.20210414171415-3397a09ee932
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20210316141917-a8c4a9ee0f6b
-	github.com/rancher/wharfie => github.com/rancher/wharfie v0.3.5
+	github.com/rancher/wharfie => github.com/rancher/wharfie v0.4.1
 	go.etcd.io/etcd => github.com/k3s-io/etcd v0.5.0-alpha.5.0.20201208200253-50621aee4aea
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 	google.golang.org/grpc => google.golang.org/grpc v1.27.1
@@ -61,7 +61,7 @@ require (
 	github.com/k3s-io/helm-controller v0.9.3
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/k3s v1.21.1-rc1.0.20210629142838-04398a2582a3
-	github.com/rancher/wharfie v0.3.5
+	github.com/rancher/wharfie v0.4.1
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.8.1
