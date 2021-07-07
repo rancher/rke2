@@ -3,17 +3,14 @@
 [ -n "$GCLOUD_AUTH" ] || {
   exit 0
 }
-
 [[ $1 =~ rke2\.(linux|windows)-.+\.tar\.gz ]] || {
   echo "First argument should be a dist bundle tarball" >&2
   exit 1
 }
-
-[[ $2 =~ rke2-runtime\..+\.(tar|tar\.gz)\.zst ]] || {
+[[ $2 =~ rke2-runtime\..+\.tar\.zst ]] || {
   echo "Second argument should be a compressed airgap runtime image tarball" >&2
   exit 1
 }
-
 [ -n "$3" ] || {
   echo "Third argument should be a commit hash" >&2
   exit 1
@@ -53,17 +50,9 @@ BUNDLE_NAME=$(basename $1 .tar.gz)-$3.tar.gz
 (cd $(dirname $1) && sha256sum $(basename $1)) >${TMPDIR}/${BUNDLE_NAME}.sha256sum
 cp $1 ${TMPDIR}/${BUNDLE_NAME}
 
-if [[ TARBALL_NAME == *linux* ]]; then
-  TARBALL_NAME=$(basename $2 .tar.zst)-$3.tar.zst
-  (cd $(dirname $2) && sha256sum $(basename $2)) >${TMPDIR}/${TARBALL_NAME}.sha256sum
-  cp $2 ${TMPDIR}/${TARBALL_NAME}
-fi
-
-if [[ TARBALL_NAME == *windows* ]]; then
-  TARBALL_NAME=$(basename $2 .tar.gz.zst)-$3.tar.gz.zst
-  (cd $(dirname $2) && sha256sum $(basename $2)) >${TMPDIR}/${TARBALL_NAME}.sha256sum
-  cp $2 ${TMPDIR}/${TARBALL_NAME}fi
-fi
+TARBALL_NAME=$(basename $2 .tar.zst)-$3.tar.zst
+(cd $(dirname $2) && sha256sum $(basename $2)) >${TMPDIR}/${TARBALL_NAME}.sha256sum
+cp $2 ${TMPDIR}/${TARBALL_NAME}
 
 [ -d "${TMPDIR}/gsutil" ] || curl -sfL https://storage.googleapis.com/pub/gsutil.tar.gz | tar xz -C ${TMPDIR}
 
