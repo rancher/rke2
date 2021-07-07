@@ -9,6 +9,9 @@ RUN set -x \
     git \
     libseccomp-dev \
     rsync \
+    mingw-w64-gcc \
+    gcc \
+    bsd-compat-headers \
     py-pip \
     pigz
 
@@ -39,6 +42,19 @@ RUN set -x \
     zstd \
     jq \
     python2
+RUN GOCR_VERSION="v0.5.1" && \
+        if [ "${ARCH}" = "arm64" ]; then \
+        wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_arm64.tar.gz && \
+        tar -zxvf go-containerregistry_Linux_arm64.tar.gz && \
+        mv crane /usr/local/bin && \
+        chmod a+x /usr/local/bin/crane; \
+        else \
+        wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_x86_64.tar.gz && \
+        tar -zxvf go-containerregistry_Linux_x86_64.tar.gz && \
+        mv crane /usr/local/bin && \
+        chmod a+x /usr/local/bin/crane; \
+        fi
+
 RUN VERSION=0.16.0 && \
     if [ "${ARCH}" = "arm64" ]; then \
     wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-ARM64.tar.gz && \
@@ -79,8 +95,8 @@ COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
 RUN CHART_VERSION="1.9.808"                   CHART_FILE=/charts/rke2-cilium.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="v3.19.1-build2021061107"   CHART_FILE=/charts/rke2-canal.yaml          CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="v3.1906"                   CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="v1.0.006"                  CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="v3.1907"                   CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="v1.0.007"                  CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.10.101-build2021022304"  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="3.30.003"                  CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
 RUN CHART_VERSION="v1.21.1-build2021052004"   CHART_FILE=/charts/rke2-kube-proxy.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
@@ -95,7 +111,7 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM rancher/k3s:v1.21.1-rc2-k3s1 AS k3s
-FROM rancher/hardened-kubernetes:v1.21.1 AS kubernetes
+FROM rancher/hardened-kubernetes:v1.21.2-rke2r1-build20210706 AS kubernetes
 FROM rancher/hardened-containerd:v1.4.4-k3s2-build20210520 AS containerd
 FROM rancher/hardened-crictl:v1.19.0-build20210223 AS crictl
 FROM rancher/hardened-runc:v1.0.0-rc95-build20210519 AS runc

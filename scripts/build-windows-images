@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -ex
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+
+awk '{print $1}' << EOF > build/windows-images.txt
+    ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64
+    mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-1809-amd64
+    mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-2004-amd64
+    mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-20H2-amd64
+EOF

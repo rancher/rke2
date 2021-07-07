@@ -1,19 +1,18 @@
 Roadmap
 ---
-This represents the larger, bigger impact features and enhancements we have planned for RKE2. There are many more tactical enhancements and fixes that can be found by perusing our [GitHub milestones](https://github.com/rancher/rke2/milestones).
+This represents the larger, bigger impact features and enhancements we have planned for RKE2. Features are planned, but do not represent a commitment to develop and can change at any time. There are many more tactical enhancements and fixes that can be found by perusing our [GitHub milestones](https://github.com/rancher/rke2/milestones).
 
-
-v1.20 - TBD
+Next
 ---
-- Update to v1.20 Kubernetes
+- CLI support for etcd backup management
+- FIPS compliant NGINX ingress
+- Support for Windows worker nodes
 
-v1.21 - TBD
+Later
 ---
-- Introduce support for Cilium CNI
-- Migrate to using upstream’s kubelet certificate rotation rather than our own custom logic
-- Migrate to using the kubelet config file for configuring kubelets rather than command line args
+- Provide a means to migrate RKE to RKE2
+- Publish SLES RPMs as release artifacts
+- Command and control command line provisioning tool
+- ARM64 support
+- S390x support
 
-Backlog
----
-- Embedded container image registry
-- Windows support
