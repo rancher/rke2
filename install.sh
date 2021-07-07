@@ -344,9 +344,13 @@ download_airgap_checksums() {
         return
     fi
     AIRGAP_CHECKSUMS_URL=${STORAGE_URL}/rke2-images.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.zst.sha256sum
-    # try for zst first; if that fails use gz for older release branches
+    # try zst first; if that fails try gz for other release branch
     if ! check_download "${AIRGAP_CHECKSUMS_URL}"; then
-        AIRGAP_CHECKSUMS_URL=${STORAGE_URL}/rke2-images.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.gz.sha256sum
+        AIRGAP_CHECKSUMS_URL=${STORAGE_URL}/rke2.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.gz.sha256sum
+        # try rke2 first; if that fails use rke2-images for older release branches
+        if ! check_download "${AIRGAP_CHECKSUMS_URL}"; then
+            AIRGAP_CHECKSUMS_URL=${STORAGE_URL}/rke2-images.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.gz.sha256sum
+        fi
     fi
     info "downloading airgap checksums at ${AIRGAP_CHECKSUMS_URL}"
     download "${TMP_AIRGAP_CHECKSUMS}" "${AIRGAP_CHECKSUMS_URL}"
@@ -359,9 +363,13 @@ download_airgap_tarball() {
         return
     fi
     AIRGAP_TARBALL_URL=${STORAGE_URL}/rke2-images.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.zst
-    # try for zst first; if that fails use gz for older release branches
+    # try zst first; if that fails try gz for other release branch
     if ! check_download "${AIRGAP_TARBALL_URL}"; then
-        AIRGAP_TARBALL_URL=${STORAGE_URL}/rke2-images.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.gz
+        # try rke2 first; if that fails use rke2-images for older release branches
+        AIRGAP_TARBALL_URL=${STORAGE_URL}/rke2.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.gz
+        if ! check_download "${AIRGAP_TARBALL_URL}"; then
+            AIRGAP_TARBALL_URL=${STORAGE_URL}/rke2-images.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.gz
+        fi
     fi
     info "downloading airgap tarball at ${AIRGAP_TARBALL_URL}"
     download "${TMP_AIRGAP_TARBALL}" "${AIRGAP_TARBALL_URL}"
