@@ -3,7 +3,7 @@
 [ -n "$GCLOUD_AUTH" ] || {
   exit 0
 }
-[[ $1 =~ rke2\.(linux|windows)-.+\.tar\.gz]] || {
+[[ $1 =~ rke2\.(linux|windows)-.+\.tar\.gz ]] || {
   echo "First argument should be a dist bundle tarball" >&2
   exit 1
 }
