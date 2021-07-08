@@ -11,7 +11,8 @@ DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
     --build-arg MAJOR=${VERSION_MAJOR} \
     --build-arg MINOR=${VERSION_MINOR} \
     --build-arg CACHEBUST="$(date +%s%N)" \
-    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH} \
+    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
+    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH} \
     --target runtime \
     --file Dockerfile \
     .
@@ -30,5 +31,4 @@ DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
 mkdir -p build/images
 docker image save \
     --output build/images/${PROG}-runtime.tar \
-    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH} \
-    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH}
