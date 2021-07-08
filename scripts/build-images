@@ -10,7 +10,7 @@ source ./scripts/version.sh
 
 awk '{print $1}' << EOF > build/images-core.txt
     ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
-    ${REGISTRY}/${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}
+    ${REGISTRY}/${REPO}/hardened-kubernetes:${KUBERNETES_VERSION}
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
