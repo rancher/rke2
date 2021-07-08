@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -ex
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+
+awk '{print $1}' << EOF > build/windows-images.txt
+    ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
+    k8s.gcr.io/pause:3.5
+EOF

@@ -1,0 +1,19 @@
+#!/bin/bash
+set -ex
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+
+docker image save \
+  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} | \
+  zstd -T0 -16 -f --long=25 --no-progress - -o build/images/${PROG}-images.${PLATFORM}.tar.zst
+./scripts/build-upload dist/artifacts/${RELEASE}.tar.gz build/images/${PROG}-images.${PLATFORM}.tar.zst ${COMMIT}
+
+# retag windows for saving image runtime zst
+docker tag ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-${ARCH} \
+  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
+docker image save \
+  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} | \
+  zstd -T0 -16 -f --long=25 --no-progress - -o build/images/${PROG}-images.windows-${ARCH}.tar.zst
+./scripts/build-upload dist/artifacts/${PROG}.windows-${ARCH}.tar.gz build/images/${PROG}-images.windows-${ARCH}.tar.zst ${COMMIT}

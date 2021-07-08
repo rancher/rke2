@@ -9,3 +9,4 @@ mkdir -p dist/{artifacts,bundle}
 ./scripts/package-bundle
 ./scripts/package-images
 ./scripts/build-upload dist/artifacts/${RELEASE}.tar.gz dist/artifacts/${PROG}-images.${PLATFORM}.tar.gz ${COMMIT}
+./scripts/package-windows-bundle

@@ -178,8 +178,8 @@ VOLUME /var/lib/cni
 VOLUME /var/log
 COPY bin/rke2 /bin/
 # use built air-gap images
-COPY build/images/rke2-airgap.tar /var/lib/rancher/rke2/agent/images/
-COPY build/images.txt /airgap-images.txt
+COPY build/images/rke2-images.linux-amd64.tar.zst /var/lib/rancher/rke2/agent/images/
+COPY build/images.txt /images.txt
 # use rke2 bundled binaries
 ENV PATH=/var/lib/rancher/rke2/bin:$PATH
 # for kubectl
