@@ -5,27 +5,26 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-mkdir -p dist/artifacts
+#mkdir -p dist/artifacts
 
 # 1809
-crane --platform windows/amd64 pull ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rke2-windows-1809-images.tar
-crane --platform windows/amd64 pull mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-1809-amd64 rke2-windows-1809-images.tar
+#crane --platform windows/amd64 pull ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rke2-windows-1809-images.tar
+#crane --platform windows/amd64 pull mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-1809-amd64 rke2-windows-1809-images.tar
 
 # 2004
-crane --platform windows/amd64 pull ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rke2-windows-2004-images.tar
-crane --platform windows/amd64 pull mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-2004-amd64 rke2-windows-2004-images.tar
+#crane --platform windows/amd64 pull ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rke2-windows-2004-images.tar
+#crane --platform windows/amd64 pull mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-2004-amd64 rke2-windows-2004-images.tar
 
 # 20H2
-crane --platform windows/amd64 pull ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rke2-windows-20H2-images.tar
-crane --platform windows/amd64 pull mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-2004-amd64 rke2-windows-20H2-images.tar
+#crane --platform windows/amd64 pull ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rke2-windows-20H2-images.tar
+#crane --platform windows/amd64 pull mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-2004-amd64 rke2-windows-20H2-images.tar
 
-
-WINDOWS_TARFILES=(rke2-windows-1809-images.tar rke2-windows-2004-images.tar rke2-windows-20H2-images.tar)
-for TARFILE in "${WINDOWS_TARFILES[@]}"; do
-    cp -f ${TARFILE} dist/artifacts/${PROG}-${BASE}.windows-amd64.txt
-    zstd -T0 -16 -f --long=25 --no-progress ${TARFILE} -o dist/artifacts/${PROG}-${BASE}.windows-amd64.tar.zst
-    pigz -v -c ${TARFILE} > dist/artifacts/${PROG}-${BASE}.windows-amd64.tar.gz
-    cp -f ${TARFILE} dist/artifacts/
-
-done
-cat build/windows-images.txt | sort -V | uniq > dist/artifacts/${PROG}-images.windows-amd64.txt
+#WINDOWS_TARFILES=(rke2-windows-1809-images.tar rke2-windows-2004-images.tar rke2-windows-20H2-images.tar)
+#for TARFILE in "${WINDOWS_TARFILES[@]}"; do
+#    cp -f ${TARFILE} dist/artifacts/${PROG}-${BASE}.windows-amd64.txt
+#    zstd -T0 -16 -f --long=25 --no-progress ${TARFILE} -o dist/artifacts/${PROG}-${BASE}.windows-amd64.tar.zst
+#    pigz -v -c ${TARFILE} > dist/artifacts/${PROG}-${BASE}.windows-amd64.tar.gz
+#    cp -f ${TARFILE} dist/artifacts/
+#
+#done
+#cat build/windows-images.txt | sort -V | uniq > dist/artifacts/${PROG}-images.windows-amd64.txt
