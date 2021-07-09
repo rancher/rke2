@@ -103,34 +103,6 @@ Logging is an important detective control for all systems, to detect potential u
 
 RKE2 supports configuring audit logging by passing `--profile=cis-1.5`. It enables a default policy which doesn't log anything. To configure a customize policy, you should pass the `--audit-policy-file` argument to the RKE2 server process. This argument specifies the path for audit logging policy configuration. For more information about the logging policy, you can checkout the [official docs](https://kubernetes.io/docs/tasks/debug-application-cluster/audit/#audit-policy).
 
-### Control 5.1.5
-Ensure that default service accounts are not actively used. (Scored)
-<details>
-<summary>Rationale</summary>
-
-Kubernetes provides a default service account that is used by cluster workloads where no specific service account is assigned to the pod.
-
-Where access to the Kubernetes API from a pod is required, a specific service account should be created for that pod, and rights granted to that service account.
-
-The default service account should be configured such that it does not provide a service account token and does not have any explicit rights assignments.
-</details>
-
-The remediation for this is to update the `automountServiceAccountToken` field to `false` for the `default` service account in each namespace.
-
-For `default` service accounts in the built-in namespaces (`kube-system`, `kube-public`, `kube-node-lease`, and `default`), RKE2 does not automatically do this. You can manually update this field on these service accounts to pass the control.
-
-For each namespace including `kube-system`, `kube-public`, `kube-node-lease`, and `default`, on a standard RKE2 install the default service account must set `automountServiceAccountToken: false`.
-
-Create a bash script file called `account_update.sh`. Be sure to `chmod +x account_update.sh` so the script has execute permissions.
-
-```bash
-#!/bin/bash -e
-
-for namespace in $(kubectl get namespaces -A -o json | jq -r '.items[].metadata.name'); do
-    kubectl patch serviceaccount default -n ${namespace} -p 'automountServiceAccountToken: false'
-done
-```
-
 ## Conclusion
 
 If you have followed this guide, your RKE2 cluster will be configured to pass the CIS Kubernetes Benchmark. You can review our CIS Benchmark Self-Assessment Guide [v1.5](cis_self_assessment15.md) or [v1.6](cis_self_assessment16.md) to understand how we verified each of the benchmarks and how you can do the same on your cluster.
