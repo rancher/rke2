@@ -36,7 +36,7 @@ func restrictServiceAccount(ctx context.Context, namespace string, cs kubernetes
 		Steps:    10,
 		Duration: 5 * time.Second,
 	}
-	// There are two race conditions this function avoids, a race on getting the initial sa because it does not yet exists,
+	// There are two race conditions this function avoids, a race on getting the initial sa because it does not yet exist,
 	// and a race between nodes to update the same sa, resulting in a conflict error
 	return retry.OnError(backoff, retryError, func() error {
 		sa, err := cs.CoreV1().ServiceAccounts(namespace).Get(ctx, serviceaccount.DefaultServiceAccountName, metav1.GetOptions{})
