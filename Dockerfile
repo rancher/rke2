@@ -82,7 +82,7 @@ RUN CHART_VERSION="v3.13.300-build2021022306" CHART_FILE=/charts/rke2-canal.yaml
 RUN CHART_VERSION="v3.1907"                   CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="v1.0.007"                  CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.10.101-build2021022304"  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="3.30.003"                  CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
+RUN CHART_VERSION="3.34.001"                  CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
 # override the CHART_URL directly instead of constructing. See https://github.com/rancher/rancher/issues/33269
 RUN CHART_URL="https://rke2-charts.rancher.io/assets/rke2-kube-proxy-1.21/rke2-kube-proxy-v1.21.2-build2021061701.tgz" \
                                               CHART_FILE=/charts/rke2-kube-proxy.yaml        CHART_BOOTSTRAP=true    /charts/build-chart.sh
