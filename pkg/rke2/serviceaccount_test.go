@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
+	"k8s.io/utils/pointer"
 )
 
 var testServiceAccountEmpty = &v1.ServiceAccount{
@@ -22,7 +23,7 @@ var testServiceAccountFilled = &v1.ServiceAccount{
 	ObjectMeta: metav1.ObjectMeta{
 		Name: "default",
 	},
-	AutomountServiceAccountToken: new(bool),
+	AutomountServiceAccountToken: pointer.BoolPtr(false),
 }
 
 func addClientReactors(cs *fake.Clientset, verb string, pass bool) *fake.Clientset {
