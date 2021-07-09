@@ -65,11 +65,16 @@ func Server(clx *cli.Context, cfg Config) error {
 		}
 	}
 	cisMode := isCISMode(clx)
-
+	var defaultNamespaces = []string{
+		metav1.NamespaceSystem,
+		metav1.NamespaceDefault,
+		metav1.NamespacePublic,
+	}
 	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
 		setPSPs(cisMode),
-		setNetworkPolicies(cisMode),
+		setNetworkPolicies(cisMode, defaultNamespaces),
 		setClusterRoles(),
+		restrictServiceAccounts(cisMode, defaultNamespaces),
 		setKubeProxyDisabled(clx, &cmds.ServerConfig),
 	)
 
