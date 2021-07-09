@@ -72,5 +72,7 @@ require (
 	k8s.io/apiserver v0.21.2
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/cri-api v0.21.2
+	k8s.io/kubernetes v1.20.8
+	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 	sigs.k8s.io/yaml v1.2.0
 )
