@@ -62,7 +62,19 @@ func NewAgentCommand() cli.Command {
 	cmd := k3sAgentBase
 	cmd.Flags = append(cmd.Flags, commonFlag...)
 	cmd.Flags = append(cmd.Flags, deprecatedFlags...)
+	cmd.Subcommands = agentSubcommands()
 	return cmd
+}
+
+func agentSubcommands() cli.Commands {
+	subcommands := []cli.Command{
+		// subcommands used by both windows/linux, none yet
+	}
+
+	// linux/windows only subcommands
+	subcommands = append(subcommands, serviceSubcommand)
+
+	return subcommands
 }
 
 func AgentRun(clx *cli.Context) error {
