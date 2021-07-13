@@ -38,7 +38,6 @@ EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
     ${REGISTRY}/rancher/mirrored-calico-operator:v1.17.4
-    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.19.1
     ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.19.1
     ${REGISTRY}/rancher/mirrored-calico-typha:v3.19.1
     ${REGISTRY}/rancher/mirrored-calico-node:v3.19.1
@@ -70,4 +69,11 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
 EOF
 
 # Continue to provide a legacy airgap archive set with the default CNI images
-cat build/images-core.txt build/images-canal.txt > build/images.txt
+case $RKE2_CNI in
+  calico)
+    cat build/images-core.txt build/images-calico.txt > build/images.txt
+    ;;
+  canal)
+    cat build/images-core.txt build/images-canal.txt > build/images.txt
+    ;;
+esac

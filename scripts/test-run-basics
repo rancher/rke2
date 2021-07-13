@@ -1,16 +1,36 @@
 #!/bin/bash
 
-all_services=(
+calico_services=(
+    tigera-operator
     calico-node
+)
+
+canal_services=(
+    kube-flannel
+    calico-node
+)
+
+echo "The CNI is $RKE2_CNI"
+
+case $RKE2_CNI in
+  calico)
+    cni_services=${calico_services[@]}
+    ;;
+  canal)
+    cni_services=${canal_services[@]}
+    ;;
+esac
+
+all_services=(
     coredns
     etcd
     kube-apiserver
     kube-controller-manager
-    kube-flannel
     kube-proxy
     kube-scheduler
     metrics-server
     rke2-ingress-nginx-controller
+    ${cni_services[@]}
 )
 
 export NUM_SERVERS=1

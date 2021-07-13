@@ -4,6 +4,7 @@ set -ex
 cd $(dirname $0)/..
 
 source ./scripts/version.sh
+source ./scripts/test-helpers
 mkdir -p build/images
 ./scripts/build-binary
 ./scripts/build-windows-binary

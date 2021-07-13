@@ -63,7 +63,7 @@ export -f wait-for-nodes
 # ---
 
 pod-ready() {
-    kubectl get pods -n kube-system -o json \
+    kubectl get pods -A -o json \
         | jq ".items[].status | select(.containerStatuses != null) | .containerStatuses[] | select(.name == \"$1\") | .ready" 2>/dev/null
 }
 export -f pod-ready
@@ -418,6 +418,7 @@ provision-server() {
         -p 127.0.0.1:$port:6443 \
         -e RKE2_TOKEN=$(cat $TEST_DIR/metadata/secret) \
         -e RKE2_DEBUG=true \
+        -e RKE2_CNI=$RKE2_CNI \
         ${REGISTRY_CLUSTER_ARGS:-} \
         $RKE2_IMAGE server $ARGS $SERVER_ARGS ${!SERVER_INSTANCE_ARGS}
 
@@ -632,6 +633,10 @@ pid-cleanup() {
 export -f pid-cleanup
 
 # ---
+
+RKE2_CNI=$(git log -n 1 --invert-grep --author=drone | grep "__cni:" | cut -d":" -f2)
+RKE2_CNI=${RKE2_CNI:-canal}
+export RKE2_CNI
 
 pids=()
 trap pid-cleanup EXIT INT TERM
