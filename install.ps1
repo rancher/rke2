@@ -31,15 +31,15 @@
     Default is not set.`
 .EXAMPLE
   Usage:
-    Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://get.rke2.io/install.ps1'))        
+    Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/master/install.ps1'))
     ./install.ps1
 .EXAMPLE
   Usage:
-    Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://get.rke2.io/install.ps1'))        
+    Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/master/install.ps1'))
     ./install.ps1 -Channel Latest
 .EXAMPLE
   Usage:
-    Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://get.rke2.io/install.ps1'))        
+    Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/master/install.ps1'))
     ./install.ps1 -Channel Latest -Mehtod Tar
 #>
 

@@ -36,6 +36,7 @@ import (
 
 var (
 	releasePattern = regexp.MustCompile("^v[0-9]")
+	ps             = string(os.PathSeparator)
 )
 
 // binDirForDigest returns the path to dataDir/data/refDigest/bin.
@@ -145,8 +146,8 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 
 		// Extract binaries and charts
 		extractPaths := map[string]string{
-			"/bin":    refBinDir,
-			"/charts": refChartsDir,
+			ps + "bin":    refBinDir,
+			ps + "charts": refChartsDir,
 		}
 		if err := extract.ExtractDirs(img, extractPaths); err != nil {
 			return "", errors.Wrap(err, "failed to extract runtime image")
