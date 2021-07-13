@@ -17,7 +17,7 @@ GO=${GO-go}
 echo Running validation
 
 echo Running: golangci-lint
-golangci-lint run
+golangci-lint -v run
 
 echo Running: go fmt
 go fmt ./

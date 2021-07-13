@@ -6,7 +6,7 @@ all_services=(
     etcd
     kube-apiserver
     kube-controller-manager
-    kube-flannel
+    tigera-operator
     kube-proxy
     kube-scheduler
     metrics-server
