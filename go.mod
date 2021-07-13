@@ -65,6 +65,7 @@ require (
 	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.5
+	golang.org/x/sys v0.0.0-20210225134936-a50acf3fe073
 	google.golang.org/grpc v1.37.0
 	k8s.io/api v0.21.1
 	k8s.io/apimachinery v0.21.1
