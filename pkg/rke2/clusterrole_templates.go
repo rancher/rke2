@@ -54,20 +54,35 @@ rules:
   - list
   - get
   - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - list
+  - get
+- apiGroups:
+  - "helm.cattle.io"
+  resources:
+  - helmcharts
+  - helmchartconfigs
+  verbs:
+  - list
+  - get
 `
 
 const tunnelControllerRoleBindingTemplate = `apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: system:k3s-controller
+  name: %[1]s
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: %s
+  name: %[1]s
 subjects:
   - apiGroup: rbac.authorization.k8s.io
     kind: User
-    name: %s
+    name: %[1]s
 `
 const cloudControllerManagerRoleBindingTemplate = `apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
