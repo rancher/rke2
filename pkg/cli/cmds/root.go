@@ -40,7 +40,13 @@ var (
 			Destination: &config.Images.KubeControllManager,
 		},
 		&cli.StringFlag{
-			Name:        "kube-scheduler-image",
+			Name:        images.KubeProxy,
+			Usage:       "(image) Override image to use for kube-proxy",
+			EnvVar:      "RKE2_KUBE_PROXY_IMAGE",
+			Destination: &config.Images.KubeProxy,
+		},
+		&cli.StringFlag{
+			Name:        images.KubeScheduler,
 			Usage:       "(image) Override image to use for kube-scheduler",
 			EnvVar:      "RKE2_KUBE_SCHEDULER_IMAGE",
 			Destination: &config.Images.KubeScheduler,

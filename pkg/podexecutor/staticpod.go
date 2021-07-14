@@ -81,9 +81,22 @@ func (s *StaticPodConfig) Kubelet(args []string) error {
 	return nil
 }
 
-// KubeProxy panics if used. KubeProxy for RKE2 is provided by a packaged component (rke2-kube-proxy Helm chart).
+// KubeProxy starts Kube Proxy as a static pod.
 func (s *StaticPodConfig) KubeProxy(args []string) error {
-	panic("kube-proxy unsupported")
+	image, err := s.Resolver.GetReference(images.KubeProxy)
+	if err != nil {
+		return err
+	}
+	if err := images.Pull(s.ImagesDir, images.KubeProxy, image); err != nil {
+		return err
+	}
+
+	return staticpod.Run(s.ManifestsDir, staticpod.Args{
+		Command:   "kube-proxy",
+		Args:      args,
+		Image:     image,
+		CPUMillis: 250,
+	})
 }
 
 // APIServer sets up the apiserver static pod once etcd is available, returning the authenticator and request handler.
