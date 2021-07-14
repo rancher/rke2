@@ -62,6 +62,8 @@ func Server(clx *cli.Context, cfg Config) error {
 		setPSPs(),
 		setNetworkPolicies(),
 		setClusterRoles(),
+		setKubeProxyDisabled(clx, &cmds.ServerConfig),
+		restrictServiceAccounts(cisMode, defaultNamespaces),
 	)
 
 	var leaderControllers rawServer.CustomControllers

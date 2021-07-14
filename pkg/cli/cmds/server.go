@@ -63,7 +63,7 @@ var (
 		"disable-scheduler":           copy,
 		"disable-cloud-controller":    copy,
 		"disable-network-policy":      drop,
-		"disable-kube-proxy":          drop,
+		"disable-kube-proxy":          copy,
 		"disable-apiserver":           copy,
 		"disable-controller-manager":  copy,
 		"disable-etcd":                copy,
