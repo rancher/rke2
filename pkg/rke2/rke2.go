@@ -70,6 +70,7 @@ func Server(clx *cli.Context, cfg Config) error {
 		setPSPs(cisMode),
 		setNetworkPolicies(cisMode, defaultNamespaces),
 		setClusterRoles(),
+		setKubeProxyDisabled(clx, &cmds.ServerConfig),
 		restrictServiceAccounts(cisMode, defaultNamespaces),
 	)
 
