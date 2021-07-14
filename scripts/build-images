@@ -8,7 +8,7 @@ source ./scripts/version.sh
 ./scripts/build-image-runtime
 
 awk '{print $1}' << EOF > build/images-core.txt
-    ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH}
+    ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
     ${REGISTRY}/${REPO}/hardened-kubernetes:${KUBERNETES_VERSION}
 EOF
 

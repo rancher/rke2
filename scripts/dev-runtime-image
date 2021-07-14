@@ -6,12 +6,14 @@ cd $(dirname $0)/..
 source ./scripts/version.sh
 
 docker image save \
-  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH} | \
-  zstd -T0 -16 -f --long=25 --no-progress - -o build/images/${PROG}-runtime.${PLATFORM}.tar.zst
+  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} | \
+  zstd -T0 -16 -f --long=25 --no-progress - -o build/images/${PROG}-images.${PLATFORM}.tar.zst
+./scripts/build-upload dist/artifacts/${RELEASE}.tar.gz build/images/${PROG}-images.${PLATFORM}.tar.zst ${COMMIT}
 
+# retag windows for saving image runtime zst
+docker tag ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-${ARCH} \
+  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
 docker image save \
-  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 | \
-  zstd -T0 -16 -f --long=25 --no-progress - -o build/images/${PROG}-runtime.windows-amd64.tar.zst
-
-./scripts/build-upload dist/artifacts/${RELEASE}.tar.gz build/images/${PROG}-runtime.${PLATFORM}.tar.zst ${COMMIT}
-./scripts/build-upload dist/artifacts/${PROG}.windows-amd64.tar.gz build/images/${PROG}-runtime.windows-amd64.tar.zst ${COMMIT}
+  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} | \
+  zstd -T0 -16 -f --long=25 --no-progress - -o build/images/${PROG}-images.windows-${ARCH}.tar.zst
+./scripts/build-upload dist/artifacts/${PROG}.windows-${ARCH}.tar.gz build/images/${PROG}-images.windows-${ARCH}.tar.zst ${COMMIT}
