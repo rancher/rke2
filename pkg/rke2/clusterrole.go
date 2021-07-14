@@ -81,7 +81,7 @@ func setTunnelControllerRoleBinding(ctx context.Context, cs *kubernetes.Clientse
 		if apierrors.IsNotFound(err) {
 			logrus.Infof("Setting Cluster RoleBinding: %s", tunnelControllerRoleName)
 
-			tmpl := fmt.Sprintf(tunnelControllerRoleBindingTemplate, tunnelControllerRoleName, tunnelControllerRoleName)
+			tmpl := fmt.Sprintf(tunnelControllerRoleBindingTemplate, tunnelControllerRoleName)
 			if err := deployClusterRoleBindingFromYaml(ctx, cs, tmpl); err != nil {
 				return err
 			}

@@ -16,15 +16,11 @@ import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/k3s/pkg/cli/etcdsnapshot"
 	"github.com/rancher/k3s/pkg/cli/server"
-	"github.com/rancher/k3s/pkg/cluster/managed"
 	daemonconfig "github.com/rancher/k3s/pkg/daemons/config"
 	"github.com/rancher/k3s/pkg/daemons/executor"
-	"github.com/rancher/k3s/pkg/etcd"
 	rawServer "github.com/rancher/k3s/pkg/server"
-	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
 	"github.com/rancher/rke2/pkg/images"
-	"github.com/rancher/rke2/pkg/podexecutor"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -107,62 +103,11 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	disableCloudControllerManager := clx.Bool("disable-cloud-controller")
 	clusterReset := clx.Bool("cluster-reset")
 
-	auditPolicyFile := clx.String("audit-policy-file")
-	if auditPolicyFile == "" {
-		auditPolicyFile = defaultAuditPolicyFile
-	}
-
-	// This flag will only be set on servers, on agents this is a no-op and the
-	// resolver's default registry will get updated later when bootstrapping
-	cfg.Images.SystemDefaultRegistry = clx.String("system-default-registry")
-	resolver, err := images.NewResolver(cfg.Images)
+	ex, err := initExecutor(clx, cfg, dataDir, disableETCD, isServer)
 	if err != nil {
 		return err
 	}
-
-	if err := defaults.Set(clx, dataDir); err != nil {
-		return err
-	}
-
-	agentManifestsDir := filepath.Join(dataDir, "agent", config.DefaultPodManifestPath)
-	agentImagesDir := filepath.Join(dataDir, "agent", "images")
-
-	managed.RegisterDriver(&etcd.ETCD{})
-
-	if clx.IsSet("cloud-provider-config") || clx.IsSet("cloud-provider-name") {
-		if clx.IsSet("node-external-ip") {
-			return errors.New("can't set node-external-ip while using cloud provider")
-		}
-		cmds.ServerConfig.DisableCCM = true
-	}
-	var cpConfig *podexecutor.CloudProviderConfig
-	if cfg.CloudProviderConfig != "" && cfg.CloudProviderName == "" {
-		return fmt.Errorf("--cloud-provider-config requires --cloud-provider-name to be provided")
-	}
-	if cfg.CloudProviderName != "" {
-		cpConfig = &podexecutor.CloudProviderConfig{
-			Name: cfg.CloudProviderName,
-			Path: cfg.CloudProviderConfig,
-		}
-	}
-
-	if cfg.KubeletPath == "" {
-		cfg.KubeletPath = "kubelet"
-	}
-
-	sp := podexecutor.StaticPodConfig{
-		Resolver:        resolver,
-		ImagesDir:       agentImagesDir,
-		ManifestsDir:    agentManifestsDir,
-		CISMode:         isCISMode(clx),
-		CloudProvider:   cpConfig,
-		DataDir:         dataDir,
-		AuditPolicyFile: auditPolicyFile,
-		KubeletPath:     cfg.KubeletPath,
-		DisableETCD:     disableETCD,
-		IsServer:        isServer,
-	}
-	executor.Set(&sp)
+	executor.Set(ex)
 
 	disabledItems := map[string]bool{
 		"kube-apiserver":           disableAPIServer,
