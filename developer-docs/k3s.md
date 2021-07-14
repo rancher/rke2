@@ -1,8 +1,9 @@
 At the heart of RKE2 is the embedded K3s engine which functions as a
 supervisor for the kubelet and containerd processes. The K3s engine also
-provides an add-on controller that RKE2 leverages. So, RKE2 depends on K3s,
+provides AddOn and Helm controllers that RKE2 leverages. So, RKE2 depends on K3s,
 but what does that look like from version to version? It is not yet as simple
-as 1.20.7+k3s1rke2r1 &rarr; 1.20.7+k3s1 but starting with 1.22.x it should be.
+as 1.20.7+rke2r1 &rarr; 1.20.7+k3s1, but starting with the release-1.22 branch
+it should be.
 
 Until then, here is a handy table:
 
