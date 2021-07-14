@@ -33,6 +33,7 @@ type Args struct {
 	CPUMillis       int64
 	SecurityContext *v1.PodSecurityContext
 	Annotations     map[string]string
+	Privileged      bool
 }
 
 func Run(dir string, args Args) error {
@@ -120,6 +121,9 @@ func pod(args Args) (*v1.Pod, error) {
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
 				{
+					SecurityContext: &v1.SecurityContext{
+						Privileged: &args.Privileged,
+					},
 					Command:         append([]string{args.Command}, args.Args...),
 					Image:           args.Image,
 					ImagePullPolicy: v1.PullIfNotPresent,
