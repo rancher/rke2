@@ -32,7 +32,7 @@ For more information about the full options of the Canal config please refer to 
 
 # Using Cilium or Calico instead of Canal
 
-Starting with RKE2 v1.21, different CNI Plugins can be deployed instead of Canal. To do so, pass `cilium` or `calico` as the value of the `--cni` flag. To override the default options, use a HelmChartConfig resource, as explained in the previous section. Note that the HelmChartConfig resource names must match the chart names for your selected CNI - `rke2-cilium`, `rke2-calico`, etc.
+Starting with RKE2 v1.20.7, different CNI Plugins can be deployed instead of Canal. To do so, pass `cilium` or `calico` as the value of the `--cni` flag. To override the default options, use a HelmChartConfig resource, as explained in the previous section. Note that the HelmChartConfig resource names must match the chart names for your selected CNI - `rke2-cilium`, `rke2-calico`, etc.
 
 For more information about values available for the Cilium chart, please refer to the [rke2-charts repository](https://github.com/rancher/rke2-charts/blob/main-source/packages/rke2-cilium/charts/values.yaml)
 
