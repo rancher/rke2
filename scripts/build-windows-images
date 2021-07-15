@@ -4,8 +4,9 @@ set -ex
 cd $(dirname $0)/..
 
 source ./scripts/version.sh
+mkdir -p build
 
-awk '{print $1}' << EOF > build/windows-images.txt
-    ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
-    k8s.gcr.io/pause:3.5
-EOF
+WINDOWS_IMAGES=(${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-1809-amd64 mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-2004-amd64 mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-20H2-amd64)
+for IMAGE in "${WINDOWS_IMAGES[@]}"; do
+  echo "${IMAGE}" >> build/windows-images.txt
+done
