@@ -142,28 +142,6 @@ steps:
     - refs/head/master
     - refs/tags/*
 
-- name: manifest-kubernetes
-  image: rancher/hardened-build-base:v1.16.4b7
-  commands:
-  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-  - DRONE_TAG=${DRONE_TAG} make publish-manifest-kubernetes
-  environment:
-    DOCKER_PASSWORD:
-      from_secret: docker_password
-    DOCKER_USERNAME:
-      from_secret: docker_username
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-  when:
-    event:
-    - tag
-    instance:
-    - drone-publish.rancher.io
-    ref:
-    - refs/head/master
-    - refs/tags/*
-
 volumes:
 - name: docker
   host:
