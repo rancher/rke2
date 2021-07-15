@@ -28,4 +28,3 @@ source ./scripts/version.sh
 #
 #done
 #cat build/windows-images.txt | sort -V | uniq > dist/artifacts/${PROG}-images.windows-amd64.txt
->>>>>>> 8e19d0c (fixing image tagging and setting up for manifest-tool)
