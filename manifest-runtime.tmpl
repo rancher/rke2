@@ -1,0 +1,10 @@
+image: {{repo.name}}/rke2-runtime:{{replace "+" "-" build.tag}}
+manifests:
+  - image: {{repo.name}}/rke2-runtime:{{replace "+" "-" build.tag}}-linux-amd64
+    platform: 
+      architecture: amd64
+      os: linux
+  - image: {{repo.name}}/rke2-runtime:{{replace "+" "-" build.tag}}-windows-amd64
+    platform: 
+      architecture: amd64
+      os: windows

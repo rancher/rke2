@@ -107,10 +107,6 @@ dev-peer: dev-shell-build              ## Launch a server peer to run test build
 dev-peer-enter:                         ## Enter the peer shell on another terminal
 	./scripts/dev-peer-enter
 
-.PHONY: publish-manifest-runtime
-publish-manifest-runtime: build-image-runtime					## Create and push the rke2-runtime manifest
-	./scripts/publish-manifest-runtime
-
 .PHONY: publish-manifest-kubernetes
 publish-manifest-kubernetes: build-image-kubernetes						## Create and push the kubernetes manifest
 	./scripts/publish-manifest-kubernetes
