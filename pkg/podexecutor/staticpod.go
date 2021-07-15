@@ -133,10 +133,11 @@ func (s *StaticPodConfig) KubeProxy(args []string) error {
 	}
 
 	return staticpod.Run(s.ManifestsDir, staticpod.Args{
-		Command:   "kube-proxy",
-		Args:      args,
-		Image:     image,
-		CPUMillis: 250,
+		Command:    "kube-proxy",
+		Args:       args,
+		Image:      image,
+		CPUMillis:  250,
+		Privileged: true,
 	})
 }
 
