@@ -33,9 +33,9 @@ steps:
       path: /var/run/docker.sock
   when:
     event:
-      - tag
+    - tag
     instance:
-      - drone-publish.rancher.io
+    - drone-publish.rancher.io
 
 - name: scan
   image: rancher/dapper:v0.5.5
