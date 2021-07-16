@@ -116,30 +116,6 @@ volumes:
 ---
 kind: pipeline
 type: docker
-name: check
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: go-mod-tidy
-  image: rancher/hardened-build-base:v1.15.8b5
-  commands:
-  - go mod tidy
-  - git diff --exit-code
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-
-volumes:
-- name: docker
-  host:
-    path: /var/run/docker.sock
-
----
-kind: pipeline
-type: docker
 name: manifest
 
 platform:
@@ -197,8 +173,7 @@ volumes:
     path: /var/run/docker.sock
 
 depends_on:
-- build-amd64
-- check
+  - build-amd64
 
 ---
 kind: pipeline
