@@ -2,6 +2,7 @@ package rke2
 
 import (
 	"context"
+	"sync"
 
 	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
 	"github.com/rancher/k3s/pkg/cli/cmds"
@@ -16,9 +17,10 @@ const kubeProxyChart = "rke2-kube-proxy"
 
 // setKubeProxyDisabled determines if a cluster already has kube proxy deployed as a chart, if so
 // disables running kubeproxy as a static pod.
-func setKubeProxyDisabled(clx *cli.Context, cfg *cmds.Server) func(context.Context, <-chan struct{}, string) error {
-	return func(ctx context.Context, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
+func setKubeProxyDisabled(clx *cli.Context, cfg *cmds.Server) func(context.Context, *sync.WaitGroup, <-chan struct{}, string) error {
+	return func(ctx context.Context, wg *sync.WaitGroup, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
 		go func() {
+			defer wg.Done()
 			<-apiServerReady
 			logrus.Info("Checking for kube proxy as a chart")
 
