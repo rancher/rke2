@@ -58,7 +58,7 @@ replace (
 require (
 	github.com/containerd/continuity v0.0.0-20210208174643-50096c924a4e
 	github.com/google/go-containerregistry v0.5.0
-	github.com/k3s-io/helm-controller v0.9.3
+	github.com/k3s-io/helm-controller v0.10.1
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/k3s v1.21.1-rc1.0.20210716022847-aef8a6aafd13
 	github.com/rancher/wharfie v0.4.1
