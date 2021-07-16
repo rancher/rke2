@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/util/retry"
+	"k8s.io/kubernetes/plugin/pkg/admission/serviceaccount"
 )
 
 func retryError(err error) bool {
@@ -39,7 +40,7 @@ func restrictServiceAccount(ctx context.Context, namespace string, cs kubernetes
 	// There are two race conditions this function avoids, a race on getting the initial sa because it does not yet exist,
 	// and a race between nodes to update the same sa, resulting in a conflict error
 	return retry.OnError(backoff, retryError, func() error {
-		sa, err := cs.CoreV1().ServiceAccounts(namespace).Get(ctx, "default", metav1.GetOptions{})
+		sa, err := cs.CoreV1().ServiceAccounts(namespace).Get(ctx, serviceaccount.DefaultServiceAccountName, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
