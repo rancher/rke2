@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -153,9 +154,10 @@ func setSystemUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1
 // - If the globalRestricted annotation does not exist, then check if the PSP exists and
 //   if it doesn't, create it. Check if the associated role and bindings exist and
 //   if they do, delete them.
-func setPSPs(cisMode bool) func(context.Context, <-chan struct{}, string) error {
-	return func(ctx context.Context, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
+func setPSPs(cisMode bool) func(context.Context, *sync.WaitGroup, <-chan struct{}, string) error {
+	return func(ctx context.Context, wg *sync.WaitGroup, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
 		go func() {
+			defer wg.Done()
 			<-apiServerReady
 			logrus.Info("Applying Pod Security Policies")
 

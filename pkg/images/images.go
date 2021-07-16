@@ -17,6 +17,7 @@ const (
 	Runtime                = "runtime-image"
 	KubeAPIServer          = "kube-apiserver-image"
 	KubeControllerManager  = "kube-controller-manager-image"
+	KubeProxy              = "kube-proxy-image"
 	KubeScheduler          = "kube-scheduler-image"
 	ETCD                   = "etcd-image"
 	Pause                  = "pause-image"
@@ -47,6 +48,7 @@ type ImageOverrideConfig struct {
 	SystemDefaultRegistry  string
 	KubeAPIServer          string
 	KubeControllerManager  string
+	KubeProxy              string
 	KubeScheduler          string
 	Pause                  string
 	Runtime                string
@@ -74,6 +76,7 @@ func NewResolver(c ImageOverrideConfig) (*Resolver, error) {
 		{ETCD, c.ETCD},
 		{KubeAPIServer, c.KubeAPIServer},
 		{KubeControllerManager, c.KubeControllerManager},
+		{KubeProxy, c.KubeProxy},
 		{KubeScheduler, c.KubeScheduler},
 		{Pause, c.Pause},
 		{Runtime, c.Runtime},
@@ -215,7 +218,7 @@ func getDefaultImage(i string) (name.Reference, error) {
 		s = DefaultPauseImage
 	case CloudControllerManager:
 		s = DefaultCloudControllerManagerImage
-	case KubeAPIServer, KubeControllerManager, KubeScheduler:
+	case KubeAPIServer, KubeControllerManager, KubeProxy, KubeScheduler:
 		s = DefaultKubernetesImage
 	default:
 		return nil, fmt.Errorf("unknown image %s", i)

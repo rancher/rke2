@@ -2,6 +2,7 @@ package rke2
 
 const (
 	kubeletAPIServerRoleBindingName = "kube-apiserver-kubelet-admin"
+	kubeProxyRoleName               = "system:kube-proxy"
 	tunnelControllerRoleName        = "system:rke2-controller"
 	cloudControllerManagerRoleName  = "rke2-cloud-controller-manager"
 )
@@ -18,6 +19,34 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
   name: kube-apiserver
+`
+
+const kubeProxyServerRoleBindingTemplate = `apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: %[1]s
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: %[1]s
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: %[1]s
+`
+
+const kubeProxyRoleTemplate = `apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: %s
+rules:
+  - apiGroups:
+    - ""
+    resources:
+    - nodes
+    verbs:
+    - get
+    - list
 `
 
 const tunnelControllerRoleTemplate = `apiVersion: rbac.authorization.k8s.io/v1
@@ -69,6 +98,7 @@ subjects:
     kind: User
     name: %s
 `
+
 const cloudControllerManagerRoleBindingTemplate = `apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
