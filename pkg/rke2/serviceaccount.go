@@ -63,24 +63,28 @@ func restrictServiceAccount(ctx context.Context, namespace string, cs kubernetes
 // restrictServiceAccounts disables automount across the 3 primary namespaces.
 func restrictServiceAccounts(cisMode bool, namespaces []string) func(context.Context, *sync.WaitGroup, <-chan struct{}, string) error {
 	return func(ctx context.Context, wg *sync.WaitGroup, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
-		if cisMode {
-			logrus.Info("Restricting automount...")
-			go func() {
-				defer wg.Done()
-				<-apiServerReady
-				cs, err := newClient(kubeConfigAdmin, nil)
-				if err != nil {
-					logrus.Fatalf("serviceAccount: new k8s client: %s", err.Error())
-				}
-				nps := append(namespaces, "kube-node-lease")
-				for _, namespace := range nps {
-					if err := restrictServiceAccount(ctx, namespace, cs); err != nil {
-						logrus.Fatalf("serviceAccount: namespace %s %s", namespace, err.Error())
-					}
-				}
-				logrus.Info("Restricting automount for default serviceAccounts complete")
-			}()
+		if !cisMode {
+			wg.Done()
+			return nil
 		}
+
+		logrus.Info("Restricting automount...")
+		go func() {
+			defer wg.Done()
+			<-apiServerReady
+			cs, err := newClient(kubeConfigAdmin, nil)
+			if err != nil {
+				logrus.Fatalf("serviceAccount: new k8s client: %s", err.Error())
+			}
+			nps := append(namespaces, "kube-node-lease")
+			for _, namespace := range nps {
+				if err := restrictServiceAccount(ctx, namespace, cs); err != nil {
+					logrus.Fatalf("serviceAccount: namespace %s %s", namespace, err.Error())
+				}
+			}
+			logrus.Info("Restricting automount for default serviceAccounts complete")
+		}()
+
 		return nil
 	}
 }
