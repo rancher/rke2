@@ -10,9 +10,22 @@
 			"gofmt"
 		]
 	},
+	"linters-settings": {
+		"govet": {
+			"check-shadowing": false
+		}
+	},
 	"run": {
 		"skip-files": [
 			"/zz_generated_"
+		],
+		"skip-dirs": [
+			"bundle",
+			"charts",
+			"contrib",
+			"developer-docs",
+			"scripts",
+			"docs"
 		],
 		"deadline": "5m"
 	},
@@ -21,6 +34,10 @@
 			{
 				"linters": "typecheck",
 				"text": "imported but not used"
+			},
+			{
+				"linters": "revive",
+				"text": "should have comment"
 			}
 		]
 	}
