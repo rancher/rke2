@@ -3,6 +3,7 @@ package rke2
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
@@ -171,30 +172,34 @@ func setNetworkDNSPolicy(ctx context.Context, cs *kubernetes.Clientset) error {
 }
 
 // setNetworkPolicies applies a default network policy across the 3 primary namespaces.
-func setNetworkPolicies(cisMode bool, namespaces []string) func(context.Context, <-chan struct{}, string) error {
-	return func(ctx context.Context, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
+func setNetworkPolicies(cisMode bool, namespaces []string) func(context.Context, *sync.WaitGroup, <-chan struct{}, string) error {
+	return func(ctx context.Context, wg *sync.WaitGroup, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
 		// check if we're running in CIS mode and if so,
 		// apply the network policy.
-		if cisMode {
-			logrus.Info("Applying network policies...")
-			go func() {
-				<-apiServerReady
+		if !cisMode {
+			wg.Done()
+			return nil
+		}
 
-				cs, err := newClient(kubeConfigAdmin, nil)
-				if err != nil {
-					logrus.Fatalf("networkPolicy: new k8s client: %s", err.Error())
-				}
-				for _, namespace := range namespaces {
-					if err := setNetworkPolicy(ctx, namespace, cs); err != nil {
-						logrus.Fatal(err)
-					}
-				}
-				if err := setNetworkDNSPolicy(ctx, cs); err != nil {
+		logrus.Info("Applying network policies...")
+		go func() {
+			defer wg.Done()
+			<-apiServerReady
+			cs, err := newClient(kubeConfigAdmin, nil)
+			if err != nil {
+				logrus.Fatalf("networkPolicy: new k8s client: %s", err.Error())
+			}
+			for _, namespace := range namespaces {
+				if err := setNetworkPolicy(ctx, namespace, cs); err != nil {
 					logrus.Fatal(err)
 				}
-				logrus.Info("Applying network policies complete")
-			}()
-		}
+			}
+			if err := setNetworkDNSPolicy(ctx, cs); err != nil {
+				logrus.Fatal(err)
+			}
+			logrus.Info("Applying network policies complete")
+		}()
+
 		return nil
 	}
 }
