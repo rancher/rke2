@@ -1,0 +1,1050 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="canonical" href="https://docs.rke2.io/install/containerd_registry_configuration/">
+      
+      <link rel="icon" href="../../assets/favicon-32x32.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.10">
+    
+    
+      
+        <title>Containerd Registry Configuration - RKE2 - Rancher's Next Generation Kubernetes Distribution</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.1fe995fd.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.f1a3b89f.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#2094f3">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans:300,400,400i,700%7C&display=fallback">
+        <style>:root{--md-text-font-family:"Work Sans";--md-code-font-family:""}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="blue" data-md-color-accent="">
+  
+    
+    <script>function __prefix(e){return new URL("../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#containerd-registry-configuration" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="RKE2 - Rancher&#39;s Next Generation Kubernetes Distribution" class="md-header__button md-logo" aria-label="RKE2 - Rancher's Next Generation Kubernetes Distribution" data-md-component="logo">
+      
+  <img src="../../assets/logo-stacked-white-rke2.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            RKE2 - Rancher's Next Generation Kubernetes Distribution
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Containerd Registry Configuration
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/rancher/rke2/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="RKE2 - Rancher&#39;s Next Generation Kubernetes Distribution" class="md-nav__button md-logo" aria-label="RKE2 - Rancher's Next Generation Kubernetes Distribution" data-md-component="logo">
+      
+  <img src="../../assets/logo-stacked-white-rke2.svg" alt="logo">
+
+    </a>
+    RKE2 - Rancher's Next Generation Kubernetes Distribution
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/rancher/rke2/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      <label class="md-nav__link" for="__nav_2">
+        Installation
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Installation" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../requirements/" class="md-nav__link">
+        Requirements
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ha/" class="md-nav__link">
+        High Availability
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" >
+      
+      <label class="md-nav__link" for="__nav_2_4">
+        Install Options
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Install Options" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          Install Options
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install_options/install_options/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install_options/server_config/" class="md-nav__link">
+        Server Configuration Reference
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install_options/agent_config/" class="md-nav__link">
+        Agent Configuration Reference
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../methods/" class="md-nav__link">
+        Installation Methods
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../network_options/" class="md-nav__link">
+        Network Options
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Containerd Registry Configuration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Containerd Registry Configuration
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#registries-configuration-file" class="md-nav__link">
+    Registries Configuration File
+  </a>
+  
+    <nav class="md-nav" aria-label="Registries Configuration File">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mirrors" class="md-nav__link">
+    Mirrors
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configs" class="md-nav__link">
+    Configs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#with-tls" class="md-nav__link">
+    With TLS
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#without-tls" class="md-nav__link">
+    Without TLS
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../airgap/" class="md-nav__link">
+        Air-Gap Install
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../uninstall/" class="md-nav__link">
+        Uninstall
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      <label class="md-nav__link" for="__nav_3">
+        Upgrades
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Upgrades" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Upgrades
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../upgrade/upgrade/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../upgrade/basic_upgrade/" class="md-nav__link">
+        Upgrade Basics
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../upgrade/automated_upgrade/" class="md-nav__link">
+        Automated Upgrades
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Security
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Security" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Security
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/hardening_guide/" class="md-nav__link">
+        CIS Hardening Guide
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/cis_self_assessment15/" class="md-nav__link">
+        CIS 1.5 Self-Assessment Guide
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/cis_self_assessment16/" class="md-nav__link">
+        CIS 1.6 Self-Assessment Guide
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/fips_support/" class="md-nav__link">
+        FIPS 140-2 Enablement
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/policies/" class="md-nav__link">
+        Default Policy Configuration
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/selinux/" class="md-nav__link">
+        SELinux
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      <label class="md-nav__link" for="__nav_5">
+        Architecture
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Architecture" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Architecture
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/architecture/" class="md-nav__link">
+        Anatomy of a Next Generation Kubernetes Distribution
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cluster_access/" class="md-nav__link">
+        Cluster Access
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backup_restore/" class="md-nav__link">
+        Etcd Backup and Restore
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../networking/" class="md-nav__link">
+        Networking
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../helm/" class="md-nav__link">
+        Helm Integration
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/" class="md-nav__link">
+        Advanced Options and Configuration
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../known_issues/" class="md-nav__link">
+        Known Issues and Limitations
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#registries-configuration-file" class="md-nav__link">
+    Registries Configuration File
+  </a>
+  
+    <nav class="md-nav" aria-label="Registries Configuration File">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mirrors" class="md-nav__link">
+    Mirrors
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configs" class="md-nav__link">
+    Configs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#with-tls" class="md-nav__link">
+    With TLS
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#without-tls" class="md-nav__link">
+    Without TLS
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/rancher/rke2/edit/master/docs/install/containerd_registry_configuration.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <h1 id="containerd-registry-configuration">Containerd Registry Configuration<a class="headerlink" href="#containerd-registry-configuration" title="Permanent link">&para;</a></h1>
+<p>Containerd can be configured to connect to private registries and use them to pull private images on each node.</p>
+<p>Upon startup, RKE2 will check to see if a <code>registries.yaml</code> file exists at <code>/etc/rancher/rke2/</code> and instruct containerd to use any registries defined in the file. If you wish to use a private registry, then you will need to create this file as root on each node that will be using the registry.</p>
+<p>Note that server nodes are schedulable by default. If you have not tainted the server nodes and will be running workloads on them, please ensure you also create the <code>registries.yaml</code> file on each server as well.</p>
+<p><strong>Note:</strong> Prior to RKE2 v1.20, containerd registry configuration is not honored for the initial RKE2 node bootstrapping, only for Kubernetes workloads that are launched after the node is joined to the cluster. Consult the <a href="../airgap/">airgap installation documentation</a> if you plan on using this containerd registry feature to bootstrap nodes.</p>
+<p>Configuration in containerd can be used to connect to a private registry with a TLS connection and with registries that enable authentication as well. The following section will explain the <code>registries.yaml</code> file and give different examples of using private registry configuration in RKE2.</p>
+<h2 id="registries-configuration-file">Registries Configuration File<a class="headerlink" href="#registries-configuration-file" title="Permanent link">&para;</a></h2>
+<p>The file consists of two main sections:</p>
+<ul>
+<li>mirrors</li>
+<li>configs</li>
+</ul>
+<h3 id="mirrors">Mirrors<a class="headerlink" href="#mirrors" title="Permanent link">&para;</a></h3>
+<p>Mirrors is a directive that defines the names and endpoints of the private registries. Private registries can be used as a local mirror for the default docker.io registry, or for images where the registry is explicitly specified in the name.</p>
+<p>For example, the following configuration would pull from the private registry at <code>https://registry.example.com:5000</code> for both <code>library/busybox:latest</code> and <code>registry.example.com/library/busybox:latest</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">mirrors</span><span class="p">:</span>
+  <span class="nt">docker.io</span><span class="p">:</span>
+    <span class="nt">endpoint</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="s">&quot;https://registry.example.com:5000&quot;</span>
+  <span class="nt">registry.example.com</span><span class="p">:</span>
+    <span class="nt">endpoint</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="s">&quot;https://registry.example.com:5000&quot;</span>
+</code></pre></div>
+<p>Each mirror must have a name and set of endpoints. When pulling an image from a registry, containerd will try these endpoint URLs one by one, and use the first working one.</p>
+<p><strong>Note:</strong> If no endpoint is configured, containerd assumes that the registry can be accessed anonymously via HTTPS on port 443, and is using a certificate trusted by the host operating system. For more information, you may <a href="https://github.com/containerd/containerd/blob/master/docs/cri/registry.md#configure-registry-endpoint">consult the containerd documentation</a>.</p>
+<h3 id="configs">Configs<a class="headerlink" href="#configs" title="Permanent link">&para;</a></h3>
+<p>The configs section defines the TLS and credential configuration for each mirror. For each mirror you can define <code>auth</code> and/or <code>tls</code>. The TLS part consists of:</p>
+<table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cert_file</code></td>
+<td>The client certificate path that will be used to authenticate with the registry</td>
+</tr>
+<tr>
+<td><code>key_file</code></td>
+<td>The client key path that will be used to authenticate with the registry</td>
+</tr>
+<tr>
+<td><code>ca_file</code></td>
+<td>Defines the CA certificate path to be used to verify the registry's server cert file</td>
+</tr>
+<tr>
+<td><span style="white-space: nowrap"><code>insecure_skip_verify</code></span></td>
+<td>Boolean that defines if TLS verification should be skipped for the registry</td>
+</tr>
+</tbody>
+</table>
+<p>The credentials consist of either username/password or authentication token:</p>
+<ul>
+<li>username: user name of the private registry basic auth</li>
+<li>password: user password of the private registry basic auth</li>
+<li>auth: authentication token of the private registry basic auth</li>
+</ul>
+<p>Below are basic examples of using private registries in different modes:</p>
+<h3 id="with-tls">With TLS<a class="headerlink" href="#with-tls" title="Permanent link">&para;</a></h3>
+<p>Below are examples showing how you may configure <code>/etc/rancher/rke2/registries.yaml</code> on each node when using TLS.</p>
+<p><em>With Authentication:</em></p>
+<div class="highlight"><pre><span></span><code><span class="nt">mirrors</span><span class="p">:</span>
+  <span class="nt">docker.io</span><span class="p">:</span>
+    <span class="nt">endpoint</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="s">&quot;https://registry.example.com:5000&quot;</span>
+<span class="nt">configs</span><span class="p">:</span>
+  <span class="s">&quot;registry.example.com:5000&quot;</span><span class="p p-Indicator">:</span>
+    <span class="nt">auth</span><span class="p">:</span>
+      <span class="nt">username</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">xxxxxx</span> <span class="c1"># this is the registry username</span>
+      <span class="nt">password</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">xxxxxx</span> <span class="c1"># this is the registry password</span>
+    <span class="nt">tls</span><span class="p">:</span>
+      <span class="nt">cert_file</span><span class="p">:</span>            <span class="c1"># path to the cert file used to authenticate to the registry</span>
+      <span class="nt">key_file</span><span class="p">:</span>             <span class="c1"># path to the key file for the certificate used to authenticate to the registry</span>
+      <span class="nt">ca_file</span><span class="p">:</span>              <span class="c1"># path to the ca file used to verify the registry&#39;s certificate</span>
+      <span class="nt">insecure_skip_verify</span><span class="p">:</span> <span class="c1"># may be set to true to skip verifying the registry&#39;s certificate</span>
+</code></pre></div>
+<p><em>Without Authentication:</em></p>
+<div class="highlight"><pre><span></span><code><span class="nt">mirrors</span><span class="p">:</span>
+  <span class="nt">docker.io</span><span class="p">:</span>
+    <span class="nt">endpoint</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="s">&quot;https://registry.example.com:5000&quot;</span>
+<span class="nt">configs</span><span class="p">:</span>
+  <span class="s">&quot;registry.example.com:5000&quot;</span><span class="p p-Indicator">:</span>
+    <span class="nt">tls</span><span class="p">:</span>
+      <span class="nt">cert_file</span><span class="p">:</span>            <span class="c1"># path to the cert file used to authenticate to the registry</span>
+      <span class="nt">key_file</span><span class="p">:</span>             <span class="c1"># path to the key file for the certificate used to authenticate to the registry</span>
+      <span class="nt">ca_file</span><span class="p">:</span>              <span class="c1"># path to the ca file used to verify the registry&#39;s certificate</span>
+      <span class="nt">insecure_skip_verify</span><span class="p">:</span> <span class="c1"># may be set to true to skip verifying the registry&#39;s certificate</span>
+</code></pre></div>
+<h3 id="without-tls">Without TLS<a class="headerlink" href="#without-tls" title="Permanent link">&para;</a></h3>
+<p>Below are examples showing how you may configure <code>/etc/rancher/rke2/registries.yaml</code> on each node when <em>not</em> using TLS.</p>
+<p><em>Plaintext HTTP With Authentication:</em></p>
+<div class="highlight"><pre><span></span><code><span class="nt">mirrors</span><span class="p">:</span>
+  <span class="nt">docker.io</span><span class="p">:</span>
+    <span class="nt">endpoint</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="s">&quot;http://registry.example.com:5000&quot;</span>
+<span class="nt">configs</span><span class="p">:</span>
+  <span class="s">&quot;registry.example.com:5000&quot;</span><span class="p p-Indicator">:</span>
+    <span class="nt">auth</span><span class="p">:</span>
+      <span class="nt">username</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">xxxxxx</span> <span class="c1"># this is the registry username</span>
+      <span class="nt">password</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">xxxxxx</span> <span class="c1"># this is the registry password</span>
+</code></pre></div>
+<p><em>Plaintext HTTP Without Authentication:</em></p>
+<div class="highlight"><pre><span></span><code><span class="nt">mirrors</span><span class="p">:</span>
+  <span class="nt">docker.io</span><span class="p">:</span>
+    <span class="nt">endpoint</span><span class="p">:</span>
+      <span class="p p-Indicator">-</span> <span class="s">&quot;http://registry.example.com:5000&quot;</span>
+</code></pre></div>
+<blockquote>
+<p>If using a registry using plaintext HTTP without TLS, you need to specify <code>http://</code> as the endpoint URI scheme, otherwise it will default to <code>https://</code>.</p>
+</blockquote>
+<p>In order for the registry changes to take effect, you need to either configure this file before starting RKE2 on the node, or restart RKE2 on each configured node.</p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../network_options/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Network Options" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Network Options
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../airgap/" class="md-footer__link md-footer__link--next" aria-label="Next: Air-Gap Install" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Air-Gap Install
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.ddd52ceb.min.js"></script>
+      
+    
+  </body>
+</html>

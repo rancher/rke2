@@ -1,0 +1,1059 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="canonical" href="https://docs.rke2.io/backup_restore/">
+      
+      <link rel="icon" href="../assets/favicon-32x32.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.10">
+    
+    
+      
+        <title>Etcd Backup and Restore - RKE2 - Rancher's Next Generation Kubernetes Distribution</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.1fe995fd.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.f1a3b89f.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#2094f3">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans:300,400,400i,700%7C&display=fallback">
+        <style>:root{--md-text-font-family:"Work Sans";--md-code-font-family:""}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="blue" data-md-color-accent="">
+  
+    
+    <script>function __prefix(e){return new URL("..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#etcd-backup-and-restore" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="RKE2 - Rancher&#39;s Next Generation Kubernetes Distribution" class="md-header__button md-logo" aria-label="RKE2 - Rancher's Next Generation Kubernetes Distribution" data-md-component="logo">
+      
+  <img src="../assets/logo-stacked-white-rke2.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            RKE2 - Rancher's Next Generation Kubernetes Distribution
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Etcd Backup and Restore
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/rancher/rke2/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="RKE2 - Rancher&#39;s Next Generation Kubernetes Distribution" class="md-nav__button md-logo" aria-label="RKE2 - Rancher's Next Generation Kubernetes Distribution" data-md-component="logo">
+      
+  <img src="../assets/logo-stacked-white-rke2.svg" alt="logo">
+
+    </a>
+    RKE2 - Rancher's Next Generation Kubernetes Distribution
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/rancher/rke2/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      <label class="md-nav__link" for="__nav_2">
+        Installation
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Installation" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/quickstart/" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/requirements/" class="md-nav__link">
+        Requirements
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/ha/" class="md-nav__link">
+        High Availability
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" >
+      
+      <label class="md-nav__link" for="__nav_2_4">
+        Install Options
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Install Options" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          Install Options
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/install_options/install_options/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/install_options/server_config/" class="md-nav__link">
+        Server Configuration Reference
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/install_options/agent_config/" class="md-nav__link">
+        Agent Configuration Reference
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/methods/" class="md-nav__link">
+        Installation Methods
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/network_options/" class="md-nav__link">
+        Network Options
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/containerd_registry_configuration/" class="md-nav__link">
+        Containerd Registry Configuration
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/airgap/" class="md-nav__link">
+        Air-Gap Install
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install/uninstall/" class="md-nav__link">
+        Uninstall
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      <label class="md-nav__link" for="__nav_3">
+        Upgrades
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Upgrades" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Upgrades
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../upgrade/upgrade/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../upgrade/basic_upgrade/" class="md-nav__link">
+        Upgrade Basics
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../upgrade/automated_upgrade/" class="md-nav__link">
+        Automated Upgrades
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Security
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Security" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Security
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/hardening_guide/" class="md-nav__link">
+        CIS Hardening Guide
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/cis_self_assessment15/" class="md-nav__link">
+        CIS 1.5 Self-Assessment Guide
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/cis_self_assessment16/" class="md-nav__link">
+        CIS 1.6 Self-Assessment Guide
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/fips_support/" class="md-nav__link">
+        FIPS 140-2 Enablement
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/policies/" class="md-nav__link">
+        Default Policy Configuration
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/selinux/" class="md-nav__link">
+        SELinux
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      <label class="md-nav__link" for="__nav_5">
+        Architecture
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Architecture" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Architecture
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/architecture/" class="md-nav__link">
+        Anatomy of a Next Generation Kubernetes Distribution
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cluster_access/" class="md-nav__link">
+        Cluster Access
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Etcd Backup and Restore
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Etcd Backup and Restore
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#creating-snapshots" class="md-nav__link">
+    Creating Snapshots
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cluster-reset" class="md-nav__link">
+    Cluster Reset
+  </a>
+  
+    <nav class="md-nav" aria-label="Cluster Reset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#restoring-a-cluster-from-a-snapshot" class="md-nav__link">
+    Restoring a Cluster from a Snapshot
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    Options
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s3-compatible-api-support" class="md-nav__link">
+    S3 Compatible API Support
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../networking/" class="md-nav__link">
+        Networking
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helm/" class="md-nav__link">
+        Helm Integration
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced/" class="md-nav__link">
+        Advanced Options and Configuration
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../known_issues/" class="md-nav__link">
+        Known Issues and Limitations
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#creating-snapshots" class="md-nav__link">
+    Creating Snapshots
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cluster-reset" class="md-nav__link">
+    Cluster Reset
+  </a>
+  
+    <nav class="md-nav" aria-label="Cluster Reset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#restoring-a-cluster-from-a-snapshot" class="md-nav__link">
+    Restoring a Cluster from a Snapshot
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    Options
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s3-compatible-api-support" class="md-nav__link">
+    S3 Compatible API Support
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/rancher/rke2/edit/master/docs/backup_restore.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <h1 id="etcd-backup-and-restore">Etcd Backup and Restore<a class="headerlink" href="#etcd-backup-and-restore" title="Permanent link">&para;</a></h1>
+<p>In this section, you'll learn how to create backups of the rke2 cluster data and to restore the cluster from backup.</p>
+<p><strong>Note:</strong> /var/lib/rancher/rke2 is the default data directory for rke2, it is configurable however via <code>data-dir</code> parameter.</p>
+<h3 id="creating-snapshots">Creating Snapshots<a class="headerlink" href="#creating-snapshots" title="Permanent link">&para;</a></h3>
+<p>Snapshots are enabled by default.</p>
+<p>The snapshot directory defaults to <code>/var/lib/rancher/rke2/server/db/snapshots</code>.</p>
+<p>To configure the snapshot interval or the number of retained snapshots, refer to the <a href="#options">options.</a></p>
+<h2 id="cluster-reset">Cluster Reset<a class="headerlink" href="#cluster-reset" title="Permanent link">&para;</a></h2>
+<p>RKE2 enables a feature to reset the cluster to one member cluster by passing <code>--cluster-reset</code> flag, when passing this flag to rke2 server it will reset the cluster with the same data dir in place, the data directory for etcd exists in <code>/var/lib/rancher/rke2/server/db/etcd</code>, this flag can be passed in the events of quorum loss in the cluster.</p>
+<p>To pass the reset flag, first you need to stop RKE2 service if its enabled via systemd:</p>
+<div class="highlight"><pre><span></span><code>systemctl stop rke2-server
+rke2 server --cluster-reset
+</code></pre></div>
+<p><strong>Result:</strong>  A message in the logs say that RKE2 can be restarted without the flags. Start rke2 again and it should start rke2 as a 1 member cluster.</p>
+<h3 id="restoring-a-cluster-from-a-snapshot">Restoring a Cluster from a Snapshot<a class="headerlink" href="#restoring-a-cluster-from-a-snapshot" title="Permanent link">&para;</a></h3>
+<p>When RKE2 is restored from backup, the old data directory will be moved to <code>/var/lib/rancher/rke2/server/db/etcd-old-%date%/</code>. Then RKE2 will attempt to restore the snapshot by creating a new data directory, then starting etcd with a new RKE2 cluster with one etcd member.</p>
+<p>To restore the cluster from backup, first you need to stop RKE2 service if its enabled via systemd. Once stopped, run RKE2 with the <code>--cluster-reset</code> option, with the <code>--cluster-reset-restore-path</code> also given:</p>
+<div class="highlight"><pre><span></span><code>systemctl stop rke2-server
+rke2 server \
+  --cluster-reset \
+  --cluster-reset-restore-path=&lt;PATH-TO-SNAPSHOT&gt;
+</code></pre></div>
+<p><strong>Result:</strong>  A message in the logs says that RKE2 can be restarted without the flags. Start RKE2 again and should run successfully and be restored from the specified snapshot.</p>
+<p>When rke2 resets the cluster, it creates an empty file at <code>/var/lib/rancher/rke2/server/db/reset-flag</code>. This file is harmless to leave in place, but must be removed in order to perform subsequent resets or restores. This file is deleted when rke2 starts normally.</p>
+<h3 id="options">Options<a class="headerlink" href="#options" title="Permanent link">&para;</a></h3>
+<p>These options can be set in the configuration file:</p>
+<table>
+<thead>
+<tr>
+<th>Options</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>etcd-disable-snapshots</code></td>
+<td>Disable automatic etcd snapshots</td>
+</tr>
+<tr>
+<td><code>etcd-snapshot-schedule-cron</code> value</td>
+<td>Snapshot interval time in cron spec. eg. every 5 hours <code>* */5 * * *</code>(default: <code>0 */12 * * *</code>)</td>
+</tr>
+<tr>
+<td><code>etcd-snapshot-retention</code> value</td>
+<td>Number of snapshots to retain (default: 5)</td>
+</tr>
+<tr>
+<td><code>etcd-snapshot-dir</code> value</td>
+<td>Directory to save db snapshots. (Default location: <code>${data-dir}/db/snapshots</code>)</td>
+</tr>
+<tr>
+<td><code>cluster-reset</code></td>
+<td>Forget all peers and become sole member of a new cluster. This can also be set with the environment variable <code>[$RKE2_CLUSTER_RESET]</code>.</td>
+</tr>
+<tr>
+<td><code>cluster-reset-restore-path</code> value</td>
+<td>Path to snapshot file to be restored</td>
+</tr>
+</tbody>
+</table>
+<h3 id="s3-compatible-api-support">S3 Compatible API Support<a class="headerlink" href="#s3-compatible-api-support" title="Permanent link">&para;</a></h3>
+<p>rke2 supports writing etcd snapshots to and restoring etcd snapshots from systems with S3-compatible APIs. S3 support is available for both on-demand and scheduled snapshots.</p>
+<p>The arguments below have been added to the <code>server</code> subcommand. These flags exist for the <code>etcd-snapshot</code> subcommand as well however the <code>--etcd-s3</code> portion is removed to avoid redundancy.</p>
+<table>
+<thead>
+<tr>
+<th>Options</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--etcd-s3</code></td>
+<td>Enable backup to S3</td>
+</tr>
+<tr>
+<td><code>--etcd-s3-endpoint</code></td>
+<td>S3 endpoint url</td>
+</tr>
+<tr>
+<td><code>--etcd-s3-endpoint-ca</code></td>
+<td>S3 custom CA cert to connect to S3 endpoint</td>
+</tr>
+<tr>
+<td><code>--etcd-s3-skip-ssl-verify</code></td>
+<td>Disables S3 SSL certificate validation</td>
+</tr>
+<tr>
+<td><code>--etcd-s3-access-key</code></td>
+<td>S3 access key</td>
+</tr>
+<tr>
+<td><code>--etcd-s3-secret-key</code></td>
+<td>S3 secret key"</td>
+</tr>
+<tr>
+<td><code>--etcd-s3-bucket</code></td>
+<td>S3 bucket name</td>
+</tr>
+<tr>
+<td><code>--etcd-s3-region</code></td>
+<td>S3 region / bucket location (optional). defaults to us-east-1</td>
+</tr>
+<tr>
+<td><code>--etcd-s3-folder</code></td>
+<td>S3 folder</td>
+</tr>
+</tbody>
+</table>
+<p>To perform an on-demand etcd snapshot and save it to S3:</p>
+<div class="highlight"><pre><span></span><code>rke2 etcd-snapshot \
+  --s3 \
+  --s3-bucket=&lt;S3-BUCKET-NAME&gt; \
+  --s3-access-key=&lt;S3-ACCESS-KEY&gt; \
+  --s3-secret-key=&lt;S3-SECRET-KEY&gt;
+</code></pre></div>
+<p>To perform an on-demand etcd snapshot restore from S3, first make sure that rke2 isn't running. Then run the following commands:</p>
+<div class="highlight"><pre><span></span><code>rke2 server \
+  --cluster-reset \
+  --etcd-s3 \
+  --cluster-reset-restore-path=&lt;SNAPSHOT-NAME&gt; \
+  --etcd-s3-bucket=&lt;S3-BUCKET-NAME&gt; \
+  --etcd-s3-access-key=&lt;S3-ACCESS-KEY&gt; \
+  --etcd-s3-secret-key=&lt;S3-SECRET-KEY&gt;
+</code></pre></div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../cluster_access/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Cluster Access" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Cluster Access
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../networking/" class="md-footer__link md-footer__link--next" aria-label="Next: Networking" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Networking
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.ddd52ceb.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1117 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="canonical" href="https://docs.rke2.io/security/hardening_guide/">
+      
+      <link rel="icon" href="../../assets/favicon-32x32.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.10">
+    
+    
+      
+        <title>CIS Hardening Guide - RKE2 - Rancher's Next Generation Kubernetes Distribution</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.1fe995fd.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.f1a3b89f.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#2094f3">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans:300,400,400i,700%7C&display=fallback">
+        <style>:root{--md-text-font-family:"Work Sans";--md-code-font-family:""}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="blue" data-md-color-accent="">
+  
+    
+    <script>function __prefix(e){return new URL("../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cis-hardening-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="RKE2 - Rancher&#39;s Next Generation Kubernetes Distribution" class="md-header__button md-logo" aria-label="RKE2 - Rancher's Next Generation Kubernetes Distribution" data-md-component="logo">
+      
+  <img src="../../assets/logo-stacked-white-rke2.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            RKE2 - Rancher's Next Generation Kubernetes Distribution
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CIS Hardening Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/rancher/rke2/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="RKE2 - Rancher&#39;s Next Generation Kubernetes Distribution" class="md-nav__button md-logo" aria-label="RKE2 - Rancher's Next Generation Kubernetes Distribution" data-md-component="logo">
+      
+  <img src="../../assets/logo-stacked-white-rke2.svg" alt="logo">
+
+    </a>
+    RKE2 - Rancher's Next Generation Kubernetes Distribution
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/rancher/rke2/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      <label class="md-nav__link" for="__nav_2">
+        Installation
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Installation" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/quickstart/" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/requirements/" class="md-nav__link">
+        Requirements
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/ha/" class="md-nav__link">
+        High Availability
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" >
+      
+      <label class="md-nav__link" for="__nav_2_4">
+        Install Options
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Install Options" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          Install Options
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/install_options/install_options/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/install_options/server_config/" class="md-nav__link">
+        Server Configuration Reference
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/install_options/agent_config/" class="md-nav__link">
+        Agent Configuration Reference
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/methods/" class="md-nav__link">
+        Installation Methods
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/network_options/" class="md-nav__link">
+        Network Options
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/containerd_registry_configuration/" class="md-nav__link">
+        Containerd Registry Configuration
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/airgap/" class="md-nav__link">
+        Air-Gap Install
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/uninstall/" class="md-nav__link">
+        Uninstall
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      <label class="md-nav__link" for="__nav_3">
+        Upgrades
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Upgrades" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Upgrades
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../upgrade/upgrade/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../upgrade/basic_upgrade/" class="md-nav__link">
+        Upgrade Basics
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../upgrade/automated_upgrade/" class="md-nav__link">
+        Automated Upgrades
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      <label class="md-nav__link" for="__nav_4">
+        Security
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Security" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Security
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          CIS Hardening Guide
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        CIS Hardening Guide
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#host-level-requirements" class="md-nav__link">
+    Host-level Requirements
+  </a>
+  
+    <nav class="md-nav" aria-label="Host-level Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ensure-protect-kernel-defaults-is-set" class="md-nav__link">
+    Ensure protect-kernel-defaults is set
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ensure-etcd-is-started-properly" class="md-nav__link">
+    Ensure etcd is started properly
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-hosts" class="md-nav__link">
+    Setting up hosts
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting up hosts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-kernel-parameters" class="md-nav__link">
+    Set kernel parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-the-etcd-user" class="md-nav__link">
+    Create the etcd user
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kubernetes-runtime-requirements" class="md-nav__link">
+    Kubernetes Runtime Requirements
+  </a>
+  
+    <nav class="md-nav" aria-label="Kubernetes Runtime Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#podsecuritypolicies" class="md-nav__link">
+    PodSecurityPolicies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#networkpolicies" class="md-nav__link">
+    NetworkPolicies
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-issues" class="md-nav__link">
+    Known Issues
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    Conclusion
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cis_self_assessment15/" class="md-nav__link">
+        CIS 1.5 Self-Assessment Guide
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cis_self_assessment16/" class="md-nav__link">
+        CIS 1.6 Self-Assessment Guide
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fips_support/" class="md-nav__link">
+        FIPS 140-2 Enablement
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../policies/" class="md-nav__link">
+        Default Policy Configuration
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../selinux/" class="md-nav__link">
+        SELinux
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      <label class="md-nav__link" for="__nav_5">
+        Architecture
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Architecture" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Architecture
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/architecture/" class="md-nav__link">
+        Anatomy of a Next Generation Kubernetes Distribution
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cluster_access/" class="md-nav__link">
+        Cluster Access
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backup_restore/" class="md-nav__link">
+        Etcd Backup and Restore
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../networking/" class="md-nav__link">
+        Networking
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../helm/" class="md-nav__link">
+        Helm Integration
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/" class="md-nav__link">
+        Advanced Options and Configuration
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../known_issues/" class="md-nav__link">
+        Known Issues and Limitations
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#host-level-requirements" class="md-nav__link">
+    Host-level Requirements
+  </a>
+  
+    <nav class="md-nav" aria-label="Host-level Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ensure-protect-kernel-defaults-is-set" class="md-nav__link">
+    Ensure protect-kernel-defaults is set
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ensure-etcd-is-started-properly" class="md-nav__link">
+    Ensure etcd is started properly
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-hosts" class="md-nav__link">
+    Setting up hosts
+  </a>
+  
+    <nav class="md-nav" aria-label="Setting up hosts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-kernel-parameters" class="md-nav__link">
+    Set kernel parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-the-etcd-user" class="md-nav__link">
+    Create the etcd user
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kubernetes-runtime-requirements" class="md-nav__link">
+    Kubernetes Runtime Requirements
+  </a>
+  
+    <nav class="md-nav" aria-label="Kubernetes Runtime Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#podsecuritypolicies" class="md-nav__link">
+    PodSecurityPolicies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#networkpolicies" class="md-nav__link">
+    NetworkPolicies
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-issues" class="md-nav__link">
+    Known Issues
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    Conclusion
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/rancher/rke2/edit/master/docs/security/hardening_guide.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <h1 id="cis-hardening-guide">CIS Hardening Guide<a class="headerlink" href="#cis-hardening-guide" title="Permanent link">&para;</a></h1>
+<p>This document provides prescriptive guidance for hardening a production installation of RKE2. It outlines the configurations and controls required to address Kubernetes benchmark controls from the Center for Information Security (CIS).</p>
+<p>For more detail about evaluating a hardened cluster against the official CIS benchmark, refer to the CIS Benchmark Rancher Self-Assessment Guide <a href="../cis_self_assessment15/">v1.5</a> or <a href="../cis_self_assessment16/">v1.6</a>.</p>
+<p>RKE2 is designed to be "hardened by default" and pass the majority of the Kubernetes CIS controls without modification. There are a few notable exceptions to this that require manual intervention to fully pass the CIS Benchmark:</p>
+<ol>
+<li>RKE2 will not modify the host operating system. Therefore, you, the operator, must make a few Host-level modifications.</li>
+<li>Certain CIS policy controls for PodSecurityPolicies and NetworkPolicies will restrict the functionality of this cluster. You must opt into having RKE2 configuring these out of the box.</li>
+</ol>
+<p>To help ensure these above requirements are met, RKE2 can be started with the <code>profile</code> flag set to <code>cis-1.5</code> or <code>cis-1.6</code>. This flag generally does two things:</p>
+<ol>
+<li>Checks that host-level requirements have been met. If they haven't, RKE2 will exit with a fatal error describing the unmet requirements.</li>
+<li>Configures runtime Pod Security Policies and Network Policies that allow the cluster to pass associated controls.</li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> The profile's flag only valid values are <code>cis-1.5</code> or <code>cis-1.6</code>. It accepts a string value to allow for other profiles in the future.</p>
+</blockquote>
+<p>The following section outlines the specific actions that are taken when the <code>profile</code> flag is set to <code>cis-1.5</code> or <code>cis-1.6</code>.</p>
+<h2 id="host-level-requirements">Host-level Requirements<a class="headerlink" href="#host-level-requirements" title="Permanent link">&para;</a></h2>
+<p>There are two areas of Host-level requirements: kernel parameters and etcd process/directory configuration. These are outlined in this section.</p>
+<h3 id="ensure-protect-kernel-defaults-is-set">Ensure <code>protect-kernel-defaults</code> is set<a class="headerlink" href="#ensure-protect-kernel-defaults-is-set" title="Permanent link">&para;</a></h3>
+<p>This is a kubelet flag that will cause the kubelet to exit if the required kernel parameters are unset or are set to values that are different from the kubelet's defaults.</p>
+<p>When the <code>profile</code> flag is set, RKE2 will set the flag to true.</p>
+<blockquote>
+<p><strong>Note:</strong> <code>protect-kernel-defaults</code> is exposed a top-level flag for RKE2. If you have set <code>profile</code> to "cis-1.x" and <code>protect-kernel-defaults</code> to false explicitly, RKE2 will exit with an error.</p>
+</blockquote>
+<p>RKE2 will also check the same kernel parameters that the kubelet does and exit with an error following the same rules as the kubelet. This is done as a convenience to help the operator more quickly and easily identify what kernel parameters are violating the kubelet defaults.</p>
+<h3 id="ensure-etcd-is-started-properly">Ensure etcd is started properly<a class="headerlink" href="#ensure-etcd-is-started-properly" title="Permanent link">&para;</a></h3>
+<p>The CIS Benchmark requires that the etcd data directory be owned by the <code>etcd</code> user and group. This implicitly requires the etcd process to be ran as the host-level <code>etcd</code> user. To achieve this, RKE2 takes several steps when started with the cis-1.5 profile:</p>
+<ol>
+<li>Check that the <code>etcd</code> user and group exists on the host. If they don't, exit with an error.</li>
+<li>Create etcd's data directory with <code>etcd</code> as the user and group owner.</li>
+<li>Ensure the etcd process is ran as the <code>etcd</code> user and group by setting the etcd static pod's SecurityContext appropriately.</li>
+</ol>
+<h3 id="setting-up-hosts">Setting up hosts<a class="headerlink" href="#setting-up-hosts" title="Permanent link">&para;</a></h3>
+<p>This section gives you the commands necessary to configure your host to meet the above requirements.</p>
+<h4 id="set-kernel-parameters">Set kernel parameters<a class="headerlink" href="#set-kernel-parameters" title="Permanent link">&para;</a></h4>
+<p>When RKE2 is installed, it creates a sysctl config file to set the required parameters appropriately.
+However, it does not automatically configure the Host to use this configuration. You must do this manually.
+The location of the config file depends on the installation method used.</p>
+<p>If RKE2 was installed via RPM, YUM, or DNF (the default on OSes that use RPMs, such as CentOS), run the following command(s):
+<div class="highlight"><pre><span></span><code>sudo cp -f /usr/share/rke2/rke2-cis-sysctl.conf /etc/sysctl.d/60-rke2-cis.conf
+sudo systemctl restart systemd-sysctl
+</code></pre></div></p>
+<p>If RKE2 was installed via the tarball (the default on OSes that do not use RPMs, such as Ubuntu), run the following command:
+<div class="highlight"><pre><span></span><code>sudo cp -f /usr/local/share/rke2/rke2-cis-sysctl.conf /etc/sysctl.d/60-rke2-cis.conf
+sudo systemctl restart systemd-sysctl
+</code></pre></div></p>
+<p>If your system lacks the <code>systemd-sysctl.service</code> and/or the <code>/etc/sysctl.d</code> directory you will want to make sure the
+sysctls are applied at boot by running the following command during start-up:
+<div class="highlight"><pre><span></span><code>sysctl -p /usr/local/share/rke2/rke2-cis-sysctl.conf
+</code></pre></div></p>
+<h4 id="create-the-etcd-user">Create the etcd user<a class="headerlink" href="#create-the-etcd-user" title="Permanent link">&para;</a></h4>
+<p>On some Linux distributions, the <code>useradd</code> command will not create a group. The <code>-U</code> flag is included below to account for that. This flag tells <code>useradd</code> to create a group with the same name as the user.</p>
+<div class="highlight"><pre><span></span><code>useradd -r -c <span class="s2">&quot;etcd user&quot;</span> -s /sbin/nologin -M etcd -U
+</code></pre></div>
+<h2 id="kubernetes-runtime-requirements">Kubernetes Runtime Requirements<a class="headerlink" href="#kubernetes-runtime-requirements" title="Permanent link">&para;</a></h2>
+<p>The runtime requirements to pass the CIS Benchmark are centered around pod security and network policies. These are outlined in this section.</p>
+<h3 id="podsecuritypolicies">PodSecurityPolicies<a class="headerlink" href="#podsecuritypolicies" title="Permanent link">&para;</a></h3>
+<p>RKE2 always runs with the PodSecurityPolicy admission controller turned on. However, when it is <strong>not</strong> started with the cis-1.5 profile, RKE2 will put an unrestricted policy in place that allows Kubernetes to run as though the PodSecurityPolicy admission controller was not enabled.</p>
+<p>When ran with the cis-1.5 profile, RKE2 will put a much more restrictive set of policies in place. These policies meet the requirements outlined in section 5.2 of the CIS Benchmark.</p>
+<blockquote>
+<p><strong>Note:</strong> The Kubernetes control plane components and critical additions such as CNI, DNS, and Ingress are ran as pods in the <code>kube-system</code> namespace. Therefore, this namespace will have a policy that is less restrictive so that these components can run properly.</p>
+</blockquote>
+<h3 id="networkpolicies">NetworkPolicies<a class="headerlink" href="#networkpolicies" title="Permanent link">&para;</a></h3>
+<p>When ran with the cis-1.5 profile, RKE2 will put NetworkPolicies in place that passes the CIS Benchmark for Kubernetes's built-in namespaces. These namespaces are: <code>kube-system</code>, <code>kube-public</code>, <code>kube-node-lease</code>, and <code>default</code>.</p>
+<p>The NetworkPolicy used will only allow pods within the same namespace to talk to each other. The notable exception to this is that it allows DNS requests to be resolved.</p>
+<blockquote>
+<p><strong>Note:</strong> Operators must manage network policies as normal for additional namespaces that are created.</p>
+</blockquote>
+<h2 id="known-issues">Known Issues<a class="headerlink" href="#known-issues" title="Permanent link">&para;</a></h2>
+<p>The following are controls that RKE2 currently does not pass. Each gap will be explained and whether it can be passed through manual operator intervention or if it will be addressed in a future release.</p>
+<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
+<p>If you have followed this guide, your RKE2 cluster will be configured to pass the CIS Kubernetes Benchmark. You can review our CIS Benchmark Self-Assessment Guide <a href="../cis_self_assessment15/">v1.5</a> or <a href="../cis_self_assessment16/">v1.6</a> to understand how we verified each of the benchmarks and how you can do the same on your cluster.</p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../../upgrade/automated_upgrade/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Automated Upgrades" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Automated Upgrades
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../cis_self_assessment15/" class="md-footer__link md-footer__link--next" aria-label="Next: CIS 1.5 Self-Assessment Guide" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              CIS 1.5 Self-Assessment Guide
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.ddd52ceb.min.js"></script>
+      
+    
+  </body>
+</html>

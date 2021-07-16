@@ -1,0 +1,1287 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="canonical" href="https://docs.rke2.io/architecture/architecture/">
+      
+      <link rel="icon" href="../../assets/favicon-32x32.png">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.10">
+    
+    
+      
+        <title>Anatomy of a Next Generation Kubernetes Distribution - RKE2 - Rancher's Next Generation Kubernetes Distribution</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.1fe995fd.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.f1a3b89f.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#2094f3">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Work+Sans:300,400,400i,700%7C&display=fallback">
+        <style>:root{--md-text-font-family:"Work Sans";--md-code-font-family:""}</style>
+      
+    
+    
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="blue" data-md-color-accent="">
+  
+    
+    <script>function __prefix(e){return new URL("../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#architecture-overview" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="RKE2 - Rancher&#39;s Next Generation Kubernetes Distribution" class="md-header__button md-logo" aria-label="RKE2 - Rancher's Next Generation Kubernetes Distribution" data-md-component="logo">
+      
+  <img src="../../assets/logo-stacked-white-rke2.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            RKE2 - Rancher's Next Generation Kubernetes Distribution
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Anatomy of a Next Generation Kubernetes Distribution
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/rancher/rke2/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="RKE2 - Rancher&#39;s Next Generation Kubernetes Distribution" class="md-nav__button md-logo" aria-label="RKE2 - Rancher's Next Generation Kubernetes Distribution" data-md-component="logo">
+      
+  <img src="../../assets/logo-stacked-white-rke2.svg" alt="logo">
+
+    </a>
+    RKE2 - Rancher's Next Generation Kubernetes Distribution
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/rancher/rke2/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      <label class="md-nav__link" for="__nav_2">
+        Installation
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Installation" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/quickstart/" class="md-nav__link">
+        Quick Start
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/requirements/" class="md-nav__link">
+        Requirements
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/ha/" class="md-nav__link">
+        High Availability
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_4" type="checkbox" id="__nav_2_4" >
+      
+      <label class="md-nav__link" for="__nav_2_4">
+        Install Options
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Install Options" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_4">
+          <span class="md-nav__icon md-icon"></span>
+          Install Options
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/install_options/install_options/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/install_options/server_config/" class="md-nav__link">
+        Server Configuration Reference
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/install_options/agent_config/" class="md-nav__link">
+        Agent Configuration Reference
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/methods/" class="md-nav__link">
+        Installation Methods
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/network_options/" class="md-nav__link">
+        Network Options
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/containerd_registry_configuration/" class="md-nav__link">
+        Containerd Registry Configuration
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/airgap/" class="md-nav__link">
+        Air-Gap Install
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install/uninstall/" class="md-nav__link">
+        Uninstall
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      <label class="md-nav__link" for="__nav_3">
+        Upgrades
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Upgrades" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Upgrades
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../upgrade/upgrade/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../upgrade/basic_upgrade/" class="md-nav__link">
+        Upgrade Basics
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../upgrade/automated_upgrade/" class="md-nav__link">
+        Automated Upgrades
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      <label class="md-nav__link" for="__nav_4">
+        Security
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Security" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Security
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/hardening_guide/" class="md-nav__link">
+        CIS Hardening Guide
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/cis_self_assessment15/" class="md-nav__link">
+        CIS 1.5 Self-Assessment Guide
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/cis_self_assessment16/" class="md-nav__link">
+        CIS 1.6 Self-Assessment Guide
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/fips_support/" class="md-nav__link">
+        FIPS 140-2 Enablement
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/policies/" class="md-nav__link">
+        Default Policy Configuration
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/selinux/" class="md-nav__link">
+        SELinux
+      </a>
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+      
+      <label class="md-nav__link" for="__nav_5">
+        Architecture
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+      <nav class="md-nav" aria-label="Architecture" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Architecture
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Anatomy of a Next Generation Kubernetes Distribution
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Anatomy of a Next Generation Kubernetes Distribution
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    Architecture Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#process-lifecycle" class="md-nav__link">
+    Process Lifecycle
+  </a>
+  
+    <nav class="md-nav" aria-label="Process Lifecycle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#content-bootstrap" class="md-nav__link">
+    Content Bootstrap
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initialize-server" class="md-nav__link">
+    Initialize Server
+  </a>
+  
+    <nav class="md-nav" aria-label="Initialize Server">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prepare-components" class="md-nav__link">
+    Prepare Components
+  </a>
+  
+    <nav class="md-nav" aria-label="Prepare Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kube-apiserver" class="md-nav__link">
+    kube-apiserver
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kube-controller-manager" class="md-nav__link">
+    kube-controller-manager
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kube-scheduler" class="md-nav__link">
+    kube-scheduler
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#start-cluster" class="md-nav__link">
+    Start Cluster
+  </a>
+  
+    <nav class="md-nav" aria-label="Start Cluster">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#etcd" class="md-nav__link">
+    etcd
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#helm-controller" class="md-nav__link">
+    helm-controller
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initialize-agent" class="md-nav__link">
+    Initialize Agent
+  </a>
+  
+    <nav class="md-nav" aria-label="Initialize Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#container-runtime" class="md-nav__link">
+    Container Runtime
+  </a>
+  
+    <nav class="md-nav" aria-label="Container Runtime">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#containerd" class="md-nav__link">
+    containerd
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-agent" class="md-nav__link">
+    Node Agent
+  </a>
+  
+    <nav class="md-nav" aria-label="Node Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kubelet" class="md-nav__link">
+    kubelet
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-charts" class="md-nav__link">
+    Server Charts
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daemon-process" class="md-nav__link">
+    Daemon Process
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cluster_access/" class="md-nav__link">
+        Cluster Access
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../backup_restore/" class="md-nav__link">
+        Etcd Backup and Restore
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../networking/" class="md-nav__link">
+        Networking
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../helm/" class="md-nav__link">
+        Helm Integration
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/" class="md-nav__link">
+        Advanced Options and Configuration
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../known_issues/" class="md-nav__link">
+        Known Issues and Limitations
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    Architecture Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#process-lifecycle" class="md-nav__link">
+    Process Lifecycle
+  </a>
+  
+    <nav class="md-nav" aria-label="Process Lifecycle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#content-bootstrap" class="md-nav__link">
+    Content Bootstrap
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initialize-server" class="md-nav__link">
+    Initialize Server
+  </a>
+  
+    <nav class="md-nav" aria-label="Initialize Server">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prepare-components" class="md-nav__link">
+    Prepare Components
+  </a>
+  
+    <nav class="md-nav" aria-label="Prepare Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kube-apiserver" class="md-nav__link">
+    kube-apiserver
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kube-controller-manager" class="md-nav__link">
+    kube-controller-manager
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kube-scheduler" class="md-nav__link">
+    kube-scheduler
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#start-cluster" class="md-nav__link">
+    Start Cluster
+  </a>
+  
+    <nav class="md-nav" aria-label="Start Cluster">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#etcd" class="md-nav__link">
+    etcd
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#helm-controller" class="md-nav__link">
+    helm-controller
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initialize-agent" class="md-nav__link">
+    Initialize Agent
+  </a>
+  
+    <nav class="md-nav" aria-label="Initialize Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#container-runtime" class="md-nav__link">
+    Container Runtime
+  </a>
+  
+    <nav class="md-nav" aria-label="Container Runtime">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#containerd" class="md-nav__link">
+    containerd
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-agent" class="md-nav__link">
+    Node Agent
+  </a>
+  
+    <nav class="md-nav" aria-label="Node Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kubelet" class="md-nav__link">
+    kubelet
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-charts" class="md-nav__link">
+    Server Charts
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#daemon-process" class="md-nav__link">
+    Daemon Process
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/rancher/rke2/edit/master/docs/architecture/architecture.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                  <h1>Anatomy of a Next Generation Kubernetes Distribution</h1>
+                
+                <h3 id="architecture-overview">Architecture Overview<a class="headerlink" href="#architecture-overview" title="Permanent link">&para;</a></h3>
+<p>With RKE2 we take lessons learned from developing and maintaining our lightweight <a href="https://kubernetes.io" title="Production-Grade Container Orchestration">Kubernetes</a>
+distribution, <a href="https://k3s.io" title="K3s - Lightweight Kubernetes">K3s</a>, and apply them to build an enterprise-ready distribution with <a href="https://k3s.io" title="K3s - Lightweight Kubernetes">K3s</a> ease-of-use.
+What this means is that RKE2 is, at its simplest, a single binary to be installed and configured on all nodes expected
+to participate in the <a href="https://kubernetes.io" title="Production-Grade Container Orchestration">Kubernetes</a> cluster. Once started, RKE2 is then able to bootstrap and supervise
+role-appropriate agents per node while sourcing needed content from the network.</p>
+<p><img alt="Architecture Overview" src="../overview.png" title="RKE2 Architecture Overview" /></p>
+<p>RKE2 brings together a number of Open Source technologies to make this all work:</p>
+<ul>
+<li><a href="https://k3s.io" title="K3s - Lightweight Kubernetes">K3s</a><ul>
+<li><a href="https://github.com/k3s-io/helm-controller" title="Helm Chart CRD">Helm Controller</a></li>
+</ul>
+</li>
+<li><a href="https://kubernetes.io" title="Production-Grade Container Orchestration">K8s</a><ul>
+<li><a href="https://github.com/kubernetes/kubernetes/tree/master/cmd/kube-apiserver" title="Kube API Server">API Server</a></li>
+<li><a href="https://github.com/kubernetes/kubernetes/tree/master/cmd/kube-controller-manager" title="Kube Controller Manager">Controller Manager</a></li>
+<li><a href="https://github.com/kubernetes/kubernetes/tree/master/cmd/kubelet" title="Kubelet">Kubelet</a></li>
+<li><a href="https://github.com/kubernetes/kubernetes/tree/master/cmd/kube-scheduler" title="Kube Scheduler">Scheduler</a></li>
+<li><a href="https://github.com/kubernetes/kubernetes/tree/master/cmd/kube-proxy" title="Kube Proxy">Proxy</a></li>
+</ul>
+</li>
+<li><a href="https://etcd.io" title="A distributed, reliable key-value store for the most critical data of a distributed system">etcd</a></li>
+<li><a href="https://github.com/opencontainers/runc" title="CLI tool for spawning and running containers according to the OCI specification">runc</a></li>
+<li><a href="https://containerd.io" title="An open and reliable container runtime">containerd</a>/<a href="https://github.com/kubernetes/cri-api" title="Container Runtime Interface">cri</a></li>
+<li><a href="https://github.com/containernetworking/cni" title="Container Network Interface">CNI</a>: Canal (<a href="https://docs.projectcalico.org/about/about-calico" title="Project Calico">Calico</a> &amp; <a href="https://github.com/coreos/flannel" title="A network fabric for containers, designed for Kubernetes">Flannel</a>) or <a href="https://cilium.io" title="eBPF-based Networking, Observability, and Security">Cilium</a></li>
+<li><a href="https://coredns.io" title="DNS and Service Discovery">CoreDNS</a></li>
+<li><a href="https://kubernetes.github.io/ingress-nginx" title="NGINX Ingress Controller for Kubernetes">NGINX Ingress Controller</a></li>
+<li><a href="https://github.com/kubernetes-sigs/metrics-server" title="Cluster-wide aggregator of resource usage data">Metrics Server</a></li>
+<li><a href="https://helm.sh" title="The Kubernetes Package Manager">Helm</a></li>
+</ul>
+<p>All of these, except the NGINX Ingress Controller, are compiled and statically linked with <a href="https://github.com/golang/go/tree/dev.boringcrypto/misc/boring" title="Go+BoringCrypto">Go+BoringCrypto</a>.</p>
+<h3 id="process-lifecycle">Process Lifecycle<a class="headerlink" href="#process-lifecycle" title="Permanent link">&para;</a></h3>
+<h4 id="content-bootstrap">Content Bootstrap<a class="headerlink" href="#content-bootstrap" title="Permanent link">&para;</a></h4>
+<p>RKE2 sources binaries and manifests to run both <em>server</em> and <em>agent</em> nodes from the RKE2 Runtime image.
+This means RKE2 scans <code>/var/lib/rancher/rke2/agent/images/*.tar</code> for the <a href="https://hub.docker.com/r/rancher/rke2-runtime/tags"><code>rancher/rke2-runtime</code></a>
+image (with a tag correlating to the output of <code>rke2 --version</code>) by default and if it cannot be found, attempts to pull
+it from the network (a.k.a. Docker Hub). RKE2 then extracts <code>/bin/</code> from the image, flattening it into
+<code>/var/lib/rancher/rke2/data/${RKE2_DATA_KEY}/bin</code> where <code>${RKE2_DATA_KEY}</code> represents a unique string identifying the
+image.</p>
+<p>For RKE2 to work as expected the runtime image must minimally provide:</p>
+<ul>
+<li><strong><code>containerd</code></strong> (the <a href="https://github.com/kubernetes/cri-api" title="Container Runtime Interface">CRI</a>)</li>
+<li><strong><code>containerd-shim</code></strong> (shims wrap <code>runc</code> tasks and do not stop when <code>containerd</code> does)</li>
+<li><strong><code>containerd-shim-runc-v1</code></strong></li>
+<li><strong><code>containerd-shim-runc-v2</code></strong></li>
+<li><strong><code>kubelet</code></strong> (the Kubernetes node agent)</li>
+<li><strong><code>runc</code></strong> (the OCI runtime)</li>
+</ul>
+<p>The following ops tooling is also provided by the runtime image:</p>
+<ul>
+<li><strong><code>ctr</code></strong> (low level <code>containerd</code> maintenance and inspection)</li>
+<li><strong><code>crictl</code></strong> (low level CRI maintenance and inspection)</li>
+<li><strong><code>kubectl</code></strong> (kubernetes cluster maintenance and inspection)</li>
+<li><strong><code>socat</code></strong> (needed by <code>containerd</code> for port-forwarding)</li>
+</ul>
+<p>After the binaries have been extracted RKE2 will then extract <a href="../charts/"><code>/charts/</code></a> from the image
+into the <code>/var/lib/rancher/rke2/server/manifests</code> directory.</p>
+<h4 id="initialize-server">Initialize Server<a class="headerlink" href="#initialize-server" title="Permanent link">&para;</a></h4>
+<p>In the embedded K3s engine servers are specialized agent processes which means that the following startup will be
+deferred until the node container runtime has started.</p>
+<h5 id="prepare-components">Prepare Components<a class="headerlink" href="#prepare-components" title="Permanent link">&para;</a></h5>
+<h6 id="kube-apiserver"><code>kube-apiserver</code><a class="headerlink" href="#kube-apiserver" title="Permanent link">&para;</a></h6>
+<p>Pull the <code>kube-apiserver</code> image, if not present already, and spin up a goroutine to wait for <code>etcd</code>
+and then write the static pod definition in <code>/var/lib/rancher/rke2/agent/pod-manifests/</code>.</p>
+<h6 id="kube-controller-manager"><code>kube-controller-manager</code><a class="headerlink" href="#kube-controller-manager" title="Permanent link">&para;</a></h6>
+<p>Pull the <code>kube-controller-manager</code> image, if not present already, and spin up a goroutine to wait for <code>kube-apiserver</code>
+and then write the static pod definition in <code>/var/lib/rancher/rke2/agent/pod-manifests/</code>.</p>
+<h6 id="kube-scheduler"><code>kube-scheduler</code><a class="headerlink" href="#kube-scheduler" title="Permanent link">&para;</a></h6>
+<p>Pull the <code>kube-scheduler</code> image, if not present already, and spin up a goroutine to wait for <code>kube-apiserver</code>
+and then write the static pod definition in <code>/var/lib/rancher/rke2/agent/pod-manifests/</code>.</p>
+<h5 id="start-cluster">Start Cluster<a class="headerlink" href="#start-cluster" title="Permanent link">&para;</a></h5>
+<p>Spin up an HTTP server in a goroutine to listen for other cluster servers/agents then initialize/join the cluster.</p>
+<h6 id="etcd"><code>etcd</code><a class="headerlink" href="#etcd" title="Permanent link">&para;</a></h6>
+<p>Pull the <code>etcd</code> image, if not present already, and spin up a goroutine to wait for the <code>kubelet</code>
+and then write the static pod definition in <code>/var/lib/rancher/rke2/agent/pod-manifests/</code>.</p>
+<h6 id="helm-controller"><code>helm-controller</code><a class="headerlink" href="#helm-controller" title="Permanent link">&para;</a></h6>
+<p>Spin up the goroutine to start the embedded <code>helm-controller</code> after waiting for <code>kube-apiserver</code> to be ready.</p>
+<h4 id="initialize-agent">Initialize Agent<a class="headerlink" href="#initialize-agent" title="Permanent link">&para;</a></h4>
+<p>The agent process entry point. For server processes the embedded K3s engine invokes this directly.</p>
+<h5 id="container-runtime">Container Runtime<a class="headerlink" href="#container-runtime" title="Permanent link">&para;</a></h5>
+<h6 id="containerd"><code>containerd</code><a class="headerlink" href="#containerd" title="Permanent link">&para;</a></h6>
+<p>Spawn the <code>containerd</code> process and listen for termination. If <code>containerd</code> exits then the <code>rke2</code> process will also exit.</p>
+<h5 id="node-agent">Node Agent<a class="headerlink" href="#node-agent" title="Permanent link">&para;</a></h5>
+<h6 id="kubelet"><code>kubelet</code><a class="headerlink" href="#kubelet" title="Permanent link">&para;</a></h6>
+<p>Spawn and supervise the <code>kubelet</code> process. If <code>kubelet</code> exits then <code>rke2</code> will attempt to restart it.
+Once the <code>kubelet</code> is running it will start any available static pods. For servers this means that <code>etcd</code>
+and <code>kube-apiserver</code> will start, in succession, allowing the remaining components started via static pod
+to connect to the <code>kube-apiserver</code> and begin their processing.</p>
+<h5 id="server-charts">Server Charts<a class="headerlink" href="#server-charts" title="Permanent link">&para;</a></h5>
+<p>On server nodes, the <code>helm-controller</code> can now apply to the cluster any <a href="../charts/">charts</a> found in <code>/var/lib/rancher/rke2/server/manifests</code>.</p>
+<ul>
+<li>rke2-canal.yaml or rke2-cilium.yaml (daemonset, bootstrap)</li>
+<li>rke2-coredns.yaml (deployment, bootstrap)</li>
+<li>rke2-ingress-nginx.yaml (deployment)</li>
+<li>rke2-kube-proxy.yaml (daemonset, bootstrap)</li>
+<li>rke2-metrics-server.yaml (deployment)</li>
+</ul>
+<h4 id="daemon-process">Daemon Process<a class="headerlink" href="#daemon-process" title="Permanent link">&para;</a></h4>
+<p>The RKE2 process will now run indefinitely until it receives a SIGTERM or SIGKILL or if the <code>containerd</code> process exits.</p>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../../security/selinux/" class="md-footer__link md-footer__link--prev" aria-label="Previous: SELinux" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              SELinux
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../../cluster_access/" class="md-footer__link md-footer__link--next" aria-label="Next: Cluster Access" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Cluster Access
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.477d984a.min.js", "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.ddd52ceb.min.js"></script>
+      
+    
+  </body>
+</html>
