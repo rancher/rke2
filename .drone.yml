@@ -109,47 +109,39 @@ volumes:
 - name: docker
   host:
     path: /var/run/docker.sock
-
 ---
 kind: pipeline
 type: docker
-name: manifest
+name: runtime-manifest
 
 platform:
   os: linux
   arch: amd64
 
 steps:
-- name: manifest-runtime
-  image: rancher/hardened-build-base:v1.16.4b7
-  commands:
-  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-  - DRONE_TAG=${DRONE_TAG} make publish-manifest-runtime
-  environment:
-    DOCKER_PASSWORD:
-      from_secret: docker_password
-    DOCKER_USERNAME:
+- name: push-runtime-manifest
+  image: plugins/manifest
+  settings:
+    username:
       from_secret: docker_username
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
+    password:
+      from_secret: docker_password
+    spec: manifest-runtime.tmpl
   when:
     event:
-    - tag
+      - tag
     instance:
-    - drone-publish.rancher.io
+      - drone-publish.rancher.io
     ref:
-    - refs/head/master
-    - refs/tags/*
-
+      - refs/head/master
+      - refs/tags/*
 volumes:
-- name: docker
-  host:
-    path: /var/run/docker.sock
+  - name: docker
+    host:
+      path: /var/run/docker.sock
 
 depends_on:
-- build-amd64
-
+  - build-amd64
 ---
 kind: pipeline
 type: docker
@@ -188,5 +180,6 @@ volumes:
 
 depends_on:
 - manifest
+- runtime-manifest
 
 ...
