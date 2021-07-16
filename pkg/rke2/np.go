@@ -81,6 +81,12 @@ var networkDNSPolicy = v1.NetworkPolicy{
 							IntVal: int32(53),
 						},
 					},
+					{
+						Protocol: &tcp,
+						Port: &intstr.IntOrString{
+							IntVal: int32(9153),
+						},
+					},
 				},
 			},
 		},
