@@ -34,7 +34,7 @@ Hardware requirements scale based on the size of your deployments. Minimum recom
 
 ### Windows
 *    RAM: 8GB Minimum (we recommend at least 16GB)
-*    CPU: 4 Minumum
+*    CPU: 4 Minimum
 
 #### Disks
 
