@@ -715,8 +715,8 @@ github.com/rancher/go-powershell v0.0.0-20200701182037-6845e6fcfa79 h1:UeC0rjrIe
 github.com/rancher/go-powershell v0.0.0-20200701182037-6845e6fcfa79/go.mod h1:xi4WpK6Op4m1Lknq61/e+VSjYlTs9bulVOaDNyBdzvk=
 github.com/rancher/go-powershell v0.0.0-20200701184732-233247d45373 h1:BePi97poJ4hXnkP9yX96EmNQgMg+dGScvB1sqIheJ7w=
 github.com/rancher/go-powershell v0.0.0-20200701184732-233247d45373/go.mod h1:Vz8oLnHgttpo/aZrTpjbcpZEDzzElqNau2zmorToY0E=
-github.com/rancher/k3s v1.19.12-rc1.0.20210708233321-0064a39615fc h1:IM8MCQE+SVjxT8Ifhhamh/5qzyNEpNVTGHhsn4Xb3hM=
-github.com/rancher/k3s v1.19.12-rc1.0.20210708233321-0064a39615fc/go.mod h1:NzF2PP7dYTqRBR81SKcRl2R9yGehQ/332RZYinIpkjs=
+github.com/rancher/k3s v1.19.13-rc1.0.20210717010913-8a81349b2f62 h1:hyIa6vvd0OHvDuCG+z+mc5ZSyQ2Eltf4Zf8CZ3TSm/Y=
+github.com/rancher/k3s v1.19.13-rc1.0.20210717010913-8a81349b2f62/go.mod h1:MuI51uz1lRHJ12SQGZHN4yT4tAN1O9QqpONPJzgWUP0=
 github.com/rancher/kine v0.5.1 h1:pBAD9LVU3oCuRWzY6lKEVqhNi1nZlJV3bbD4G2mrE1c=
 github.com/rancher/kine v0.5.1/go.mod h1:NoqDMfN0Q+Wu23Kk3MfXfgLO2fE6abLaetejZs9HAYo=
 github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009/go.mod h1:wpITyDPTi/Na5h73XkbuEf2AP9fbgrIGqqxVzFhYD6U=
