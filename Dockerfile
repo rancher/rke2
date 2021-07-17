@@ -43,17 +43,17 @@ RUN set -x \
     jq \
     python2
 RUN GOCR_VERSION="v0.5.1" && \
-        if [ "${ARCH}" = "arm64" ]; then \
-        wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_arm64.tar.gz && \
-        tar -zxvf go-containerregistry_Linux_arm64.tar.gz && \
-        mv crane /usr/local/bin && \
-        chmod a+x /usr/local/bin/crane; \
-        else \
-        wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_x86_64.tar.gz && \
-        tar -zxvf go-containerregistry_Linux_x86_64.tar.gz && \
-        mv crane /usr/local/bin && \
-        chmod a+x /usr/local/bin/crane; \
-        fi
+    if [ "${ARCH}" = "arm64" ]; then \
+    wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_arm64.tar.gz && \
+    tar -zxvf go-containerregistry_Linux_arm64.tar.gz && \
+    mv crane /usr/local/bin && \
+    chmod a+x /usr/local/bin/crane; \
+    else \
+    wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_x86_64.tar.gz && \
+    tar -zxvf go-containerregistry_Linux_x86_64.tar.gz && \
+    mv crane /usr/local/bin && \
+    chmod a+x /usr/local/bin/crane; \
+    fi
 
 RUN VERSION=0.16.0 && \
     if [ "${ARCH}" = "arm64" ]; then \
@@ -100,8 +100,6 @@ RUN CHART_VERSION="v1.0.007"                  CHART_FILE=/charts/rke2-calico-crd
 RUN CHART_VERSION="1.10.101-build2021022304"  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="3.34.001"                  CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
 # override the CHART_URL directly instead of constructing. See https://github.com/rancher/rancher/issues/33269
-RUN CHART_URL="https://rke2-charts.rancher.io/assets/rke2-kube-proxy-1.21/rke2-kube-proxy-v1.21.2-build2021071403.tgz" \
-                                              CHART_FILE=/charts/rke2-kube-proxy.yaml        CHART_BOOTSTRAP=true    /charts/build-chart.sh
 RUN CHART_VERSION="2.11.100-build2021022300"  CHART_FILE=/charts/rke2-metrics-server.yaml CHART_BOOTSTRAP=false  /charts/build-chart.sh
 RUN CHART_VERSION="v3.7.1-build2021041603"    CHART_FILE=/charts/rke2-multus.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.0.000"                   CHART_FILE=/charts/rancher-vsphere-cpi.yaml CHART_BOOTSTRAP=true   CHART_REPO="https://charts.rancher.io" /charts/build-chart.sh
@@ -113,7 +111,7 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM rancher/k3s:v1.21.1-rc2-k3s1 AS k3s
-FROM rancher/hardened-kubernetes:v1.21.2-rke2r2-build20210714 AS kubernetes
+FROM rancher/hardened-kubernetes:v1.21.3-rke2r5-build20210716 AS kubernetes
 FROM rancher/hardened-containerd:v1.4.4-k3s2-build20210520 AS containerd
 FROM rancher/hardened-crictl:v1.19.0-build20210223 AS crictl
 FROM rancher/hardened-runc:v1.0.0-build20210708 AS runc
