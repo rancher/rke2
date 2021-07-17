@@ -8,7 +8,8 @@ If all your nodes have the same hostname, set the `node-name` parameter in the R
 
 ## Operating Systems
 
-RKE2 has been tested and validated on the following operating systems and their subsequent non-major releases:
+### Linux
+RKE2 has been tested and validated on the following operating systems, and their subsequent non-major releases:
 
 *    Ubuntu 18.04 (amd64)
 *    Ubuntu 20.04 (amd64)
@@ -16,12 +17,24 @@ RKE2 has been tested and validated on the following operating systems and their 
 *    CentOS/RHEL 8.2 (amd64)
 *    SLES 15 SP2 (amd64) (v1.18.16+rke2r1 and newer)
 
+### Windows
+The RKE2 Windows Node (Worker) agent has been tested and validated on the following operating systems, and their subsequent non-major releases:
+
+* Windows Server 2019 LTSC (amd64) (OS Build 17763.2061)
+* Windows Server SAC 2004 (amd64) (OS Build 19041.1110)
+* Windows Server SAC 20H2 (amd64) (OS Build 19042.1110)
+
 ## Hardware
 
 Hardware requirements scale based on the size of your deployments. Minimum recommendations are outlined here.
 
+### Linux
 *    RAM: 512MB Minimum (we recommend at least 1GB)
 *    CPU: 1 Minimum
+
+### Windows
+*    RAM: 8GB Minimum (we recommend at least 16GB)
+*    CPU: 4 Minumum
 
 #### Disks
 
@@ -51,4 +64,12 @@ If you wish to utilize the metrics server, you will need to open port 10250 on e
 | TCP | 2380 | RKE2 server nodes | etcd peer port
 | TCP | 30000-32767 | RKE2 server and agent nodes | NodePort port range
 
-Typically all outbound traffic is allowed.
+
+<figcaption>Inbound Rules for RKE2 Windows Agent Nodes</figcaption>
+
+### Windows Specific Inbound Network Rules
+| Protocol | Port | Source | Description
+|-----|-----|----------------|---|
+| UDP | 4789 | RKE2 server nodes | Required for Calico and Flannel VXLAN
+
+Typically, all outbound traffic will be allowed.
