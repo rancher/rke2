@@ -10,7 +10,7 @@ This page focuses on the configuration options available when setting up RKE2:
 
 The primary way to configure RKE2 is through its [config file](#configuration-file). Command line arguments and environment variables are also available, but RKE2 is installed as a systemd service and thus these are not as easy to leverage.
 
-### Configuring the Installation Script
+### Configuring the Linux Installation Script
 
 As mentioned in the [Quick-Start Guide](../../install/quickstart.md), you can use the installation script available at https://get.rke2.io to install RKE2 as a service.
 
@@ -34,14 +34,41 @@ This installation script is straight-forward and will do the following:
 1. Obtain the desired version to install based on the above parameters. If no parameters are supplied, the latest official release will be used.
 2. Determine and execute the installation method. There are two methods: rpm and tar. If the `INSTALL_RKE2_METHOD` variable is set, that will be respected, Otherwise, `rpm` will be used on operating systems that use this package management system. On all other systems, tar will be used. In the case of the tar method, the script will simply unpack the tar archive associated with the desired release. In the case of rpm, a yum repository will be set up and the rpm will be installed using yum.
 
+### Configuring the Windows Installation Script
+
+As mentioned in the [Quick-Start Guide](../../install/quickstart.md), you can use the installation script available at https://github.com/rancher/rke2/blob/release-1.21/install.ps1 to install RKE2 on a Windows Agent Node.
+
+The simplest form of this command is as follows:
+```powershell
+Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/release-1.21/install.ps1'))
+./install.ps1
+```
+
+### Other Windows Installation Script Usage Examples
+#### Install the Latest Version Instead of Stable
+```powershell
+Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/release-1.21/install.ps1'))
+./install.ps1 -Channel Latest
+```
+
+#### Install the Latest Version using Tar Installation Method
+```powershell
+Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/release-1.21/install.ps1'))
+./install.ps1 -Channel Latest -Method Tar
+```
 ### Configuring RKE2 Server Nodes
 
 For details on configuring the RKE2 server, refer to the [server configuration reference.](server_config.md)
 
 
-### Configuring RKE2 Agent Nodes
+### Configuring Linux RKE2 Agent Nodes
 
 For details on configuring the RKE2 agent, refer to the [agent configuration reference.](agent_config.md)
+
+### Configuring Windows RKE2 Agent Nodes
+
+For details on configuring the RKE2 Windows agent, refer to the [windows agent configuration reference.](windows_agent_config.md)
+
 
 ### Configuration File
 

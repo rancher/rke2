@@ -83,3 +83,14 @@ journalctl -u rke2-agent -f
 **Note:** Each machine must have a unique hostname. If your machines do not have unique hostnames, set the `node-name` parameter in the `config.yaml` file and provide a value with a valid and unique hostname for each node.
 
 To read more about the config.yaml file, see the [Install Options documentation.](./install_options/install_options.md#configuration-file)
+
+
+### Windows Agent (Worker) Node Installation
+#### 1. Run the installer
+```powershell
+Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/release-1.21/install.ps1'))
+./install.ps1
+```
+This will install the `rke2.exe` Windows binary onto your machine.
+
+**Note:** Each machine must have a unique hostname. 
