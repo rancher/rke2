@@ -34,7 +34,7 @@ The controller can be configured and customized via the previously mentioned con
 
 
 ### Configure plans
-It is recommended that you minimally create two plans: a plan for upgrading server (master) nodes and a plan for upgrading agent (worker) nodes. As needed, you can create additional plans to control the rollout of the upgrade across nodes. The following two example plans will upgrade your cluster to rke2 v1.21.2+rke2r1. Once the plans are created, the controller will pick them up and begin to upgrade your cluster.
+It is recommended that you minimally create two plans: a plan for upgrading server (master / control-plane) nodes and a plan for upgrading agent (worker) nodes. As needed, you can create additional plans to control the rollout of the upgrade across nodes. The following two example plans will upgrade your cluster to rke2 v1.21.2+rke2r1. Once the plans are created, the controller will pick them up and begin to upgrade your cluster.
 ```
 # Server plan
 apiVersion: upgrade.cattle.io/v1
@@ -51,6 +51,7 @@ spec:
     matchExpressions:
        - {key: rke2-upgrade, operator: Exists}
        - {key: rke2-upgrade, operator: NotIn, values: ["disabled", "false"]}
+       # When using k8s version 1.19 or older, swap control-plane with master
        - {key: node-role.kubernetes.io/control-plane, operator: In, values: ["true"]}
   serviceAccountName: system-upgrade
   cordon: true
@@ -74,6 +75,7 @@ spec:
     matchExpressions:
       - {key: rke2-upgrade, operator: Exists}
       - {key: rke2-upgrade, operator: NotIn, values: ["disabled", "false"]}
+      # When using k8s version 1.19 or older, swap control-plane with master
       - {key: node-role.kubernetes.io/control-plane, operator: NotIn, values: ["true"]}
   prepare:
     args:
@@ -97,7 +99,7 @@ First, the plans must be created in the same namespace where the controller was 
 
 Second, the `concurrency` field indicates how many nodes can be upgraded at the same time. 
 
-Third, the server-plan targets server nodes by specifying a label selector that selects nodes with the `node-role.kubernetes.io/master` label. The agent-plan targets agent nodes by specifying a label selector that select nodes without that label. Optionally, additional labels can be included, like in the example above, which requires label "rke2-upgrade" to exist and not have the value "disabled" or "false".
+Third, the server-plan targets server nodes by specifying a label selector that selects nodes with the `node-role.kubernetes.io/control-plane` label (`node-role.kubernetes.io/master` for 1.19 or older). The agent-plan targets agent nodes by specifying a label selector that select nodes without that label. Optionally, additional labels can be included, like in the example above, which requires label "rke2-upgrade" to exist and not have the value "disabled" or "false".
 
 Fourth, the `prepare` step in the agent-plan will cause upgrade jobs for that plan to wait for the server-plan to complete before they execute.
 
