@@ -51,7 +51,7 @@ spec:
     matchExpressions:
        - {key: rke2-upgrade, operator: Exists}
        - {key: rke2-upgrade, operator: NotIn, values: ["disabled", "false"]}
-       - {key: node-role.kubernetes.io/master, operator: In, values: ["true"]}
+       - {key: node-role.kubernetes.io/control-plane, operator: In, values: ["true"]}
   serviceAccountName: system-upgrade
   cordon: true
 #  drain:
@@ -74,7 +74,7 @@ spec:
     matchExpressions:
       - {key: rke2-upgrade, operator: Exists}
       - {key: rke2-upgrade, operator: NotIn, values: ["disabled", "false"]}
-      - {key: node-role.kubernetes.io/master, operator: NotIn, values: ["true"]}
+      - {key: node-role.kubernetes.io/control-plane, operator: NotIn, values: ["true"]}
   prepare:
     args:
     - prepare
