@@ -31,7 +31,7 @@ REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code;
 PLATFORM=${GOOS}-${GOARCH}
 RELEASE=${PROG}.${PLATFORM}
 # hardcode k8s version unless its set specifically
-KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.19.12}
+KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.19.13}
 ETCD_VERSION=${ETCD_VERSION:-v3.4.13-k3s1}
 PAUSE_VERSION=${PAUSE_VERSION:-3.2}
 CCM_VERSION=${CCM_VERSION:-v0.0.1-build20210629}
