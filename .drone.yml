@@ -135,10 +135,6 @@ steps:
       ref:
         - refs/head/master
         - refs/tags/*
-volumes:
-  - name: docker
-    host:
-      path: /var/run/docker.sock
 
 depends_on:
   - build-amd64
@@ -171,6 +167,7 @@ volumes:
 
 depends_on:
   - runtime-manifest
+
 ---
 kind: pipeline
 type: docker
