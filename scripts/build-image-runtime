@@ -12,12 +12,11 @@ DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
     --build-arg MINOR=${VERSION_MINOR} \
     --build-arg CACHEBUST="$(date +%s%N)" \
     --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
-    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH} \
+    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH} \
     --target runtime \
 .
 
 mkdir -p build/images
 docker image save \
     --output build/images/${PROG}-runtime.tar \
-    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
-    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH}
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH}

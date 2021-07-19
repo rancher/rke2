@@ -7,3 +7,6 @@ source ./scripts/version.sh
 mkdir -p build/images
 ./scripts/build-binary
 ./scripts/build-images
+./scripts/package-bundle
+./scripts/dev-runtime-image
+./scripts/build-image-test

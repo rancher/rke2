@@ -6,8 +6,10 @@ cd $(dirname $0)/..
 source ./scripts/version.sh
 export DOCKER_CLI_EXPERIMENTAL=enabled
 
+#TODO switch to manifest-tool + tmpl for ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
+
 docker manifest create \
     --amend ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
-    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOARCH}
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH}
 
 docker manifest push ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
