@@ -1,10 +1,10 @@
-image: {{repo.namespace}}/rke2-runtime:{{replace "+" "-" build.tag}}
+image: rancher/rke2-runtime:{{replace "+" "-" build.tag}}
 manifests:
-  - image: {{repo.namespace}}/rke2-runtime:{{replace "+" "-" build.tag}}-linux-amd64
+  - image: rancher/rke2-runtime:{{replace "+" "-" build.tag}}-linux-amd64
     platform: 
       architecture: amd64
       os: linux
-  - image: {{repo.namespace}}/rke2-runtime:{{replace "+" "-" build.tag}}-windows-amd64
+  - image: rancher/rke2-runtime:{{replace "+" "-" build.tag}}-windows-amd64
     platform: 
       architecture: amd64
       os: windows
