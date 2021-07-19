@@ -8,107 +8,106 @@ platform:
   arch: amd64
 
 steps:
-- name: build
-  image: rancher/dapper:v0.5.5
-  environment:
-    ENABLE_REGISTRY: 'true'
-    GCLOUD_AUTH:
-      from_secret: gcloud_auth
-  commands:
-  - docker pull --quiet rancher/hardened-build-base:v1.16.4b7
-  - docker pull --quiet alpine:3.12
-  - dapper -f Dockerfile --target dapper make dapper-ci
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
+  - name: build
+    image: rancher/dapper:v0.5.5
+    environment:
+      ENABLE_REGISTRY: 'true'
+      GCLOUD_AUTH:
+        from_secret: gcloud_auth
+    commands:
+      - docker pull --quiet rancher/hardened-build-base:v1.16.4b7
+      - docker pull --quiet alpine:3.12
+      - dapper -f Dockerfile --target dapper make dapper-ci
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
 
-- name: package-images
-  image: rancher/dapper:v0.5.5
-  commands:
-    - docker pull --quiet rancher/hardened-build-base:v1.16.4b7
-    - dapper -f Dockerfile --target dapper make package-images
-    - dapper -f Dockerfile --target dapper make package-windows-images
-  volumes:
-    - name: docker
-      path: /var/run/docker.sock
-  when:
-    event:
-      - tag
-    instance:
-      - drone-publish.rancher.io
+  - name: package-images
+    image: rancher/dapper:v0.5.5
+    commands:
+      - docker pull --quiet rancher/hardened-build-base:v1.16.4b7
+      - dapper -f Dockerfile --target dapper make package-images
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    when:
+      event:
+        - tag
+      instance:
+        - drone-publish.rancher.io
 
-- name: scan
-  image: rancher/dapper:v0.5.5
-  failure: ignore
-  commands:
-  - dapper -f Dockerfile --target dapper make scan-images
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-  when:
-    instance:
-      - drone-publish.rancher.io
+  - name: scan
+    image: rancher/dapper:v0.5.5
+    failure: ignore
+    commands:
+      - dapper -f Dockerfile --target dapper make scan-images
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    when:
+      instance:
+        - drone-publish.rancher.io
 
-- name: test
-  image: rancher/dapper:v0.5.5
-  secrets: [ gcloud_auth ]
-  environment:
-    ENABLE_REGISTRY: 'true'
-    GCLOUD_AUTH:
-      from_secret: gcloud_auth
-  commands:
-  - dapper -f Dockerfile --target dapper make test
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
+  - name: test
+    image: rancher/dapper:v0.5.5
+    secrets: [ gcloud_auth ]
+    environment:
+      ENABLE_REGISTRY: 'true'
+      GCLOUD_AUTH:
+        from_secret: gcloud_auth
+    commands:
+      - dapper -f Dockerfile --target dapper make test
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
 
-- name: publish-dist-artifacts
-  image: plugins/github-release
-  settings:
-    api_key:
-      from_secret: github_token
-    checksum:
-    - sha256
-    checksum_file: CHECKSUMsum-amd64.txt
-    checksum_flatten: true
-    files:
-    - dist/artifacts/*
-    prerelease: true
-  when:
-    event:
-    - tag
-    instance:
-    - drone-publish.rancher.io
-    ref:
-    - refs/head/master
-    - refs/tags/*
+  - name: publish-dist-artifacts
+    image: plugins/github-release
+    settings:
+      api_key:
+        from_secret: github_token
+      checksum:
+        - sha256
+      checksum_file: CHECKSUMsum-amd64.txt
+      checksum_flatten: true
+      files:
+        - dist/artifacts/*
+      prerelease: true
+    when:
+      event:
+        - tag
+      instance:
+        - drone-publish.rancher.io
+      ref:
+        - refs/head/master
+        - refs/tags/*
 
-- name: publish-image-runtime
-  image: rancher/hardened-build-base:v1.16.4b7
-  commands:
-  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-  - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
-  environment:
-    DOCKER_PASSWORD:
-      from_secret: docker_password
-    DOCKER_USERNAME:
-      from_secret: docker_username
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-  when:
-    event:
-    - tag
-    instance:
-    - drone-publish.rancher.io
-    ref:
-    - refs/head/master
-    - refs/tags/*
+  - name: publish-image-runtime
+    image: rancher/hardened-build-base:v1.16.4b7
+    commands:
+      - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
+    environment:
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    when:
+      event:
+        - tag
+      instance:
+        - drone-publish.rancher.io
+      ref:
+        - refs/head/master
+        - refs/tags/*
 
 volumes:
-- name: docker
-  host:
-    path: /var/run/docker.sock
+  - name: docker
+    host:
+      path: /var/run/docker.sock
 
 ---
 kind: pipeline
@@ -120,30 +119,58 @@ platform:
   arch: amd64
 
 steps:
-- name: push-runtime-manifest
-  image: plugins/manifest
-  settings:
-    username:
-      from_secret: docker_username
-    password:
-      from_secret: docker_password
-    spec: manifest-runtime.tmpl
-  when:
-    event:
-      - tag
-    instance:
-      - drone-publish.rancher.io
-    ref:
-      - refs/head/master
-      - refs/tags/*
+  - name: push-runtime-manifest
+    image: plugins/manifest
+    settings:
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      spec: manifest-runtime.tmpl
+    when:
+      event:
+        - tag
+      instance:
+        - drone-publish.rancher.io
+      ref:
+        - refs/head/master
+        - refs/tags/*
 volumes:
-- name: docker
-  host:
-    path: /var/run/docker.sock
+  - name: docker
+    host:
+      path: /var/run/docker.sock
 
 depends_on:
   - build-amd64
 
+---
+kind: pipeline
+type: docker
+name: package-windows-images
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: package-windows-images
+    image: rancher/dapper:v0.5.5
+    commands:
+      - docker pull --quiet rancher/hardened-build-base:v1.16.4b7
+      - dapper -f Dockerfile --target dapper make package-windows-images
+    when:
+      event:
+        - tag
+      instance:
+        - drone-publish.rancher.io
+
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+
+depends_on:
+  - runtime-manifest
 ---
 kind: pipeline
 type: docker
@@ -154,33 +181,31 @@ platform:
   arch: amd64
 
 steps:
-- name: dispatch
-  image: rancher/dapper:v0.5.5
-  commands:
-  - dapper -f Dockerfile --target dapper make dispatch
-  environment:
-    PAT_TOKEN:
-      from_secret: github_token
-    PAT_USERNAME:
-      from_secret: pat_username
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-  when:
-    event:
-    - tag
-    instance:
-    - drone-publish.rancher.io
-    ref:
-    - refs/head/master
-    - refs/tags/*
+  - name: dispatch
+    image: rancher/dapper:v0.5.5
+    commands:
+      - dapper -f Dockerfile --target dapper make dispatch
+    environment:
+      PAT_TOKEN:
+        from_secret: github_token
+      PAT_USERNAME:
+        from_secret: pat_username
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    when:
+      event:
+        - tag
+      instance:
+        - drone-publish.rancher.io
+      ref:
+        - refs/head/master
+        - refs/tags/*
 
 volumes:
-- name: docker
-  host:
-    path: /var/run/docker.sock
+  - name: docker
+    host:
+      path: /var/run/docker.sock
 
 depends_on:
-- runtime-manifest
-
-...
+  - runtime-manifest
