@@ -9,16 +9,16 @@ source ./scripts/version.sh
 
 awk '{print $1}' << EOF > build/images-runtime.txt
     ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
-    ${REGISTRY}/${REPO}/hardened-kubernetes:v1.19.12-rke2r1-build20210714
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
-   docker.io/rancher/hardened-calico:v3.13.3-build20210223
+    ${REGISTRY}/${REPO}/hardened-kubernetes:v1.19.13-rke2r2-build20210716
+    docker.io/rancher/hardened-calico:v3.13.3-build20210223
     docker.io/rancher/hardened-coredns:v1.6.9-build20210223
     docker.io/rancher/hardened-etcd:v3.4.13-k3s1-build20210223
     docker.io/rancher/hardened-flannel:v0.13.0-rancher1-build20210223
     docker.io/rancher/hardened-k8s-metrics-server:v0.3.6-build20210223
-    docker.io/rancher/hardened-kube-proxy:${KUBERNETES_VERSION}-build20210714
+    docker.io/rancher/hardened-kube-proxy:${KUBERNETES_VERSION}-build20210716
     docker.io/rancher/klipper-helm:v0.4.3-build20210225
     docker.io/rancher/pause:3.2
     docker.io/rancher/nginx-ingress-controller-defaultbackend:1.5-rancher1
