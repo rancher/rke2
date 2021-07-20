@@ -159,6 +159,9 @@ steps:
         - tag
       instance:
         - drone-publish.rancher.io
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
 
 volumes:
   - name: docker
