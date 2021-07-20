@@ -35,8 +35,8 @@ func setKubeProxyDisabled(clx *cli.Context, cfg *cmds.Server) cmds.StartupHook {
 			if _, err := hc.Helm().V1().HelmChartConfig().Get(metav1.NamespaceSystem, kubeProxyChart, metav1.GetOptions{}); err != nil {
 				if apierrors.IsNotFound(err) {
 					logrus.Infof("%[1]s HelmChartConfig not found, disabling %[1]s", kubeProxyChart)
-					args.Skips[kubeProxyChart] = false
-					args.Disables[kubeProxyChart] = false
+					args.Skips[kubeProxyChart] = true
+					args.Disables[kubeProxyChart] = true
 					return
 				}
 				logrus.WithError(err).Fatalf("kp: failed to check for %s HelmChartConfig", kubeProxyChart)
