@@ -3,8 +3,8 @@ package rke2
 import (
 	"context"
 	"fmt"
-	"sync"
 
+	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/sirupsen/logrus"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,14 +13,14 @@ import (
 
 // setClusterRoles applies common clusterroles and clusterrolebindings that are critical
 // to the function of internal controllers.
-func setClusterRoles() func(context.Context, *sync.WaitGroup, <-chan struct{}, string) error {
-	return func(ctx context.Context, wg *sync.WaitGroup, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
+func setClusterRoles() cmds.StartupHook {
+	return func(ctx context.Context, args cmds.StartupHookArgs) error {
 		go func() {
-			defer wg.Done()
-			<-apiServerReady
+			defer args.Wg.Done()
+			<-args.APIServerReady
 			logrus.Info("Applying Cluster Role Bindings")
 
-			cs, err := newClient(kubeConfigAdmin, nil)
+			cs, err := newClient(args.KubeConfigAdmin, nil)
 			if err != nil {
 				logrus.Fatalf("clusterrole: new k8s client: %s", err.Error())
 			}
