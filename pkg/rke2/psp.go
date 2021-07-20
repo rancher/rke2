@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/rancher/k3s/pkg/cli/cmds"
@@ -155,9 +156,9 @@ func setSystemUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1
 //   if it doesn't, create it. Check if the associated role and bindings exist and
 //   if they do, delete them.
 func setPSPs(cisMode bool) cmds.StartupHook {
-	return func(ctx context.Context, args cmds.StartupHookArgs) error {
+	return func(ctx context.Context, wg *sync.WaitGroup, args cmds.StartupHookArgs) error {
 		go func() {
-			defer args.Wg.Done()
+			defer wg.Done()
 			<-args.APIServerReady
 			logrus.Info("Applying Pod Security Policies")
 

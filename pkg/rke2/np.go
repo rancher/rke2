@@ -3,6 +3,7 @@ package rke2
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/sirupsen/logrus"
@@ -173,17 +174,17 @@ func setNetworkDNSPolicy(ctx context.Context, cs *kubernetes.Clientset) error {
 
 // setNetworkPolicies applies a default network policy across the 3 primary namespaces.
 func setNetworkPolicies(cisMode bool, namespaces []string) cmds.StartupHook {
-	return func(ctx context.Context, args cmds.StartupHookArgs) error {
+	return func(ctx context.Context, wg *sync.WaitGroup, args cmds.StartupHookArgs) error {
 		// check if we're running in CIS mode and if so,
 		// apply the network policy.
 		if !cisMode {
-			args.Wg.Done()
+			wg.Done()
 			return nil
 		}
 
 		logrus.Info("Applying network policies...")
 		go func() {
-			defer args.Wg.Done()
+			defer wg.Done()
 			<-args.APIServerReady
 			cs, err := newClient(args.KubeConfigAdmin, nil)
 			if err != nil {
