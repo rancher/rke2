@@ -96,7 +96,7 @@ RUN rm -vf /charts/*.sh /charts/*.md
 FROM rancher/k3s:v1.20.8-k3s1 AS k3s
 FROM rancher/hardened-kubernetes:v1.20.9-rke2r2-build20210716 AS kubernetes
 
-FROM rancher/hardened-containerd:v1.4.4-k3s2-build20210520 AS containerd
+FROM rancher/hardened-containerd:v1.4.8-k3s1-build20210721 AS containerd
 FROM rancher/hardened-crictl:v1.19.0-build20210223 AS crictl
 FROM rancher/hardened-runc:v1.0.0-rc95-build20210519 AS runc
 
