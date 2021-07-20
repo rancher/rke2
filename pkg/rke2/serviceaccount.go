@@ -2,8 +2,9 @@ package rke2
 
 import (
 	"context"
-	"sync"
 	"time"
+
+	"github.com/rancher/k3s/pkg/cli/cmds"
 
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -61,18 +62,18 @@ func restrictServiceAccount(ctx context.Context, namespace string, cs kubernetes
 }
 
 // restrictServiceAccounts disables automount across the 3 primary namespaces.
-func restrictServiceAccounts(cisMode bool, namespaces []string) func(context.Context, *sync.WaitGroup, <-chan struct{}, string) error {
-	return func(ctx context.Context, wg *sync.WaitGroup, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
+func restrictServiceAccounts(cisMode bool, namespaces []string) cmds.StartupHook {
+	return func(ctx context.Context, args cmds.StartupHookArgs) error {
 		if !cisMode {
-			wg.Done()
+			args.Wg.Done()
 			return nil
 		}
 
 		logrus.Info("Restricting automount...")
 		go func() {
-			defer wg.Done()
-			<-apiServerReady
-			cs, err := newClient(kubeConfigAdmin, nil)
+			defer args.Wg.Done()
+			<-args.APIServerReady
+			cs, err := newClient(args.KubeConfigAdmin, nil)
 			if err != nil {
 				logrus.Fatalf("serviceAccount: new k8s client: %s", err.Error())
 			}
