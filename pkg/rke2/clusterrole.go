@@ -3,6 +3,7 @@ package rke2
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/sirupsen/logrus"
@@ -14,9 +15,9 @@ import (
 // setClusterRoles applies common clusterroles and clusterrolebindings that are critical
 // to the function of internal controllers.
 func setClusterRoles() cmds.StartupHook {
-	return func(ctx context.Context, args cmds.StartupHookArgs) error {
+	return func(ctx context.Context, wg *sync.WaitGroup, args cmds.StartupHookArgs) error {
 		go func() {
-			defer args.Wg.Done()
+			defer wg.Done()
 			<-args.APIServerReady
 			logrus.Info("Applying Cluster Role Bindings")
 
