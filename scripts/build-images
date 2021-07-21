@@ -12,7 +12,7 @@ awk '{print $1}' << EOF > build/images-core.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
-    ${REGISTRY}/${REPO}/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
+    ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
     ${REGISTRY}/rancher/hardened-coredns:v1.6.9-${IMAGE_BUILD_VERSION}
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-${IMAGE_BUILD_VERSION}
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.3.6-${IMAGE_BUILD_VERSION}
