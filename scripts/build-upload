@@ -4,14 +4,17 @@ set -ex
 [ -n "$GCLOUD_AUTH" ] || {
   exit 0
 }
+
 [[ $1 =~ rke2\.(linux|windows)-.+\.tar\.gz ]] || {
   echo "First argument should be a dist bundle tarball" >&2
   exit 1
 }
+
 [[ $2 =~ rke2-images\..+\.tar\.zst ]] || {
   echo "Second argument should be a compressed airgap runtime image tarball" >&2
   exit 1
 }
+
 [ -n "$3" ] || {
   echo "Third argument should be a commit hash" >&2
   exit 1
