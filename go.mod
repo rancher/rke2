@@ -57,14 +57,12 @@ replace (
 require (
 	github.com/Microsoft/hcsshim v0.8.20
 	github.com/containerd/continuity v0.1.0
-	github.com/containerd/go-cni v1.0.2 // indirect
-	github.com/containerd/imgcrypt v1.1.1 // indirect
 	github.com/google/go-containerregistry v0.5.0
 	github.com/google/gopacket v1.1.19
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.10.1
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.1-rc1.0.20210720032452-18bc98f60c26
+	github.com/rancher/k3s v1.21.1-rc1.0.20210721003634-37fcb61f5ea3
 	github.com/rancher/wharfie v0.4.1
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
@@ -77,7 +75,7 @@ require (
 	k8s.io/apiserver v0.21.2
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/cri-api v0.21.2
-	k8s.io/kubernetes v1.21.2
+	k8s.io/kubernetes v1.21.3
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 	sigs.k8s.io/yaml v1.2.0
 )

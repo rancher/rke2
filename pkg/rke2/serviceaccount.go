@@ -2,6 +2,7 @@ package rke2
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/rancher/k3s/pkg/cli/cmds"
@@ -63,15 +64,15 @@ func restrictServiceAccount(ctx context.Context, namespace string, cs kubernetes
 
 // restrictServiceAccounts disables automount across the 3 primary namespaces.
 func restrictServiceAccounts(cisMode bool, namespaces []string) cmds.StartupHook {
-	return func(ctx context.Context, args cmds.StartupHookArgs) error {
+	return func(ctx context.Context, wg *sync.WaitGroup, args cmds.StartupHookArgs) error {
 		if !cisMode {
-			args.Wg.Done()
+			wg.Done()
 			return nil
 		}
 
 		logrus.Info("Restricting automount...")
 		go func() {
-			defer args.Wg.Done()
+			defer wg.Done()
 			<-args.APIServerReady
 			cs, err := newClient(args.KubeConfigAdmin, nil)
 			if err != nil {
