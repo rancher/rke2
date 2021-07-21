@@ -38,6 +38,7 @@ var (
 		"/usr/local/share/ca-certificates",
 		"/usr/share/ca-certificates",
 	}
+	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
 )
 
 type StaticPodConfig struct {
@@ -160,7 +161,10 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 		}
 		args = append(extraArgs, args...)
 	}
-	if s.CISMode {
+	if s.CISMode && s.AuditPolicyFile == "" {
+		s.AuditPolicyFile = defaultAuditPolicyFile
+	}
+	if s.AuditPolicyFile != "" {
 		extraArgs := []string{
 			"--audit-policy-file=" + s.AuditPolicyFile,
 			"--audit-log-path=" + auditLogFile,
