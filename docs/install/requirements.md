@@ -18,6 +18,7 @@ RKE2 has been tested and validated on the following operating systems, and their
 *    SLES 15 SP2 (amd64) (v1.18.16+rke2r1 and newer)
 
 ### Windows
+**Windows Support is currently Experimental as of v1.21.3+rke2r1**
 The RKE2 Windows Node (Worker) agent has been tested and validated on the following operating systems, and their subsequent non-major releases:
 
 * Windows Server 2019 LTSC (amd64) (OS Build 17763.2061)
