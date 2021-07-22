@@ -46,7 +46,7 @@ After running this installation:
 
 **Note:** If you are adding additional server nodes, you must have an odd number in total. An odd number is needed to maintain quorum. See the [High Availability documentation](ha.md) for more details.
 
-### Agent (Worker) Node Installation
+### Linux Agent (Worker) Node Installation
 #### 1. Run the installer
 ```
 curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh -
@@ -86,11 +86,37 @@ To read more about the config.yaml file, see the [Install Options documentation.
 
 
 ### Windows Agent (Worker) Node Installation
-#### 1. Run the installer
+**Windows Support is currently Experimental as of v1.21.3+rke2r1**
+
+#### 1. Download the Install Script
 ```powershell
 Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/release-1.21/install.ps1'))
+```
+This will download the `rke2.exe` Windows binary onto your machine.
+
+#### 2. Configure the rke2-agent for Windows
+```powershell
+New-Item -Type Directory c:/etc/rancher/rke2 -Force
+notepad c:/etc/rancher/rke2/config.yaml
+```
+Content for config.yaml:
+```
+server: https://<server>:9345
+token: <token from server node>
+```
+#### 3. Configure PATH 
+```powershell
+$env:PATH+=";c:\var\lib\rancher\rke2\bin;c:\usr\local\bin"
+```
+#### 4. Run the Installer
+```powershell
 ./install.ps1
 ```
-This will install the `rke2.exe` Windows binary onto your machine.
 
+#### 5. Start the Windows RKE2 Service
+```powershell
+rke2.exe agent service --add
+```
 **Note:** Each machine must have a unique hostname. 
+
+To read more about the config.yaml file, see the [Install Options documentation.](./install_options/install_options.md#configuration-file)

@@ -2,9 +2,11 @@
 
 This page focuses on the configuration options available when setting up RKE2:
 
-- [Configuring the installation script](#configuring-the-installation-script)
+- [Configuring the Linux installation script](#configuring-the-linux-installation-script)
+- [Configuring the Windows installation script](#configuring-the-windows-installation-script)
 - [Configuring RKE2 server nodes](#configuring-rke2-server-nodes)
-- [Configuring RKE2 agent nodes](#configuring-rke2-agent-nodes)
+- [Configuring Linux RKE2 agent nodes](#configuring-linux-rke2-agent-nodes)
+- [Configuring Windows RKE2 agent nodes](#configuring-windows-rke2-agent-nodes)
 - [Using the configuration file](#configuration-file)
 - [Configuring when running the binary directly](#configuring-when-running-the-binary-directly)
 
@@ -35,6 +37,7 @@ This installation script is straight-forward and will do the following:
 2. Determine and execute the installation method. There are two methods: rpm and tar. If the `INSTALL_RKE2_METHOD` variable is set, that will be respected, Otherwise, `rpm` will be used on operating systems that use this package management system. On all other systems, tar will be used. In the case of the tar method, the script will simply unpack the tar archive associated with the desired release. In the case of rpm, a yum repository will be set up and the rpm will be installed using yum.
 
 ### Configuring the Windows Installation Script
+**Windows Support is currently Experimental as of v1.21.3+rke2r1**
 
 As mentioned in the [Quick-Start Guide](../../install/quickstart.md), you can use the installation script available at https://github.com/rancher/rke2/blob/release-1.21/install.ps1 to install RKE2 on a Windows Agent Node.
 
@@ -42,6 +45,24 @@ The simplest form of this command is as follows:
 ```powershell
 Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/release-1.21/install.ps1'))
 ./install.ps1
+```
+When using this method to install the Windows RKE2 agent, the following parameters can be passed to configure the installation script:
+
+```console
+SYNTAX
+
+install.ps1 [[-Channel] <String>] [[-Method] <String>] [[-Type] <String>] [[-Version] <String>] [[-TarPrefix] <String>] [-Commit] [[-AgentImagesDir] <String>] [[-ArtifactPath] <String>] [[-ChannelUrl] <String>] [<CommonParameters>]
+
+OPTIONS
+
+-Channel           Channel to use for fetching RKE2 download URL (Default: "stable")
+-Method            The installation method to use. Currently tar or choco installation supported. (Default: "tar")
+-Type              Type of RKE2 service. Only the "agent" type is supported on Windows. (Default: "agent")
+-Version           Version of rke2 to download from Github
+-TarPrefix         Installation prefix when using the tar installation method. (Default: `C:/usr/local` unless `C:/usr/local` is read-only or has a dedicated mount point, in which case `C:/opt/rke2` is used instead)
+-Commit            (experimental/agent) Commit of RKE2 to download from temporary cloud storage. If set, this forces `--Method=tar`. Intended for development purposes only.
+-AgentImagesDir    Installation path for airgap images when installing from CI commit. (Default: `C:/var/lib/rancher/rke2/agent/images`)
+-ArtifactPath      If set, the install script will use the local path for sourcing the `rke2.windows-$SUFFIX` and `sha256sum-$ARCH.txt` files rather than the downloading the files from GitHub. Disabled by default.
 ```
 
 ### Other Windows Installation Script Usage Examples
@@ -63,11 +84,11 @@ For details on configuring the RKE2 server, refer to the [server configuration r
 
 ### Configuring Linux RKE2 Agent Nodes
 
-For details on configuring the RKE2 agent, refer to the [agent configuration reference.](agent_config.md)
+For details on configuring the RKE2 agent, refer to the [agent configuration reference.](linux_agent_config.md)
 
 ### Configuring Windows RKE2 Agent Nodes
 
-For details on configuring the RKE2 Windows agent, refer to the [windows agent configuration reference.](windows_agent_config.md)
+For details on configuring the RKE2 Windows agent, refer to the [Windows agent configuration reference.](windows_agent_config.md)
 
 
 ### Configuration File
@@ -107,8 +128,8 @@ As stated, the installation script is primarily concerned with configuring RKE2 
 
 Command | Description
 --------|------------------
-<span style="white-space: nowrap">`rke2 server`</span> | Run the RKE2 management server, which will also launch the Kubernetes control plane components such as the API server, controller-manager, and scheduler.
-<span style="white-space: nowrap">`rke2 agent`</span> |  Run the RKE2 node agent. This will cause RKE2 to run as a worker node, launching the Kubernetes node services `kubelet` and `kube-proxy`.
+<span style="white-space: nowrap">`rke2 server`</span> | Run the RKE2 management server, which will also launch the Kubernetes control plane components such as the API server, controller-manager, and scheduler. Only Supported on Linux.
+<span style="white-space: nowrap">`rke2 agent`</span> |  Run the RKE2 node agent. This will cause RKE2 to run as a worker node, launching the Kubernetes node services `kubelet` and `kube-proxy`. Supported on Linux and Windows.
 <span style="white-space: nowrap">`rke2 help`</span> | Shows a list of commands or help for one command
 
 The `rke2 server` and `rke2 agent` commands have additional configuration options that can be viewed with <span style="white-space: nowrap">`rke2 server --help`</span> or <span style="white-space: nowrap">`rke2 agent --help`</span>.
