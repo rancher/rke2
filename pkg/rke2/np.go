@@ -171,7 +171,7 @@ func setNetworkDNSPolicy(ctx context.Context, cs *kubernetes.Clientset) error {
 }
 
 // setNetworkPolicies applies a default network policy across the 3 primary namespaces.
-func setNetworkPolicies() func(context.Context, <-chan struct{}, string) error {
+func setNetworkPolicies(namespaces []string) func(context.Context, <-chan struct{}, string) error {
 	return func(ctx context.Context, apiServerReady <-chan struct{}, kubeConfigAdmin string) error {
 		// check if we're running in CIS mode and if so,
 		// apply the network policy.
@@ -183,11 +183,6 @@ func setNetworkPolicies() func(context.Context, <-chan struct{}, string) error {
 				cs, err := newClient(kubeConfigAdmin, nil)
 				if err != nil {
 					logrus.Fatalf("networkPolicy: new k8s client: %s", err.Error())
-				}
-				var namespaces = []string{
-					metav1.NamespaceSystem,
-					metav1.NamespaceDefault,
-					metav1.NamespacePublic,
 				}
 				for _, namespace := range namespaces {
 					if err := setNetworkPolicy(ctx, namespace, cs); err != nil {

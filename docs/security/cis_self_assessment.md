@@ -2202,7 +2202,7 @@ Where access to the Kubernetes API from a pod is required, a specific service ac
 The default service account should be configured such that it does not provide a service account token and does not have any explicit rights assignments.
 </details>
 
-**Result:** Pass. Currently requires operator intervention See the [known issue](hardening_guide.md#control-515) for details.
+**Result:** Pass.
 
 **Audit:**
 For	each namespace in the cluster, review the rights assigned to the default service account and ensure that it has no roles or cluster roles bound to it apart from the defaults. Additionally ensure that the automountServiceAccountToken: false setting is in place for each default service account.

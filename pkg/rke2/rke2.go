@@ -22,6 +22,7 @@ import (
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
 	"github.com/urfave/cli"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type Config struct {
@@ -57,11 +58,16 @@ func Server(clx *cli.Context, cfg Config) error {
 			return err
 		}
 	}
-
+	var defaultNamespaces = []string{
+		metav1.NamespaceSystem,
+		metav1.NamespaceDefault,
+		metav1.NamespacePublic,
+	}
 	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
 		setPSPs(),
-		setNetworkPolicies(),
+		setNetworkPolicies(defaultNamespaces),
 		setClusterRoles(),
+		restrictServiceAccounts(defaultNamespaces),
 	)
 
 	var leaderControllers rawServer.CustomControllers

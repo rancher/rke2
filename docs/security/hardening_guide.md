@@ -101,23 +101,6 @@ Logging is an important detective control for all systems, to detect potential u
 
 RKE2 currently does not support configuring audit logging. This is a [known issue](https://github.com/rancher/rke2/issues/410) that will be addressed in an upcoming release.
 
-### Control 5.1.5
-Ensure that default service accounts are not actively used. (Scored)
-<details>
-<summary>Rationale</summary>
-
-Kubernetes provides a default service account that is used by cluster workloads where no specific service account is assigned to the pod.
-
-Where access to the Kubernetes API from a pod is required, a specific service account should be created for that pod, and rights granted to that service account.
-
-The default service account should be configured such that it does not provide a service account token and does not have any explicit rights assignments.
-</details>
-
-The remediation for this is to update the `automountServiceAccountToken` field to `false` for the `default` service account in each namespace.
-
-For `default` service accounts in the built-in namespaces (`kube-system`, `kube-public`, `kube-node-lease`, and `default`), RKE2 does not automatically do this. You can manually update this field on these service accounts to pass the control.
-
-
 ## Conclusion
 
 If you have followed this guide, your RKE2 cluster will be configured to pass the CIS Kubernetes Benchmark. You can review our [CIS Benchmark Self-Assessment Guide](cis_self_assessment.md) to understand how we verified each of the benchmarks and how you can do the same on your cluster.
