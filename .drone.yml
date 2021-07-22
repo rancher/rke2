@@ -83,21 +83,6 @@ steps:
         - refs/head/master
         - refs/tags/*
 
-volumes:
-  - name: docker
-    host:
-      path: /var/run/docker.sock
-
----
-kind: pipeline
-type: docker
-name: runtime-manifest
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
   - name: push-runtime-manifest
     image: plugins/manifest
     settings:
@@ -115,19 +100,6 @@ steps:
         - refs/head/master
         - refs/tags/*
 
-depends_on:
-  - build-amd64
-
----
-kind: pipeline
-type: docker
-name: package-windows-images
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
   - name: package-windows-images
     image: rancher/dapper:v0.5.5
     commands:
@@ -142,24 +114,6 @@ steps:
       - name: docker
         path: /var/run/docker.sock
 
-volumes:
-  - name: docker
-    host:
-      path: /var/run/docker.sock
-
-depends_on:
-  - runtime-manifest
-
----
-kind: pipeline
-type: docker
-name: publish-artifacts
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
   - name: publish-dist-artifacts
     image: plugins/github-release
     settings:
@@ -185,10 +139,6 @@ volumes:
   - name: docker
     host:
       path: /var/run/docker.sock
-
-depends_on:
-  - package-windows-images
-  - build-amd64
 
 ---
 kind: pipeline
