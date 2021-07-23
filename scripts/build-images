@@ -13,7 +13,8 @@ EOF
 
 xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
-    ${REGISTRY}/rancher/hardened-coredns:v1.6.9-${IMAGE_BUILD_VERSION}
+    ${REGISTRY}/rancher/hardened-coredns:v1.8.3-build20210720
+    ${REGISTRY}/rancher/mirrored-cluster-proportional-autoscaler:1.8.3
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-${IMAGE_BUILD_VERSION}
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.3.6-${IMAGE_BUILD_VERSION}
     ${REGISTRY}/rancher/klipper-helm:v0.6.1-build20210616
