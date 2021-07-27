@@ -91,15 +91,15 @@ type StaticPodConfig struct {
 	ImagesDir             string
 	Resolver              *images.Resolver
 	CloudProvider         *CloudProviderConfig
-	CISMode               bool
 	DataDir               string
 	AuditPolicyFile       string
 	KubeletPath           string
-	DisableETCD           bool
-	IsServer              bool
 	ControlPlaneResources ControlPlaneResources
 	ControlPlaneMounts    ControlPlaneMounts
 	ControlPlaneEnv       ControlPlaneEnv
+	CISMode               bool
+	DisableETCD           bool
+	IsServer              bool
 }
 
 type CloudProviderConfig struct {

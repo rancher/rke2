@@ -181,7 +181,7 @@ var (
 )
 
 const (
-	pkdFlagName = "protect-kernel-defaults"
+	protectKernelDefaultsFlagName = "protect-kernel-defaults"
 )
 
 func init() {
@@ -265,10 +265,10 @@ func validateCISReqs(nodeType string) error {
 // compliance with the profile.
 func setCISFlags(clx *cli.Context) error {
 	// If the user has specifically set this to false, raise an error
-	if clx.IsSet(pkdFlagName) && !clx.Bool(pkdFlagName) {
-		return fmt.Errorf("--%s must be true when using --profile=%s", pkdFlagName, clx.String("profile"))
+	if clx.IsSet(protectKernelDefaultsFlagName) && !clx.Bool(protectKernelDefaultsFlagName) {
+		return fmt.Errorf("--%s must be true when using --profile=%s", protectKernelDefaultsFlagName, clx.String("profile"))
 	}
-	return clx.Set(pkdFlagName, "true")
+	return clx.Set(protectKernelDefaultsFlagName, "true")
 }
 
 func validateProfile(clx *cli.Context, nodeType string) {
