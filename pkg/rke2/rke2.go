@@ -35,11 +35,11 @@ type Config struct {
 	KubeletPath                  string
 	ControlPlaneResourceRequests string
 	ControlPlaneResourceLimits   string
-	ExtraBinds                   ExtraBinds
+	ExtraMounts                  ExtraMounts
 	ExtraEnv                     ExtraEnv
 }
 
-type ExtraBinds struct {
+type ExtraMounts struct {
 	KubeAPIServer          cli.StringSlice
 	KubeScheduler          cli.StringSlice
 	KubeControllerManager  cli.StringSlice

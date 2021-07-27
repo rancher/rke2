@@ -267,12 +267,12 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 		CloudControllerManager: cfg.ExtraEnv.CloudControllerManager.Value(),
 	}
 
-	extraBinds := podexecutor.ControlPlaneBinds{
-		KubeAPIServer:          cfg.ExtraBinds.KubeAPIServer.Value(),
-		KubeScheduler:          cfg.ExtraBinds.KubeScheduler.Value(),
-		KubeControllerManager:  cfg.ExtraBinds.KubeControllerManager.Value(),
-		Etcd:                   cfg.ExtraBinds.Etcd.Value(),
-		CloudControllerManager: cfg.ExtraBinds.CloudControllerManager.Value(),
+	extraMounts := podexecutor.ControlPlaneMounts{
+		KubeAPIServer:          cfg.ExtraMounts.KubeAPIServer.Value(),
+		KubeScheduler:          cfg.ExtraMounts.KubeScheduler.Value(),
+		KubeControllerManager:  cfg.ExtraMounts.KubeControllerManager.Value(),
+		Etcd:                   cfg.ExtraMounts.Etcd.Value(),
+		CloudControllerManager: cfg.ExtraMounts.CloudControllerManager.Value(),
 	}
 
 	return &podexecutor.StaticPodConfig{
@@ -288,6 +288,6 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 		IsServer:              isServer,
 		ControlPlaneResources: controlPlaneResources,
 		ControlPlaneEnv:       extraEnv,
-		ControlPlaneBinds:     extraBinds,
+		ControlPlaneMounts:    extraMounts,
 	}, nil
 }
