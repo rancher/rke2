@@ -66,6 +66,7 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 			if len(v) != 2 {
 				logrus.Fatalf("incorrectly formatted control plane resource request specified: %s", r)
 			}
+
 			if strings.HasPrefix(v[0], KubeAPIServer) {
 				resource := strings.TrimPrefix(v[0], KubeAPIServer+"-")
 				switch resource {

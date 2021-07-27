@@ -24,6 +24,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+const defaultCPURequest = "250m"
+
 type Args struct {
 	Command         string
 	Args            []string
@@ -153,41 +155,40 @@ func pod(args Args) (*v1.Pod, error) {
 	p.Spec.Containers[0].Resources = v1.ResourceRequirements{}
 
 	if args.CPURequest == "" {
-		args.CPURequest = "250m"
+		args.CPURequest = defaultCPURequest
 	}
 
 	p.Spec.Containers[0].Resources.Requests = v1.ResourceList{}
 	p.Spec.Containers[0].Resources.Limits = v1.ResourceList{}
 
-	cpuRequest, err := resource.ParseQuantity(args.CPURequest)
-	if err != nil {
-		logrus.Errorf("error parsing cpu request %v", err)
+	if cpuRequest, err := resource.ParseQuantity(args.CPURequest); err != nil {
+		logrus.Errorf("error parsing cpu request for static pod %s: %v", args.Command, err)
+	} else {
+		p.Spec.Containers[0].Resources.Requests[v1.ResourceCPU] = cpuRequest
 	}
 
-	p.Spec.Containers[0].Resources.Requests[v1.ResourceCPU] = cpuRequest
-
 	if args.CPULimit != "" {
-		cpuLimit, err := resource.ParseQuantity(args.CPULimit)
-		if err != nil {
-			logrus.Errorf("error parsing cpu limit %v", err)
+		if cpuLimit, err := resource.ParseQuantity(args.CPULimit); err != nil {
+			logrus.Errorf("error parsing cpu limit for static pod %s: %v", args.Command, err)
+		} else {
+			p.Spec.Containers[0].Resources.Limits[v1.ResourceCPU] = cpuLimit
 		}
-		p.Spec.Containers[0].Resources.Limits[v1.ResourceCPU] = cpuLimit
 	}
 
 	if args.MemoryRequest != "" {
-		memoryRequest, err := resource.ParseQuantity(args.MemoryRequest)
-		if err != nil {
-			logrus.Errorf("error parsing memory request %v", err)
+		if memoryRequest, err := resource.ParseQuantity(args.MemoryRequest); err != nil {
+			logrus.Errorf("error parsing memory request for static pod %s: %v", args.Command, err)
+		} else {
+			p.Spec.Containers[0].Resources.Requests[v1.ResourceMemory] = memoryRequest
 		}
-		p.Spec.Containers[0].Resources.Requests[v1.ResourceMemory] = memoryRequest
 	}
 
 	if args.MemoryLimit != "" {
-		memoryLimit, err := resource.ParseQuantity(args.MemoryLimit)
-		if err != nil {
-			logrus.Errorf("error parsing memory limit %v", err)
+		if memoryLimit, err := resource.ParseQuantity(args.MemoryLimit); err != nil {
+			logrus.Errorf("error parsing memory limit for static pod %s: %v", args.Command, err)
+		} else {
+			p.Spec.Containers[0].Resources.Limits[v1.ResourceMemory] = memoryLimit
 		}
-		p.Spec.Containers[0].Resources.Limits[v1.ResourceMemory] = memoryLimit
 	}
 
 	if args.HealthPort != 0 {
@@ -280,6 +281,10 @@ func addExtraMounts(p *v1.Pod, extraMounts []string) {
 
 	for i, rawMount := range extraMounts {
 		mount := strings.Split(rawMount, ":")
+		if len(mount) != 2 {
+			logrus.Errorf("mount for pod %s %s was not valid", p.Name, rawMount)
+			continue
+		}
 		name := fmt.Sprintf("%s-%d", prefix, i)
 		p.Spec.Volumes = append(p.Spec.Volumes, v1.Volume{
 			Name: name,
@@ -301,6 +306,10 @@ func addExtraMounts(p *v1.Pod, extraMounts []string) {
 func addExtraEnv(p *v1.Pod, extraEnv []string) {
 	for _, rawEnv := range extraEnv {
 		env := strings.Split(rawEnv, "=")
+		if len(env) != 2 {
+			logrus.Errorf("environment variable for pod %s %s was not valid", p.Name, rawEnv)
+			continue
+		}
 		p.Spec.Containers[0].Env = append(p.Spec.Containers[0].Env, v1.EnvVar{
 			Name:  env[0],
 			Value: env[1],
