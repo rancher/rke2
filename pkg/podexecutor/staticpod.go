@@ -41,6 +41,51 @@ var (
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
 )
 
+type ControlPlaneResources struct {
+	KubeAPIServerCPURequest string
+	KubeAPIServerCPULimit string
+	KubeAPIServerMemoryRequest string
+	KubeAPIServerMemoryLimit string
+	KubeSchedulerCPURequest string
+	KubeSchedulerCPULimit string
+	KubeSchedulerMemoryRequest string
+	KubeSchedulerMemoryLimit string
+	KubeControllerManagerCPURequest string
+	KubeControllerManagerCPULimit string
+	KubeControllerManagerMemoryRequest string
+	KubeControllerManagerMemoryLimit string
+	KubeProxyCPURequest string
+	KubeProxyCPULimit string
+	KubeProxyMemoryRequest string
+	KubeProxyMemoryLimit string
+	EtcdCPURequest string
+	EtcdCPULimit string
+	EtcdMemoryRequest string
+	EtcdMemoryLimit string
+	CloudControllerManagerCPURequest string
+	CloudControllerManagerCPULimit string
+	CloudControllerManagerMemoryRequest string
+	CloudControllerManagerMemoryLimit string
+}
+
+type ControlPlaneEnv struct {
+	KubeAPIServer []string
+	KubeScheduler []string
+	KubeControllerManager []string
+	KubeProxy []string
+	Etcd []string
+	CloudControllerManager []string
+}
+
+type ControlPlaneBinds struct {
+	KubeAPIServer []string
+	KubeScheduler []string
+	KubeControllerManager []string
+	KubeProxy []string
+	Etcd []string
+	CloudControllerManager []string
+}
+
 type StaticPodConfig struct {
 	ManifestsDir    string
 	ImagesDir       string
@@ -52,6 +97,9 @@ type StaticPodConfig struct {
 	KubeletPath     string
 	DisableETCD     bool
 	IsServer        bool
+	ControlPlaneResources ControlPlaneResources
+	ControlPlaneBinds	ControlPlaneBinds
+	ControlPlaneEnv	ControlPlaneEnv
 }
 
 type CloudProviderConfig struct {
@@ -133,11 +181,17 @@ func (s *StaticPodConfig) KubeProxy(args []string) error {
 		return err
 	}
 
+
 	return staticpod.Run(s.ManifestsDir, staticpod.Args{
 		Command:    "kube-proxy",
 		Args:       args,
 		Image:      image,
-		CPUMillis:  250,
+		CPURequest:  s.ControlPlaneResources.KubeProxyCPURequest,
+		CPULimit:  s.ControlPlaneResources.KubeProxyCPULimit,
+		MemoryRequest: s.ControlPlaneResources.KubeProxyMemoryRequest,
+		MemoryLimit: s.ControlPlaneResources.KubeProxyMemoryLimit,
+		ExtraEnv: s.ControlPlaneEnv.KubeProxy,
+		ExtraBinds: s.ControlPlaneBinds.KubeProxy,
 		Privileged: true,
 	})
 }
@@ -197,7 +251,12 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 			Args:      args,
 			Image:     image,
 			Dirs:      append(onlyExisting(ssldirs), filepath.Dir(auditLogFile)),
-			CPUMillis: 250,
+			CPURequest:  s.ControlPlaneResources.KubeAPIServerCPURequest,
+			CPULimit:  s.ControlPlaneResources.KubeAPIServerCPULimit,
+			MemoryRequest: s.ControlPlaneResources.KubeAPIServerMemoryRequest,
+			MemoryLimit: s.ControlPlaneResources.KubeAPIServerMemoryLimit,
+			ExtraEnv: s.ControlPlaneEnv.KubeAPIServer,
+			ExtraBinds: s.ControlPlaneBinds.KubeAPIServer,
 			Files:     files,
 		})
 	})
@@ -224,7 +283,12 @@ func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) err
 			Image:       image,
 			HealthPort:  10251,
 			HealthProto: "HTTP",
-			CPUMillis:   100,
+			CPURequest:  s.ControlPlaneResources.KubeSchedulerCPURequest,
+			CPULimit:  s.ControlPlaneResources.KubeSchedulerCPULimit,
+			MemoryRequest: s.ControlPlaneResources.KubeSchedulerMemoryRequest,
+			MemoryLimit: s.ControlPlaneResources.KubeSchedulerMemoryLimit,
+			ExtraEnv: s.ControlPlaneEnv.KubeScheduler,
+			ExtraBinds: s.ControlPlaneBinds.KubeScheduler,
 			Files:       files,
 		})
 	})
@@ -285,7 +349,12 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 			Dirs:        onlyExisting(ssldirs),
 			HealthPort:  10252,
 			HealthProto: "HTTP",
-			CPUMillis:   200,
+			CPURequest:  s.ControlPlaneResources.KubeControllerManagerCPURequest,
+			CPULimit:  s.ControlPlaneResources.KubeControllerManagerCPULimit,
+			MemoryRequest: s.ControlPlaneResources.KubeControllerManagerMemoryRequest,
+			MemoryLimit: s.ControlPlaneResources.KubeControllerManagerMemoryLimit,
+			ExtraEnv: s.ControlPlaneEnv.KubeControllerManager,
+			ExtraBinds: s.ControlPlaneBinds.KubeControllerManager,
 			Files:       files,
 		})
 	})
@@ -309,7 +378,12 @@ func (s *StaticPodConfig) CloudControllerManager(ccmRBACReady <-chan struct{}, a
 			Dirs:        onlyExisting(ssldirs),
 			HealthPort:  10252,
 			HealthProto: "HTTP",
-			CPUMillis:   200,
+			CPURequest:  s.ControlPlaneResources.CloudControllerManagerCPURequest,
+			CPULimit:  s.ControlPlaneResources.CloudControllerManagerCPULimit,
+			MemoryRequest: s.ControlPlaneResources.CloudControllerManagerMemoryRequest,
+			MemoryLimit: s.ControlPlaneResources.CloudControllerManagerMemoryLimit,
+			ExtraEnv: s.ControlPlaneEnv.CloudControllerManager,
+			ExtraBinds: s.ControlPlaneBinds.CloudControllerManager,
 			Files:       []string{},
 		})
 	})
@@ -377,6 +451,12 @@ func (s *StaticPodConfig) ETCD(args executor.ETCDConfig) error {
 		HealthPort:  2381,
 		HealthPath:  "/health",
 		HealthProto: "HTTP",
+		CPURequest:  s.ControlPlaneResources.EtcdCPURequest,
+		CPULimit:  s.ControlPlaneResources.EtcdCPULimit,
+		MemoryRequest: s.ControlPlaneResources.EtcdMemoryRequest,
+		MemoryLimit: s.ControlPlaneResources.EtcdMemoryLimit,
+		ExtraEnv: s.ControlPlaneEnv.Etcd,
+		ExtraBinds: s.ControlPlaneBinds.Etcd	,
 	}
 
 	if s.CISMode {

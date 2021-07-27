@@ -5,8 +5,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"os"
 	"path/filepath"
 	"sort"
@@ -16,7 +18,6 @@ import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/wrangler/pkg/yaml"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/clientcmd"
@@ -31,7 +32,12 @@ type Args struct {
 	HealthPort      int32
 	HealthProto     string
 	HealthPath      string
-	CPUMillis       int64
+	CPURequest      string
+	CPULimit        string
+	MemoryRequest   string
+	MemoryLimit     string
+	ExtraBinds      []string
+	ExtraEnv        []string
 	SecurityContext *v1.PodSecurityContext
 	Annotations     map[string]string
 	Privileged      bool
@@ -143,12 +149,40 @@ func pod(args Args) (*v1.Pod, error) {
 		},
 	}
 
-	if args.CPUMillis > 0 {
-		p.Spec.Containers[0].Resources = v1.ResourceRequirements{
-			Requests: v1.ResourceList{
-				v1.ResourceCPU: *resource.NewMilliQuantity(args.CPUMillis, resource.DecimalSI),
-			},
-		}
+	p.Spec.Containers[0].Resources = v1.ResourceRequirements{}
+
+	if args.CPURequest != "" {
+		args.CPURequest = "250m"
+	}
+
+	cpuRequest, err := resource.ParseQuantity(args.CPURequest)
+	if err != nil {
+		logrus.Errorf("error parsing cpu request %v", err)
+	}
+
+	cpuLimit, err := resource.ParseQuantity(args.CPULimit)
+	if err != nil {
+		logrus.Errorf("error parsing cpu limit %v", err)
+	}
+
+	memoryRequest, err := resource.ParseQuantity(args.MemoryRequest)
+	if err != nil {
+		logrus.Errorf("error parsing memory request %v", err)
+	}
+
+	memoryLimit, err := resource.ParseQuantity(args.MemoryLimit)
+	if err != nil {
+		logrus.Errorf("error parsing memory limit %v", err)
+	}
+
+	p.Spec.Containers[0].Resources.Requests = v1.ResourceList{
+		v1.ResourceCPU:    cpuRequest,
+		v1.ResourceMemory: memoryRequest,
+	}
+
+	p.Spec.Containers[0].Resources.Limits = v1.ResourceList{
+		v1.ResourceCPU:    cpuLimit,
+		v1.ResourceMemory: memoryLimit,
 	}
 
 	if args.HealthPort != 0 {
@@ -197,6 +231,8 @@ func pod(args Args) (*v1.Pod, error) {
 	addVolumes(p, args.Dirs, true)
 	addVolumes(p, args.Files, false)
 
+	addExtraBinds(p, args.ExtraBinds)
+	addExtraEnv(p, args.ExtraEnv)
 	return p, nil
 }
 
@@ -227,6 +263,42 @@ func addVolumes(p *v1.Pod, src []string, dir bool) {
 			Name:      name,
 			ReadOnly:  readOnly,
 			MountPath: src,
+		})
+	}
+}
+
+func addExtraBinds(p *v1.Pod, extraBinds []string) {
+	var (
+		prefix     = "extra-bind"
+		sourceType = v1.HostPathDirectoryOrCreate
+	)
+
+	for i, rawBind := range extraBinds {
+		bind := strings.Split(rawBind, ":")
+		name := fmt.Sprintf("%s-%d", prefix, i)
+		p.Spec.Volumes = append(p.Spec.Volumes, v1.Volume{
+			Name: name,
+			VolumeSource: v1.VolumeSource{
+				HostPath: &v1.HostPathVolumeSource{
+					Path: bind[0],
+					Type: &sourceType,
+				},
+			},
+		})
+		p.Spec.Containers[0].VolumeMounts = append(p.Spec.Containers[0].VolumeMounts, v1.VolumeMount{
+			Name:      name,
+			ReadOnly:  false,
+			MountPath: bind[1],
+		})
+	}
+}
+
+func addExtraEnv(p *v1.Pod, extraEnv []string) {
+	for _, rawEnv := range extraEnv {
+		env := strings.Split(rawEnv, "=")
+		p.Spec.Containers[0].Env = append(p.Spec.Containers[0].Env, v1.EnvVar{
+			Name:  env[0],
+			Value: env[1],
 		})
 	}
 }

@@ -93,10 +93,102 @@ var (
 			EnvVar:      "RKE2_AUDIT_POLICY_FILE",
 			Destination: &config.AuditPolicyFile,
 		},
+		&cli.StringFlag{
+			Name:        "control-plane-resource-requests",
+			Usage:       "(components) Control Plane resource requests",
+			EnvVar:      "RKE2_CONTROL_PLANE_RESOURCE_REQUESTS",
+			Destination: &config.ControlPlaneResourceRequests,
+		},
+		&cli.StringFlag{
+			Name:        "control-plane-resource-limits",
+			Usage:       "(components) Control Plane resource limits",
+			EnvVar:      "RKE2_CONTROL_PLANE_RESOURCE_LIMITS",
+			Destination: &config.ControlPlaneResourceLimits,
+		},
+		&cli.StringSliceFlag{
+			Name:   KubeAPIServer + "-extra-bind",
+			Usage:  "(components) " + KubeAPIServer + " extra volume bindings",
+			EnvVar: "RKE2_" + strings.ToUpper(strings.ReplaceAll(KubeAPIServer, "-", "_")) + "_EXTRA_BIND",
+			Value:  &config.ExtraBinds.KubeAPIServer,
+		},
+		&cli.StringSliceFlag{
+			Name:   KubeScheduler + "-extra-bind",
+			Usage:  "(components) " + KubeScheduler + " extra volume bindings",
+			EnvVar: "RKE2_" + strings.ToUpper(strings.ReplaceAll(KubeScheduler, "-", "_")) + "_EXTRA_BIND",
+			Value:  &config.ExtraBinds.KubeScheduler,
+		},
+		&cli.StringSliceFlag{
+			Name:   KubeControllerManager + "-extra-bind",
+			Usage:  "(components) " + KubeControllerManager + " extra volume bindings",
+			EnvVar: "RKE2_" + strings.ToUpper(strings.ReplaceAll(KubeControllerManager, "-", "_")) + "_EXTRA_BIND",
+			Value:  &config.ExtraBinds.KubeControllerManager,
+		},
+		&cli.StringSliceFlag{
+			Name:   KubeProxy + "-extra-bind",
+			Usage:  "(components) " + KubeProxy + " extra environment bindings",
+			EnvVar: "RKE2_" + strings.ToUpper(strings.ReplaceAll(KubeProxy, "-", "_")) + "_EXTRA_BIND",
+			Value:  &config.ExtraBinds.KubeProxy,
+		},
+		&cli.StringSliceFlag{
+			Name:   Etcd + "-extra-bind",
+			Usage:  "(components) " + Etcd + " extra volume bindings",
+			EnvVar: "RKE2_" + strings.ToUpper(strings.ReplaceAll(Etcd, "-", "_")) + "_EXTRA_BIND",
+			Value:  &config.ExtraBinds.Etcd,
+		},
+		&cli.StringSliceFlag{
+			Name:   CloudControllerManager + "-extra-bind",
+			Usage:  "(components) " + CloudControllerManager + " extra volume bindings",
+			EnvVar: "RKE2_" + strings.ToUpper(strings.ReplaceAll(CloudControllerManager, "-", "_")) + "_EXTRA_BIND",
+			Value:  &config.ExtraBinds.CloudControllerManager,
+		},
+		&cli.StringSliceFlag{
+			Name:   KubeAPIServer + "-extra-env",
+			Usage:  "(components) " + KubeAPIServer + " extra environment variables",
+			EnvVar: "RKE2_" + strings.ToUpper(strings.ReplaceAll(KubeAPIServer, "-", "_")) + "_EXTRA_ENV",
+			Value:  &config.ExtraEnv.KubeAPIServer,
+		},
+		&cli.StringSliceFlag{
+			Name:   KubeScheduler + "-extra-env",
+			Usage:  "(components) " + KubeScheduler + " extra environment variables",
+			EnvVar: "RKE2_" + strings.ToUpper(strings.ReplaceAll(KubeScheduler, "-", "_")) + "_EXTRA_ENV",
+			Value:  &config.ExtraEnv.KubeScheduler,
+		},
+		&cli.StringSliceFlag{
+			Name:   KubeControllerManager + "-extra-env",
+			Usage:  "(components) " + KubeControllerManager + " extra environment variables",
+			EnvVar: "RKE2_" + strings.ToUpper(strings.ReplaceAll(KubeControllerManager, "-", "_")) + "_EXTRA_ENV",
+			Value:  &config.ExtraEnv.KubeControllerManager,
+		},
+		&cli.StringSliceFlag{
+			Name:   KubeProxy + "-extra-env",
+			Usage:  "(components) " + KubeProxy + " extra environment variables",
+			EnvVar: "RKE2_" + strings.ToUpper(strings.ReplaceAll(KubeProxy, "-", "_")) + "_EXTRA_ENV",
+			Value:  &config.ExtraEnv.KubeProxy,
+		},
+		&cli.StringSliceFlag{
+			Name:   Etcd + "-extra-env",
+			Usage:  "(components) " + Etcd + " extra environment variables",
+			EnvVar: "RKE2_" + strings.ToUpper(strings.ReplaceAll(Etcd, "-", "_")) + "_EXTRA_ENV",
+			Value:  &config.ExtraEnv.Etcd,
+		},
+		&cli.StringSliceFlag{
+			Name:   CloudControllerManager + "-extra-env",
+			Usage:  "(components) " + CloudControllerManager + " extra environment variables",
+			EnvVar: "RKE2_" + strings.ToUpper(strings.ReplaceAll(CloudControllerManager, "-", "_")) + "_EXTRA_ENV",
+			Value:  &config.ExtraEnv.CloudControllerManager,
+		},
 	}
 )
 
-const pkdFlagName = "protect-kernel-defaults"
+const (
+	pkdFlagName            = "protect-kernel-defaults"
+	KubeAPIServer          = "kube-apiserver"
+	KubeScheduler          = "kube-scheduler"
+	KubeControllerManager  = "kube-controller-manager"
+	KubeProxy              = "kube-proxy"
+	Etcd                   = "etcd"
+	CloudControllerManager = "cloud-controller-manager"
+)
 
 func init() {
 	// hack - force "file,dns" lookup order if go dns is used

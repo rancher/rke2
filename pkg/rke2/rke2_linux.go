@@ -4,13 +4,16 @@ package rke2
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/rancher/k3s/pkg/agent/config"
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/k3s/pkg/cluster/managed"
 	"github.com/rancher/k3s/pkg/etcd"
+	rke2cmds "github.com/rancher/rke2/pkg/cli/cmds"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
@@ -56,16 +59,231 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 		cfg.KubeletPath = "kubelet"
 	}
 
+	var controlPlaneResources podexecutor.ControlPlaneResources
+
+	for _, r := range strings.Split(cfg.ControlPlaneResourceRequests, ",") {
+		v := strings.Split(r, "=")
+		if len(v) != 2 {
+			logrus.Fatalf("incorrectly formatted control plane resource request specified: %s", r)
+		}
+		if strings.HasPrefix(v[0], rke2cmds.KubeAPIServer) {
+			resource := strings.TrimPrefix(v[0], rke2cmds.KubeAPIServer+"-")
+			switch resource {
+			case "cpu":
+				{
+					controlPlaneResources.KubeAPIServerCPURequest = v[1]
+				}
+			case "memory":
+				{
+					controlPlaneResources.KubeAPIServerMemoryRequest = v[1]
+				}
+			default:
+				logrus.Fatalf("unrecognized resource request made: %s", r)
+			}
+		}
+		if strings.HasPrefix(v[0], rke2cmds.KubeScheduler) {
+			resource := strings.TrimPrefix(v[0], rke2cmds.KubeScheduler+"-")
+			switch resource {
+			case "cpu":
+				{
+					controlPlaneResources.KubeSchedulerCPURequest = v[1]
+				}
+			case "memory":
+				{
+					controlPlaneResources.KubeSchedulerMemoryRequest = v[1]
+				}
+			default:
+				logrus.Fatalf("unrecognized resource request made: %s", r)
+			}
+		}
+		if strings.HasPrefix(v[0], rke2cmds.KubeControllerManager) {
+			resource := strings.TrimPrefix(v[0], rke2cmds.KubeControllerManager+"-")
+			switch resource {
+			case "cpu":
+				{
+					controlPlaneResources.KubeControllerManagerCPURequest = v[1]
+				}
+			case "memory":
+				{
+					controlPlaneResources.KubeControllerManagerMemoryRequest = v[1]
+				}
+			default:
+				logrus.Fatalf("unrecognized resource request made: %s", r)
+			}
+		}
+		if strings.HasPrefix(v[0], rke2cmds.KubeProxy) {
+			resource := strings.TrimPrefix(v[0], rke2cmds.KubeProxy+"-")
+			switch resource {
+			case "cpu":
+				{
+					controlPlaneResources.KubeProxyCPURequest = v[1]
+				}
+			case "memory":
+				{
+					controlPlaneResources.KubeProxyMemoryRequest = v[1]
+				}
+			default:
+				logrus.Fatalf("unrecognized resource request made: %s", r)
+			}
+		}
+		if strings.HasPrefix(v[0], rke2cmds.Etcd) {
+			resource := strings.TrimPrefix(v[0], rke2cmds.Etcd+"-")
+			switch resource {
+			case "cpu":
+				{
+					controlPlaneResources.EtcdCPURequest = v[1]
+				}
+			case "memory":
+				{
+					controlPlaneResources.EtcdMemoryRequest = v[1]
+				}
+			default:
+				logrus.Fatalf("unrecognized resource request made: %s", r)
+			}
+		}
+		if strings.HasPrefix(v[0], rke2cmds.CloudControllerManager) {
+			resource := strings.TrimPrefix(v[0], rke2cmds.CloudControllerManager+"-")
+			switch resource {
+			case "cpu":
+				{
+					controlPlaneResources.CloudControllerManagerCPURequest = v[1]
+				}
+			case "memory":
+				{
+					controlPlaneResources.CloudControllerManagerMemoryRequest = v[1]
+				}
+			default:
+				logrus.Fatalf("unrecognized resource request made: %s", r)
+			}
+		}
+	}
+
+	for _, r := range strings.Split(cfg.ControlPlaneResourceLimits, ",") {
+		v := strings.Split(r, "=")
+		if len(v) != 2 {
+			logrus.Fatalf("incorrectly formatted control plane resource limit specified: %s", r)
+		}
+		if strings.HasPrefix(v[0], rke2cmds.KubeAPIServer) {
+			resource := strings.TrimPrefix(v[0], rke2cmds.KubeAPIServer+"-")
+			switch resource {
+			case "cpu":
+				{
+					controlPlaneResources.KubeAPIServerCPULimit = v[1]
+				}
+			case "memory":
+				{
+					controlPlaneResources.KubeAPIServerMemoryLimit = v[1]
+				}
+			default:
+				logrus.Fatalf("unrecognized resource limit made: %s", r)
+			}
+		}
+		if strings.HasPrefix(v[0], rke2cmds.KubeScheduler) {
+			resource := strings.TrimPrefix(v[0], rke2cmds.KubeScheduler+"-")
+			switch resource {
+			case "cpu":
+				{
+					controlPlaneResources.KubeSchedulerCPULimit = v[1]
+				}
+			case "memory":
+				{
+					controlPlaneResources.KubeSchedulerMemoryLimit = v[1]
+				}
+			default:
+				logrus.Fatalf("unrecognized resource limit made: %s", r)
+			}
+		}
+		if strings.HasPrefix(v[0], rke2cmds.KubeControllerManager) {
+			resource := strings.TrimPrefix(v[0], rke2cmds.KubeControllerManager+"-")
+			switch resource {
+			case "cpu":
+				{
+					controlPlaneResources.KubeControllerManagerCPULimit = v[1]
+				}
+			case "memory":
+				{
+					controlPlaneResources.KubeControllerManagerMemoryLimit = v[1]
+				}
+			default:
+				logrus.Fatalf("unrecognized resource limit made: %s", r)
+			}
+		}
+		if strings.HasPrefix(v[0], rke2cmds.KubeProxy) {
+			resource := strings.TrimPrefix(v[0], rke2cmds.KubeProxy+"-")
+			switch resource {
+			case "cpu":
+				{
+					controlPlaneResources.KubeProxyCPULimit = v[1]
+				}
+			case "memory":
+				{
+					controlPlaneResources.KubeProxyMemoryLimit = v[1]
+				}
+			default:
+				logrus.Fatalf("unrecognized resource limit made: %s", r)
+			}
+		}
+		if strings.HasPrefix(v[0], rke2cmds.Etcd) {
+			resource := strings.TrimPrefix(v[0], rke2cmds.Etcd+"-")
+			switch resource {
+			case "cpu":
+				{
+					controlPlaneResources.EtcdCPULimit = v[1]
+				}
+			case "memory":
+				{
+					controlPlaneResources.EtcdMemoryLimit = v[1]
+				}
+			default:
+				logrus.Fatalf("unrecognized resource limit made: %s", r)
+			}
+		}
+		if strings.HasPrefix(v[0], rke2cmds.CloudControllerManager) {
+			resource := strings.TrimPrefix(v[0], rke2cmds.CloudControllerManager+"-")
+			switch resource {
+			case "cpu":
+				{
+					controlPlaneResources.CloudControllerManagerCPULimit = v[1]
+				}
+			case "memory":
+				{
+					controlPlaneResources.CloudControllerManagerMemoryLimit = v[1]
+				}
+			default:
+				logrus.Fatalf("unrecognized resource limit made: %s", r)
+			}
+		}
+	}
+
+	extraEnv := podexecutor.ControlPlaneEnv{
+		KubeAPIServer:          cfg.ExtraEnv.KubeAPIServer.Value(),
+		KubeScheduler:          cfg.ExtraEnv.KubeScheduler.Value(),
+		KubeControllerManager:  cfg.ExtraEnv.KubeControllerManager.Value(),
+		Etcd:                   cfg.ExtraEnv.Etcd.Value(),
+		CloudControllerManager: cfg.ExtraEnv.CloudControllerManager.Value(),
+	}
+
+	extraBinds := podexecutor.ControlPlaneBinds{
+		KubeAPIServer:          cfg.ExtraBinds.KubeAPIServer.Value(),
+		KubeScheduler:          cfg.ExtraBinds.KubeScheduler.Value(),
+		KubeControllerManager:  cfg.ExtraBinds.KubeControllerManager.Value(),
+		Etcd:                   cfg.ExtraBinds.Etcd.Value(),
+		CloudControllerManager: cfg.ExtraBinds.CloudControllerManager.Value(),
+	}
+
 	return &podexecutor.StaticPodConfig{
-		Resolver:        resolver,
-		ImagesDir:       agentImagesDir,
-		ManifestsDir:    agentManifestsDir,
-		CISMode:         isCISMode(clx),
-		CloudProvider:   cpConfig,
-		DataDir:         dataDir,
-		AuditPolicyFile: clx.String("audit-policy-file"),
-		KubeletPath:     cfg.KubeletPath,
-		DisableETCD:     disableETCD,
-		IsServer:        isServer,
+		Resolver:              resolver,
+		ImagesDir:             agentImagesDir,
+		ManifestsDir:          agentManifestsDir,
+		CISMode:               isCISMode(clx),
+		CloudProvider:         cpConfig,
+		DataDir:               dataDir,
+		AuditPolicyFile:       clx.String("audit-policy-file"),
+		KubeletPath:           cfg.KubeletPath,
+		DisableETCD:           disableETCD,
+		IsServer:              isServer,
+		ControlPlaneResources: controlPlaneResources,
+		ControlPlaneEnv:       extraEnv,
+		ControlPlaneBinds:     extraBinds,
 	}, nil
 }

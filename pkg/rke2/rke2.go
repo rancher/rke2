@@ -28,11 +28,33 @@ import (
 )
 
 type Config struct {
-	AuditPolicyFile     string
-	CloudProviderConfig string
-	CloudProviderName   string
-	Images              images.ImageOverrideConfig
-	KubeletPath         string
+	AuditPolicyFile              string
+	CloudProviderConfig          string
+	CloudProviderName            string
+	Images                       images.ImageOverrideConfig
+	KubeletPath                  string
+	ControlPlaneResourceRequests string
+	ControlPlaneResourceLimits   string
+	ExtraBinds                   ExtraBinds
+	ExtraEnv                     ExtraEnv
+}
+
+type ExtraBinds struct {
+	KubeAPIServer          cli.StringSlice
+	KubeScheduler          cli.StringSlice
+	KubeControllerManager  cli.StringSlice
+	KubeProxy              cli.StringSlice
+	Etcd                   cli.StringSlice
+	CloudControllerManager cli.StringSlice
+}
+
+type ExtraEnv struct {
+	KubeAPIServer          cli.StringSlice
+	KubeScheduler          cli.StringSlice
+	KubeControllerManager  cli.StringSlice
+	KubeProxy              cli.StringSlice
+	Etcd                   cli.StringSlice
+	CloudControllerManager cli.StringSlice
 }
 
 // Valid CIS Profile versions
