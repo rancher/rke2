@@ -5,14 +5,15 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/rancher/k3s/pkg/cli/cmds"

@@ -4,9 +4,10 @@ package rke2
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"path/filepath"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
 	"github.com/rancher/k3s/pkg/agent/config"
