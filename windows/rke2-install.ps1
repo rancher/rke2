@@ -176,6 +176,13 @@ function Rke2-Installer
         }
     }
 
+    function Set-Path
+    {
+        $environment = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+        $environment = $environment.Insert($environment.Length,";C:\var\lib\rancher\rke2\bin;C:\usr\local\bin")
+        [System.Environment]::SetEnvironmentVariable("Path", $environment, "Machine")
+    }
+
     function Set-Environment
     {
         if (-Not $env:CATTLE_ROLE_CONTROLPLANE)
@@ -400,6 +407,7 @@ public class TrustAllCertsPolicy : ICertificatePolicy {
         $rke2ServiceName = "rke2"
         Get-Args
         Set-Environment
+        Set-Path
         Test-CaCheckSum
 
         if ((Get-Service -Name $rke2ServiceName -ErrorAction SilentlyContinue))
