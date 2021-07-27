@@ -88,6 +88,20 @@ To read more about the config.yaml file, see the [Install Options documentation.
 ### Windows Agent (Worker) Node Installation
 **Windows Support is currently Experimental as of v1.21.3+rke2r1**
 
+#### 0. Prepare the Windows Agent Node
+**Note** The Windows Server Containers feature needs to be enabled for the RKE2 agent to work.
+
+Open a new Powershell window with Administrator privileges
+```powershell
+powershell -Command "Start-Process PowerShell -Verb RunAs"
+```
+
+In the new Powershell window, run the following command.
+```powershell
+Enable-WindowsOptionalFeature -Online -FeatureName containers –All
+```
+This will require a reboot for the `Containers` feature to properly function.
+
 #### 1. Download the Install Script
 ```powershell
 Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/release-1.21/install.ps1'))

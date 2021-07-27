@@ -25,6 +25,20 @@ The RKE2 Windows Node (Worker) agent has been tested and validated on the follow
 * Windows Server SAC 2004 (amd64) (OS Build 19041.1110)
 * Windows Server SAC 20H2 (amd64) (OS Build 19042.1110)
 
+**Note** The Windows Server Containers feature needs to be enabled for the RKE2 Windows agent to work.
+
+Open a new Powershell window with Administrator privileges
+```powershell
+powershell -Command "Start-Process PowerShell -Verb RunAs"
+```
+
+In the new Powershell window, run the following command.
+```powershell
+Enable-WindowsOptionalFeature -Online -FeatureName containers –All
+```
+
+This will require a reboot for the `Containers` feature to properly function.
+
 ## Hardware
 
 Hardware requirements scale based on the size of your deployments. Minimum recommendations are outlined here.
