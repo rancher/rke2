@@ -71,13 +71,9 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				resource := strings.TrimPrefix(v[0], KubeAPIServer+"-")
 				switch resource {
 				case "cpu":
-					{
-						controlPlaneResources.KubeAPIServerCPURequest = v[1]
-					}
+					controlPlaneResources.KubeAPIServerCPURequest = v[1]
 				case "memory":
-					{
-						controlPlaneResources.KubeAPIServerMemoryRequest = v[1]
-					}
+					controlPlaneResources.KubeAPIServerMemoryRequest = v[1]
 				default:
 					logrus.Fatalf("unrecognized resource request made: %s", r)
 				}
@@ -86,13 +82,9 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				resource := strings.TrimPrefix(v[0], KubeScheduler+"-")
 				switch resource {
 				case "cpu":
-					{
-						controlPlaneResources.KubeSchedulerCPURequest = v[1]
-					}
+					controlPlaneResources.KubeSchedulerCPURequest = v[1]
 				case "memory":
-					{
-						controlPlaneResources.KubeSchedulerMemoryRequest = v[1]
-					}
+					controlPlaneResources.KubeSchedulerMemoryRequest = v[1]
 				default:
 					logrus.Fatalf("unrecognized resource request made: %s", r)
 				}
@@ -101,13 +93,9 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				resource := strings.TrimPrefix(v[0], KubeControllerManager+"-")
 				switch resource {
 				case "cpu":
-					{
-						controlPlaneResources.KubeControllerManagerCPURequest = v[1]
-					}
+					controlPlaneResources.KubeControllerManagerCPURequest = v[1]
 				case "memory":
-					{
-						controlPlaneResources.KubeControllerManagerMemoryRequest = v[1]
-					}
+					controlPlaneResources.KubeControllerManagerMemoryRequest = v[1]
 				default:
 					logrus.Fatalf("unrecognized resource request made: %s", r)
 				}
@@ -116,13 +104,9 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				resource := strings.TrimPrefix(v[0], KubeProxy+"-")
 				switch resource {
 				case "cpu":
-					{
-						controlPlaneResources.KubeProxyCPURequest = v[1]
-					}
+					controlPlaneResources.KubeProxyCPURequest = v[1]
 				case "memory":
-					{
-						controlPlaneResources.KubeProxyMemoryRequest = v[1]
-					}
+					controlPlaneResources.KubeProxyMemoryRequest = v[1]
 				default:
 					logrus.Fatalf("unrecognized resource request made: %s", r)
 				}
@@ -131,13 +115,9 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				resource := strings.TrimPrefix(v[0], Etcd+"-")
 				switch resource {
 				case "cpu":
-					{
-						controlPlaneResources.EtcdCPURequest = v[1]
-					}
+					controlPlaneResources.EtcdCPURequest = v[1]
 				case "memory":
-					{
-						controlPlaneResources.EtcdMemoryRequest = v[1]
-					}
+					controlPlaneResources.EtcdMemoryRequest = v[1]
 				default:
 					logrus.Fatalf("unrecognized resource request made: %s", r)
 				}
@@ -146,13 +126,9 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				resource := strings.TrimPrefix(v[0], CloudControllerManager+"-")
 				switch resource {
 				case "cpu":
-					{
-						controlPlaneResources.CloudControllerManagerCPURequest = v[1]
-					}
+					controlPlaneResources.CloudControllerManagerCPURequest = v[1]
 				case "memory":
-					{
-						controlPlaneResources.CloudControllerManagerMemoryRequest = v[1]
-					}
+					controlPlaneResources.CloudControllerManagerMemoryRequest = v[1]
 				default:
 					logrus.Fatalf("unrecognized resource request made: %s", r)
 				}
@@ -170,13 +146,9 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				resource := strings.TrimPrefix(v[0], KubeAPIServer+"-")
 				switch resource {
 				case "cpu":
-					{
-						controlPlaneResources.KubeAPIServerCPULimit = v[1]
-					}
+					controlPlaneResources.KubeAPIServerCPULimit = v[1]
 				case "memory":
-					{
-						controlPlaneResources.KubeAPIServerMemoryLimit = v[1]
-					}
+					controlPlaneResources.KubeAPIServerMemoryLimit = v[1]
 				default:
 					logrus.Fatalf("unrecognized resource limit made: %s", r)
 				}
@@ -185,13 +157,9 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				resource := strings.TrimPrefix(v[0], KubeScheduler+"-")
 				switch resource {
 				case "cpu":
-					{
-						controlPlaneResources.KubeSchedulerCPULimit = v[1]
-					}
+					controlPlaneResources.KubeSchedulerCPULimit = v[1]
 				case "memory":
-					{
-						controlPlaneResources.KubeSchedulerMemoryLimit = v[1]
-					}
+					controlPlaneResources.KubeSchedulerMemoryLimit = v[1]
 				default:
 					logrus.Fatalf("unrecognized resource limit made: %s", r)
 				}
@@ -200,13 +168,9 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				resource := strings.TrimPrefix(v[0], KubeControllerManager+"-")
 				switch resource {
 				case "cpu":
-					{
-						controlPlaneResources.KubeControllerManagerCPULimit = v[1]
-					}
+					controlPlaneResources.KubeControllerManagerCPULimit = v[1]
 				case "memory":
-					{
-						controlPlaneResources.KubeControllerManagerMemoryLimit = v[1]
-					}
+					controlPlaneResources.KubeControllerManagerMemoryLimit = v[1]
 				default:
 					logrus.Fatalf("unrecognized resource limit made: %s", r)
 				}
@@ -215,13 +179,9 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				resource := strings.TrimPrefix(v[0], KubeProxy+"-")
 				switch resource {
 				case "cpu":
-					{
-						controlPlaneResources.KubeProxyCPULimit = v[1]
-					}
+					controlPlaneResources.KubeProxyCPULimit = v[1]
 				case "memory":
-					{
-						controlPlaneResources.KubeProxyMemoryLimit = v[1]
-					}
+					controlPlaneResources.KubeProxyMemoryLimit = v[1]
 				default:
 					logrus.Fatalf("unrecognized resource limit made: %s", r)
 				}
@@ -230,13 +190,9 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				resource := strings.TrimPrefix(v[0], Etcd+"-")
 				switch resource {
 				case "cpu":
-					{
-						controlPlaneResources.EtcdCPULimit = v[1]
-					}
+					controlPlaneResources.EtcdCPULimit = v[1]
 				case "memory":
-					{
-						controlPlaneResources.EtcdMemoryLimit = v[1]
-					}
+					controlPlaneResources.EtcdMemoryLimit = v[1]
 				default:
 					logrus.Fatalf("unrecognized resource limit made: %s", r)
 				}
@@ -245,13 +201,9 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				resource := strings.TrimPrefix(v[0], CloudControllerManager+"-")
 				switch resource {
 				case "cpu":
-					{
-						controlPlaneResources.CloudControllerManagerCPULimit = v[1]
-					}
+					controlPlaneResources.CloudControllerManagerCPULimit = v[1]
 				case "memory":
-					{
-						controlPlaneResources.CloudControllerManagerMemoryLimit = v[1]
-					}
+					controlPlaneResources.CloudControllerManagerMemoryLimit = v[1]
 				default:
 					logrus.Fatalf("unrecognized resource limit made: %s", r)
 				}
