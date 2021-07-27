@@ -37,7 +37,7 @@ type Args struct {
 	CPULimit        string
 	MemoryRequest   string
 	MemoryLimit     string
-	ExtraBinds      []string
+	ExtraMounts     []string
 	ExtraEnv        []string
 	SecurityContext *v1.PodSecurityContext
 	Annotations     map[string]string
@@ -236,7 +236,7 @@ func pod(args Args) (*v1.Pod, error) {
 	addVolumes(p, args.Dirs, true)
 	addVolumes(p, args.Files, false)
 
-	addExtraBinds(p, args.ExtraBinds)
+	addExtraMounts(p, args.ExtraMounts)
 	addExtraEnv(p, args.ExtraEnv)
 	return p, nil
 }
@@ -272,20 +272,20 @@ func addVolumes(p *v1.Pod, src []string, dir bool) {
 	}
 }
 
-func addExtraBinds(p *v1.Pod, extraBinds []string) {
+func addExtraMounts(p *v1.Pod, extraMounts []string) {
 	var (
-		prefix     = "extra-bind"
+		prefix     = "extra-mount"
 		sourceType = v1.HostPathDirectoryOrCreate
 	)
 
-	for i, rawBind := range extraBinds {
-		bind := strings.Split(rawBind, ":")
+	for i, rawMount := range extraMounts {
+		mount := strings.Split(rawMount, ":")
 		name := fmt.Sprintf("%s-%d", prefix, i)
 		p.Spec.Volumes = append(p.Spec.Volumes, v1.Volume{
 			Name: name,
 			VolumeSource: v1.VolumeSource{
 				HostPath: &v1.HostPathVolumeSource{
-					Path: bind[0],
+					Path: mount[0],
 					Type: &sourceType,
 				},
 			},
@@ -293,7 +293,7 @@ func addExtraBinds(p *v1.Pod, extraBinds []string) {
 		p.Spec.Containers[0].VolumeMounts = append(p.Spec.Containers[0].VolumeMounts, v1.VolumeMount{
 			Name:      name,
 			ReadOnly:  false,
-			MountPath: bind[1],
+			MountPath: mount[1],
 		})
 	}
 }

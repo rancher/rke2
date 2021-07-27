@@ -77,7 +77,7 @@ type ControlPlaneEnv struct {
 	CloudControllerManager []string
 }
 
-type ControlPlaneBinds struct {
+type ControlPlaneMounts struct {
 	KubeAPIServer          []string
 	KubeScheduler          []string
 	KubeControllerManager  []string
@@ -98,7 +98,7 @@ type StaticPodConfig struct {
 	DisableETCD           bool
 	IsServer              bool
 	ControlPlaneResources ControlPlaneResources
-	ControlPlaneBinds     ControlPlaneBinds
+	ControlPlaneMounts    ControlPlaneMounts
 	ControlPlaneEnv       ControlPlaneEnv
 }
 
@@ -190,7 +190,7 @@ func (s *StaticPodConfig) KubeProxy(args []string) error {
 		MemoryRequest: s.ControlPlaneResources.KubeProxyMemoryRequest,
 		MemoryLimit:   s.ControlPlaneResources.KubeProxyMemoryLimit,
 		ExtraEnv:      s.ControlPlaneEnv.KubeProxy,
-		ExtraBinds:    s.ControlPlaneBinds.KubeProxy,
+		ExtraMounts:   s.ControlPlaneMounts.KubeProxy,
 		Privileged:    true,
 	})
 }
@@ -255,7 +255,7 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 			MemoryRequest: s.ControlPlaneResources.KubeAPIServerMemoryRequest,
 			MemoryLimit:   s.ControlPlaneResources.KubeAPIServerMemoryLimit,
 			ExtraEnv:      s.ControlPlaneEnv.KubeAPIServer,
-			ExtraBinds:    s.ControlPlaneBinds.KubeAPIServer,
+			ExtraMounts:   s.ControlPlaneMounts.KubeAPIServer,
 			Files:         files,
 		})
 	})
@@ -287,7 +287,7 @@ func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) err
 			MemoryRequest: s.ControlPlaneResources.KubeSchedulerMemoryRequest,
 			MemoryLimit:   s.ControlPlaneResources.KubeSchedulerMemoryLimit,
 			ExtraEnv:      s.ControlPlaneEnv.KubeScheduler,
-			ExtraBinds:    s.ControlPlaneBinds.KubeScheduler,
+			ExtraMounts:   s.ControlPlaneMounts.KubeScheduler,
 			Files:         files,
 		})
 	})
@@ -353,7 +353,7 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 			MemoryRequest: s.ControlPlaneResources.KubeControllerManagerMemoryRequest,
 			MemoryLimit:   s.ControlPlaneResources.KubeControllerManagerMemoryLimit,
 			ExtraEnv:      s.ControlPlaneEnv.KubeControllerManager,
-			ExtraBinds:    s.ControlPlaneBinds.KubeControllerManager,
+			ExtraMounts:   s.ControlPlaneMounts.KubeControllerManager,
 			Files:         files,
 		})
 	})
@@ -382,7 +382,7 @@ func (s *StaticPodConfig) CloudControllerManager(ccmRBACReady <-chan struct{}, a
 			MemoryRequest: s.ControlPlaneResources.CloudControllerManagerMemoryRequest,
 			MemoryLimit:   s.ControlPlaneResources.CloudControllerManagerMemoryLimit,
 			ExtraEnv:      s.ControlPlaneEnv.CloudControllerManager,
-			ExtraBinds:    s.ControlPlaneBinds.CloudControllerManager,
+			ExtraMounts:   s.ControlPlaneMounts.CloudControllerManager,
 			Files:         []string{},
 		})
 	})
@@ -455,7 +455,7 @@ func (s *StaticPodConfig) ETCD(args executor.ETCDConfig) error {
 		MemoryRequest: s.ControlPlaneResources.EtcdMemoryRequest,
 		MemoryLimit:   s.ControlPlaneResources.EtcdMemoryLimit,
 		ExtraEnv:      s.ControlPlaneEnv.Etcd,
-		ExtraBinds:    s.ControlPlaneBinds.Etcd,
+		ExtraMounts:   s.ControlPlaneMounts.Etcd,
 	}
 
 	if s.CISMode {
