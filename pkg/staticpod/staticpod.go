@@ -152,38 +152,42 @@ func pod(args Args) (*v1.Pod, error) {
 
 	p.Spec.Containers[0].Resources = v1.ResourceRequirements{}
 
-	if args.CPURequest != "" {
+	if args.CPURequest == "" {
 		args.CPURequest = "250m"
 	}
+
+	p.Spec.Containers[0].Resources.Requests = v1.ResourceList{}
+	p.Spec.Containers[0].Resources.Limits = v1.ResourceList{}
 
 	cpuRequest, err := resource.ParseQuantity(args.CPURequest)
 	if err != nil {
 		logrus.Errorf("error parsing cpu request %v", err)
 	}
 
-	cpuLimit, err := resource.ParseQuantity(args.CPULimit)
-	if err != nil {
-		logrus.Errorf("error parsing cpu limit %v", err)
+	p.Spec.Containers[0].Resources.Requests[v1.ResourceCPU] = cpuRequest
+
+	if args.CPULimit != "" {
+		cpuLimit, err := resource.ParseQuantity(args.CPULimit)
+		if err != nil {
+			logrus.Errorf("error parsing cpu limit %v", err)
+		}
+		p.Spec.Containers[0].Resources.Limits[v1.ResourceCPU] = cpuLimit
 	}
 
-	memoryRequest, err := resource.ParseQuantity(args.MemoryRequest)
-	if err != nil {
-		logrus.Errorf("error parsing memory request %v", err)
+	if args.MemoryRequest != "" {
+		memoryRequest, err := resource.ParseQuantity(args.MemoryRequest)
+		if err != nil {
+			logrus.Errorf("error parsing memory request %v", err)
+		}
+		p.Spec.Containers[0].Resources.Requests[v1.ResourceMemory] = memoryRequest
 	}
 
-	memoryLimit, err := resource.ParseQuantity(args.MemoryLimit)
-	if err != nil {
-		logrus.Errorf("error parsing memory limit %v", err)
-	}
-
-	p.Spec.Containers[0].Resources.Requests = v1.ResourceList{
-		v1.ResourceCPU:    cpuRequest,
-		v1.ResourceMemory: memoryRequest,
-	}
-
-	p.Spec.Containers[0].Resources.Limits = v1.ResourceList{
-		v1.ResourceCPU:    cpuLimit,
-		v1.ResourceMemory: memoryLimit,
+	if args.MemoryLimit != "" {
+		memoryLimit, err := resource.ParseQuantity(args.MemoryLimit)
+		if err != nil {
+			logrus.Errorf("error parsing memory limit %v", err)
+		}
+		p.Spec.Containers[0].Resources.Limits[v1.ResourceMemory] = memoryLimit
 	}
 
 	if args.HealthPort != 0 {
