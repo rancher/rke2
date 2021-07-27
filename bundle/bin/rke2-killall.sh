@@ -70,5 +70,17 @@ ip link show 2>/dev/null | grep 'master cni0' | while read ignore iface ignore; 
 done
 ip link delete cni0
 ip link delete flannel.1
+ip link delete cilium_vxlan
+ip link delete cilium_net
+
+#Delete the nodeLocal created objects
+if [ -d /sys/class/net/nodelocaldns ]; then
+  for i in $(ip address show nodelocaldns | grep inet | awk '{print $2}');
+  do
+    iptables-save | grep -v $i | iptables-restore
+  done
+  ip link delete nodelocaldns
+fi
+
 rm -rf /var/lib/cni/
 iptables-save | grep -v KUBE- | grep -v CNI- | iptables-restore

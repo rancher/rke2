@@ -16,6 +16,44 @@ CoreDNS is deployed by default when starting the server. To disable, run each se
 
 If you don't install CoreDNS, you will need to install a cluster DNS provider yourself.
 
+=======
+CoreDNS is deployed with the [autoscaler](https://github.com/kubernetes-incubator/cluster-proportional-autoscaler) by default. To disable it or change its config, use the [HelmChartConfig](https://docs.rke2.io/helm/#customizing-packaged-components-with-helmchartconfig) resource.
+
+### NodeLocal DNSCache
+
+[NodeLocal DNSCache](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/) improves the performance by running a dns caching agent on each node. To activate this feature, apply the following HelmChartConfig:
+
+```yaml
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-coredns
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    nodelocal:
+      enabled: true
+```
+The helm controller will redeploy coredns with the new config. Please be aware that nodelocal modifies the iptables of the node to intercept DNS traffic. Therefore, activating and then deactivating this feature without redeploying, will cause the DNS service to stop working.
+
+Note that NodeLocal DNSCache must be deployed in ipvs mode if kube-proxy is using that mode. To deploy it in this mode, apply the following HelmChartConfig:
+
+```yaml
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-coredns
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    nodelocal:
+      enabled: true
+      ipvs: true
+```
+
+
 ## Nginx Ingress Controller
 
 [nginx-ingress](https://github.com/kubernetes/ingress-nginx) is an Ingress controller powered by NGINX that uses a ConfigMap to store the NGINX configuration.
