@@ -27,7 +27,7 @@
 			"scripts",
 			"docs"
 		],
-		"deadline": "5m"
+		"timeout": "10m"
 	},
 	"issues": {
 		"exclude-rules": [
