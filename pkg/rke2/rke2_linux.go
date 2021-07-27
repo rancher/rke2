@@ -14,7 +14,6 @@ import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/k3s/pkg/cluster/managed"
 	"github.com/rancher/k3s/pkg/etcd"
-	rke2cmds "github.com/rancher/rke2/pkg/cli/cmds"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
@@ -67,8 +66,8 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 		if len(v) != 2 {
 			logrus.Fatalf("incorrectly formatted control plane resource request specified: %s", r)
 		}
-		if strings.HasPrefix(v[0], rke2cmds.KubeAPIServer) {
-			resource := strings.TrimPrefix(v[0], rke2cmds.KubeAPIServer+"-")
+		if strings.HasPrefix(v[0], KubeAPIServer) {
+			resource := strings.TrimPrefix(v[0], KubeAPIServer+"-")
 			switch resource {
 			case "cpu":
 				{
@@ -82,8 +81,8 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				logrus.Fatalf("unrecognized resource request made: %s", r)
 			}
 		}
-		if strings.HasPrefix(v[0], rke2cmds.KubeScheduler) {
-			resource := strings.TrimPrefix(v[0], rke2cmds.KubeScheduler+"-")
+		if strings.HasPrefix(v[0], KubeScheduler) {
+			resource := strings.TrimPrefix(v[0], KubeScheduler+"-")
 			switch resource {
 			case "cpu":
 				{
@@ -97,8 +96,8 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				logrus.Fatalf("unrecognized resource request made: %s", r)
 			}
 		}
-		if strings.HasPrefix(v[0], rke2cmds.KubeControllerManager) {
-			resource := strings.TrimPrefix(v[0], rke2cmds.KubeControllerManager+"-")
+		if strings.HasPrefix(v[0], KubeControllerManager) {
+			resource := strings.TrimPrefix(v[0], KubeControllerManager+"-")
 			switch resource {
 			case "cpu":
 				{
@@ -112,8 +111,8 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				logrus.Fatalf("unrecognized resource request made: %s", r)
 			}
 		}
-		if strings.HasPrefix(v[0], rke2cmds.KubeProxy) {
-			resource := strings.TrimPrefix(v[0], rke2cmds.KubeProxy+"-")
+		if strings.HasPrefix(v[0], KubeProxy) {
+			resource := strings.TrimPrefix(v[0], KubeProxy+"-")
 			switch resource {
 			case "cpu":
 				{
@@ -127,8 +126,8 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				logrus.Fatalf("unrecognized resource request made: %s", r)
 			}
 		}
-		if strings.HasPrefix(v[0], rke2cmds.Etcd) {
-			resource := strings.TrimPrefix(v[0], rke2cmds.Etcd+"-")
+		if strings.HasPrefix(v[0], Etcd) {
+			resource := strings.TrimPrefix(v[0], Etcd+"-")
 			switch resource {
 			case "cpu":
 				{
@@ -142,8 +141,8 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				logrus.Fatalf("unrecognized resource request made: %s", r)
 			}
 		}
-		if strings.HasPrefix(v[0], rke2cmds.CloudControllerManager) {
-			resource := strings.TrimPrefix(v[0], rke2cmds.CloudControllerManager+"-")
+		if strings.HasPrefix(v[0], CloudControllerManager) {
+			resource := strings.TrimPrefix(v[0], CloudControllerManager+"-")
 			switch resource {
 			case "cpu":
 				{
@@ -164,8 +163,8 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 		if len(v) != 2 {
 			logrus.Fatalf("incorrectly formatted control plane resource limit specified: %s", r)
 		}
-		if strings.HasPrefix(v[0], rke2cmds.KubeAPIServer) {
-			resource := strings.TrimPrefix(v[0], rke2cmds.KubeAPIServer+"-")
+		if strings.HasPrefix(v[0], KubeAPIServer) {
+			resource := strings.TrimPrefix(v[0], KubeAPIServer+"-")
 			switch resource {
 			case "cpu":
 				{
@@ -179,8 +178,8 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				logrus.Fatalf("unrecognized resource limit made: %s", r)
 			}
 		}
-		if strings.HasPrefix(v[0], rke2cmds.KubeScheduler) {
-			resource := strings.TrimPrefix(v[0], rke2cmds.KubeScheduler+"-")
+		if strings.HasPrefix(v[0], KubeScheduler) {
+			resource := strings.TrimPrefix(v[0], KubeScheduler+"-")
 			switch resource {
 			case "cpu":
 				{
@@ -194,8 +193,8 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				logrus.Fatalf("unrecognized resource limit made: %s", r)
 			}
 		}
-		if strings.HasPrefix(v[0], rke2cmds.KubeControllerManager) {
-			resource := strings.TrimPrefix(v[0], rke2cmds.KubeControllerManager+"-")
+		if strings.HasPrefix(v[0], KubeControllerManager) {
+			resource := strings.TrimPrefix(v[0], KubeControllerManager+"-")
 			switch resource {
 			case "cpu":
 				{
@@ -209,8 +208,8 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				logrus.Fatalf("unrecognized resource limit made: %s", r)
 			}
 		}
-		if strings.HasPrefix(v[0], rke2cmds.KubeProxy) {
-			resource := strings.TrimPrefix(v[0], rke2cmds.KubeProxy+"-")
+		if strings.HasPrefix(v[0], KubeProxy) {
+			resource := strings.TrimPrefix(v[0], KubeProxy+"-")
 			switch resource {
 			case "cpu":
 				{
@@ -224,8 +223,8 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				logrus.Fatalf("unrecognized resource limit made: %s", r)
 			}
 		}
-		if strings.HasPrefix(v[0], rke2cmds.Etcd) {
-			resource := strings.TrimPrefix(v[0], rke2cmds.Etcd+"-")
+		if strings.HasPrefix(v[0], Etcd) {
+			resource := strings.TrimPrefix(v[0], Etcd+"-")
 			switch resource {
 			case "cpu":
 				{
@@ -239,8 +238,8 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 				logrus.Fatalf("unrecognized resource limit made: %s", r)
 			}
 		}
-		if strings.HasPrefix(v[0], rke2cmds.CloudControllerManager) {
-			resource := strings.TrimPrefix(v[0], rke2cmds.CloudControllerManager+"-")
+		if strings.HasPrefix(v[0], CloudControllerManager) {
+			resource := strings.TrimPrefix(v[0], CloudControllerManager+"-")
 			switch resource {
 			case "cpu":
 				{

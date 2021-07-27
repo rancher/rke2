@@ -63,6 +63,12 @@ const (
 	CISProfile16           = "cis-1.6"
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
 	containerdSock         = "/run/k3s/containerd/containerd.sock"
+	KubeAPIServer          = "kube-apiserver"
+	KubeScheduler          = "kube-scheduler"
+	KubeControllerManager  = "kube-controller-manager"
+	KubeProxy              = "kube-proxy"
+	Etcd                   = "etcd"
+	CloudControllerManager = "cloud-controller-manager"
 )
 
 func Server(clx *cli.Context, cfg Config) error {
