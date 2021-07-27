@@ -95,6 +95,24 @@ function Write-FatalLog() {
     exit 1
 }
 
+function Confirm-WindowsFeatures {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [String[]]
+        $RequiredFeatures
+    )
+    foreach ($feature in $RequiredFeatures) {
+        $f = Get-WindowsFeature -Name $feature
+        if (-not $f.Installed) {
+            Write-FatalLog "Windows feature: '$feature' is not installed. Please run: Install-WindowsFeature -Name $feature"
+        }
+        else {
+            Write-InfoLog "Windows feature: '$feature' is installed. Installation will proceed."
+        }
+    }
+}
+
 # setup_env defines needed environment variables.
 function Set-Environment()
 {
@@ -339,7 +357,6 @@ function Expand-Tarball() {
     Write-InfoLog "unpacking tarball file to $InstallPath"
     New-Item -Path $InstallPath -Type Directory -Force
     tar xzf "$Tarball" -C "$InstallPath"
-    Write-InfoLog "install complete; you may want to run:  `$env:PATH+=`";$INSTALL_RKE2_TAR_PREFIX\bin`""    
 }
 
 function Find-Checksum() {
@@ -527,6 +544,7 @@ $INSTALL_RKE2_GITHUB_URL = "https://github.com/rancher/rke2"
 $DEFAULT_TAR_PREFIX = "C:\usr\local"
 $INSTALL_RKE2_TAR_PREFIX = "C:\usr\local"
 
+Confirm-WindowsFeatures -RequiredFeatures @("Containers")
 Set-Environment -DefaultTarPrefix $DEFAULT_TAR_PREFIX
 Test-MethodConflict
 
@@ -574,6 +592,7 @@ switch ($Method) {
         Install-AirgapTarball -CommitHash $Commit -InstallAgentImageDir $INSTALL_RKE2_AGENT_IMAGES_DIR -TempAirgapTarball $TMP_AIRGAP_TARBALL -ExpectedAirGapChecksum $AIRGAP_CHECKSUM_EXPECTED -AirgapTarballFormat $AIRGAP_TARBALL_FORMAT -TempAirgapChecksums $TMP_AIRGAP_CHECKSUMS
         Test-TarballChecksum -Tarball $TMP_TARBALL -ExpectedChecksum $CHECKSUM_EXPECTED
         Expand-Tarball -InstallPath $INSTALL_RKE2_TAR_PREFIX -Tarball $TMP_TARBALL
+        Write-InfoLog "install complete; you may want to run:  `$env:PATH+=`";$INSTALL_RKE2_TAR_PREFIX\bin;C:\var\lib\rancher\rke2\bin`""
      }
     "choco" {  
         Write-FatalLog "Currently unsupported installation method. $Method will be supported soon.."
