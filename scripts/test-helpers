@@ -68,8 +68,7 @@ pod-ready() {
 }
 export -f pod-ready
 
-# ---
-
+# -- wait-for-services() accepts container names as input and checks if they are ready. It does not check Kubernetes services!
 wait-for-services() {
     for service in $@; do
         while [[ "$(pod-ready $service | sort -u)" != 'true' ]]; do
