@@ -13,7 +13,7 @@ import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/k3s/pkg/version"
 	"github.com/urfave/cli"
-	"golang.org/x/sys/windows"
+	syswin "golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/svc/mgr"
 )
 
@@ -78,7 +78,7 @@ func addWindowService(serviceName, config string) error {
 	defer m.Disconnect()
 
 	s, err := m.CreateService(serviceName, p, mgr.Config{
-		ServiceType:  windows.SERVICE_WIN32_OWN_PROCESS,
+		ServiceType:  syswin.SERVICE_WIN32_OWN_PROCESS,
 		StartType:    mgr.StartAutomatic,
 		ErrorControl: mgr.ErrorNormal,
 		DisplayName:  version.Program,
@@ -112,7 +112,7 @@ func addWindowService(serviceName, config string) error {
 	}
 
 	lpInfo := serviceFailureActions{ResetPeriod: uint32(30), ActionsCount: uint32(1), Actions: uintptr(unsafe.Pointer(&t[0]))}
-	return windows.ChangeServiceConfig2(s.Handle, serviceConfigFailureActions, (*byte)(unsafe.Pointer(&lpInfo)))
+	return syswin.ChangeServiceConfig2(s.Handle, serviceConfigFailureActions, (*byte)(unsafe.Pointer(&lpInfo)))
 }
 
 func deleteWindowsService(serviceName string) error {

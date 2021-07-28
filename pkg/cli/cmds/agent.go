@@ -3,6 +3,7 @@ package cmds
 import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/rke2/pkg/rke2"
+	"github.com/rancher/rke2/pkg/windows"
 	"github.com/urfave/cli"
 )
 
@@ -80,5 +81,8 @@ func agentSubcommands() cli.Commands {
 func AgentRun(clx *cli.Context) error {
 	validateCloudProviderName(clx)
 	validateProfile(clx, "agent")
+	if err := windows.StartService(); err != nil {
+		return err
+	}
 	return rke2.Agent(clx, config)
 }
