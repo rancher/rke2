@@ -52,7 +52,7 @@ function Write-LogWarn {
     Write-Host -ForegroundColor Gray ("{0,-44}" -f ($args -join " "))
 }
 function Write-LogError {
-    Write-Host -NoNewline -ForegroundColor DarkRed "ERRO: "
+    Write-Host -NoNewline -ForegroundColor DarkRed "ERROR: "
     Write-Host -ForegroundColor Gray ("{0,-44}" -f ($args -join " "))
 }
 function Write-LogFatal {
