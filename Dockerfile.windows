@@ -5,7 +5,7 @@ RUN apk --no-cache add \
     unzip
 
 # Dapper/Drone/CI environment
-FROM rancher/hardened-build-base:v1.16.4b7 AS dapper
+FROM rancher/hardened-build-base:v1.16.6b7 AS dapper
 ENV DAPPER_ENV GODEBUG REPO TAG DRONE_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME GCLOUD_AUTH ENABLE_REGISTRY
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
@@ -34,15 +34,15 @@ RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
     )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
     chmod a+x /usr/local/bin/kubectl; \
     pip install codespell
-RUN curl -sL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.27.0
+RUN curl -sL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.41.0
 WORKDIR /source
 # End Dapper stuff
 
 FROM build as windows-runtime-collect
 # windows runtime image
-ENV KUBERNETES_VERSION="v1.21.2"
+ENV KUBERNETES_VERSION="v1.21.3"
 ENV CRICTL_VERSION="v1.21.0"
-ENV CONTAINERD_VERSION="1.5.2"
+ENV CONTAINERD_VERSION="1.5.4"
 ENV WINS_VERSION="0.1.1"
 ENV FLANNEL_VERSION="v0.14.0"
 ENV CALICO_VERSION="v3.19.1"
