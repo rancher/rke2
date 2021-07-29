@@ -87,6 +87,7 @@ To read more about the config.yaml file, see the [Install Options documentation.
 
 ### Windows Agent (Worker) Node Installation
 **Windows Support is currently Experimental as of v1.21.3+rke2r1**
+**Windows Support requires choosing Calico as the CNI for the RKE2 cluster**
 
 #### 0. Prepare the Windows Agent Node
 **Note** The Windows Server Containers feature needs to be enabled for the RKE2 agent to work.
@@ -104,23 +105,30 @@ This will require a reboot for the `Containers` feature to properly function.
 
 #### 1. Download the Install Script
 ```powershell
-Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/release-1.21/install.ps1'))
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/rancher/rke2/master/install.ps1 -Outfile install.ps1
 ```
-This will download the `rke2.exe` Windows binary onto your machine.
+This script will download the `rke2.exe` Windows binary onto your machine.
 
 #### 2. Configure the rke2-agent for Windows
 ```powershell
 New-Item -Type Directory c:/etc/rancher/rke2 -Force
-notepad c:/etc/rancher/rke2/config.yaml
-```
-Content for config.yaml:
-```
+Set-Content -Path c:/etc/rancher/rke2/config.yaml -Value @"
 server: https://<server>:9345
 token: <token from server node>
+"@
 ```
+
+To read more about the config.yaml file, see the [Install Options documentation.](./install_options/install_options.md#configuration-file)
+
+
 #### 3. Configure PATH 
 ```powershell
 $env:PATH+=";c:\var\lib\rancher\rke2\bin;c:\usr\local\bin"
+
+[Environment]::SetEnvironmentVariable(
+    "Path",
+    [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";c:\var\lib\rancher\rke2\bin;c:\usr\local\bin",
+    [EnvironmentVariableTarget]::Machine)
 ```
 #### 4. Run the Installer
 ```powershell
@@ -133,4 +141,8 @@ rke2.exe agent service --add
 ```
 **Note:** Each machine must have a unique hostname. 
 
-To read more about the config.yaml file, see the [Install Options documentation.](./install_options/install_options.md#configuration-file)
+If you would prefer to use CLI parameters only instead, run the binary with the desired parameters. 
+
+```powershell
+rke2.exe agent --token <> --server <>
+```

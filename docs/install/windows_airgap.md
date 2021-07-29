@@ -1,5 +1,6 @@
 # Windows Air-Gap Install
 **Windows Support is currently Experimental as of v1.21.3+rke2r1**
+**Windows Support requires choosing Calico as the CNI for the RKE2 cluster**
 
 RKE2 Windows Agent (Worker) Nodes can be used in an air-gapped environment with two different methods. This requires first completing the RKE2 [airgap setup](airgap.md)
 
@@ -111,22 +112,28 @@ Invoke-WebRequest https://github.com/rancher/rke2/releases/download/v1.21.3%2Brk
 2. Configure the rke2-agent for Windows
 ```powershell
 New-Item -Type Directory c:/etc/rancher/rke2 -Force
-notepad c:/etc/rancher/rke2/config.yaml
-```
-Content for config.yaml:
-```
+Set-Content -Path c:/etc/rancher/rke2/config.yaml -Value @"
 server: https://<server>:9345
 token: <token from server node>
+"@
 ```
+
+To read more about the config.yaml file, see the [Install Options documentation.](./install_options/install_options.md#configuration-file)
+
 3. Configure your PATH
 ```powershell
 $env:PATH+=";c:\var\lib\rancher\rke2\bin;c:\usr\local\bin"
+
+[Environment]::SetEnvironmentVariable(
+    "Path",
+    [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";c:\var\lib\rancher\rke2\bin;c:\usr\local\bin",
+    [EnvironmentVariableTarget]::Machine)
 ```
 
 4. Start the RKE2 Windows service by running the binary with the desired parameters. Please see the [Windows Agent Configuration reference](install_options/windows_agent_config.md) for additional parameters.  
 
 ```powershell
-rke2.exe agent service --add
+c:\usr\local\bin\rke2.exe agent service --add
 ```
 
 For example, if using the Private Registry Method, your config file would have the following:
@@ -135,7 +142,6 @@ system-default-registry: "registry.example.com:5000"
 ```
 
 **Note:** The `system-default-registry` parameter must specify only valid RFC 3986 URI authorities, i.e. a host and optional port.
-
 
 If you would prefer to use CLI parameters only instead, run the binary with the desired parameters. 
 

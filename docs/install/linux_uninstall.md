@@ -1,8 +1,8 @@
 ---
-title: Uninstall
+title: Linux Uninstall
 ---
 
-# Uninstall
+# Linux Uninstall
 
 > **Note:**  Uninstalling RKE2 deletes the cluster data and all of the scripts.
 
