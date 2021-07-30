@@ -12,6 +12,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/rancher/rke2/pkg/rke2"
+
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -24,7 +26,15 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-const defaultCPURequest = "250m"
+const (
+	defaultCPURequest                       = "250m"
+	defaultKubeAPIServerCPURequest          = "250m"
+	defaultKubeSchedulerCPURequest          = "100m"
+	defaultKubeControllerManagerCPURequest  = "200m"
+	defaultKubeProxyCPURequest              = "250m"
+	defaultEtcdCPURequest                   = "250m"
+	defaultCloudControllerManagerCPURequest = "200m"
+)
 
 type Args struct {
 	Command         string
@@ -155,7 +165,22 @@ func pod(args Args) (*v1.Pod, error) {
 	p.Spec.Containers[0].Resources = v1.ResourceRequirements{}
 
 	if args.CPURequest == "" {
-		args.CPURequest = defaultCPURequest
+		switch args.Command {
+		case rke2.KubeAPIServer:
+			args.CPURequest = defaultKubeAPIServerCPURequest
+		case rke2.KubeScheduler:
+			args.CPURequest = defaultKubeSchedulerCPURequest
+		case rke2.KubeControllerManager:
+			args.CPURequest = defaultKubeControllerManagerCPURequest
+		case rke2.KubeProxy:
+			args.CPURequest = defaultKubeProxyCPURequest
+		case rke2.Etcd:
+			args.CPURequest = defaultEtcdCPURequest
+		case rke2.CloudControllerManager:
+			args.CPURequest = defaultCloudControllerManagerCPURequest
+		default:
+			args.CPURequest = defaultCPURequest
+		}
 	}
 
 	p.Spec.Containers[0].Resources.Requests = v1.ResourceList{}
