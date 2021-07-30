@@ -116,7 +116,7 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 		}
 		for component, request := range resources {
 			for com, target := range request {
-				k := component + "-" + com + "-request"
+				k := component + "-" + com
 				if val, ok := parsedRequests[k]; ok {
 					*target = val
 				}
@@ -135,7 +135,7 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 		}
 		for component, limit := range resources {
 			for com, target := range limit {
-				k := component + "-" + com + "-limit"
+				k := component + "-" + com
 				if val, ok := parsedLimits[k]; ok {
 					*target = val
 				}
