@@ -55,6 +55,7 @@ replace (
 )
 
 require (
+	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/Microsoft/hcsshim v0.8.20
 	github.com/containerd/continuity v0.1.0
 	github.com/google/go-containerregistry v0.5.0
