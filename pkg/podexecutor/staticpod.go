@@ -15,8 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rancher/rke2/pkg/rke2"
-
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	daemonconfig "github.com/rancher/k3s/pkg/daemons/config"
 	"github.com/rancher/k3s/pkg/daemons/executor"
@@ -396,7 +394,7 @@ func (s *StaticPodConfig) CloudControllerManager(ccmRBACReady <-chan struct{}, a
 	}
 	return after(ccmRBACReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command:       rke2.CloudControllerManager,
+			Command:       "cloud-controller-manager",
 			Args:          args,
 			Image:         image,
 			Dirs:          onlyExisting(ssldirs),
