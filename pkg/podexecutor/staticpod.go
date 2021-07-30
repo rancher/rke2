@@ -21,6 +21,7 @@ import (
 	"github.com/rancher/rke2/pkg/auth"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
+	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/rancher/rke2/pkg/staticpod"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -39,6 +40,14 @@ var (
 		"/usr/share/ca-certificates",
 	}
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
+)
+
+const (
+	defaultKubeAPIServerCPURequest          = "250m"
+	defaultKubeSchedulerCPURequest          = "100m"
+	defaultKubeControllerManagerCPURequest  = "200m"
+	defaultKubeProxyCPURequest              = "250m"
+	defaultCloudControllerManagerCPURequest = "200m"
 )
 
 type ControlPlaneResources struct {
@@ -181,8 +190,11 @@ func (s *StaticPodConfig) KubeProxy(args []string) error {
 		return err
 	}
 
+	if s.ControlPlaneResources.KubeProxyCPURequest == "" {
+		s.ControlPlaneResources.KubeProxyCPURequest = defaultKubeProxyCPURequest
+	}
 	return staticpod.Run(s.ManifestsDir, staticpod.Args{
-		Command:       "kube-proxy",
+		Command:       rke2.KubeProxy,
 		Args:          args,
 		Image:         image,
 		CPURequest:    s.ControlPlaneResources.KubeProxyCPURequest,
@@ -244,9 +256,12 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
+	if s.ControlPlaneResources.KubeAPIServerCPURequest == "" {
+		s.ControlPlaneResources.KubeAPIServerCPURequest = defaultKubeAPIServerCPURequest
+	}
 	after(etcdReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command:       "kube-apiserver",
+			Command:       rke2.KubeAPIServer,
 			Args:          args,
 			Image:         image,
 			Dirs:          append(onlyExisting(ssldirs), filepath.Dir(auditLogFile)),
@@ -275,9 +290,12 @@ func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) err
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
+	if s.ControlPlaneResources.KubeSchedulerCPURequest == "" {
+		s.ControlPlaneResources.KubeSchedulerCPURequest = defaultKubeSchedulerCPURequest
+	}
 	return after(apiReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command:       "kube-scheduler",
+			Command:       rke2.KubeScheduler,
 			Args:          args,
 			Image:         image,
 			HealthPort:    10251,
@@ -335,6 +353,9 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
+	if s.ControlPlaneResources.KubeControllerManagerCPURequest == "" {
+		s.ControlPlaneResources.KubeControllerManagerCPURequest = defaultKubeControllerManagerCPURequest
+	}
 	return after(apiReady, func() error {
 		extraArgs := []string{
 			"--flex-volume-plugin-dir=/var/lib/kubelet/volumeplugins",
@@ -342,7 +363,7 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 		}
 		args = append(extraArgs, args...)
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command:       "kube-controller-manager",
+			Command:       rke2.KubeControllerManager,
 			Args:          args,
 			Image:         image,
 			Dirs:          onlyExisting(ssldirs),
@@ -369,9 +390,12 @@ func (s *StaticPodConfig) CloudControllerManager(ccmRBACReady <-chan struct{}, a
 	if err := images.Pull(s.ImagesDir, images.CloudControllerManager, image); err != nil {
 		return err
 	}
+	if s.ControlPlaneResources.CloudControllerManagerCPURequest == "" {
+		s.ControlPlaneResources.CloudControllerManagerCPURequest = defaultCloudControllerManagerCPURequest
+	}
 	return after(ccmRBACReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command:       "cloud-controller-manager",
+			Command:       rke2.CloudControllerManager,
 			Args:          args,
 			Image:         image,
 			Dirs:          onlyExisting(ssldirs),
@@ -433,7 +457,7 @@ func (s *StaticPodConfig) ETCD(args executor.ETCDConfig) error {
 		Annotations: map[string]string{
 			"etcd.k3s.io/initial": string(initial),
 		},
-		Command: "etcd",
+		Command: rke2.Etcd,
 		Args: []string{
 			"--config-file=" + confFile,
 		},
