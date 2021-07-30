@@ -19,6 +19,13 @@ import (
 	"github.com/urfave/cli"
 )
 
+const (
+	CPURequest = "cpu-request"
+	CPULimit = "cpu-limit"
+	MemoryRequest = "memory-request"
+	MemoryLimit = "memory-limit"
+)
+
 func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool, isServer bool) (*podexecutor.StaticPodConfig, error) {
 	// This flag will only be set on servers, on agents this is a no-op and the
 	// resolver's default registry will get updated later when bootstrapping
@@ -59,157 +66,84 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 	}
 
 	var controlPlaneResources podexecutor.ControlPlaneResources
+	var resources = map[string]map[string]*string{
+		KubeAPIServer: {
+			CPURequest: &controlPlaneResources.KubeAPIServerCPURequest,
+			CPULimit: &controlPlaneResources.KubeAPIServerCPULimit,
+			MemoryRequest: &controlPlaneResources.KubeAPIServerMemoryRequest,
+			MemoryLimit: &controlPlaneResources.KubeAPIServerMemoryLimit,
+		},
+		KubeScheduler: {
+			CPURequest: &controlPlaneResources.KubeSchedulerCPURequest,
+			CPULimit: &controlPlaneResources.KubeSchedulerCPULimit,
+			MemoryRequest: &controlPlaneResources.KubeSchedulerMemoryRequest,
+			MemoryLimit: &controlPlaneResources.KubeSchedulerMemoryLimit,
+		},
+		KubeControllerManager: {
+			CPURequest: &controlPlaneResources.KubeControllerManagerCPURequest,
+			CPULimit: &controlPlaneResources.KubeControllerManagerCPULimit,
+			MemoryRequest: &controlPlaneResources.KubeControllerManagerMemoryRequest,
+			MemoryLimit: &controlPlaneResources.KubeControllerManagerMemoryLimit,
+		},
+		KubeProxy: {
+			CPURequest: &controlPlaneResources.KubeProxyCPURequest,
+			CPULimit: &controlPlaneResources.KubeProxyCPULimit,
+			MemoryRequest: &controlPlaneResources.KubeProxyMemoryRequest,
+			MemoryLimit: &controlPlaneResources.KubeProxyMemoryLimit,
+		},
+		Etcd: {
+			CPURequest: &controlPlaneResources.EtcdCPURequest,
+			CPULimit: &controlPlaneResources.EtcdCPULimit,
+			MemoryRequest: &controlPlaneResources.EtcdMemoryRequest,
+			MemoryLimit: &controlPlaneResources.EtcdMemoryLimit,
+		},
+		CloudControllerManager: {
+			CPURequest: &controlPlaneResources.CloudControllerManagerCPURequest,
+			CPULimit: &controlPlaneResources.CloudControllerManagerCPULimit,
+			MemoryRequest: &controlPlaneResources.CloudControllerManagerMemoryRequest,
+			MemoryLimit: &controlPlaneResources.CloudControllerManagerMemoryLimit,
+		},
+	}
 
 	if cfg.ControlPlaneResourceRequests != "" {
-		for _, r := range strings.Split(cfg.ControlPlaneResourceRequests, ",") {
-			v := strings.Split(r, "=")
+		var parsedRequests = make(map[string]string)
+		for _, rawRequest := range strings.Split(cfg.ControlPlaneResourceRequests, ",") {
+			v := strings.SplitN(rawRequest, "=", 2)
 			if len(v) != 2 {
-				logrus.Fatalf("incorrectly formatted control plane resource request specified: %s", r)
+				logrus.Fatalf("incorrectly formatted control plane resource request specified: %s", rawRequest)
 			}
-
-			if strings.HasPrefix(v[0], KubeAPIServer) {
-				resource := strings.TrimPrefix(v[0], KubeAPIServer+"-")
-				switch resource {
-				case "cpu":
-					controlPlaneResources.KubeAPIServerCPURequest = v[1]
-				case "memory":
-					controlPlaneResources.KubeAPIServerMemoryRequest = v[1]
-				default:
-					logrus.Fatalf("unrecognized resource request made: %s", r)
-				}
-			}
-			if strings.HasPrefix(v[0], KubeScheduler) {
-				resource := strings.TrimPrefix(v[0], KubeScheduler+"-")
-				switch resource {
-				case "cpu":
-					controlPlaneResources.KubeSchedulerCPURequest = v[1]
-				case "memory":
-					controlPlaneResources.KubeSchedulerMemoryRequest = v[1]
-				default:
-					logrus.Fatalf("unrecognized resource request made: %s", r)
-				}
-			}
-			if strings.HasPrefix(v[0], KubeControllerManager) {
-				resource := strings.TrimPrefix(v[0], KubeControllerManager+"-")
-				switch resource {
-				case "cpu":
-					controlPlaneResources.KubeControllerManagerCPURequest = v[1]
-				case "memory":
-					controlPlaneResources.KubeControllerManagerMemoryRequest = v[1]
-				default:
-					logrus.Fatalf("unrecognized resource request made: %s", r)
-				}
-			}
-			if strings.HasPrefix(v[0], KubeProxy) {
-				resource := strings.TrimPrefix(v[0], KubeProxy+"-")
-				switch resource {
-				case "cpu":
-					controlPlaneResources.KubeProxyCPURequest = v[1]
-				case "memory":
-					controlPlaneResources.KubeProxyMemoryRequest = v[1]
-				default:
-					logrus.Fatalf("unrecognized resource request made: %s", r)
-				}
-			}
-			if strings.HasPrefix(v[0], Etcd) {
-				resource := strings.TrimPrefix(v[0], Etcd+"-")
-				switch resource {
-				case "cpu":
-					controlPlaneResources.EtcdCPURequest = v[1]
-				case "memory":
-					controlPlaneResources.EtcdMemoryRequest = v[1]
-				default:
-					logrus.Fatalf("unrecognized resource request made: %s", r)
-				}
-			}
-			if strings.HasPrefix(v[0], CloudControllerManager) {
-				resource := strings.TrimPrefix(v[0], CloudControllerManager+"-")
-				switch resource {
-				case "cpu":
-					controlPlaneResources.CloudControllerManagerCPURequest = v[1]
-				case "memory":
-					controlPlaneResources.CloudControllerManagerMemoryRequest = v[1]
-				default:
-					logrus.Fatalf("unrecognized resource request made: %s", r)
+			parsedRequests[v[0]] = v[1]
+		}
+		for component, request := range resources {
+			for com, target := range request {
+				k := component + "-" + com + "-request"
+				if val, ok := parsedRequests[k]; ok {
+					*target = val
 				}
 			}
 		}
 	}
 
 	if cfg.ControlPlaneResourceLimits != "" {
-		for _, r := range strings.Split(cfg.ControlPlaneResourceLimits, ",") {
-			v := strings.Split(r, "=")
+		var parsedLimits = make(map[string]string)
+		for _, rawLimit := range strings.Split(cfg.ControlPlaneResourceLimits, ",") {
+			v := strings.SplitN(rawLimit, "=", 2)
 			if len(v) != 2 {
-				logrus.Fatalf("incorrectly formatted control plane resource limit specified: %s", r)
+				logrus.Fatalf("incorrectly formatted control plane resource request specified: %s", rawLimit)
 			}
-			if strings.HasPrefix(v[0], KubeAPIServer) {
-				resource := strings.TrimPrefix(v[0], KubeAPIServer+"-")
-				switch resource {
-				case "cpu":
-					controlPlaneResources.KubeAPIServerCPULimit = v[1]
-				case "memory":
-					controlPlaneResources.KubeAPIServerMemoryLimit = v[1]
-				default:
-					logrus.Fatalf("unrecognized resource limit made: %s", r)
-				}
-			}
-			if strings.HasPrefix(v[0], KubeScheduler) {
-				resource := strings.TrimPrefix(v[0], KubeScheduler+"-")
-				switch resource {
-				case "cpu":
-					controlPlaneResources.KubeSchedulerCPULimit = v[1]
-				case "memory":
-					controlPlaneResources.KubeSchedulerMemoryLimit = v[1]
-				default:
-					logrus.Fatalf("unrecognized resource limit made: %s", r)
-				}
-			}
-			if strings.HasPrefix(v[0], KubeControllerManager) {
-				resource := strings.TrimPrefix(v[0], KubeControllerManager+"-")
-				switch resource {
-				case "cpu":
-					controlPlaneResources.KubeControllerManagerCPULimit = v[1]
-				case "memory":
-					controlPlaneResources.KubeControllerManagerMemoryLimit = v[1]
-				default:
-					logrus.Fatalf("unrecognized resource limit made: %s", r)
-				}
-			}
-			if strings.HasPrefix(v[0], KubeProxy) {
-				resource := strings.TrimPrefix(v[0], KubeProxy+"-")
-				switch resource {
-				case "cpu":
-					controlPlaneResources.KubeProxyCPULimit = v[1]
-				case "memory":
-					controlPlaneResources.KubeProxyMemoryLimit = v[1]
-				default:
-					logrus.Fatalf("unrecognized resource limit made: %s", r)
-				}
-			}
-			if strings.HasPrefix(v[0], Etcd) {
-				resource := strings.TrimPrefix(v[0], Etcd+"-")
-				switch resource {
-				case "cpu":
-					controlPlaneResources.EtcdCPULimit = v[1]
-				case "memory":
-					controlPlaneResources.EtcdMemoryLimit = v[1]
-				default:
-					logrus.Fatalf("unrecognized resource limit made: %s", r)
-				}
-			}
-			if strings.HasPrefix(v[0], CloudControllerManager) {
-				resource := strings.TrimPrefix(v[0], CloudControllerManager+"-")
-				switch resource {
-				case "cpu":
-					controlPlaneResources.CloudControllerManagerCPULimit = v[1]
-				case "memory":
-					controlPlaneResources.CloudControllerManagerMemoryLimit = v[1]
-				default:
-					logrus.Fatalf("unrecognized resource limit made: %s", r)
+			parsedLimits[v[0]] = v[1]
+		}
+		for component, limit := range resources {
+			for com, target := range limit {
+				k := component + "-" + com + "-limit"
+				if val, ok := parsedLimits[k]; ok {
+					*target = val
 				}
 			}
 		}
 	}
+
+	logrus.Debugf("Parsed control plane requests/limits: %+v\n", controlPlaneResources)
 
 	extraEnv := podexecutor.ControlPlaneEnv{
 		KubeAPIServer:          cfg.ExtraEnv.KubeAPIServer.Value(),
