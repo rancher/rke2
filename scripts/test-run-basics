@@ -19,6 +19,7 @@ export WAIT_SERVICES="${all_services[@]}"
 
 start-test() {
     #docker exec $(cat $TEST_DIR/servers/1/metadata/name) check-config || true
+    use-nodelocal-DNSCache
     verify-valid-versions $(cat $TEST_DIR/servers/1/metadata/name)
     verify-airgap-images $(cat $TEST_DIR/{servers,agents}/*/metadata/name)
 }
@@ -43,6 +44,15 @@ verify-airgap-images() {
     return 0
 }
 export -f verify-airgap-images
+
+
+# -- Enable the nodelocal DNSCache so that its images are used
+use-nodelocal-DNSCache() {
+    local DNS_nodeCache_manifest='scripts/airgap/dnsNodeCache-test.yaml'
+    kubectl apply -f $DNS_nodeCache_manifest
+    wait-for-services node-cache
+}
+export -f use-nodelocal-DNSCache
 
 # --- create a basic cluster and check for valid versions
 LABEL=BASICS run-test
