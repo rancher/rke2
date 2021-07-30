@@ -194,7 +194,7 @@ func (s *StaticPodConfig) KubeProxy(args []string) error {
 		s.ControlPlaneResources.KubeProxyCPURequest = defaultKubeProxyCPURequest
 	}
 	return staticpod.Run(s.ManifestsDir, staticpod.Args{
-		Command:       rke2.KubeProxy,
+		Command:       "kube-proxy",
 		Args:          args,
 		Image:         image,
 		CPURequest:    s.ControlPlaneResources.KubeProxyCPURequest,
@@ -261,7 +261,7 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 	}
 	after(etcdReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command:       rke2.KubeAPIServer,
+			Command:       "kube-apiserver",
 			Args:          args,
 			Image:         image,
 			Dirs:          append(onlyExisting(ssldirs), filepath.Dir(auditLogFile)),
@@ -295,7 +295,7 @@ func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) err
 	}
 	return after(apiReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command:       rke2.KubeScheduler,
+			Command:       "kube-scheduler",
 			Args:          args,
 			Image:         image,
 			HealthPort:    10251,
@@ -363,7 +363,7 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 		}
 		args = append(extraArgs, args...)
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command:       rke2.KubeControllerManager,
+			Command:       "kube-controller-manager",
 			Args:          args,
 			Image:         image,
 			Dirs:          onlyExisting(ssldirs),
@@ -457,7 +457,7 @@ func (s *StaticPodConfig) ETCD(args executor.ETCDConfig) error {
 		Annotations: map[string]string{
 			"etcd.k3s.io/initial": string(initial),
 		},
-		Command: rke2.Etcd,
+		Command: "etcd",
 		Args: []string{
 			"--config-file=" + confFile,
 		},
