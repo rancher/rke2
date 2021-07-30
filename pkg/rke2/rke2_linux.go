@@ -20,10 +20,10 @@ import (
 )
 
 const (
-	CPURequest = "cpu-request"
-	CPULimit = "cpu-limit"
+	CPURequest    = "cpu-request"
+	CPULimit      = "cpu-limit"
 	MemoryRequest = "memory-request"
-	MemoryLimit = "memory-limit"
+	MemoryLimit   = "memory-limit"
 )
 
 func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool, isServer bool) (*podexecutor.StaticPodConfig, error) {
@@ -71,40 +71,40 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 	//the value corresponds to a pointer to the component resources array
 	var resources = map[string]map[string]*string{
 		KubeAPIServer: {
-			CPURequest: &controlPlaneResources.KubeAPIServerCPURequest,
-			CPULimit: &controlPlaneResources.KubeAPIServerCPULimit,
+			CPURequest:    &controlPlaneResources.KubeAPIServerCPURequest,
+			CPULimit:      &controlPlaneResources.KubeAPIServerCPULimit,
 			MemoryRequest: &controlPlaneResources.KubeAPIServerMemoryRequest,
-			MemoryLimit: &controlPlaneResources.KubeAPIServerMemoryLimit,
+			MemoryLimit:   &controlPlaneResources.KubeAPIServerMemoryLimit,
 		},
 		KubeScheduler: {
-			CPURequest: &controlPlaneResources.KubeSchedulerCPURequest,
-			CPULimit: &controlPlaneResources.KubeSchedulerCPULimit,
+			CPURequest:    &controlPlaneResources.KubeSchedulerCPURequest,
+			CPULimit:      &controlPlaneResources.KubeSchedulerCPULimit,
 			MemoryRequest: &controlPlaneResources.KubeSchedulerMemoryRequest,
-			MemoryLimit: &controlPlaneResources.KubeSchedulerMemoryLimit,
+			MemoryLimit:   &controlPlaneResources.KubeSchedulerMemoryLimit,
 		},
 		KubeControllerManager: {
-			CPURequest: &controlPlaneResources.KubeControllerManagerCPURequest,
-			CPULimit: &controlPlaneResources.KubeControllerManagerCPULimit,
+			CPURequest:    &controlPlaneResources.KubeControllerManagerCPURequest,
+			CPULimit:      &controlPlaneResources.KubeControllerManagerCPULimit,
 			MemoryRequest: &controlPlaneResources.KubeControllerManagerMemoryRequest,
-			MemoryLimit: &controlPlaneResources.KubeControllerManagerMemoryLimit,
+			MemoryLimit:   &controlPlaneResources.KubeControllerManagerMemoryLimit,
 		},
 		KubeProxy: {
-			CPURequest: &controlPlaneResources.KubeProxyCPURequest,
-			CPULimit: &controlPlaneResources.KubeProxyCPULimit,
+			CPURequest:    &controlPlaneResources.KubeProxyCPURequest,
+			CPULimit:      &controlPlaneResources.KubeProxyCPULimit,
 			MemoryRequest: &controlPlaneResources.KubeProxyMemoryRequest,
-			MemoryLimit: &controlPlaneResources.KubeProxyMemoryLimit,
+			MemoryLimit:   &controlPlaneResources.KubeProxyMemoryLimit,
 		},
 		Etcd: {
-			CPURequest: &controlPlaneResources.EtcdCPURequest,
-			CPULimit: &controlPlaneResources.EtcdCPULimit,
+			CPURequest:    &controlPlaneResources.EtcdCPURequest,
+			CPULimit:      &controlPlaneResources.EtcdCPULimit,
 			MemoryRequest: &controlPlaneResources.EtcdMemoryRequest,
-			MemoryLimit: &controlPlaneResources.EtcdMemoryLimit,
+			MemoryLimit:   &controlPlaneResources.EtcdMemoryLimit,
 		},
 		CloudControllerManager: {
-			CPURequest: &controlPlaneResources.CloudControllerManagerCPURequest,
-			CPULimit: &controlPlaneResources.CloudControllerManagerCPULimit,
+			CPURequest:    &controlPlaneResources.CloudControllerManagerCPURequest,
+			CPULimit:      &controlPlaneResources.CloudControllerManagerCPULimit,
 			MemoryRequest: &controlPlaneResources.CloudControllerManagerMemoryRequest,
-			MemoryLimit: &controlPlaneResources.CloudControllerManagerMemoryLimit,
+			MemoryLimit:   &controlPlaneResources.CloudControllerManagerMemoryLimit,
 		},
 	}
 
