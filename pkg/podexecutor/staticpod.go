@@ -15,13 +15,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rancher/rke2/pkg/rke2"
+
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	daemonconfig "github.com/rancher/k3s/pkg/daemons/config"
 	"github.com/rancher/k3s/pkg/daemons/executor"
 	"github.com/rancher/rke2/pkg/auth"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
-	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/rancher/rke2/pkg/staticpod"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
