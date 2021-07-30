@@ -66,6 +66,9 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 	}
 
 	var controlPlaneResources podexecutor.ControlPlaneResources
+	// resources is a map of the component (kube-apiserver, kube-controller-manager, etc.) to a map[string]*string,
+	// where the key of the downstream map is the `cpu-request`, `cpu-limit`, `memory-request`, or `memory-limit` and
+	//the value corresponds to a pointer to the component resources array
 	var resources = map[string]map[string]*string{
 		KubeAPIServer: {
 			CPURequest: &controlPlaneResources.KubeAPIServerCPURequest,
@@ -105,40 +108,33 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 		},
 	}
 
+	var parsedRequestsLimits = make(map[string]string)
+
 	if cfg.ControlPlaneResourceRequests != "" {
-		var parsedRequests = make(map[string]string)
 		for _, rawRequest := range strings.Split(cfg.ControlPlaneResourceRequests, ",") {
 			v := strings.SplitN(rawRequest, "=", 2)
 			if len(v) != 2 {
 				logrus.Fatalf("incorrectly formatted control plane resource request specified: %s", rawRequest)
 			}
-			parsedRequests[v[0]] = v[1]
-		}
-		for component, request := range resources {
-			for com, target := range request {
-				k := component + "-" + com
-				if val, ok := parsedRequests[k]; ok {
-					*target = val
-				}
-			}
+			parsedRequestsLimits[v[0]+"-request"] = v[1]
 		}
 	}
 
 	if cfg.ControlPlaneResourceLimits != "" {
-		var parsedLimits = make(map[string]string)
 		for _, rawLimit := range strings.Split(cfg.ControlPlaneResourceLimits, ",") {
 			v := strings.SplitN(rawLimit, "=", 2)
 			if len(v) != 2 {
 				logrus.Fatalf("incorrectly formatted control plane resource request specified: %s", rawLimit)
 			}
-			parsedLimits[v[0]] = v[1]
+			parsedRequestsLimits[v[0]+"-limit"] = v[1]
 		}
-		for component, limit := range resources {
-			for com, target := range limit {
-				k := component + "-" + com
-				if val, ok := parsedLimits[k]; ok {
-					*target = val
-				}
+	}
+
+	for component, request := range resources {
+		for com, target := range request {
+			k := component + "-" + com
+			if val, ok := parsedRequestsLimits[k]; ok {
+				*target = val
 			}
 		}
 	}
