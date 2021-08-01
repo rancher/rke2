@@ -60,8 +60,11 @@ require (
 	github.com/containerd/continuity v0.1.0
 	github.com/google/go-containerregistry v0.5.0
 	github.com/google/gopacket v1.1.19
+	github.com/gruntwork-io/terratest v0.37.2
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.10.1
+	github.com/onsi/ginkgo v1.16.4
+	github.com/onsi/gomega v1.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/k3s v1.21.1-rc1.0.20210730192650-5ab3590d9b4b
 	github.com/rancher/wharfie v0.4.1
@@ -69,7 +72,9 @@ require (
 	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.5
-	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887
+	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
+	golang.org/x/sys v0.0.0-20210510120138-977fb7262007
+	golang.org/x/tools v0.1.5 // indirect
 	google.golang.org/grpc v1.37.0
 	k8s.io/api v0.21.3
 	k8s.io/apimachinery v0.21.3
