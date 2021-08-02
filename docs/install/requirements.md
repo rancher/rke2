@@ -19,6 +19,8 @@ RKE2 has been tested and validated on the following operating systems, and their
 
 ### Windows
 **Windows Support is currently Experimental as of v1.21.3+rke2r1**
+**Windows Support requires choosing Calico as the CNI for the RKE2 cluster**
+
 The RKE2 Windows Node (Worker) agent has been tested and validated on the following operating systems, and their subsequent non-major releases:
 
 * Windows Server 2019 LTSC (amd64) (OS Build 17763.2061)
@@ -48,8 +50,8 @@ Hardware requirements scale based on the size of your deployments. Minimum recom
 *    CPU: 1 Minimum
 
 ### Windows
-*    RAM: 8GB Minimum (we recommend at least 16GB)
-*    CPU: 4 Minimum
+*    RAM: 4GB Minimum (we recommend at least 8GB)
+*    CPU: 2 Minimum (we recommend at least 4CPU)
 
 #### Disks
 

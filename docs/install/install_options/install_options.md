@@ -38,13 +38,13 @@ This installation script is straight-forward and will do the following:
 
 ### Configuring the Windows Installation Script
 **Windows Support is currently Experimental as of v1.21.3+rke2r1**
+**Windows Support requires choosing Calico as the CNI for the RKE2 cluster**
 
-As mentioned in the [Quick-Start Guide](../../install/quickstart.md), you can use the installation script available at https://github.com/rancher/rke2/blob/release-1.21/install.ps1 to install RKE2 on a Windows Agent Node.
+As mentioned in the [Quick-Start Guide](../../install/quickstart.md), you can use the installation script available at https://github.com/rancher/rke2/blob/master/install.ps1 to install RKE2 on a Windows Agent Node.
 
 The simplest form of this command is as follows:
 ```powershell
-Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/release-1.21/install.ps1'))
-./install.ps1
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/rancher/rke2/master/install.ps1 -Outfile install.ps1
 ```
 When using this method to install the Windows RKE2 agent, the following parameters can be passed to configure the installation script:
 
@@ -68,19 +68,18 @@ OPTIONS
 ### Other Windows Installation Script Usage Examples
 #### Install the Latest Version Instead of Stable
 ```powershell
-Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/release-1.21/install.ps1'))
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/rancher/rke2/master/install.ps1 -Outfile install.ps1
 ./install.ps1 -Channel Latest
 ```
 
 #### Install the Latest Version using Tar Installation Method
 ```powershell
-Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/release-1.21/install.ps1'))
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/rancher/rke2/master/install.ps1 -Outfile install.ps1
 ./install.ps1 -Channel Latest -Method Tar
 ```
 ### Configuring RKE2 Server Nodes
 
 For details on configuring the RKE2 server, refer to the [server configuration reference.](server_config.md)
-
 
 ### Configuring Linux RKE2 Agent Nodes
 
@@ -89,7 +88,6 @@ For details on configuring the RKE2 agent, refer to the [agent configuration ref
 ### Configuring Windows RKE2 Agent Nodes
 
 For details on configuring the RKE2 Windows agent, refer to the [Windows agent configuration reference.](windows_agent_config.md)
-
 
 ### Configuration File
 

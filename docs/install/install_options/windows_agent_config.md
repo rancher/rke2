@@ -6,6 +6,7 @@ This is a reference to all parameters that can be used to configure the Windows 
 
 ### Windows RKE2 Agent CLI Help
 **Windows Support is currently Experimental as of v1.21.3+rke2r1**
+**Windows Support requires choosing Calico as the CNI for the RKE2 cluster**
 
 ```console
 NAME:

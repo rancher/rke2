@@ -38,7 +38,8 @@ nav:
     - install/containerd_registry_configuration.md
     - install/airgap.md
     - install/windows_airgap.md
-    - install/uninstall.md
+    - install/linux_uninstall.md
+    - install/windows_uninstall.md
   - Upgrades:
     - Overview: upgrade/upgrade.md
     - upgrade/basic_upgrade.md
