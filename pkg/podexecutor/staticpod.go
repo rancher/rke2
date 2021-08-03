@@ -40,17 +40,73 @@ var (
 	}
 )
 
+const (
+	defaultKubeAPIServerCPURequest          = "250m"
+	defaultKubeSchedulerCPURequest          = "100m"
+	defaultKubeControllerManagerCPURequest  = "200m"
+	defaultKubeProxyCPURequest              = "250m"
+	defaultCloudControllerManagerCPURequest = "200m"
+)
+
+type ControlPlaneResources struct {
+	KubeAPIServerCPURequest             string
+	KubeAPIServerCPULimit               string
+	KubeAPIServerMemoryRequest          string
+	KubeAPIServerMemoryLimit            string
+	KubeSchedulerCPURequest             string
+	KubeSchedulerCPULimit               string
+	KubeSchedulerMemoryRequest          string
+	KubeSchedulerMemoryLimit            string
+	KubeControllerManagerCPURequest     string
+	KubeControllerManagerCPULimit       string
+	KubeControllerManagerMemoryRequest  string
+	KubeControllerManagerMemoryLimit    string
+	KubeProxyCPURequest                 string
+	KubeProxyCPULimit                   string
+	KubeProxyMemoryRequest              string
+	KubeProxyMemoryLimit                string
+	EtcdCPURequest                      string
+	EtcdCPULimit                        string
+	EtcdMemoryRequest                   string
+	EtcdMemoryLimit                     string
+	CloudControllerManagerCPURequest    string
+	CloudControllerManagerCPULimit      string
+	CloudControllerManagerMemoryRequest string
+	CloudControllerManagerMemoryLimit   string
+}
+
+type ControlPlaneEnv struct {
+	KubeAPIServer          []string
+	KubeScheduler          []string
+	KubeControllerManager  []string
+	KubeProxy              []string
+	Etcd                   []string
+	CloudControllerManager []string
+}
+
+type ControlPlaneMounts struct {
+	KubeAPIServer          []string
+	KubeScheduler          []string
+	KubeControllerManager  []string
+	KubeProxy              []string
+	Etcd                   []string
+	CloudControllerManager []string
+}
+
 type StaticPodConfig struct {
-	ManifestsDir    string
-	ImagesDir       string
-	Resolver        *images.Resolver
-	CloudProvider   *CloudProviderConfig
-	CISMode         bool
-	DataDir         string
-	AuditPolicyFile string
-	KubeletPath     string
-	DisableETCD     bool
-	IsServer        bool
+	ManifestsDir          string
+	ImagesDir             string
+	Resolver              *images.Resolver
+	CloudProvider         *CloudProviderConfig
+	DataDir               string
+	AuditPolicyFile       string
+	KubeletPath           string
+	ControlPlaneResources ControlPlaneResources
+	ControlPlaneMounts    ControlPlaneMounts
+	ControlPlaneEnv       ControlPlaneEnv
+	CISMode               bool
+	DisableETCD           bool
+	IsServer              bool
 }
 
 type CloudProviderConfig struct {
@@ -132,12 +188,20 @@ func (s *StaticPodConfig) KubeProxy(args []string) error {
 		return err
 	}
 
+	if s.ControlPlaneResources.KubeProxyCPURequest == "" {
+		s.ControlPlaneResources.KubeProxyCPURequest = defaultKubeProxyCPURequest
+	}
 	return staticpod.Run(s.ManifestsDir, staticpod.Args{
-		Command:    "kube-proxy",
-		Args:       args,
-		Image:      image,
-		CPUMillis:  250,
-		Privileged: true,
+		Command:       "kube-proxy",
+		Args:          args,
+		Image:         image,
+		CPURequest:    s.ControlPlaneResources.KubeProxyCPURequest,
+		CPULimit:      s.ControlPlaneResources.KubeProxyCPULimit,
+		MemoryRequest: s.ControlPlaneResources.KubeProxyMemoryRequest,
+		MemoryLimit:   s.ControlPlaneResources.KubeProxyMemoryLimit,
+		ExtraEnv:      s.ControlPlaneEnv.KubeProxy,
+		ExtraMounts:   s.ControlPlaneMounts.KubeProxy,
+		Privileged:    true,
 	})
 }
 
@@ -187,14 +251,22 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
+	if s.ControlPlaneResources.KubeAPIServerCPURequest == "" {
+		s.ControlPlaneResources.KubeAPIServerCPURequest = defaultKubeAPIServerCPURequest
+	}
 	after(etcdReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command:   "kube-apiserver",
-			Args:      args,
-			Image:     image,
-			Dirs:      append(onlyExisting(ssldirs), filepath.Dir(auditLogFile)),
-			CPUMillis: 250,
-			Files:     files,
+			Command:       "kube-apiserver",
+			Args:          args,
+			Image:         image,
+			Dirs:          append(onlyExisting(ssldirs), filepath.Dir(auditLogFile)),
+			CPURequest:    s.ControlPlaneResources.KubeAPIServerCPURequest,
+			CPULimit:      s.ControlPlaneResources.KubeAPIServerCPULimit,
+			MemoryRequest: s.ControlPlaneResources.KubeAPIServerMemoryRequest,
+			MemoryLimit:   s.ControlPlaneResources.KubeAPIServerMemoryLimit,
+			ExtraEnv:      s.ControlPlaneEnv.KubeAPIServer,
+			ExtraMounts:   s.ControlPlaneMounts.KubeAPIServer,
+			Files:         files,
 		})
 	})
 	return auth, http.NotFoundHandler(), err
@@ -213,15 +285,23 @@ func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) err
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
+	if s.ControlPlaneResources.KubeSchedulerCPURequest == "" {
+		s.ControlPlaneResources.KubeSchedulerCPURequest = defaultKubeSchedulerCPURequest
+	}
 	return after(apiReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command:     "kube-scheduler",
-			Args:        args,
-			Image:       image,
-			HealthPort:  10251,
-			HealthProto: "HTTP",
-			CPUMillis:   100,
-			Files:       files,
+			Command:       "kube-scheduler",
+			Args:          args,
+			Image:         image,
+			HealthPort:    10251,
+			HealthProto:   "HTTP",
+			CPURequest:    s.ControlPlaneResources.KubeSchedulerCPURequest,
+			CPULimit:      s.ControlPlaneResources.KubeSchedulerCPULimit,
+			MemoryRequest: s.ControlPlaneResources.KubeSchedulerMemoryRequest,
+			MemoryLimit:   s.ControlPlaneResources.KubeSchedulerMemoryLimit,
+			ExtraEnv:      s.ControlPlaneEnv.KubeScheduler,
+			ExtraMounts:   s.ControlPlaneMounts.KubeScheduler,
+			Files:         files,
 		})
 	})
 }
@@ -268,6 +348,9 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
+	if s.ControlPlaneResources.KubeControllerManagerCPURequest == "" {
+		s.ControlPlaneResources.KubeControllerManagerCPURequest = defaultKubeControllerManagerCPURequest
+	}
 	return after(apiReady, func() error {
 		extraArgs := []string{
 			"--flex-volume-plugin-dir=/var/lib/kubelet/volumeplugins",
@@ -275,14 +358,19 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 		}
 		args = append(extraArgs, args...)
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command:     "kube-controller-manager",
-			Args:        args,
-			Image:       image,
-			Dirs:        onlyExisting(ssldirs),
-			HealthPort:  10252,
-			HealthProto: "HTTP",
-			CPUMillis:   200,
-			Files:       files,
+			Command:       "kube-controller-manager",
+			Args:          args,
+			Image:         image,
+			Dirs:          onlyExisting(ssldirs),
+			HealthPort:    10252,
+			HealthProto:   "HTTP",
+			CPURequest:    s.ControlPlaneResources.KubeControllerManagerCPURequest,
+			CPULimit:      s.ControlPlaneResources.KubeControllerManagerCPULimit,
+			MemoryRequest: s.ControlPlaneResources.KubeControllerManagerMemoryRequest,
+			MemoryLimit:   s.ControlPlaneResources.KubeControllerManagerMemoryLimit,
+			ExtraEnv:      s.ControlPlaneEnv.KubeControllerManager,
+			ExtraMounts:   s.ControlPlaneMounts.KubeControllerManager,
+			Files:         files,
 		})
 	})
 }
@@ -297,16 +385,24 @@ func (s *StaticPodConfig) CloudControllerManager(ccmRBACReady <-chan struct{}, a
 	if err := images.Pull(s.ImagesDir, images.CloudControllerManager, image); err != nil {
 		return err
 	}
+	if s.ControlPlaneResources.CloudControllerManagerCPURequest == "" {
+		s.ControlPlaneResources.CloudControllerManagerCPURequest = defaultCloudControllerManagerCPURequest
+	}
 	return after(ccmRBACReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command:     "cloud-controller-manager",
-			Args:        args,
-			Image:       image,
-			Dirs:        onlyExisting(ssldirs),
-			HealthPort:  10252,
-			HealthProto: "HTTP",
-			CPUMillis:   200,
-			Files:       []string{},
+			Command:       "cloud-controller-manager",
+			Args:          args,
+			Image:         image,
+			Dirs:          onlyExisting(ssldirs),
+			HealthPort:    10252,
+			HealthProto:   "HTTP",
+			CPURequest:    s.ControlPlaneResources.CloudControllerManagerCPURequest,
+			CPULimit:      s.ControlPlaneResources.CloudControllerManagerCPULimit,
+			MemoryRequest: s.ControlPlaneResources.CloudControllerManagerMemoryRequest,
+			MemoryLimit:   s.ControlPlaneResources.CloudControllerManagerMemoryLimit,
+			ExtraEnv:      s.ControlPlaneEnv.CloudControllerManager,
+			ExtraMounts:   s.ControlPlaneMounts.CloudControllerManager,
+			Files:         []string{},
 		})
 	})
 }
@@ -370,9 +466,15 @@ func (s *StaticPodConfig) ETCD(args executor.ETCDConfig) error {
 			args.PeerTrust.KeyFile,
 			args.PeerTrust.TrustedCAFile,
 		},
-		HealthPort:  2381,
-		HealthPath:  "/health",
-		HealthProto: "HTTP",
+		HealthPort:    2381,
+		HealthPath:    "/health",
+		HealthProto:   "HTTP",
+		CPURequest:    s.ControlPlaneResources.EtcdCPURequest,
+		CPULimit:      s.ControlPlaneResources.EtcdCPULimit,
+		MemoryRequest: s.ControlPlaneResources.EtcdMemoryRequest,
+		MemoryLimit:   s.ControlPlaneResources.EtcdMemoryLimit,
+		ExtraEnv:      s.ControlPlaneEnv.Etcd,
+		ExtraMounts:   s.ControlPlaneMounts.Etcd,
 	}
 
 	if s.CISMode {
