@@ -10,19 +10,19 @@ mkdir -p dist/artifacts
 # 1809/LTSC
 crane --platform windows/amd64 pull \
   ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
-  mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-1809-amd64 \
+  rancher/pause:3.5-windows-1809-amd64 \
   rke2-windows-1809-amd64-images.tar
 
 # 2004
 crane --platform windows/amd64 pull \
   ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
-  mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-2004-amd64 \
+  rancher/pause:3.5-windows-2004-amd64 \
   rke2-windows-2004-amd64-images.tar
 
 # 20H2
 crane --platform windows/amd64 pull \
   ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
-  mcr.microsoft.com/oss/kubernetes/pause:3.5-windows-20H2-amd64  \
+  rancher/pause:3.5-windows-20H2-amd64 \
   rke2-windows-20H2-amd64-images.tar
 
 WINDOWS_TARFILES=(rke2-windows-1809-amd64-images.tar rke2-windows-2004-amd64-images.tar rke2-windows-20H2-amd64-images.tar)
