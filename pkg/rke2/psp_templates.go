@@ -34,7 +34,7 @@ kind: PodSecurityPolicy
 metadata:
   name: %s
   labels:
-  - psp.rke2.io/global-restricted: resolved
+    psp.rke2.io/global-restricted: resolved
 spec:
   privileged: false                # CIS - 5.2.1
   allowPrivilegeEscalation: false  # CIS - 5.2.5
@@ -86,7 +86,7 @@ kind: PodSecurityPolicy
 metadata:
   name: %s
   labels:
-  - psp.rke2.io/global-unrestricted: resolved
+    psp.rke2.io/global-unrestricted: resolved
 spec:
   privileged: true
   allowPrivilegeEscalation: true
