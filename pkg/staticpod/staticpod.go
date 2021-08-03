@@ -277,9 +277,20 @@ func addExtraMounts(p *v1.Pod, extraMounts []string) {
 
 	for i, rawMount := range extraMounts {
 		mount := strings.Split(rawMount, ":")
-		if len(mount) != 2 {
+		if len(mount) != 2 || len(mount) != 3 {
 			logrus.Errorf("mount for pod %s %s was not valid", p.Name, rawMount)
 			continue
+		}
+		var ro bool
+		if len(mount) == 3 {
+			switch strings.ToLower(mount[2]) {
+			case "ro":
+				ro = true
+			case "rw":
+				ro = false
+			default:
+				logrus.Errorf("unknown mount option: %s encountered in extra mount %s for pod %s", mount[2], rawMount, p.Name)
+			}
 		}
 		name := fmt.Sprintf("%s-%d", prefix, i)
 		p.Spec.Volumes = append(p.Spec.Volumes, v1.Volume{
@@ -293,7 +304,7 @@ func addExtraMounts(p *v1.Pod, extraMounts []string) {
 		})
 		p.Spec.Containers[0].VolumeMounts = append(p.Spec.Containers[0].VolumeMounts, v1.VolumeMount{
 			Name:      name,
-			ReadOnly:  false,
+			ReadOnly:  ro,
 			MountPath: mount[1],
 		})
 	}
