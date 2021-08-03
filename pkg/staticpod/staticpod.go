@@ -23,6 +23,10 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+const (
+	extraMountPrefix = "extra-mount"
+)
+
 type Args struct {
 	Command         string
 	Args            []string
@@ -270,7 +274,6 @@ func addVolumes(p *v1.Pod, src []string, dir bool) {
 
 func addExtraMounts(p *v1.Pod, extraMounts []string) {
 	var (
-		prefix     = "extra-mount"
 		sourceType = v1.HostPathDirectoryOrCreate
 	)
 
@@ -278,7 +281,7 @@ func addExtraMounts(p *v1.Pod, extraMounts []string) {
 		mount := strings.Split(rawMount, ":")
 		var ro bool
 		switch len(mount) {
-		case 2:
+		case 2: // In the case of 2 elements, we expect this to be a traditional source:dest volume mount and should noop.
 		case 3:
 			switch strings.ToLower(mount[2]) {
 			case "ro":
@@ -294,7 +297,7 @@ func addExtraMounts(p *v1.Pod, extraMounts []string) {
 			continue
 		}
 
-		name := fmt.Sprintf("%s-%d", prefix, i)
+		name := fmt.Sprintf("%s-%d", extraMountPrefix, i)
 		p.Spec.Volumes = append(p.Spec.Volumes, v1.Volume{
 			Name: name,
 			VolumeSource: v1.VolumeSource{
