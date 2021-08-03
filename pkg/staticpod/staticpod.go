@@ -277,12 +277,10 @@ func addExtraMounts(p *v1.Pod, extraMounts []string) {
 
 	for i, rawMount := range extraMounts {
 		mount := strings.Split(rawMount, ":")
-		if len(mount) != 2 || len(mount) != 3 {
-			logrus.Errorf("mount for pod %s %s was not valid", p.Name, rawMount)
-			continue
-		}
 		var ro bool
-		if len(mount) == 3 {
+		switch len(mount) {
+		case 2:
+		case 3:
 			switch strings.ToLower(mount[2]) {
 			case "ro":
 				ro = true
@@ -290,8 +288,13 @@ func addExtraMounts(p *v1.Pod, extraMounts []string) {
 				ro = false
 			default:
 				logrus.Errorf("unknown mount option: %s encountered in extra mount %s for pod %s", mount[2], rawMount, p.Name)
+				continue
 			}
+		default:
+			logrus.Errorf("mount for pod %s %s was not valid", p.Name, rawMount)
+			continue
 		}
+
 		name := fmt.Sprintf("%s-%d", prefix, i)
 		p.Spec.Volumes = append(p.Spec.Volumes, v1.Volume{
 			Name: name,
@@ -312,7 +315,7 @@ func addExtraMounts(p *v1.Pod, extraMounts []string) {
 
 func addExtraEnv(p *v1.Pod, extraEnv []string) {
 	for _, rawEnv := range extraEnv {
-		env := strings.Split(rawEnv, "=")
+		env := strings.SplitN(rawEnv, "=", 2)
 		if len(env) != 2 {
 			logrus.Errorf("environment variable for pod %s %s was not valid", p.Name, rawEnv)
 			continue
