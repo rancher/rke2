@@ -156,3 +156,67 @@ cloud-provider-config: "/etc/rancher/rke2/cloud.conf"
 4. [Install](install/methods.md) RKE2 normally (most likely in an [airgapped](install/airgap.md) capacity)
 
 5. Validate successful installation by confirming the existence of AWS metadata on cluster node labels with `kubectl get nodes --show-labels`
+
+## Control Plane Component Resource Requests/Limits
+
+The following options are available under the `server` sub-command for RKE2. The options allow for specifying CPU requests and limits for the control plane components within RKE2.
+
+```
+   --control-plane-resource-requests value       (components) Control Plane resource requests [$RKE2_CONTROL_PLANE_RESOURCE_REQUESTS]
+   --control-plane-resource-limits value         (components) Control Plane resource limits [$RKE2_CONTROL_PLANE_RESOURCE_LIMITS]
+```
+
+Values are a comma-delimited list of `[controlplane-component]-(cpu|memory)=[desired-value]`. The possible values for `controlplane-component` are:
+```
+kube-apiserver
+kube-scheduler
+kube-controller-manager
+kube-proxy
+etcd
+cloud-controller-manager
+```
+
+Thus, an example `--control-plane-resource-requests` or `--control-plane-resource-limits` value may look like:
+
+```
+kube-apiserver-cpu=500m,kube-apiserver-memory=512MiB,kube-scheduler-cpu=250m,kube-scheduler-memory=512MiB,etcd-cpu=1000m
+```
+
+The unit values for CPU/memory are identical to Kubernetes resource units (See: [Resource Limits in Kubernetes](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes))
+
+## Extra Control Plane Component Volume Mounts
+
+The following options are available under the `server` sub-command for RKE2. These options specify host-path mounting of directories from the node filesystem into the static pod component that corresponds to the prefixed name.
+
+```
+   --kube-apiserver-extra-mount value            (components) kube-apiserver extra volume mounts [$RKE2_KUBE_APISERVER_EXTRA_MOUNT]
+   --kube-scheduler-extra-mount value            (components) kube-scheduler extra volume mounts [$RKE2_KUBE_SCHEDULER_EXTRA_MOUNT]
+   --kube-controller-manager-extra-mount value   (components) kube-controller-manager extra volume mounts [$RKE2_KUBE_CONTROLLER_MANAGER_EXTRA_MOUNT]
+   --kube-proxy-extra-mount value                (components) kube-proxy extra volume mounts [$RKE2_KUBE_PROXY_EXTRA_MOUNT]
+   --etcd-extra-mount value                      (components) etcd extra volume mounts [$RKE2_ETCD_EXTRA_MOUNT]
+   --cloud-controller-manager-extra-mount value  (components) cloud-controller-manager extra volume mounts [$RKE2_CLOUD_CONTROLLER_MANAGER_EXTRA_MOUNT]
+```
+
+### RW Host Path Volume Mount
+`/source/volume/path/on/host:/destination/volume/path/in/staticpod`
+
+### RO Host Path Volume Mount
+In order to mount a volume as read only, append `:ro` to the end of the volume mount.
+`/source/volume/path/on/host:/destination/volume/path/in/staticpod:ro`
+
+In order to specify multiple volume mounts for the same component, specify the flag multiple times.
+
+## Extra Control Plane Component Environment Variables
+
+The following options are available under the `server` sub-command for RKE2. These options specify additional environmennt variables in standard format i.e. `KEY=VALUE` for the static pod component that corresponds to the prefixed name.
+
+```
+   --kube-apiserver-extra-env value              (components) kube-apiserver extra environment variables [$RKE2_KUBE_APISERVER_EXTRA_ENV]
+   --kube-scheduler-extra-env value              (components) kube-scheduler extra environment variables [$RKE2_KUBE_SCHEDULER_EXTRA_ENV]
+   --kube-controller-manager-extra-env value     (components) kube-controller-manager extra environment variables [$RKE2_KUBE_CONTROLLER_MANAGER_EXTRA_ENV]
+   --kube-proxy-extra-env value                  (components) kube-proxy extra environment variables [$RKE2_KUBE_PROXY_EXTRA_ENV]
+   --etcd-extra-env value                        (components) etcd extra environment variables [$RKE2_ETCD_EXTRA_ENV]
+   --cloud-controller-manager-extra-env value    (components) cloud-controller-manager extra environment variables [$RKE2_CLOUD_CONTROLLER_MANAGER_EXTRA_ENV]
+```
+
+In order to specify multiple environment variables for the same component, specify the flag multiple times.
