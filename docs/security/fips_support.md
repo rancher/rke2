@@ -8,9 +8,7 @@ FIPS 140-2 is a U.S. Federal Government security standard used to approve crypto
 
 The Go compiler in use can be found [here](https://hub.docker.com/u/goboring). Each component of the system is built with the version of this compiler that matches the same standard Go compiler version that would be used otherwise.
 
-This version of Go replaces the standard Go crypto libraries with the FIPS validated BoringCrypto module. See the [readme](https://github.com/golang/go/blob/dev.boringcrypto/README.boringcrypto.md) for more details.
-
-Moreover, this module is currently being [revalidated](../assets/fips_engagement.pdf) as the Rancher Kubernetes Cryptographic Library for the additional platforms and systems supported by RKE2.
+This version of Go replaces the standard Go crypto libraries with the FIPS validated BoringCrypto module. See GoBoring's [readme](https://github.com/golang/go/blob/dev.boringcrypto/README.boringcrypto.md) for more details. This module has been revalidated as the [Rancher Kubernetes Cryptographic Library](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/3836) in order to ensure support on a wider range of systems.
 
 ### FIPS Support in Cluster Components
 
@@ -43,6 +41,17 @@ To ensure that all aspects of the system architecture are using FIPS 140-2 compl
 * crictl
 * runc
 
+## CNI
+
+As of v1.21.2, RKE2 supports selecting a different CNI via the `--cni` flag and comes bundled with several CNIs including Canal (default), Calico, Cilium, and Multus. Of these, only Canal (the default) is rebuilt for FIPS compliance.
+
 ## Ingress
 
-The NGINX Ingress included with RKE2 is **not** currently FIPS enabled. It can, however, be [disabled and replaced](../advanced.md#disabling-server-charts) by the cluster operator/owner.
+RKE2 ships with NGNIX as its default ingress provider. As of v1.21+, this component is FIPS compliant. There are two primary sub-components for NGINX ingress:
+
+- controller - responsible for monitoring/updating Kubernetes resources and configuring the server accordingly
+- server - responsible for accepting and routing traffic
+
+The controller is written in Go and as such is compiled using our [FIPS compatible Go compiler](./fips_support.md#use-of-fips-compatible-go-compiler).
+
+The server is written in C and also requires OpenSSL to function properly. As such, it leverages a FIPS-validated version of OpenSSL to achieve FIPS compliance.
