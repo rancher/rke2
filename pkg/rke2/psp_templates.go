@@ -33,7 +33,7 @@ const globalRestrictedPSPTemplate = `apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: %s
-  labels:
+  annotations:
     psp.rke2.io/global-restricted: resolved
 spec:
   privileged: false                # CIS - 5.2.1
@@ -85,7 +85,7 @@ const globalUnrestrictedPSPTemplate = `apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: %s
-  labels:
+  annotations:
     psp.rke2.io/global-unrestricted: resolved
 spec:
   privileged: true
