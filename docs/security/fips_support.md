@@ -12,6 +12,10 @@ This version of Go replaces the standard Go crypto libraries with the FIPS valid
 
 Moreover, this module is currently being [revalidated](../assets/fips_engagement.pdf) as the Rancher Kubernetes Cryptographic Library for the additional platforms and systems supported by RKE2.
 
+## FIPS Support on the Host OS
+
+Please refer to your host OS documentation on how to setup and enable your kernel for FIPS mode.
+
 ### FIPS Support in Cluster Components
 
 Most of the components of the RKE2 system are statically compiled with the GoBoring Go compiler implementation that takes advantage of the BoringSSL library. RKE2, from a component perspective, is broken up in a number of sections. The list below contains the sections and associated components.
@@ -45,4 +49,6 @@ To ensure that all aspects of the system architecture are using FIPS 140-2 compl
 
 ## Ingress
 
-The NGINX Ingress included with RKE2 is **not** currently FIPS enabled. It can, however, be [disabled and replaced](../advanced.md#disabling-server-charts) by the cluster operator/owner.
+Versions of RKE2 v1.21+ include an NGINX Ingress that is compiled for FIPS compliance. The build process uses a combination of GoBoring/BoringSSL for building a compliant ingress controller, and using FIPS compatible OpenSSL from RedHat for building the NGINX executable.
+
+For versions of RKE2 before v1.21 which require FIPS compliance the ingress can be [disabled and replaced](../advanced.md#disabling-server-charts) by the cluster operator/owner.
