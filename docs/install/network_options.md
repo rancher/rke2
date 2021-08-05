@@ -2,7 +2,7 @@
 
 By default RKE2 runs Canal as the cni with VXLAN as the default backend, Canal is installed via a helm chart after the main components are up and running and can be customized by modifying the helm chart options.
 
-Optionally, Cilium might be used as the cni instead of Canal.
+Optionally, Cilium or Calico might be used as the cni instead of Canal.
 
 # Canal Options
 
