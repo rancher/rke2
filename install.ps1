@@ -558,8 +558,8 @@ switch ($Method) {
             $temp = $env:TEMP
         }
 
-        if (Test-Path $temp) {
-            Remove-Item -Path $temp -Force -Recurse
+        if (Test-Path "$temp/rke2-install") {
+            Remove-Item -Path "$temp/rke2-install" -Force -Recurse
         }
         New-Item -Path $temp -Name "rke2-install" -ItemType "Directory"
         
