@@ -307,20 +307,7 @@ function Rke2-Installer
             return
         }
 
-        Add-Type @"
-using System.Net;
-using System.Security.Cryptography.X509Certificates;
-public class TrustAllCertsPolicy : ICertificatePolicy {
-    public bool CheckValidationResult(
-        ServicePoint srvPoint, X509Certificate certificate,
-        WebRequest request, int certificateProblem) {
-            return true;
-        }
- }
-"@
-
-        [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
-        Invoke-RestMethod -Uri $env:CATTLE_SERVER/$caCertsPath -OutFile $env:RANCHER_CERT
+        curl.exe --insecure -fL $env:CATTLE_SERVER/$caCertsPath -o $env:RANCHER_CERT
         if (-Not(Test-Path -Path $env:RANCHER_CERT))
         {
             Write-Error "The environment variable CATTLE_CA_CHECKSUM is set but there is no CA certificate configured at $( $env:CATTLE_SERVER )/$( $caCertsPath )) "
