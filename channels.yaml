@@ -9,12 +9,12 @@ channels:
   excludeRegexp: ^[^+]+-
 - name: v1.19
   latestRegexp: v1\.19\..*
-  excludeRegexp: ^[^+]+-
+  excludeRegexp: (^[^+]+-|v1\.19\.13\+rke2r1)
 - name: testing
   latestRegexp: -(alpha|beta|rc)
 - name: v1.20
   latestRegexp: v1\.20\..*
-  excludeRegexp: ^[^+]+-
+  excludeRegexp: (^[^+]+-|v1\.20\.9\+rke2r1)
 - name: v1.21
   latestRegexp: v1\.21\..*
   excludeRegexp: ^[^+]+-
