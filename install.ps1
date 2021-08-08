@@ -208,7 +208,7 @@ function Get-Checksums() {
     }
 
     Write-Host "downloading checksums at $checksumsUrl"
-    Invoke-RestMethod -Uri $checksumsUrl -OutFile $TempChecksums
+    curl.exe -sfL $checksumsUrl -o $TempChecksums
     return Find-Checksum -ChecksumFilePath $TempChecksums -Pattern "rke2.$suffix.tar.gz"
 }
 
@@ -245,7 +245,7 @@ function Get-Tarball() {
     }
 
     Write-InfoLog "downloading tarball at $tarballUrl"
-    Invoke-RestMethod -Uri $tarballUrl -OutFile $TempTarball
+    curl.exe -sfL $tarballUrl -o $TempTarball
 }
 
 # stage_local_checksums stages the local checksum hash for validation.
@@ -389,8 +389,8 @@ function Test-Download {
         $Url
     )
 
-    try { 
-        Invoke-WebRequest -Uri $Url -Method Head 
+    try {
+        curl.exe --head -sfL $Url
         return $true
     } 
     catch { 
@@ -430,7 +430,7 @@ function Get-AirgapChecksums() {
         $AirgapChecksumsUrl = "$StorageUrl/rke2-images.$suffix$CommitHash.tar.gz.sha256sum"
     }
     Write-InfoLog "downloading airgap checksums at $AirgapChecksumsUrl"
-    Invoke-RestMethod -Uri $AirgapChecksumsUrl -OutFile $TempAirgapChecksums
+    curl.exe -sfL $AirgapChecksumsUrl -o $TempAirgapChecksums
     return Find-Checksum -Path $TempAirgapChecksums -Pattern "rke2-images.$suffix.tar"
 }
 
@@ -466,7 +466,7 @@ function Get-AirgapTarball() {
         $AirgapTarballUrl = "$StorageUrl/rke2-images.$suffix$CommitHash.tar.gz"
     }
     Write-InfoLog "downloading airgap tarball at $AirgapTarballUrl"
-    Invoke-RestMethod -Uri $AirgapTarballUrl -OutFile $TempAirgapTarball
+    curl.exe -sfL $AirgapTarballUrl -o $TempAirgapTarball
 }
 
 # verify_airgap_tarball compares the airgap image tarball checksum to the value
@@ -601,4 +601,3 @@ switch ($Method) {
         Write-FatalLog "Invalid installation method. $Method not supported."
     }
 }
-exit 0

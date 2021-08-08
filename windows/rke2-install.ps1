@@ -294,7 +294,7 @@ function Rke2-Installer
         }
         else {
             Write-LogInfo "Downloading RKE2 installer from $($env:CATTLE_AGENT_BINARY_URL)"
-            Invoke-Webrequest -Uri $env:CATTLE_AGENT_BINARY_URL -OutFile "$($localLocation)\install.ps1"
+            curl.exe -sfL $env:CATTLE_AGENT_BINARY_URL -o "$($localLocation)\install.ps1"
         }
     }
 
@@ -307,7 +307,7 @@ function Rke2-Installer
             return
         }
 
-        curl.exe --insecure -fL $env:CATTLE_SERVER/$caCertsPath -o $env:RANCHER_CERT
+        curl.exe --insecure -sfL $env:CATTLE_SERVER/$caCertsPath -o $env:RANCHER_CERT
         if (-Not(Test-Path -Path $env:RANCHER_CERT))
         {
             Write-Error "The environment variable CATTLE_CA_CHECKSUM is set but there is no CA certificate configured at $( $env:CATTLE_SERVER )/$( $caCertsPath )) "
@@ -323,7 +323,7 @@ function Rke2-Installer
         }
         else
         {
-            info "Value from $( $env:CATTLE_SERVER )/$( $caCertsPath ) is an x509 certificate"
+            Write-LogInfo "Value from $( $env:CATTLE_SERVER )/$( $caCertsPath ) is an x509 certificate"
         }
         $env:CATTLE_SERVER_CHECKSUM = (Get-FileHash -Path $env:RANCHER_CERT -Algorithm SHA256).Hash.ToLower()
         if ($env:CATTLE_SERVER_CHECKSUM -ne $env:CATTLE_CA_CHECKSUM)
@@ -343,28 +343,24 @@ function Rke2-Installer
             New-Item -Path $path -ItemType Directory
         }
 
-        if (-Not(Test-Path "$path\$file"))
+        $configFile = Join-Path -Path $path -ChildPath $file
+        if (-Not(Test-Path $configFile))
         {
             $Uri = "$($env:CATTLE_SERVER)/v3/connect/config-yaml"
-            $OutFile = "$path\$file"
-            $headers = @{
-                'Content-Type'                = "application/json"
-                'Authorization'               = "Bearer $($env:CATTLE_TOKEN)"
-                'X-Cattle-Id'                 = "$env:CATTLE_ID"
-                'X-Cattle-Role-Worker'        = "$env:CATTLE_ROLE_WORKER"
-                'X-Cattle-Labels'             = "$env:CATTLE_LABELS"
-                'X-Cattle-Taints'             = "$env:CATTLE_TAINTS"
-            }
 
             Write-LogInfo "Pulling rke2 config.yaml from $Uri"
             if (-Not $env:CATTLE_CA_CHECKSUM)
             {
-                Invoke-RestMethod -Uri $Uri -Outfile $Outfile -Headers $headers
+                curl.exe -sfL $Uri -o $configFile -H "Authorization: Bearer $($env:CATTLE_TOKEN)" -H "X-Cattle-Id: $($env:CATTLE_ID)" -H "X-Cattle-Role-Worker: $($env:CATTLE_ROLE_WORKER)" -H "X-Cattle-Labels: $($env:CATTLE_LABELS)" -H "X-Cattle-Taints: $($env:CATTLE_TAINTS)" -H "Content-Type: application/json"
             }
             else
             {
-                $cert = Get-PfxCertificate -FilePath $env:RANCHER_CERT
-                Invoke-RestMethod -Uri $Uri -Outfile $Outfile -Certificate $cert -Headers $headers
+                curl.exe --insecure --cacert $env:RANCHER_CERT -sfL $Uri -o $configFile -H "Authorization: Bearer $($env:CATTLE_TOKEN)" -H "X-Cattle-Id: $($env:CATTLE_ID)" -H "X-Cattle-Role-Worker: $($env:CATTLE_ROLE_WORKER)" -H "X-Cattle-Labels: $($env:CATTLE_LABELS)" -H "X-Cattle-Taints: $($env:CATTLE_TAINTS)" -H "Content-Type: application/json"
+            }
+
+            if(-Not(Test-Path $configFile))
+            {
+                Write-LogFatal "RKE2 Config file wasn't found."
             }
         }
     }
@@ -412,20 +408,27 @@ function Rke2-Installer
 
         Invoke-Expression -Command "C:\var\lib\rancher\install.ps1"
 
+        Write-LogInfo "Checking if RKE2 agent service exists"
         if ((Get-Service -Name $rke2ServiceName -ErrorAction SilentlyContinue))
         {
+            Write-LogInfo "RKE2 agent service found, stopping now"
             Stop-Service -Name $rke2ServiceName
-            while ((Get-Service $rke2ServiceName).Status -ne 'Running')
+            while ((Get-Service $rke2ServiceName).Status -ne 'Stopped')
             {
+                Write-LogInfo "Waiting for RKE2 agent service to stop"
                 Start-Sleep -s 5
             }
         }
         else
         {
             # Create Windows Service
-            Write-LogInfo "Enabling RKE2 agent service"
+            Write-LogInfo "RKE2 agent service not found, enabling agent service"
             rke2.exe agent service --add
+            Start-Sleep -s 5
         }
+
+        Write-LogInfo "Starting for RKE2 agent service"
+        Start-Service -Name $rke2ServiceName
     }
 
     Invoke-RancherInstall
