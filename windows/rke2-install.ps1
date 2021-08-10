@@ -178,6 +178,7 @@ function Rke2-Installer
 
     function Set-Path
     {
+        $env:PATH += ";C:\var\lib\rancher\rke2\bin;C:\usr\local\bin"
         $environment = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
         $environment = $environment.Insert($environment.Length,";C:\var\lib\rancher\rke2\bin;C:\usr\local\bin")
         [System.Environment]::SetEnvironmentVariable("Path", $environment, "Machine")
@@ -365,6 +366,33 @@ function Rke2-Installer
         }
     }
 
+    function Get-Rke2Info()
+    {
+        $Uri = "$($env:CATTLE_SERVER)/v3/connect/cluster-info"
+        $path = "C:\etc\rancher\rke2"
+        $file = "info.json"
+        if (-Not(Test-Path $path)) {
+            New-Item -Path $path -ItemType Directory
+        }
+
+        $infoFile = Join-Path -Path $path -ChildPath $file
+        if (-Not $env:CATTLE_CA_CHECKSUM)
+        {
+            curl.exe -sfL $Uri -o $infoFile -H "Authorization: Bearer $($env:CATTLE_TOKEN)" -H "X-Cattle-Id: $($env:CATTLE_ID)" -H "X-Cattle-Field: kubernetesversion" -H "Content-Type: application/json"
+        }
+        else
+        {
+            curl.exe --insecure --cacert $env:RANCHER_CERT -sfL $Uri -o $infoFile -H "Authorization: Bearer $($env:CATTLE_TOKEN)" -H "X-Cattle-Id: $($env:CATTLE_ID)" -H "X-Cattle-Field: kubernetesversion" -H "Content-Type: application/json"
+        }
+        $clusterInfo = Get-Content $infoFile | ConvertFrom-Json
+        if([bool]($clusterInfo.PSobject.Properties.name -match "kubernetesversion"))
+        {
+            $env:CATTLE_RKE2_VERSION = $clusterInfo.kubernetesversion
+        }
+
+        Remove-Item -Path $infoFile -Force
+    }
+
     function New-CattleId()
     {
         if (-Not $env:CATTLE_ID)
@@ -404,9 +432,17 @@ function Rke2-Installer
 
         Invoke-Rke2AgentDownload
         New-CattleId
+        Get-Rke2Info
         Get-Rke2Config
 
-        Invoke-Expression -Command "C:\var\lib\rancher\install.ps1"
+        if($env:CATTLE_RKE2_VERSION)
+        {
+            Invoke-Expression -Command "C:\var\lib\rancher\install.ps1 -Version $($env:CATTLE_RKE2_VERSION)"
+        }
+        else
+        {
+            Invoke-Expression -Command "C:\var\lib\rancher\install.ps1"
+        }
 
         Write-LogInfo "Checking if RKE2 agent service exists"
         if ((Get-Service -Name $rke2ServiceName -ErrorAction SilentlyContinue))
@@ -423,7 +459,9 @@ function Rke2-Installer
         {
             # Create Windows Service
             Write-LogInfo "RKE2 agent service not found, enabling agent service"
+            Push-Location c:\usr\local\bin
             rke2.exe agent service --add
+            Pop-Location
             Start-Sleep -s 5
         }
 
