@@ -66,9 +66,8 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 			Name: cfg.CloudProviderName,
 			Path: cfg.CloudProviderConfig,
 		}
-		nodeName := clx.String("node-name")
-		if nodeName == "" && cfg.CloudProviderName == "aws" {
-			fqdn, err := getFQDNHostname()
+		if clx.String("node-name") == "" && cfg.CloudProviderName == "aws" {
+			fqdn, err := hostnameFQDN()
 			if err != nil {
 				return nil, err
 			}
@@ -191,7 +190,7 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 	}, nil
 }
 
-func getFQDNHostname() (string, error) {
+func hostnameFQDN() (string, error) {
 	cmd := exec.Command("hostname", "-f")
 
 	var b bytes.Buffer
@@ -201,8 +200,5 @@ func getFQDNHostname() (string, error) {
 		return "", err
 	}
 
-	fqdn := b.String()
-	fqdn = fqdn[:len(fqdn)-1]
-
-	return fqdn, nil
+	return strings.TrimSpace(b.String()), nil
 }
