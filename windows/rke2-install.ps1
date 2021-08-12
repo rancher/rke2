@@ -432,8 +432,8 @@ function Rke2-Installer
 
         Invoke-Rke2AgentDownload
         New-CattleId
-        Get-Rke2Info
         Get-Rke2Config
+        Get-Rke2Info
 
         if($env:CATTLE_RKE2_VERSION)
         {
