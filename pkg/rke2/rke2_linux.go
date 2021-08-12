@@ -3,7 +3,9 @@
 package rke2
 
 import (
+	"bytes"
 	"fmt"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -58,6 +60,16 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 		cpConfig = &podexecutor.CloudProviderConfig{
 			Name: cfg.CloudProviderName,
 			Path: cfg.CloudProviderConfig,
+		}
+		nodeName := clx.String("node-name")
+		if nodeName == "" && cfg.CloudProviderName == "aws" {
+			fqdn, err := getFQDNHostname()
+			if err != nil {
+				return nil, err
+			}
+			if err := clx.Set("node-name", fqdn); err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -172,4 +184,20 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 		ControlPlaneEnv:       extraEnv,
 		ControlPlaneMounts:    extraMounts,
 	}, nil
+}
+
+func getFQDNHostname() (string, error) {
+	cmd := exec.Command("hostname", "-f")
+
+	var b bytes.Buffer
+	cmd.Stdout = &b
+
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+
+	fqdn := b.String()
+	fqdn = fqdn[:len(fqdn)-1]
+
+	return fqdn, nil
 }
