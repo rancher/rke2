@@ -69,7 +69,7 @@ func addClientReactors(cs *fake.Clientset, verb string, pass bool) *fake.Clients
 	return cs
 }
 
-func Test_restrictServiceAccount(t *testing.T) {
+func Test_UnitrestrictServiceAccount(t *testing.T) {
 	type args struct {
 		ctx       context.Context
 		namespace string
