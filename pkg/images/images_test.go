@@ -4,53 +4,15 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/google/go-containerregistry/pkg/name"
 )
-
-var testDefaultImages Images
-
-func Test_Unitoverride(t *testing.T) {
-	type args struct {
-		defaultValue  string
-		overrideValue string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{
-			name: "override has only spaces",
-			args: args{
-				defaultValue:  "defaultCase",
-				overrideValue: "    ",
-			},
-
-			want: "defaultCase",
-		},
-		{
-			name: "override has extra spaces",
-			args: args{
-				defaultValue:  "defaultCase",
-				overrideValue: " caseWithSpaces   ",
-			},
-
-			want: "caseWithSpaces",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := override(tt.args.defaultValue, tt.args.overrideValue); got != tt.want {
-				t.Errorf("override() = %+v\nWant = %+v", got, tt.want)
-			}
-		})
-	}
-}
 
 func Test_UnitPull(t *testing.T) {
 	type args struct {
 		dir   string
 		name  string
-		image string
+		image name.Reference
 	}
 	tests := []struct {
 		name        string
@@ -63,8 +25,7 @@ func Test_UnitPull(t *testing.T) {
 		{
 			name: "Pull with no directory",
 			args: args{
-				name:  "kube-scheduler",
-				image: testDefaultImages.KubeScheduler,
+				name: KubeScheduler,
 			},
 			setup:    func(a *args) error { return nil },
 			teardown: func(a *args) error { return nil },
@@ -72,21 +33,31 @@ func Test_UnitPull(t *testing.T) {
 		{
 			name: "Pull with nonexistent directory",
 			args: args{
-				dir: "/tmp/DEADBEEF",
+				dir:  "/tmp/DEADBEEF",
+				name: KubeScheduler,
 			},
-			setup: func(a *args) error { return nil },
+			setup: func(a *args) error {
+				var err error
+				a.image, err = getDefaultImage(KubeScheduler)
+				return err
+			},
 			teardown: func(a *args) error {
 				return os.RemoveAll(a.dir)
 			},
+
+			wantTxtFile: true,
 		},
 		{
 			name: "Pull with no image in directory",
 			args: args{
-				name:  "kube-scheduler",
-				image: testDefaultImages.KubeScheduler,
+				name: KubeScheduler,
 			},
 			setup: func(a *args) error {
 				var err error
+				a.image, err = getDefaultImage(KubeScheduler)
+				if err != nil {
+					return err
+				}
 				a.dir, err = os.MkdirTemp("", "*")
 				return err
 			},
@@ -99,14 +70,17 @@ func Test_UnitPull(t *testing.T) {
 		{
 			name: "Pull with fake image in directory",
 			args: args{
-				name:  "kube-scheduler",
-				image: testDefaultImages.KubeScheduler,
+				name: "kube-scheduler",
 			},
 			setup: func(a *args) error {
 				var err error
+				a.image, err = getDefaultImage(KubeScheduler)
+				if err != nil {
+					return err
+				}
 				a.dir, err = os.MkdirTemp("", "*")
 				tempImage := a.dir + "/" + a.name + ".image"
-				ioutil.WriteFile(tempImage, []byte(a.image+"\n"), 0644)
+				ioutil.WriteFile(tempImage, []byte(a.image.Name()+"\n"), 0644)
 				return err
 			},
 			teardown: func(a *args) error {
