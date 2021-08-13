@@ -179,7 +179,7 @@ cloud-controller-manager
 Thus, an example `--control-plane-resource-requests` or `--control-plane-resource-limits` value may look like:
 
 ```
-kube-apiserver-cpu=500m,kube-apiserver-memory=512MiB,kube-scheduler-cpu=250m,kube-scheduler-memory=512MiB,etcd-cpu=1000m
+kube-apiserver-cpu=500m,kube-apiserver-memory=512M,kube-scheduler-cpu=250m,kube-scheduler-memory=512M,etcd-cpu=1000m
 ```
 
 The unit values for CPU/memory are identical to Kubernetes resource units (See: [Resource Limits in Kubernetes](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes))
@@ -204,11 +204,11 @@ The following options are available under the `server` sub-command for RKE2. The
 In order to mount a volume as read only, append `:ro` to the end of the volume mount.
 `/source/volume/path/on/host:/destination/volume/path/in/staticpod:ro`
 
-In order to specify multiple volume mounts for the same component, specify the flag multiple times.
+Multiple volume mounts can be specified for the same component by passing the flag values as an array in the config file.
 
 ## Extra Control Plane Component Environment Variables
 
-The following options are available under the `server` sub-command for RKE2. These options specify additional environmennt variables in standard format i.e. `KEY=VALUE` for the static pod component that corresponds to the prefixed name.
+The following options are available under the `server` sub-command for RKE2. These options specify additional environment variables in standard format i.e. `KEY=VALUE` for the static pod component that corresponds to the prefixed name.
 
 ```
    --kube-apiserver-extra-env value              (components) kube-apiserver extra environment variables [$RKE2_KUBE_APISERVER_EXTRA_ENV]
@@ -219,4 +219,4 @@ The following options are available under the `server` sub-command for RKE2. The
    --cloud-controller-manager-extra-env value    (components) cloud-controller-manager extra environment variables [$RKE2_CLOUD_CONTROLLER_MANAGER_EXTRA_ENV]
 ```
 
-In order to specify multiple environment variables for the same component, specify the flag multiple times.
+Multiple environment variables can be specified for the same component by passing the flag values as an array in the config file.
