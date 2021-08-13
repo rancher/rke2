@@ -161,6 +161,7 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 		KubeAPIServer:          cfg.ExtraEnv.KubeAPIServer.Value(),
 		KubeScheduler:          cfg.ExtraEnv.KubeScheduler.Value(),
 		KubeControllerManager:  cfg.ExtraEnv.KubeControllerManager.Value(),
+		KubeProxy:              cfg.ExtraEnv.KubeProxy.Value(),
 		Etcd:                   cfg.ExtraEnv.Etcd.Value(),
 		CloudControllerManager: cfg.ExtraEnv.CloudControllerManager.Value(),
 	}
@@ -169,6 +170,7 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 		KubeAPIServer:          cfg.ExtraMounts.KubeAPIServer.Value(),
 		KubeScheduler:          cfg.ExtraMounts.KubeScheduler.Value(),
 		KubeControllerManager:  cfg.ExtraMounts.KubeControllerManager.Value(),
+		KubeProxy:              cfg.ExtraMounts.KubeProxy.Value(),
 		Etcd:                   cfg.ExtraMounts.Etcd.Value(),
 		CloudControllerManager: cfg.ExtraMounts.CloudControllerManager.Value(),
 	}
