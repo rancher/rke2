@@ -106,24 +106,25 @@ func (c *Calico) Setup(ctx context.Context, dataDir string, nodeConfig *daemonco
 	if err := createCNIConfig(cfg); err != nil {
 		return nil, err
 	}
+
+	logrus.Info("Generating HNS networks, please wait")
+	if err := generateCalicoNetworks(cfg.CalicoConfig.NetworkingBackend); err != nil {
+		return nil, err
+	}
+
 	return cfg, nil
 }
 
 // Start starts the CNI services on the Windows node.
-func (c *Calico) Start(config *CNIConfig) error {
-	if err := generateCalicoNetworks(config.CalicoConfig.NetworkingBackend); err != nil {
-		return err
+func (c *Calico) Start(ctx context.Context, config *CNIConfig) error {
+	for {
+		if err := startCalico(ctx, config.CalicoConfig); err != nil {
+			continue
+		}
+		break
 	}
+	go startFelix(ctx, config.CalicoConfig)
 
-	if err := startCalico(config.CalicoConfig); err != nil {
-		return err
-	}
-
-	time.Sleep(5 * time.Second)
-
-	if err := startFelix(config.CalicoConfig); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -190,7 +191,7 @@ func getDefaultConfig(config *CNIConfig, dataDir string, nodeConfig *config.Node
 	return nil
 }
 
-func startFelix(config *CalicoConfig) error {
+func startFelix(ctx context.Context, config *CalicoConfig) {
 	specificEnvs := []string{
 		fmt.Sprintf("FELIX_FELIXHOSTNAME=%s", config.Hostname),
 		fmt.Sprintf("FELIX_VXLANVNI=%s", config.Felix.Vxlanvni),
@@ -202,21 +203,16 @@ func startFelix(config *CalicoConfig) error {
 	}
 
 	logrus.Infof("Felix Envs: ", append(generateGeneralCalicoEnvs(config), specificEnvs...))
-	go func() {
-		for {
-			cmd := exec.Command("calico-node.exe", args...)
-			cmd.Env = append(generateGeneralCalicoEnvs(config), specificEnvs...)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			err := cmd.Run()
-			logrus.Errorf("Felix exited: %v", err)
-			time.Sleep(5 * time.Second)
-		}
-	}()
-	return nil
+	cmd := exec.CommandContext(ctx, "calico-node.exe", args...)
+	cmd.Env = append(generateGeneralCalicoEnvs(config), specificEnvs...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		logrus.Errorf("Felix exited: %v", err)
+	}
 }
 
-func startCalico(config *CalicoConfig) error {
+func startCalico(ctx context.Context, config *CalicoConfig) error {
 	specificEnvs := []string{
 		fmt.Sprintf("CALICO_NODENAME_FILE=%s", config.NodeNameFile),
 	}
@@ -225,17 +221,14 @@ func startCalico(config *CalicoConfig) error {
 		"-startup",
 	}
 	logrus.Infof("Calico Envs: ", append(generateGeneralCalicoEnvs(config), specificEnvs...))
-	go func() {
-		for {
-			cmd := exec.Command("calico-node.exe", args...)
-			cmd.Env = append(generateGeneralCalicoEnvs(config), specificEnvs...)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			err := cmd.Run()
-			logrus.Errorf("Calico exited: %v", err)
-			time.Sleep(5 * time.Second)
-		}
-	}()
+	cmd := exec.CommandContext(ctx, "calico-node.exe", args...)
+	cmd.Env = append(generateGeneralCalicoEnvs(config), specificEnvs...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		logrus.Errorf("Calico exited: %v", err)
+		return err
+	}
 	return nil
 }
 
@@ -309,7 +302,6 @@ func generateCalicoNetworks(backend string) error {
 
 	logrus.Debug("Waiting for management ip..")
 	mgmt := waitForManagementIP(CalicoHnsNetworkName)
-	time.Sleep(90 * time.Second)
 	platform, err := getPlatformType()
 	if err != nil {
 		return err
