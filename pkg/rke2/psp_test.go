@@ -140,7 +140,7 @@ func fakeWithRetriableError(ro interface{}) *fake.Clientset {
 	return cs
 }
 
-func Test_deployPodSecurityPolicyFromYaml(t *testing.T) {
+func Test_UnitdeployPodSecurityPolicyFromYaml(t *testing.T) {
 	pspYAML := fmt.Sprintf(globalRestrictedPSPTemplate, testPSPName)
 	type args struct {
 		ctx     context.Context
@@ -207,7 +207,7 @@ func Test_deployPodSecurityPolicyFromYaml(t *testing.T) {
 	}
 }
 
-func Test_deployClusterRoleBindingFromYaml(t *testing.T) {
+func Test_UnitdeployClusterRoleBindingFromYaml(t *testing.T) {
 	clusterRoleBindingYaml := fmt.Sprintf(kubeletAPIServerRoleBindingTemplate, testClusterRoleBindingName)
 	type args struct {
 		ctx                    context.Context
@@ -274,7 +274,7 @@ func Test_deployClusterRoleBindingFromYaml(t *testing.T) {
 	}
 }
 
-func Test_deployClusterRoleFromYaml(t *testing.T) {
+func Test_UnitdeployClusterRoleFromYaml(t *testing.T) {
 	const testResourceName = "test-resource-name"
 	clusterRoleYaml := fmt.Sprintf(roleTemplate, "test-cluster-role", testResourceName)
 	type args struct {
@@ -342,7 +342,7 @@ func Test_deployClusterRoleFromYaml(t *testing.T) {
 	}
 }
 
-func Test_deployRoleBindingFromYaml(t *testing.T) {
+func Test_UnitdeployRoleBindingFromYaml(t *testing.T) {
 	roleBindingYaml := fmt.Sprintf(tunnelControllerRoleTemplate, testRoleBindingName)
 	type args struct {
 		ctx             context.Context
