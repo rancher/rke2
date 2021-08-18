@@ -58,21 +58,21 @@ replace (
 require (
 	github.com/containerd/continuity v0.1.0
 	github.com/google/go-containerregistry v0.5.0
-	github.com/k3s-io/helm-controller v0.10.3
+	github.com/k3s-io/helm-controller v0.10.5
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.1-rc1.0.20210809231441-dcf0657b2083
+	github.com/rancher/k3s v1.21.1-rc1.0.20210817230230-e32292478107
 	github.com/rancher/wharfie v0.4.1
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.2
 	google.golang.org/grpc v1.37.0
-	k8s.io/api v0.21.3
-	k8s.io/apimachinery v0.21.3
-	k8s.io/apiserver v0.21.3
+	k8s.io/api v0.21.4
+	k8s.io/apimachinery v0.21.4
+	k8s.io/apiserver v0.21.4
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/cri-api v0.21.3
-	k8s.io/kubernetes v1.21.3
+	k8s.io/cri-api v0.21.4
+	k8s.io/kubernetes v1.21.4
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 	sigs.k8s.io/yaml v1.2.0
 )
