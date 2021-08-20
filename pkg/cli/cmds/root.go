@@ -297,6 +297,15 @@ func validateCloudProviderName(clx *cli.Context) {
 			clx.Set("disable", "rancher-vsphere-csi")
 		}
 	}
+
+	if cloudProvider == "harvester" {
+		clx.Set("cloud-provider-name", "external")
+	} else {
+		if slice.ContainsString(clx.FlagNames(), "disable") {
+			clx.Set("disable", "harvester-cloud-provider")
+			clx.Set("disable", "harvester-csi-driver")
+		}
+	}
 }
 
 func NewApp() *cli.App {
