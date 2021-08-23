@@ -49,3 +49,13 @@ See:
 - [grub2 manual](https://www.gnu.org/software/grub/manual/grub/grub.html#linux)
 - [systemd manual](https://www.freedesktop.org/software/systemd/man/systemd.html#Kernel%20Command%20Line)
 - [cgroups v2](https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html)
+
+
+## Calico with vxlan encapsulation
+
+Calico hits a kernel bug when using vxlan encapsulation and the checksum offloading of the vxlan interface is on.
+The issue is described in the [calico project](https://github.com/projectcalico/calico/issues/3145) and in
+[rke2 project](https://github.com/rancher/rke2/issues/1541). The workaround we are applying is disabling the checksum
+offloading by default by applying the value `ChecksumOffloadBroken=true` in the [calico helm chart](https://github.com/rancher/rke2-charts/blob/main/charts/rke2-calico/rke2-calico/v3.19.2-203/values.yaml#L51-L53).
+
+This issue has been observed in Ubuntu 18.04, Ubuntu 20.04 and openSUSE Leap 15.3
