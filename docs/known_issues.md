@@ -80,7 +80,7 @@ See:
 ## Calico with vxlan encapsulation
 
 Calico hits a kernel bug when using vxlan encapsulation and the checksum offloading of the vxlan interface is on.
-The issue is described in the [calico project](https://github.com/projectcalico/calico/issues/3145) and in
+The issue is described in the [calico project](https://github.com/projectcalico/calico/issues/4865) and in
 [rke2 project](https://github.com/rancher/rke2/issues/1541). The workaround we are applying is disabling the checksum
 offloading by default by applying the value `ChecksumOffloadBroken=true` in the [calico helm chart](https://github.com/rancher/rke2-charts/blob/main/charts/rke2-calico/rke2-calico/v3.19.2-203/values.yaml#L51-L53).
 
