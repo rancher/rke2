@@ -10,7 +10,8 @@ Create a new release tag at the [image-build-kubernetes](https://github.com/ranc
 
 * Click "Releases"
 * Click "Draft a new release"
-* Enter the new release version (the new k8s version), appended with `-buildYYYYMMdd`, into the "Tag version" box. **NOTE** The build system is in UTC.
+* Enter the new release version (the RKE2 Kubernetes version), appended with `-buildYYYYMMdd`, into the "Tag version" box.  **NOTE** The build system is in UTC.
+    When converting the RKE2 version to the Kubernetes version, use dash instead of plus, and do not include any alpha/beta/rc components. For example, if preparing for RKE2 `v1.21.4-rc1+rke2r1` before 5 PM Pacific on Friday, August 27th 2021 you would tag `v1.21.4-rke2r1-build20210827`
 * Check box, "This is a pre-release".
 * Click the "Publish release" button. 
 
