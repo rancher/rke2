@@ -2,7 +2,9 @@
 
 From time to time we need to update the version of Kubernetes used by RKE2. This document serves as a how-to for that process. The following steps are laid out in order.
 
-## Kubernetes
+## Hardened Kubernetes
+
+The Hardened Kubernetes build process for RKE2 was once part of the RKE2 build process itself. It's been since split out and exists on its own in the [image-build-kubernetes](https://github.com/rancher/image-build-kubernetes) repository. Follow the steps below to create a new Hardened Kubernetes build.
 
 Create a new release tag at the [image-build-kubernetes](https://github.com/rancher/image-build-kubernetes) repo.
 
