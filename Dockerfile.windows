@@ -39,8 +39,9 @@ WORKDIR /source
 # End Dapper stuff
 
 FROM build as windows-runtime-collect
+ARG KUBERNETES_VERSION=dev
+
 # windows runtime image
-ENV KUBERNETES_VERSION="v1.21.3"
 ENV CRICTL_VERSION="v1.21.0"
 ENV CONTAINERD_VERSION="1.5.4"
 ENV WINS_VERSION="0.1.1"
