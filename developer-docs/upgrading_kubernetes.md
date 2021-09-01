@@ -1,6 +1,8 @@
 # Upgrade Kubernetes Process
 
-From time to time we need to update the version of Kubernetes used by RKE2. This document serves as a how-to for that process. The following steps are laid out in order.
+From time to time we need to update the version of Kubernetes used by RKE2. This document serves as a how-to for that process and constitutes a "release". The following steps are laid out in order.
+
+This process will need to be done any time a new release is needed.
 
 ## Hardened Kubernetes
 
@@ -11,8 +13,7 @@ Create a new release tag at the [image-build-kubernetes](https://github.com/ranc
 * Click "Releases"
 * Click "Draft a new release"
 * Enter the new release version (the RKE2 Kubernetes version), appended with `-buildYYYYMMdd`, into the "Tag version" box.  **NOTE** The build system is in UTC.
-    When converting the RKE2 version to the Kubernetes version, use dash instead of plus, and do not include any alpha/beta/rc components. For example, if preparing for RKE2 `v1.21.4-rc1+rke2r1` before 5 PM Pacific on Friday, August 27th 2021 you would tag `v1.21.4-rke2r1-build20210827`
-* Check box, "This is a pre-release".
+    When converting the RKE2 version to the Kubernetes version, use dash instead of plus, and do not include any alpha/beta/rc components. For example, if preparing for RKE2 `v1.21.4+rke2r2` before 5 PM Pacific on Friday, August 27th 2021 you would tag `v1.21.4-rke2r2-build20210829`
 * Click the "Publish release" button. 
 
 This will take a few minutes for CI to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kubernetes).
@@ -41,7 +42,7 @@ Next, we need to create a release candidate (RC).
 * Click "Releases"
 * Click "Draft new release"
 * Enter the desired version into the "Tag version" box. 
-    * Example tag: `v1.21.4-rc1+rke2r1`
+    * Example tag: `v1.21.4+rke2r2`
     * **NOTE** Make sure to create the tag against the correct release branch. In the example above, that would map to release branch `release-1.21`.
 
 CI will run and build the release assets as well as kick off an image build for [RKE2 Upgrade images](https://hub.docker.com/r/rancher/rke2-upgrade/tags?page=1&ordering=last_updated).
