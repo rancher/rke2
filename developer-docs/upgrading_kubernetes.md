@@ -37,7 +37,7 @@ Once these changes are made, submit a PR for review and let CI complete. When CI
 
 ## RKE2 Release RC
 
-Next, we need to create a release candidate (RC). 
+Next, we need to create a release candidate (RC). The Drone (CI) process that builds the release itself can be monitored [here](https://drone-publish.rancher.io/rancher/rke2/).
 
 * Click "Releases"
 * Click "Draft new release"
@@ -51,7 +51,7 @@ _**Note: Once an RC is released for QA, the release branch associated with the R
 
 ### RKE2 Packaging
 
-Along with creating a new RKE2 release, we need to trigger a new build of the associated RPM. These are found in the [rke2-packaging](https://github.com/rancher/rke2-packaging) repository. We need to create a new release here and the process is nearly identical to the above steps.
+Along with creating a new RKE2 release, we need to trigger a new build of the associated RPM. These are found in the [rke2-packaging](https://github.com/rancher/rke2-packaging) repository. We need to create a new release here and the process is nearly identical to the above steps. The Drone (CI) process that builds the release itself can be monitored [here](https://drone-publish.rancher.io/rancher/rke2-packaging/).
 
 * Click "Releases"
 * Click "Draft new release"
