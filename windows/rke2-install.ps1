@@ -236,6 +236,9 @@ function Rke2-Installer {
         if (-Not (Test-Path $env:CATTLE_AGENT_VAR_DIR)) {
             New-Item -Path $env:CATTLE_AGENT_VAR_DIR -ItemType Directory -Force
         }
+
+        $env:CATTLE_ADDRESS = Get-Address -Value $env:CATTLE_ADDRESS
+        $env:CATTLE_INTERNAL_ADDRESS = Get-Address -Value $env:CATTLE_INTERNAL_ADDRESS
     }
 
     function Test-Architecture() {
@@ -303,10 +306,10 @@ function Rke2-Installer {
 
             Write-LogInfo "Pulling rke2 config.yaml from $Uri"
             if (-Not $env:CATTLE_CA_CHECKSUM) {
-                curl.exe -sfL $Uri -o $configFile -H "Authorization: Bearer $($env:CATTLE_TOKEN)" -H "X-Cattle-Id: $($env:CATTLE_ID)" -H "X-Cattle-Role-Worker: $($env:CATTLE_ROLE_WORKER)" -H "X-Cattle-Labels: $($env:CATTLE_LABELS)" -H "X-Cattle-Taints: $($env:CATTLE_TAINTS)" -H "Content-Type: application/json"
+                curl.exe -sfL $Uri -o $configFile -H "Authorization: Bearer $($env:CATTLE_TOKEN)" -H "X-Cattle-Id: $($env:CATTLE_ID)" -H "X-Cattle-Role-Worker: $($env:CATTLE_ROLE_WORKER)" -H "X-Cattle-Labels: $($env:CATTLE_LABELS)" -H "X-Cattle-Taints: $($env:CATTLE_TAINTS)" -H "X-Cattle-Address: $($env:CATTLE_ADDRESS)" -H "X-Cattle-Internal-Address: $($env:CATTLE_INTERNAL_ADDRESS)" -H "Content-Type: application/json"
             }
             else {
-                curl.exe --insecure --cacert $env:RANCHER_CERT -sfL $Uri -o $configFile -H "Authorization: Bearer $($env:CATTLE_TOKEN)" -H "X-Cattle-Id: $($env:CATTLE_ID)" -H "X-Cattle-Role-Worker: $($env:CATTLE_ROLE_WORKER)" -H "X-Cattle-Labels: $($env:CATTLE_LABELS)" -H "X-Cattle-Taints: $($env:CATTLE_TAINTS)" -H "Content-Type: application/json"
+                curl.exe --insecure --cacert $env:RANCHER_CERT -sfL $Uri -o $configFile -H "Authorization: Bearer $($env:CATTLE_TOKEN)" -H "X-Cattle-Id: $($env:CATTLE_ID)" -H "X-Cattle-Role-Worker: $($env:CATTLE_ROLE_WORKER)" -H "X-Cattle-Labels: $($env:CATTLE_LABELS)" -H "X-Cattle-Taints: $($env:CATTLE_TAINTS)" -H "X-Cattle-Address: $($env:CATTLE_ADDRESS)" -H "X-Cattle-Internal-Address: $($env:CATTLE_INTERNAL_ADDRESS)" -H "Content-Type: application/json"
             }
 
             if (-Not(Test-Path $configFile)) {
@@ -355,6 +358,42 @@ function Rke2-Installer {
         Write-LogInfo "Not generating Cattle ID"
     }
 
+    function Get-Address() {
+        [CmdletBinding()]
+        param (
+            [Parameter()]
+            [String]
+            $Value
+        )
+        if (!$Value) {
+            # If nothing is given, return empty (it will be automatically determined later if empty)
+            return ""
+        }
+        # If given address is a network interface on the system, retrieve configured IP on that interface (only the first configured IP is taken)
+        elseif (Get-NetAdapter -Name $Value -ErrorAction SilentlyContinue) {
+            return $(Get-NetIpConfiguration | Where-Object { $null -ne $_.IPv4DefaultGateway -and $_.NetAdapter.Status -ne "Disconnected" }).IPv4Address.IPAddress
+        }
+        # Loop through cloud provider options to get IP from metadata, if not found return given value
+        else {
+            switch ($Value) {
+                awslocal { return curl.exe --connect-timeout 60 --max-time 60 -s http://169.254.169.254/latest/meta-data/local-ipv4 }
+                awspublic { return curl.exe --connect-timeout 60 --max-time 60 -s http://169.254.169.254/latest/meta-data/public-ipv4 }
+                doprivate { return curl.exe --connect-timeout 60 --max-time 60 -s http://169.254.169.254/metadata/v1/interfaces/private/0/ipv4/address }
+                dopublic { return curl.exe --connect-timeout 60 --max-time 60 -s http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address }
+                azprivate { return curl.exe --connect-timeout 60 --max-time 60 -s -H Metadata:true "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/privateIpAddress?api-version=2017-08-01&format=text" }
+                azpublic { return curl.exe --connect-timeout 60 --max-time 60 -s -H Metadata:true "http://169.254.169.254/metadata/instance/network/interface/0/ipv4/ipAddress/0/publicIpAddress?api-version=2017-08-01&format=text" }
+                gceinternal { return curl.exe --connect-timeout 60 --max-time 60 -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip }
+                gceexternal { return curl.exe --connect-timeout 60 --max-time 60 -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip }
+                packetlocal { return curl.exe --connect-timeout 60 --max-time 60 -s https://metadata.packet.net/2009-04-04/meta-data/local-ipv4 }
+                packetpublic { return curl.exe --connect-timeout 60 --max-time 60 -s https://metadata.packet.net/2009-04-04/meta-data/public-ipv4 }
+                ipify { return curl.exe --connect-timeout 60 --max-time 60 -s https://api.ipify.org }
+                Default {
+                    return $Value
+                }
+            }          
+        }
+    }
+
     function Invoke-RancherInstall() {
         $rke2ServiceName = "rke2"
         Get-Args
@@ -373,7 +412,7 @@ function Rke2-Installer {
         New-CattleId
         Get-Rke2Config
         Get-Rke2Info
-
+        
         if ($env:CATTLE_RKE2_VERSION) {
             Invoke-Expression -Command "C:\var\lib\rancher\install.ps1 -Version $($env:CATTLE_RKE2_VERSION)"
         }
