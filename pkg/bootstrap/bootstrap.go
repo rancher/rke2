@@ -267,6 +267,8 @@ func setChartValues(manifestsDir string, nodeConfig *daemonconfig.Node, cfg cmds
 	serializer := json.NewSerializerWithOptions(json.DefaultMetaFactory, schemes.All, schemes.All, json.SerializerOptions{Yaml: true, Pretty: true, Strict: true})
 	chartValues := map[string]string{
 		"global.clusterCIDR":           util.JoinIPNets(nodeConfig.AgentConfig.ClusterCIDRs),
+		"global.clusterCIDRv4":         util.JoinIP4Nets(nodeConfig.AgentConfig.ClusterCIDRs),
+		"global.clusterCIDRv6":         util.JoinIP6Nets(nodeConfig.AgentConfig.ClusterCIDRs),
 		"global.clusterDNS":            util.JoinIPs(nodeConfig.AgentConfig.ClusterDNSs),
 		"global.clusterDomain":         nodeConfig.AgentConfig.ClusterDomain,
 		"global.rke2DataDir":           cfg.DataDir,
