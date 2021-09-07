@@ -56,7 +56,7 @@ node-taint:
   - "CriticalAddonsOnly=true:NoExecute"
 ```
 
-Note: The NGINX Ingress and Metrics Server addons will **not** be deployed when all nodes are tainted `CriticalAddonsOnly`. If your server nodes are so tainted, these addons will remain pending until untainted agent nodes are added to the cluster.
+Note: The NGINX Ingress and Metrics Server addons will **not** be deployed when all nodes are tainted with `CriticalAddonsOnly`. If your server nodes are so tainted, these addons will remain pending until untainted agent nodes are added to the cluster.
 
 ### 3. Launch additional server nodes
 Additional server nodes are launched much like the first, except that you must specify the `server` and `token` parameters so that they can successfully connect to the initial server node.
