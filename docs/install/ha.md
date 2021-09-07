@@ -56,6 +56,8 @@ node-taint:
   - "CriticalAddonsOnly=true:NoExecute"
 ```
 
+Note: The Nginx Ingress and Metrics-Server addons will **not** be deployed on nodes that has the previous taint, only CNI, and CoreDNS addons has toleration for this taint.
+
 ### 3. Launch additional server nodes
 Additional server nodes are launched much like the first, except that you must specify the `server` and `token` parameters so that they can successfully connect to the initial server node.
 
