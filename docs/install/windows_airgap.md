@@ -4,7 +4,7 @@
 
 RKE2 Windows Agent (Worker) Nodes can be used in an air-gapped environment with two different methods. This requires first completing the RKE2 [airgap setup](airgap.md)
 
-You can either deploy using the `rke2-windows-<BUILD_VERSION>-amd64-images.tar.gz` tarball release artifact, or by using a private registry. There are currently three tarball artifacts released for Windows in accordance with our validated [Windows versions](https://rosskirk.ngrok.io/install/requirements/#windows).
+You can either deploy using the `rke2-windows-<BUILD_VERSION>-amd64-images.tar.gz` tarball release artifact, or by using a private registry. There are currently three tarball artifacts released for Windows in accordance with our validated [Windows versions](https://docs.rke2.io/install/requirements/#windows).
 
 - rke2-windows-1809-amd64-images.tar.gz
 - rke2-windows-2004-amd64-images.tar.gz
@@ -36,7 +36,7 @@ This will require a reboot for the `Containers` feature to properly function.
 
     ``` powershell
     $ProgressPreference = 'SilentlyContinue'
-    Invoke-WebRequest https://github.com/rancher/rke2/releases/download/v1.21.3%2Brke2r1/rke2-windows-1809-amd64-images.tar.gz -OutFile /var/lib/rancher/rke2/agent/images/rke2-windows-1809-amd64-images.tar.gz 
+    Invoke-WebRequest https://github.com/rancher/rke2/releases/download/v1.21.4%2Brke2r2/rke2-windows-1809-amd64-images.tar.gz -OutFile /var/lib/rancher/rke2/agent/images/rke2-windows-1809-amd64-images.tar.gz 
     ```
 
 
@@ -44,14 +44,14 @@ This will require a reboot for the `Containers` feature to properly function.
 
     ``` powershell
     $ProgressPreference = 'SilentlyContinue'  
-    Invoke-WebRequest https://github.com/rancher/rke2/releases/download/v1.21.3%2Brke2r1/rke2-windows-2004-amd64-images.tar.gz -OutFile c:/var/lib/rancher/rke2/agent/images/rke2-windows-2004-amd64-images.tar.gz
+    Invoke-WebRequest https://github.com/rancher/rke2/releases/download/v1.21.4%2Brke2r2/rke2-windows-2004-amd64-images.tar.gz -OutFile c:/var/lib/rancher/rke2/agent/images/rke2-windows-2004-amd64-images.tar.gz
     ```
 
     - **Windows Server SAC 20H2 (amd64) (OS Build 19042.1110)**
 
     ``` powershell
     $ProgressPreference = 'SilentlyContinue'  
-    Invoke-WebRequest https://github.com/rancher/rke2/releases/download/v1.21.3%2Brke2r1/rke2-windows-20H2-amd64-images.tar.gz -OutFile c:/var/lib/rancher/rke2/agent/images/rke2-windows-20H2-amd64-images.tar.gz 
+    Invoke-WebRequest https://github.com/rancher/rke2/releases/download/v1.21.4%2Brke2r2/rke2-windows-20H2-amd64-images.tar.gz -OutFile c:/var/lib/rancher/rke2/agent/images/rke2-windows-20H2-amd64-images.tar.gz 
     ```
 
     #### Using tar.zst image tarballs
@@ -60,7 +60,7 @@ This will require a reboot for the `Containers` feature to properly function.
 
     ``` powershell
     $ProgressPreference = 'SilentlyContinue'  
-    Invoke-WebRequest https://github.com/rancher/rke2/releases/download/v1.21.3%2Brke2r1/rke2-windows-1809-amd64-images.tar.zst -OutFile /var/lib/rancher/rke2/agent/images/rke2-windows-1809-amd64-images.tar.zst 
+    Invoke-WebRequest https://github.com/rancher/rke2/releases/download/v1.21.4%2Brke2r2/rke2-windows-1809-amd64-images.tar.zst -OutFile /var/lib/rancher/rke2/agent/images/rke2-windows-1809-amd64-images.tar.zst 
     ```
 
 
@@ -68,14 +68,14 @@ This will require a reboot for the `Containers` feature to properly function.
 
     ``` powershell
     $ProgressPreference = 'SilentlyContinue'  
-    Invoke-WebRequest https://github.com/rancher/rke2/releases/download/v1.21.3%2Brke2r1/rke2-windows-2004-amd64-images.tar.zst -OutFile c:/var/lib/rancher/rke2/agent/images/rke2-windows-2004-amd64-images.tar.zst 
+    Invoke-WebRequest https://github.com/rancher/rke2/releases/download/v1.21.4%2Brke2r2/rke2-windows-2004-amd64-images.tar.zst -OutFile c:/var/lib/rancher/rke2/agent/images/rke2-windows-2004-amd64-images.tar.zst 
     ```
 
     - **Windows Server SAC 20H2 (amd64) (OS Build 19042.1110)**
 
     ``` powershell
     $ProgressPreference = 'SilentlyContinue'
-    Invoke-WebRequest https://github.com/rancher/rke2/releases/download/v1.21.3%2Brke2r1/rke2-windows-20H2-amd64-images.tar.zst -OutFile c:/var/lib/rancher/rke2/agent/images/rke2-windows-20H2-amd64-images.tar.zst
+    Invoke-WebRequest hhttps://github.com/rancher/rke2/releases/download/v1.21.4%2Brke2r2/rke2-windows-20H2-amd64-images.tar.zst -OutFile c:/var/lib/rancher/rke2/agent/images/rke2-windows-20H2-amd64-images.tar.zst
     ```
 
     - Use `rke2-windows-<BUILD_VERSION>-amd64.tar.gz` or `rke2-windows-<BUILD_VERSION>-amd64.tar.zst`. Zstandard offers better compression ratios and faster decompression speeds compared to pigz.
@@ -106,7 +106,7 @@ These steps should only be performed after completing one of either the [Tarball
 
 1. Obtain the Windows RKE2 binary file `rke2-windows-amd64.exe`. Ensure the binary is named `rke2.exe` and place it in `c:/usr/local/bin`. 
 ```powershell
-Invoke-WebRequest https://github.com/rancher/rke2/releases/download/v1.21.3%2Brke2r1/rke2-windows-amd64.exe -OutFile c:/usr/local/bin/rke2.exe
+Invoke-WebRequest https://github.com/rancher/rke2/releases/download/v1.21.4%2Brke2r2/rke2-windows-amd64.exe -OutFile c:/usr/local/bin/rke2.exe
 ```
 
 2. Configure the rke2-agent for Windows
