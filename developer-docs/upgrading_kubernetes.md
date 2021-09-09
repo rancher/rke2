@@ -86,6 +86,16 @@ Once complete, perform the steps above again however this time, use the tag "lat
 
 We choose "latest" here since we want to wait at least 24 hours in case the community finds an issue. Patches will need at least 24 hours. We'll then wait up to 7 days until marking the release as "stable".
 
+### Release Notes
+
+Release notes should be drafted before the release is complete. This happens in the [Rancher Labs - Release Notes](https://github.com/rancherlabs/release-notes) repository. Create a new branch from your fork and update the relevant files in `rke2/`. The release note files have been standardized and should stay in the style they're currently in.
+
+The 2 primary sections of the release notes are the "Changes since ..." and the "Package Component Versions". The other sections need to be reviewed as well. The "Changes since ..." section can be fleshed out by reviewing the closed issues and pull requests for the matching milestone.
+
+Once the release notes are approved and merged, through the normal review and approval process, copy the contents of the files and paste them into the release itself, by editing the relevant release. 
+
+Be sure to review the rest of the sections as some of them may become irrelevant based on included fixes or version updates.
+
 ### Updating Channel Server
 
 After all of the builds are complete and QA has signed off on the release, we need to update the channel server. This is done by editing the `channels.yaml` file at the root of the [rke2](https://github.com/rancher/rke2) repository.
