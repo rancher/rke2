@@ -32,12 +32,11 @@ func Rke2Cmd(cmdName string, cmdArgs ...string) (string, error) {
 	if cmdName == "kubectl" {
 		byteOut, err := exec.Command(cmdName, cmdArgs...).CombinedOutput()
 		return string(byteOut), err
-	} else {
-		rke2Bin := findRke2Executable()
-		rke2Cmd := append([]string{cmdName}, cmdArgs...)
-		byteOut, err := exec.Command(rke2Bin, rke2Cmd...).CombinedOutput()
-		return string(byteOut), err
 	}
+	rke2Bin := findRke2Executable()
+	rke2Cmd := append([]string{cmdName}, cmdArgs...)
+	byteOut, err := exec.Command(rke2Bin, rke2Cmd...).CombinedOutput()
+	return string(byteOut), err
 }
 
 func Rke2Ready() bool {
