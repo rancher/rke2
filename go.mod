@@ -19,7 +19,7 @@ replace (
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc95
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20210316141917-a8c4a9ee0f6b
-	github.com/rancher/wharfie => github.com/rancher/wharfie v0.4.1
+	github.com/rancher/wharfie => github.com/rancher/wharfie v0.4.2
 	go.etcd.io/etcd => github.com/k3s-io/etcd v0.5.0-alpha.5.0.20201208200253-50621aee4aea
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 	google.golang.org/grpc => google.golang.org/grpc v1.27.1
