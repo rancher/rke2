@@ -71,5 +71,14 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
     ${REGISTRY}/rancher/hardened-sriov-network-webhook:v1.0.0-build20210429
 EOF
 
+xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
+    ${REGISTRY}/rancher/harvester-cloud-provider:v0.1.1
+    ${REGISTRY}/rancher/harvester-csi-driver:v0.1.1
+    ${REGISTRY}/rancher/longhornio-csi-node-driver-registrar:v2.3.0
+    ${REGISTRY}/rancher/longhornio-csi-resizer:v1.2.0
+    ${REGISTRY}/rancher/longhornio-csi-provisioner:v2.1.2
+    ${REGISTRY}/rancher/longhornio-csi-attacher:v3.2.1
+EOF
+
 # Continue to provide a legacy airgap archive set with the default CNI images
 cat build/images-core.txt build/images-canal.txt > build/images.txt
