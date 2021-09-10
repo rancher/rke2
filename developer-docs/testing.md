@@ -66,7 +66,7 @@ Integration tests must be with an existing single-node cluster, tests will skip 
 ```bash
 make dev-shell
 # Once in the dev-shell
-# Start rke2 server with appropiate flags
+# Start rke2 server with appropriate flags
 ./bin/rke2 server 
 ```
 Open another terminal
