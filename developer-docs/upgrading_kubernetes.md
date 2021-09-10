@@ -128,9 +128,11 @@ This checklist is meant to help prevent missing a step in the release process. B
 - [ ] Tag new RKE2 RC
 - [ ] Tag new RKE2 packaging RC "testing"
 - [ ] Tag the RKE2 release
+- [ ] Add release notes to release
 - [ ] Tag RKE2 packaging release "testing"
 - [ ] Tag RKE2 packaging release "latest"
-- [ ] Write release notes
-- [ ] Update KDM
 - [ ] Uncheck "pre-release"
+- [ ] Wait 1 week for community to report issues
 - [ ] Tag RKE2 packaging release "stable"
+- [ ] Update stable release in channels.yaml
+- [ ] Update KDM
