@@ -65,7 +65,7 @@ require (
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.11.0
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.4-engine0.0.20210831220336-841793de01fd // engine-1.21
+	github.com/rancher/k3s v1.21.4-engine0.0.20210910175908-f2c788275025 // engine-1.21
 	github.com/rancher/wharfie v0.4.1
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
