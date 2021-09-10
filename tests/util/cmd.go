@@ -55,6 +55,7 @@ func Rke2Ready() bool {
 		reg := pod + ".+Running"
 		match, err := regexp.MatchString(reg, pods)
 		if !match || err != nil {
+			logrus.Error(err)
 			return false
 		}
 	}
@@ -72,7 +73,11 @@ func contains(source []string, target string) bool {
 
 // ServerArgsPresent checks if the given arguments are found in the running k3s server
 func ServerArgsPresent(neededArgs []string) bool {
-	currentArgs := Rke2ServerArgs()
+	currentArgs, err := Rke2ServerArgs()
+	if err != nil {
+		logrus.Error(err)
+		return false
+	}
 	for _, arg := range neededArgs {
 		if !contains(currentArgs, arg) {
 			return false
@@ -82,16 +87,15 @@ func ServerArgsPresent(neededArgs []string) bool {
 }
 
 // Rke2ServerArgs returns the list of arguments that the rke2 server launched with
-func Rke2ServerArgs() []string {
+func Rke2ServerArgs() ([]string, error) {
 	results, err := Rke2Cmd("kubectl", "get", "nodes", "-o", `jsonpath='{.items[0].metadata.annotations.rke2\.io/node-args}'`)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	res := strings.ReplaceAll(results, "'", "")
 	var args []string
 	if err := json.Unmarshal([]byte(res), &args); err != nil {
-		logrus.Error(err)
-		return nil
+		return nil, err
 	}
-	return args
+	return args, nil
 }
