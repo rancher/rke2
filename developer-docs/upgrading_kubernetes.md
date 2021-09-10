@@ -120,7 +120,7 @@ After 24 hours, we'll promote the release to stable by updating the channel serv
 
 ## Release Checklist
 
-This checklist is meant to help prevent missing a step in the release process. Be sure to reference the sections above for futher detail on each step.
+This checklist is meant to help prevent missing a step in the release process. Be sure to reference the sections above for further detail on each step.
 
 - [ ] Tag new Hardened Kubernetes release
 - [ ] Update Helm chart versions
