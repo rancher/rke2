@@ -8,7 +8,7 @@ set -ex
   echo "First argument should be a dist bundle tarball" >&2
   exit 1
 }
-[[ $2 =~ rke2-runtime\..+\.tar\.zst ]] || {
+[[ $2 =~ rke2-images\..+\.tar\.zst ]] || {
   echo "Second argument should be a compressed airgap runtime image tarball" >&2
   exit 1
 }
