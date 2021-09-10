@@ -62,6 +62,8 @@ require (
 	github.com/google/gopacket v1.1.19
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.10.5
+	github.com/onsi/ginkgo v1.16.4
+	github.com/onsi/gomega v1.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/k3s v1.21.4-engine0.0.20210831220336-841793de01fd // engine-1.21
 	github.com/rancher/wharfie v0.4.1
