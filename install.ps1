@@ -76,6 +76,7 @@ param (
     $ChannelUrl = "https://update.rke2.io/v1-release/channels"
 )
 
+Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 function Write-InfoLog() {
