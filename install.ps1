@@ -409,9 +409,6 @@ function Get-AirgapChecksums() {
         $CommitHash,
         [Parameter()]
         [String]
-        $AirgapChecksumsUrl,
-        [Parameter()]
-        [String]
         $StorageUrl,
         [Parameter()]
         [String]
@@ -425,7 +422,7 @@ function Get-AirgapChecksums() {
     $archInfo = Get-ArchitectureInfo
     $suffix = $archInfo.Suffix  
 
-    $AirgapChecksumsUrl= "$StorageUrl/rke2-images.$suffix$CommitHash.tar.zst.sha256sum"
+    $AirgapChecksumsUrl = "$StorageUrl/rke2-images.$suffix$CommitHash.tar.zst.sha256sum"
     # try for zst first; if that fails use gz for older release branches
     if (!(Test-Download -Uri $AirgapChecksumsUrl)) {
         $AirgapChecksumsUrl = "$StorageUrl/rke2-images.$suffix$CommitHash.tar.gz.sha256sum"
@@ -581,7 +578,7 @@ switch ($Method) {
         else {
             $Version = Get-ReleaseVersion
             Write-InfoLog "using $Version as release"
-            $AIRGAP_CHECKSUM_EXPECTED = Get-AirgapChecksums -CommitHash $Commit -AirgapChecksumsUrl $AIRGAP_CHECKSUMS_URL -StorageUrl $STORAGE_URL -TempAirgapChecksums $TMP_AIRGAP_CHECKSUMS
+            $AIRGAP_CHECKSUM_EXPECTED = Get-AirgapChecksums -CommitHash $Commit -StorageUrl $STORAGE_URL -TempAirgapChecksums $TMP_AIRGAP_CHECKSUMS
             Get-AirgapTarball -CommitHash $Commit -AirgapTarballUrl $AIRGAP_TARBALL_URL -StorageUrl $STORAGE_URL -TempAirgapTarball $TMP_AIRGAP_TARBALL
 
             Write-Host $Version $Version $STORAGE_URL $INSTALL_RKE2_GITHUB_URL $TMP_CHECKSUMS
