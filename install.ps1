@@ -355,7 +355,7 @@ function Expand-Tarball() {
         $Tarball
     )
     Write-InfoLog "unpacking tarball file to $InstallPath"
-    New-Item -Path $InstallPath -Type Directory -Force
+    New-Item -Path $InstallPath -Type Directory -Force | Out-Null
     tar xzf "$Tarball" -C "$InstallPath"
 }
 
@@ -530,7 +530,7 @@ function Install-AirgapTarball() {
     if ($ExpectedAirGapChecksum) {
         return
     }
-    New-Item -Path "$InstallAgentImageDir" -ItemType "Directory"
+    New-Item -Path $InstallAgentImageDir -ItemType Directory | Out-null
     $archInfo = Get-ArchitectureInfo
     $suffix = $archInfo.Suffix
 
@@ -561,7 +561,7 @@ switch ($Method) {
         if (Test-Path "$temp/rke2-install") {
             Remove-Item -Path "$temp/rke2-install" -Force -Recurse
         }
-        New-Item -Path $temp -Name "rke2-install" -ItemType "Directory"
+        New-Item -Path $temp -Name rke2-install -ItemType Directory | Out-Null
         
         $TMP_DIR = Join-Path -Path $temp -ChildPath "rke2-install"
         $TMP_CHECKSUMS = Join-Path -Path $TMP_DIR -ChildPath "rke2.checksums"
