@@ -12,6 +12,7 @@ The snapshot directory defaults to `/var/lib/rancher/rke2/server/db/snapshots`.
 
 To configure the snapshot interval or the number of retained snapshots, refer to the [options.](#options)
 
+In RKE2, snapshots are stored on each etcd node. If you have multiple etcd or etcd + control-plane nodes, you will have multiple copies of local etcd snapshots.
 
 ## Cluster Reset
 
