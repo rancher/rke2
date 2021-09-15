@@ -76,6 +76,7 @@ param (
     $ChannelUrl = "https://update.rke2.io/v1-release/channels"
 )
 
+Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 function Write-InfoLog() {
@@ -355,7 +356,7 @@ function Expand-Tarball() {
         $Tarball
     )
     Write-InfoLog "unpacking tarball file to $InstallPath"
-    New-Item -Path $InstallPath -Type Directory -Force
+    New-Item -Path $InstallPath -Type Directory -Force | Out-Null
     tar xzf "$Tarball" -C "$InstallPath"
 }
 
@@ -408,9 +409,6 @@ function Get-AirgapChecksums() {
         $CommitHash,
         [Parameter()]
         [String]
-        $AirgapChecksumsUrl,
-        [Parameter()]
-        [String]
         $StorageUrl,
         [Parameter()]
         [String]
@@ -424,7 +422,7 @@ function Get-AirgapChecksums() {
     $archInfo = Get-ArchitectureInfo
     $suffix = $archInfo.Suffix  
 
-    $AirgapChecksumsUrl= "$StorageUrl/rke2-images.$suffix$CommitHash.tar.zst.sha256sum"
+    $AirgapChecksumsUrl = "$StorageUrl/rke2-images.$suffix$CommitHash.tar.zst.sha256sum"
     # try for zst first; if that fails use gz for older release branches
     if (!(Test-Download -Uri $AirgapChecksumsUrl)) {
         $AirgapChecksumsUrl = "$StorageUrl/rke2-images.$suffix$CommitHash.tar.gz.sha256sum"
@@ -530,7 +528,7 @@ function Install-AirgapTarball() {
     if ($ExpectedAirGapChecksum) {
         return
     }
-    New-Item -Path "$InstallAgentImageDir" -ItemType "Directory"
+    New-Item -Path $InstallAgentImageDir -ItemType Directory | Out-null
     $archInfo = Get-ArchitectureInfo
     $suffix = $archInfo.Suffix
 
@@ -561,7 +559,7 @@ switch ($Method) {
         if (Test-Path "$temp/rke2-install") {
             Remove-Item -Path "$temp/rke2-install" -Force -Recurse
         }
-        New-Item -Path $temp -Name "rke2-install" -ItemType "Directory"
+        New-Item -Path $temp -Name rke2-install -ItemType Directory | Out-Null
         
         $TMP_DIR = Join-Path -Path $temp -ChildPath "rke2-install"
         $TMP_CHECKSUMS = Join-Path -Path $TMP_DIR -ChildPath "rke2.checksums"
@@ -580,7 +578,7 @@ switch ($Method) {
         else {
             $Version = Get-ReleaseVersion
             Write-InfoLog "using $Version as release"
-            $AIRGAP_CHECKSUM_EXPECTED = Get-AirgapChecksums -CommitHash $Commit -AirgapChecksumsUrl $AIRGAP_CHECKSUMS_URL -StorageUrl $STORAGE_URL -TempAirgapChecksums $TMP_AIRGAP_CHECKSUMS
+            $AIRGAP_CHECKSUM_EXPECTED = Get-AirgapChecksums -CommitHash $Commit -StorageUrl $STORAGE_URL -TempAirgapChecksums $TMP_AIRGAP_CHECKSUMS
             Get-AirgapTarball -CommitHash $Commit -AirgapTarballUrl $AIRGAP_TARBALL_URL -StorageUrl $STORAGE_URL -TempAirgapTarball $TMP_AIRGAP_TARBALL
 
             Write-Host $Version $Version $STORAGE_URL $INSTALL_RKE2_GITHUB_URL $TMP_CHECKSUMS
