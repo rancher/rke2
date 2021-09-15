@@ -4,6 +4,12 @@ From time to time we need to update the version of Kubernetes used by RKE2. This
 
 This process will need to be done any time a new release is needed.
 
+## QA Releases
+
+If QA requires a release candidate (RC) for testing efforts before a Kubernetes patch is available, a new RC should be created with the most current
+Kubernetes release. For example, if QA wants a release for v1.20.11 before the Kubernetes patch, and the most recent release is v1.20.10+rke2r1, 
+a tag should be cut for v1.20.10-rc1+rke2r2 release.
+
 ## Hardened Kubernetes
 
 The Hardened Kubernetes build process for RKE2 was once part of the RKE2 build process itself. It's been since split out and exists on its own in the [image-build-kubernetes](https://github.com/rancher/image-build-kubernetes) repository. Follow the steps below to create a new Hardened Kubernetes build.
