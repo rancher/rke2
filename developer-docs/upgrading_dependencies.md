@@ -10,8 +10,7 @@ Create a new release in the image repository (eg [image-build-etcd](github.com/r
 
 The following example files have references that will need to be updated in the respective locations for etcd. Replace the found version with the desired version.
 
-* build-images: `${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-${IMAGE_BUILD_VERSION}`
+* build-images: `${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20210915`
 * scripts/version.sh:    `ETCD_VERSION=${ETCD_VERSION:-v3.4.13-k3s1}`
-    `IMAGE_BUILD_VERSION=${IMAGE_BUILD_VERSION:-build20210223}`
 
 Some images may include a build date as part of the tag in format `-buildYYYYmmdd`. Trivy image scans may periodically fail as vulnerabilities are found in the base operating system. Re-tagging an image with the current build date should force an update of the base operating system and may help to resolve vulnerabilities found in image scans.
