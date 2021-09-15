@@ -4,6 +4,8 @@ From time to time we need to update the version of Kubernetes used by RKE2. This
 
 This process will need to be done any time a new release is needed.
 
+A handy checklist can be found [here](#release-checklist).
+
 ## QA Releases
 
 If QA requires a release candidate (RC) for testing efforts before a Kubernetes patch is available, a new RC should be created with the most current
@@ -122,3 +124,22 @@ This step is specific to Rancher and serves to update Rancher's [Kontainer Drive
 ### Promoting to Stable
 
 After 24 hours, we'll promote the release to stable by updating the channel server's config as we did at above, however this time changing "latest" to "stable". We need to do the same thing for RPM's too. This involves the same steps for RPM releases but changing "latest" to "stable" in the release name. E.g. `v1.21.4+rke2r1.stable.0`.
+
+## Release Process
+
+Process overview. Be sure to reference the sections above for further detail on each step.
+
+- Tag new Hardened Kubernetes release
+- Update Helm chart versions
+- Update RKE2
+- Tag new RKE2 RC
+- Tag new RKE2 packaging RC "testing"
+- Tag the RKE2 release
+- Add release notes to release
+- Tag RKE2 packaging release "testing"
+- Tag RKE2 packaging release "latest"
+- Uncheck "pre-release"
+- Wait 1 week for community to report issues
+- Tag RKE2 packaging release "stable"
+- Update stable release in channels.yaml
+- Update KDM
