@@ -36,7 +36,9 @@ Starting with RKE2 v1.21, different CNI Plugins can be deployed instead of Canal
 
 For more information about values available for the Cilium chart, please refer to the [rke2-charts repository](https://github.com/rancher/rke2-charts/blob/main-source/packages/rke2-cilium/charts/values.yaml)
 
-For more information about values available for the Calico chart, please refer to the [rke2-charts repository](https://github.com/rancher/rke2-charts/blob/main/charts/rke2-calico/rke2-calico/v3.18.1-103/values.yaml)
+For more information about values available for the Calico chart, please refer to the [rke2-charts repository](https://github.com/rancher/rke2-charts/blob/main/charts/rke2-calico/rke2-calico/v3.19.2-204/values.yaml)
+
+Note that if rke2 is deployed using a dual-stack cluster-cidr, calico will use BGP instead of vxlan encapsulation. Dual-stack cluster-cidr and BGP are currently not supported in the windows installation of rke2.
 
 # Using Multus
 
