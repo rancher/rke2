@@ -6,13 +6,13 @@ FIPS 140-2 is a U.S. Federal Government security standard used to approve crypto
 
 ## Use of FIPS Compatible Go compiler.
 
-The Go compiler in use can be found [here](https://hub.docker.com/u/goboring). Each component of the system is built with the version of this compiler that matches the same standard Go compiler version that would be used otherwise.
+The Go compiler in use can be found [here](https://go.googlesource.com/go/+/dev.boringcrypto). Each component of the system is built with the version of this compiler that matches the same standard Go compiler version that would be used otherwise.
 
 This version of Go replaces the standard Go crypto libraries with the FIPS validated BoringCrypto module. See GoBoring's [readme](https://github.com/golang/go/blob/dev.boringcrypto/README.boringcrypto.md) for more details. This module has been revalidated as the [Rancher Kubernetes Cryptographic Library](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/3836) in order to ensure support on a wider range of systems.
 
 ### FIPS Support in Cluster Components
 
-Most of the components of the RKE2 system are statically compiled with the GoBoring Go compiler implementation that takes advantage of the BoringSSL library. RKE2, from a component perspective, is broken up in a number of sections. The list below contains the sections and associated components.
+Most of the components of the RKE2 system are statically compiled with the GoBoring Go compiler implementation. RKE2, from a component perspective, is broken up in a number of sections. The list below contains the sections and associated components.
 
 * Kubernetes
   * API Server
