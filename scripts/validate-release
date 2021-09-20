@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -e
+
+. ./scripts/version.sh
+
+set +x
+
+function parse_tag() {
+    if [ -z $1 ]; then
+        echo "error: tag required as argument"
+        exit 1
+    fi
+    tag=$1
+    if [[ "${tag}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)([-+][a-zA-Z0-9]+)?[-+](rke2r[0-9]+)$ ]]; then
+        MAJOR=${BASH_REMATCH[1]}
+        MINOR=${BASH_REMATCH[2]}
+        PATCH=${BASH_REMATCH[3]}
+        RC=${BASH_REMATCH[4]}
+        RKE2_PATCH=${BASH_REMATCH[5]}
+    fi
+}
+
+# detecting the branch from the tag
+parse_tag $GIT_TAG
+TAG_BRANCH=$(git branch --all -q --contains $GIT_TAG | grep -v upstream$ | grep -v "HEAD" | sed -e 's/^[[:space:]]*//')
+if [ ! "$TAG_BRANCH" = "remotes/upstream/release-$MAJOR.$MINOR" ]; then
+     echo "error: Tag is cut from the wrong branch $TAG_BRANCH"
+     exit 1
+fi
+
+# validating kubernetes image tag
+BUILD_REGEX="build[0-9]+"
+if [[ ! "$KUBERNETES_IMAGE_TAG" =~ v$MAJOR.$MINOR.$PATCH-$RKE2_PATCH-$BUILD_REGEX ]]; then
+    echo "error: Kubernetes image tag [$KUBERNETES_IMAGE_TAG] is incorrect for this tag"
+    exit 1
+fi
+
+# validating kubernetes version variable
+if [[ ! "$KUBERNETES_VERSION" =~ v$MAJOR.$MINOR.$PATCH ]]; then
+    echo "error: Kubernetes version variable [$KUBERNETES_VERSION] is incorrect, please correct the version to v$MAJOR.$MINOR.$PATCH"
+    exit 1
+fi
+
+# checking for kube proxy chart version
+KUBE_PROXY_VERSION=$(grep -B1 "rke2-kube-proxy" Dockerfile | grep -oP 'CHART_VERSION="\K[^"]+')
+if [[ ! "$KUBE_PROXY_VERSION" =~ v$MAJOR.$MINOR.$PATCH-$RKE2_PATCH-$BUILD_REGEX ]]; then
+    echo "error: kube proxy chart version [$KUBE_PROXY_VERSION] is incorrect for this tag"
+    exit 1
+fi
+
+# comparing binary and charts versions between linux and windows
+CRICTL_WINDOWS_VERSION=$(grep -oP 'CRICTL_VERSION="\K[^"]+' Dockerfile.windows | grep -oP "v([0-9]+)\.([0-9]+)")
+if [ ! "$CRICTL_WINDOWS_VERSION" = "v$MAJOR.$MINOR" ]; then
+    echo "error: crictl windows binary version [$CRICTL_WINDOWS_VERSION] doesnt match kubernetes version"
+    exit 1
+fi
+
+CALICO_WINDOWS_VERSION=$(grep -oP 'CALICO_VERSION="\K[^"]+' Dockerfile.windows)
+CALICO_LINUX_VERSION=$(grep "rke2-calico.yaml" Dockerfile | grep -oP 'CHART_VERSION="\K[^"]+' | grep -oP "v([0-9]+)\.([0-9]+)\.([0-9]+)")
+if [ ! "$CALICO_WINDOWS_VERSION" = "$CALICO_LINUX_VERSION" ]; then
+    echo "error: Calico windows binary version [$CALICO_WINDOWS_VERSION] does not match Calico chart version [$CALICO_LINUX_VERSION]"
+    exit 1
+fi
