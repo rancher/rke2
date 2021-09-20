@@ -117,7 +117,7 @@ FROM rancher/k3s:v1.21.5-k3s1 AS k3s
 FROM rancher/hardened-kubernetes:v1.21.5-rke2r1-build20210916 AS kubernetes
 FROM rancher/hardened-containerd:v1.4.9-k3s1-build20210908 AS containerd
 FROM rancher/hardened-crictl:v1.19.0-build20210223 AS crictl
-FROM rancher/hardened-runc:v1.0.1-build20210908 AS runc
+FROM rancher/hardened-runc:v1.0.2-build20210915 AS runc
 
 FROM scratch AS runtime-collect
 COPY --from=k3s \
