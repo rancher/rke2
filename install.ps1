@@ -541,6 +541,7 @@ $STORAGE_URL = "https://storage.googleapis.com/rke2-ci-builds"
 $INSTALL_RKE2_GITHUB_URL = "https://github.com/rancher/rke2"
 $DEFAULT_TAR_PREFIX = "C:\usr\local"
 $INSTALL_RKE2_TAR_PREFIX = "C:\usr\local"
+$AIRGAP_TARBALL_URL = ""
 
 Confirm-WindowsFeatures -RequiredFeatures @("Containers")
 Set-Environment -DefaultTarPrefix $DEFAULT_TAR_PREFIX
