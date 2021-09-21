@@ -56,7 +56,7 @@ function check_kube_proxy_version() {
 function check_win_binaries() {
     CRICTL_WINDOWS_VERSION=$(grep -oP 'CRICTL_VERSION="\K[^"]+' Dockerfile.windows | grep -oP "v([0-9]+)\.([0-9]+)")
     if [ ! "$CRICTL_WINDOWS_VERSION" = "v$MAJOR.$MINOR" ]; then
-        fatal "crictl windows binary version [$CRICTL_WINDOWS_VERSION] doesnt match kubernetes version"
+        fatal "crictl windows binary version [$CRICTL_WINDOWS_VERSION] does not match kubernetes version"
     fi
 
     CALICO_WINDOWS_VERSION=$(grep -oP 'CALICO_VERSION="\K[^"]+' Dockerfile.windows)
