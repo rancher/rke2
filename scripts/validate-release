@@ -28,8 +28,8 @@ function parse_tag() {
 }
 
 function check_release_branch() {
-    TAG_BRANCH=$(git branch --all -q --contains $GIT_TAG | grep -v upstream$ | grep -v "HEAD" | sed -e 's/^[[:space:]]*//')
-    if [ ! "$TAG_BRANCH" = "remotes/upstream/release-$MAJOR.$MINOR" ]; then
+    TAG_BRANCH=$(git branch --all -q --contains $GIT_TAG | grep -v origin$ | grep -v "HEAD" | sed -e 's/^[[:space:]]*//')
+    if [ ! "$TAG_BRANCH" = "remotes/origin/release-$MAJOR.$MINOR" ]; then
         fatal "Tag is cut from the wrong branch $TAG_BRANCH"
     fi
 }
