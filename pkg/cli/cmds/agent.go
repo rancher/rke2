@@ -79,8 +79,8 @@ func agentSubcommands() cli.Commands {
 }
 
 func AgentRun(clx *cli.Context) error {
-	validateCloudProviderName(clx)
-	validateProfile(clx, "agent")
+	validateCloudProviderName(clx, Agent)
+	validateProfile(clx, Agent)
 	if err := windows.StartService(); err != nil {
 		return err
 	}
