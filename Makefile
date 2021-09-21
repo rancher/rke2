@@ -68,7 +68,7 @@ validate:                                ## Run go fmt/vet
 	./scripts/validate
 
 .PHONY: validate-release
-validate-release:                                ## Run go fmt/vet
+validate-release: 
 	./scripts/validate-release
 
 .PHONY: run
