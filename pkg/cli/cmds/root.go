@@ -13,7 +13,6 @@ import (
 	"github.com/rancher/k3s/pkg/version"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/rke2"
-	"github.com/rancher/wrangler/pkg/slice"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
@@ -184,6 +183,13 @@ const (
 	protectKernelDefaultsFlagName = "protect-kernel-defaults"
 )
 
+type CLIRole int64
+
+const (
+	Agent CLIRole = iota
+	Server
+)
+
 func init() {
 	// hack - force "file,dns" lookup order if go dns is used
 	if os.Getenv("RES_OPTIONS") == "" {
@@ -233,11 +239,11 @@ func (c cisErrors) Error() string {
 // with CIS 1.5 benchmark requirements. The nodeType string
 // is used to filter out tests that may only be relevant to servers
 // or agents.
-func validateCISReqs(nodeType string) error {
+func validateCISReqs(role CLIRole) error {
 	ce := make(cisErrors, 0)
 
 	// etcd user only needs to exist on servers
-	if nodeType == "server" {
+	if role == Server {
 		if _, err := user.Lookup("etcd"); err != nil {
 			ce = append(ce, fmt.Errorf("missing required %w", err))
 		}
@@ -271,10 +277,10 @@ func setCISFlags(clx *cli.Context) error {
 	return clx.Set(protectKernelDefaultsFlagName, "true")
 }
 
-func validateProfile(clx *cli.Context, nodeType string) {
+func validateProfile(clx *cli.Context, role CLIRole) {
 	switch clx.String("profile") {
 	case rke2.CISProfile15, rke2.CISProfile16:
-		if err := validateCISReqs(nodeType); err != nil {
+		if err := validateCISReqs(role); err != nil {
 			logrus.Fatal(err)
 		}
 		if err := setCISFlags(clx); err != nil {
@@ -287,23 +293,25 @@ func validateProfile(clx *cli.Context, nodeType string) {
 	}
 }
 
-func validateCloudProviderName(clx *cli.Context) {
+func validateCloudProviderName(clx *cli.Context, role CLIRole) {
 	cloudProvider := clx.String("cloud-provider-name")
-	if cloudProvider == "rancher-vsphere" {
-		clx.Set("cloud-provider-name", "external")
-	} else {
-		if slice.ContainsString(clx.FlagNames(), "disable") {
-			clx.Set("disable", "rancher-vsphere-cpi")
-			clx.Set("disable", "rancher-vsphere-csi")
-		}
+	cloudProviderDisables := map[string][]string{
+		"rancher-vsphere": {"rancher-vsphere-cpi", "rancher-vsphere-csi"},
+		"harvester":       {"harvester-cloud-provider", "harvester-csi-driver"},
 	}
 
-	if cloudProvider == "harvester" {
-		clx.Set("cloud-provider-name", "external")
-	} else {
-		if slice.ContainsString(clx.FlagNames(), "disable") {
-			clx.Set("disable", "harvester-cloud-provider")
-			clx.Set("disable", "harvester-csi-driver")
+	for providerName, disables := range cloudProviderDisables {
+		if providerName == cloudProvider {
+			clx.Set("cloud-provider-name", "external")
+			if role == Server {
+				clx.Set("disable-cloud-controller", "true")
+			}
+		} else {
+			if role == Server {
+				for _, disable := range disables {
+					clx.Set("disable", disable)
+				}
+			}
 		}
 	}
 }
