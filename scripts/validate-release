@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 set -e
 
-. ./scripts/version.sh
+BUILD_REGEX="build[0-9]+"
 
-set +x
+info() {
+    echo '[INFO] ' "$@"
+}
+
+fatal() {
+    echo '[ERROR] ' "$@" >&2
+    exit 1
+}
 
 function parse_tag() {
     if [ -z $1 ]; then
-        echo "error: tag required as argument"
+        fatal "tag required as argument"
         exit 1
     fi
     tag=$1
@@ -20,44 +27,50 @@ function parse_tag() {
     fi
 }
 
-# detecting the branch from the tag
-parse_tag $GIT_TAG
-TAG_BRANCH=$(git branch --all -q --contains $GIT_TAG | grep -v upstream$ | grep -v "HEAD" | sed -e 's/^[[:space:]]*//')
-if [ ! "$TAG_BRANCH" = "remotes/upstream/release-$MAJOR.$MINOR" ]; then
-     echo "error: Tag is cut from the wrong branch $TAG_BRANCH"
-     exit 1
-fi
+function check_release_branch() {
+    TAG_BRANCH=$(git branch --all -q --contains $GIT_TAG | grep -v upstream$ | grep -v "HEAD" | sed -e 's/^[[:space:]]*//')
+    if [ ! "$TAG_BRANCH" = "remotes/upstream/release-$MAJOR.$MINOR" ]; then
+        fatal "Tag is cut from the wrong branch $TAG_BRANCH"
+    fi
+}
 
-# validating kubernetes image tag
-BUILD_REGEX="build[0-9]+"
-if [[ ! "$KUBERNETES_IMAGE_TAG" =~ v$MAJOR.$MINOR.$PATCH-$RKE2_PATCH-$BUILD_REGEX ]]; then
-    echo "error: Kubernetes image tag [$KUBERNETES_IMAGE_TAG] is incorrect for this tag"
-    exit 1
-fi
+function check_kubernetes_version() {
+    if [[ ! "$KUBERNETES_IMAGE_TAG" =~ v$MAJOR.$MINOR.$PATCH-$RKE2_PATCH-$BUILD_REGEX ]]; then
+        fatal "Kubernetes image tag [$KUBERNETES_IMAGE_TAG] is incorrect for this tag"
+    fi
 
-# validating kubernetes version variable
-if [[ ! "$KUBERNETES_VERSION" =~ v$MAJOR.$MINOR.$PATCH ]]; then
-    echo "error: Kubernetes version variable [$KUBERNETES_VERSION] is incorrect, please correct the version to v$MAJOR.$MINOR.$PATCH"
-    exit 1
-fi
+    if [[ ! "$KUBERNETES_VERSION" =~ v$MAJOR.$MINOR.$PATCH ]]; then
+        fatal "Kubernetes version variable [$KUBERNETES_VERSION] is incorrect, please correct the version to v$MAJOR.$MINOR.$PATCH"
+    fi
 
-# checking for kube proxy chart version
-KUBE_PROXY_VERSION=$(grep -B1 "rke2-kube-proxy" Dockerfile | grep -oP 'CHART_VERSION="\K[^"]+')
-if [[ ! "$KUBE_PROXY_VERSION" =~ v$MAJOR.$MINOR.$PATCH-$RKE2_PATCH-$BUILD_REGEX ]]; then
-    echo "error: kube proxy chart version [$KUBE_PROXY_VERSION] is incorrect for this tag"
-    exit 1
-fi
+}
 
-# comparing binary and charts versions between linux and windows
-CRICTL_WINDOWS_VERSION=$(grep -oP 'CRICTL_VERSION="\K[^"]+' Dockerfile.windows | grep -oP "v([0-9]+)\.([0-9]+)")
-if [ ! "$CRICTL_WINDOWS_VERSION" = "v$MAJOR.$MINOR" ]; then
-    echo "error: crictl windows binary version [$CRICTL_WINDOWS_VERSION] doesnt match kubernetes version"
-    exit 1
-fi
+function check_kube_proxy_version() {
+    KUBE_PROXY_VERSION=$(grep -B1 "rke2-kube-proxy" Dockerfile | grep -oP 'CHART_VERSION="\K[^"]+')
+    if [[ ! "$KUBE_PROXY_VERSION" =~ v$MAJOR.$MINOR.$PATCH-$RKE2_PATCH-$BUILD_REGEX ]]; then
+        fatal "kube proxy chart version [$KUBE_PROXY_VERSION] is incorrect for this tag"
+    fi
 
-CALICO_WINDOWS_VERSION=$(grep -oP 'CALICO_VERSION="\K[^"]+' Dockerfile.windows)
-CALICO_LINUX_VERSION=$(grep "rke2-calico.yaml" Dockerfile | grep -oP 'CHART_VERSION="\K[^"]+' | grep -oP "v([0-9]+)\.([0-9]+)\.([0-9]+)")
-if [ ! "$CALICO_WINDOWS_VERSION" = "$CALICO_LINUX_VERSION" ]; then
-    echo "error: Calico windows binary version [$CALICO_WINDOWS_VERSION] does not match Calico chart version [$CALICO_LINUX_VERSION]"
-    exit 1
-fi
+}
+
+function check_win_binaries() {
+    CRICTL_WINDOWS_VERSION=$(grep -oP 'CRICTL_VERSION="\K[^"]+' Dockerfile.windows | grep -oP "v([0-9]+)\.([0-9]+)")
+    if [ ! "$CRICTL_WINDOWS_VERSION" = "v$MAJOR.$MINOR" ]; then
+        fatal "crictl windows binary version [$CRICTL_WINDOWS_VERSION] doesnt match kubernetes version"
+    fi
+
+    CALICO_WINDOWS_VERSION=$(grep -oP 'CALICO_VERSION="\K[^"]+' Dockerfile.windows)
+    CALICO_LINUX_VERSION=$(grep "rke2-calico.yaml" Dockerfile | grep -oP 'CHART_VERSION="\K[^"]+' | grep -oP "v([0-9]+)\.([0-9]+)\.([0-9]+)")
+    if [ ! "$CALICO_WINDOWS_VERSION" = "$CALICO_LINUX_VERSION" ]; then
+        fatal "Calico windows binary version [$CALICO_WINDOWS_VERSION] does not match Calico chart version [$CALICO_LINUX_VERSION]"
+    fi
+}
+
+
+. ./scripts/version.sh
+
+parse_tag $DRONE_TAG
+check_release_branch
+check_kubernetes_version
+check_kube_proxy_version
+check_win_binaries
