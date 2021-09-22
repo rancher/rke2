@@ -317,12 +317,6 @@ function Copy-LocalAirgapTarball() {
     if (!(Test-Path -Path "$Path/rke2-images.$suffix.tar.zst" -PathType Leaf)) {
         Write-InfoLog "staging zst airgap image tarball from $Path/rke2-images.$suffix.tar.zst"
         Copy-Item -Path "$Path/rke2-images.$suffix.tar.zst" -Destination $DestinationPath -Force
-        return "zst"
-    }
-    elseif (!(Test-Path -Path "$Path/rke2-images.$suffix.tar.gz" -PathType Leaf)) {
-        Write-InfoLog "staging gzip airgap image tarball from $Path/rke2-images.$suffix.tar.gz"
-        Copy-Item -Path "$Path/rke2-images.$suffix.tar.gz" -Destination $DestinationPath -Force
-        return "gz"
     }
 }
 
@@ -441,9 +435,6 @@ function Get-AirgapTarball() {
         $CommitHash,
         [Parameter()]
         [String]
-        $AirgapTarballUrl,
-        [Parameter()]
-        [String]
         $StorageUrl,
         [Parameter()]
         [String]
@@ -515,9 +506,6 @@ function Install-AirgapTarball() {
         $ExpectedAirGapChecksum,
         [Parameter()]
         [String]
-        $AirgapTarballFormat,
-        [Parameter()]
-        [String]
         $TempAirgapChecksums
     )
 
@@ -541,7 +529,6 @@ $STORAGE_URL = "https://storage.googleapis.com/rke2-ci-builds"
 $INSTALL_RKE2_GITHUB_URL = "https://github.com/rancher/rke2"
 $DEFAULT_TAR_PREFIX = "C:\usr\local"
 $INSTALL_RKE2_TAR_PREFIX = "C:\usr\local"
-$AIRGAP_TARBALL_URL = ""
 
 Confirm-WindowsFeatures -RequiredFeatures @("Containers")
 Set-Environment -DefaultTarPrefix $DEFAULT_TAR_PREFIX
@@ -573,14 +560,14 @@ switch ($Method) {
             $CHECKSUM_EXPECTED = $checksums.ExpectedChecksum
             $AIRGAP_CHECKSUM_EXPECTED = $checksums.ExpectedAirgapChecksum
     
-            $AIRGAP_TARBALL_FORMAT = Copy-LocalAirgapTarball -Path $ArtifactPath -DestinationPath $TMP_AIRGAP_TARBALL        
+            Copy-LocalAirgapTarball -Path $ArtifactPath -DestinationPath $TMP_AIRGAP_TARBALL
             Copy-LocalTarball -Path $ArtifactPath -DestinationPath $TMP_TARBAL
         }
         else {
             $Version = Get-ReleaseVersion
             Write-InfoLog "using $Version as release"
             $AIRGAP_CHECKSUM_EXPECTED = Get-AirgapChecksums -CommitHash $Commit -StorageUrl $STORAGE_URL -TempAirgapChecksums $TMP_AIRGAP_CHECKSUMS
-            Get-AirgapTarball -CommitHash $Commit -AirgapTarballUrl $AIRGAP_TARBALL_URL -StorageUrl $STORAGE_URL -TempAirgapTarball $TMP_AIRGAP_TARBALL
+            Get-AirgapTarball -CommitHash $Commit -StorageUrl $STORAGE_URL -TempAirgapTarball $TMP_AIRGAP_TARBALL
 
             Write-Host $Version $Version $STORAGE_URL $INSTALL_RKE2_GITHUB_URL $TMP_CHECKSUMS
             $CHECKSUM_EXPECTED = Get-Checksums -CommitHash $Commit -StorageUrl $STORAGE_URL -Rke2Version $Version -Rke2GitHubUrl $INSTALL_RKE2_GITHUB_URL -TempChecksums $TMP_CHECKSUMS
@@ -588,7 +575,7 @@ switch ($Method) {
         }
     
         Test-AirgapTarballChecksum -CommitHash $Commit -ExpectedAirGapChecksum $AIRGAP_CHECKSUM_EXPECTED -TempAirGapTarball $TMP_AIRGAP_TARBALL
-        Install-AirgapTarball -CommitHash $Commit -InstallAgentImageDir $INSTALL_RKE2_AGENT_IMAGES_DIR -TempAirgapTarball $TMP_AIRGAP_TARBALL -ExpectedAirGapChecksum $AIRGAP_CHECKSUM_EXPECTED -AirgapTarballFormat $AIRGAP_TARBALL_FORMAT -TempAirgapChecksums $TMP_AIRGAP_CHECKSUMS
+        Install-AirgapTarball -CommitHash $Commit -InstallAgentImageDir $AgentImagesDir -TempAirgapTarball $TMP_AIRGAP_TARBALL -ExpectedAirGapChecksum $AIRGAP_CHECKSUM_EXPECTED -TempAirgapChecksums $TMP_AIRGAP_CHECKSUMS
         Test-TarballChecksum -Tarball $TMP_TARBALL -ExpectedChecksum $CHECKSUM_EXPECTED
         Expand-Tarball -InstallPath $INSTALL_RKE2_TAR_PREFIX -Tarball $TMP_TARBALL
         Write-InfoLog "install complete; you may want to run:  `$env:PATH+=`";$INSTALL_RKE2_TAR_PREFIX\bin;C:\var\lib\rancher\rke2\bin`""
