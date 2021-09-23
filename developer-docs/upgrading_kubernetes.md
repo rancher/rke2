@@ -41,6 +41,8 @@ The following files have references that will need to be updated in the respecti
 * Dockerfile: `RUN CHART_VERSION="v1.21.4-build2021041301"     CHART_FILE=/charts/rke2-kube-proxy.yaml`
 * Dockerfile: `FROM rancher/k3s:v1.21.4-k3s1 AS k3s`
 * version.sh: `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.21.4}`
+* In v1.19 and older, pkg/images/image.go: `KubernetesVersion== "v1.19.15-rke2r1-build20210916"`
+* go.mod: ensure that the associated k3s version is used.
 
 Once these changes are made, submit a PR for review and let CI complete. When CI is finished and 2 approvals are had, merge the PR. CI will run for the master merge. 
 
