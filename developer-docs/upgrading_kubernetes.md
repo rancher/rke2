@@ -41,6 +41,8 @@ The following files have references that will need to be updated in the respecti
 * Dockerfile: `RUN CHART_VERSION="v1.21.4-build2021041301"     CHART_FILE=/charts/rke2-kube-proxy.yaml`
 * Dockerfile: `FROM rancher/k3s:v1.21.4-k3s1 AS k3s`
 * version.sh: `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.21.4}`
+* In v1.19 and older, pkg/images/image.go: `KubernetesVersion== "v1.19.15-rke2r1-build20210916"`
+* go.mod: ensure that the associated k3s version is used.
 
 Once these changes are made, submit a PR for review and let CI complete. When CI is finished and 2 approvals are had, merge the PR. CI will run for the master merge. 
 
@@ -105,13 +107,6 @@ Once the release notes are approved and merged, through the normal review and ap
 
 Be sure to review the rest of the sections as some of them may become irrelevant based on included fixes or version updates.
 
-### Updating Channel Server
-
-After all of the builds are complete and QA has signed off on the release, we need to update the channel server. This is done by editing the `channels.yaml` file at the root of the [rke2](https://github.com/rancher/rke2) repository.
-
-* Update the line: `latest: <release>` to be the recent release. e.g. `v1.21.4+rke2r1`.
-* Verify updated in the JSON output from a call [here](https://update.rke2.io/).
-
 ## Update Rancher KDM
 
 This step is specific to Rancher and serves to update Rancher's [Kontainer Driver Metadata](https://github.com/rancher/kontainer-driver-metadata/).
@@ -124,6 +119,13 @@ This step is specific to Rancher and serves to update Rancher's [Kontainer Drive
 ### Promoting to Stable
 
 After 24 hours, we'll promote the release to stable by updating the channel server's config as we did at above, however this time changing "latest" to "stable". We need to do the same thing for RPM's too. This involves the same steps for RPM releases but changing "latest" to "stable" in the release name. E.g. `v1.21.4+rke2r1.stable.0`.
+
+### Updating Channel Server
+
+After promoting the release to stable, we need to update the channel server. This is done by editing the `channels.yaml` file in the [repo](https://github.com/rancher/rke2/blob/master/channels.yaml).
+
+* Update the line: `latest: <release>` to be the recent release. e.g. `v1.21.4+rke2r1`.
+* Verify updated in the JSON output from a call [here](https://update.rke2.io/v1-release/channels).
 
 ## Release Process
 
