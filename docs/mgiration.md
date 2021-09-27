@@ -1,15 +1,15 @@
 # Migration from RKE1 to RKE2
 
-In order to migrate from RKE to RKE 2, you need basically two things in particular:
+In order to migrate from RKE to RKE 2, you need basically two things:
 
 - ETCD data directory
 - Cluster CA certificates
 
-Both can be found when you take a RKE1 snapshot. When taking a snapshot in RKE1 an archive file will be created that contain two things, the etcd snapshot and `.rkestate` of your cluster.
+Both can be found when you take a RKE1 snapshot. When taking a snapshot in RKE1 an archive file will be created that contains two things, the etcd snapshot and `.rkestate` of your cluster.
 
 ## Introducing Migration Agent
 
-Migration Agent is a tool to lay the groundwork for RKE1 nodes to move to RKE2 nodes. It basically does two main steps among other things:
+migration-agent is a tool that lays the groundwork for RKE1 nodes to move to RKE2 nodes. It accomplishes this in two main steps:
 
 - Restore the etcd snapshot on etcd nodes to the RKE2 etcd db data directory.
 - Copy the CA certs and service account token key from `.rkestate` file to RKE2 data directory.
@@ -26,7 +26,7 @@ rke etcd snapshot-save --s3 --name rke1snapshot --access-key <access-key> --secr
 
 For more information, please refer to the RKE1 [official documentation](https://rancher.com/docs/rke/latest/en/etcd-snapshots/one-time-snapshots/)
 
-2- Now you can either run mgiration agent directly on the node, or use the following [mainfest](https://github.com/rancher/migration-agent/blob/master/deploy/daemonset.yaml) to deploy migration agent as a daemonset on the RKE1 cluster, before you run the manifest file you need to edit the file to include the information about the s3 snapshot of RKE1:
+2- Now you can either run mgiration agent directly on the node, or use the following [mainfest](https://github.com/rancher/migration-agent/blob/master/deploy/daemonset.yaml) to deploy migration-agent as a daemonset on the RKE1 cluster. Before you run the manifest file you need to edit the file to include the information about the s3 snapshot of RKE1:
 ```
 command:
           - "sh"
@@ -75,11 +75,11 @@ One of the functions of the migration-agent is to copy the cluster configuration
 
 ### Addons Migration
 
-RKE2 deploys addons as helm charts, so migration agent creates a manifest that deletes the old RKE1 addons and let RKE2 deploys addons as Helm charts.
+RKE2 deploys addons as helm charts, so migration-agent creates a manifest that deletes the old RKE1 addons and let RKE2 deploys addons as Helm charts.
 
 ### Cluster Addons Configuration Migration
 
-One of the migration agent features is migrating all configuration for the cluster addons to rke2, that includes:
+One of the migration-agent features is migrating all configuration for the cluster addons to rke2, this includes:
 
 - CoreDNS configuration
 - Metrics-Server configuration
@@ -87,7 +87,7 @@ One of the migration agent features is migrating all configuration for the clust
 
 #### CoreDNS Configuration
 
-RKE1 adds several congiguration options for CoreDNS, migration agent makes sure that these configs are migrated to HelmchartConfig which will be used to configurre the CoreDNS helmChart:
+RKE1 adds several congiguration options for CoreDNS, migration-agent makes sure that these configs are migrated to a HelmchartConfig which will be used to configurre the CoreDNS helmChart:
 
 | CoreDNS Optinos                                      	|
 |--------------------------------------------	|
@@ -105,7 +105,7 @@ RKE1 adds several congiguration options for CoreDNS, migration agent makes sure 
 
 #### Metrics Server Configuration
 
-Migration agent also does the same for Metrics Server
+migration-agent also does the same for Metrics Server
 
 | Metrics Server Options	|
 |:---------------------:	|
@@ -135,7 +135,7 @@ Migration agent also does the same for Metrics Server
 
 ### Cloud Provider Support
 
-Migration agent is able to migrate cloud provider configuration, this happens by copying the rke1 config file to the rke2 configuration directory and then pass down flags to RKE2 to include the name and path of cloud provider config:
+migration-agent is able to migrate cloud provider configuration, this happens by copying the rke1 config file to the rke2 configuration directory and then passes down flags to RKE2 to include the name and path of cloud provider config:
 ```
 --cloud-provider-config
 --cloud-provider-name
@@ -143,10 +143,10 @@ Migration agent is able to migrate cloud provider configuration, this happens by
 
 ### Private Registry Support
 
-The agent also adds the ability to migrate private registry configuration, this happens by copying the private registries configured in the cluster.yaml file in rke1, unfourtantely RKE1 lacks the feature of passing TLS configuration to private registries and depends on Docker TLS configuration manually on each node, so to account for that migration-agent supports a flag --registry which Configure private registry TLS paths, syntax should be `<registry url>,<ca cert path>,<cert path>,<key path>`.
+The agent also adds the ability to migrate private registry configuration, this happens by copying the private registries configured in the cluster.yaml file in rke1. Unfourtantely RKE1 lacks the feature of passing TLS configuration to private registries and depends on Docker TLS configuration manually on each node, so to account for that migration-agent supports a flag --registry which Configure private registry TLS paths, syntax should be `<registry url>,<ca cert path>,<cert path>,<key path>`.
 
 
 ### CNI Configuration Migration
 
 
-RKE1 and RKE2 both support Calico and Canal CNI, so migration agent will be able to migrate the CNI only if Canal or Calico is used.
+RKE1 and RKE2 both support Calico and Canal CNI, so migration-agent will be able to migrate the CNI only if Canal or Calico is used.
