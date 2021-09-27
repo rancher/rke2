@@ -198,6 +198,8 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 	return auth, http.NotFoundHandler(), err
 }
 
+var permitPortSharingFlag = []string{"--permit-port-sharing=true"}
+
 // Scheduler starts the kube-scheduler static pod, once the apiserver is available.
 func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeScheduler)
@@ -211,6 +213,7 @@ func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) err
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
+	args = append(permitPortSharingFlag, args...)
 	return after(apiReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:     "kube-scheduler",
@@ -262,6 +265,8 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 		}
 		args = append(extraArgs, args...)
 	}
+	args = append(permitPortSharingFlag, args...)
+
 	files := []string{}
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
