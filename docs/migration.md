@@ -87,7 +87,7 @@ One of the migration-agent features is migrating all configuration for the clust
 
 #### CoreDNS Configuration
 
-RKE1 adds several congiguration options for CoreDNS, migration-agent makes sure that these configs are migrated to a HelmchartConfig which will be used to configurre the CoreDNS helmChart:
+RKE1 adds several configuration options for CoreDNS, migration-agent makes sure that these configs are migrated to a HelmchartConfig which will be used to configure the CoreDNS helmChart:
 
 | CoreDNS Optinos                                      	|
 |--------------------------------------------	|
@@ -143,7 +143,7 @@ migration-agent is able to migrate cloud provider configuration, this happens by
 
 ### Private Registry Support
 
-The agent also adds the ability to migrate private registry configuration, this happens by copying the private registries configured in the cluster.yaml file in rke1. Unfourtantely RKE1 lacks the feature of passing TLS configuration to private registries and depends on Docker TLS configuration manually on each node, so to account for that migration-agent supports a flag --registry which Configure private registry TLS paths, syntax should be `<registry url>,<ca cert path>,<cert path>,<key path>`.
+The agent also adds the ability to migrate private registry configuration, this happens by copying the private registries configured in the cluster.yaml file in rke1. Unfortunately RKE1 lacks the feature of passing TLS configuration to private registries and depends on Docker TLS configuration manually on each node, so to account for that migration-agent supports a flag --registry which Configure private registry TLS paths, syntax should be `<registry url>,<ca cert path>,<cert path>,<key path>`.
 
 
 ### CNI Configuration Migration
