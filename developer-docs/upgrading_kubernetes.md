@@ -122,8 +122,6 @@ Once the release notes are approved and merged, through the normal review and ap
 
 Be sure to review the rest of the sections as some of them may become irrelevant based on included fixes or version updates.
 
-
-
 ## Update Rancher KDM
 
 This step is specific to Rancher and serves to update Rancher's [Kontainer Driver Metadata](https://github.com/rancher/kontainer-driver-metadata/).
