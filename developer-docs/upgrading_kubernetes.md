@@ -103,9 +103,26 @@ Release notes should be drafted before the release is complete. This happens in 
 
 The 2 primary sections of the release notes are the "Changes since ..." and the "Package Component Versions". The other sections need to be reviewed as well. The "Changes since ..." section can be fleshed out by reviewing the closed issues and pull requests for the matching milestone.
 
+#### Packaged Components
+It can be confusing to track where each number for a component is getting pulled from. Below provides
+some locations to check component versions:
+- Etcd: Look in `scripts/version` for `ETCD_VERSION`.
+- Containerd: Look in `Dockerfile` for `rancher/hardened-containerd`.
+- Runc: Look in `Dockerfile` for `rancher/hardened-runc`.
+- CNI Plugins: Look in `scripts/build-images` for what version of `rancher/hardened-calico` is used,
+ then look at the [image-build-calico](https://github.com/rancher/image-build-calico/) repo and in the `Dockerfile` the `CNI_PLUGINS_VERSION` (old version) or `CNI_IMAGE` (new version) should be listed.
+- Flannel: Look in `scripts/build-images` for `rancher/hardened-flannel`.
+- Calico: Look in `scripts/build-images` for `rancher/hardened-calico`.
+- Metrics-server: Look in `scripts/build-images` for `rancher/hardened-k8s-metrics-server`.
+- CoreDNS: Look in `scripts/build-images` for `rancher/hardened-coredns`.
+- Ingress-Nginx: Look in `Dockerfile` find the line with `charts/rke2-ingress-nginx`.
+- Helm-controller: Look in `go.mod` for `helm-controller`.
+
 Once the release notes are approved and merged, through the normal review and approval process, copy the contents of the files and paste them into the release itself, by editing the relevant release. 
 
 Be sure to review the rest of the sections as some of them may become irrelevant based on included fixes or version updates.
+
+
 
 ## Update Rancher KDM
 
