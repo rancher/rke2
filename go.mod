@@ -5,7 +5,7 @@ go 1.15
 replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.8.20
 	github.com/benmoss/go-powershell => github.com/rancher/go-powershell v0.0.0-20200701184732-233247d45373
-	github.com/containerd/containerd => github.com/k3s-io/containerd v1.4.9-k3s1
+	github.com/containerd/containerd => github.com/k3s-io/containerd v1.4.11-k3s1
 	github.com/containerd/continuity => github.com/k3s-io/continuity v0.0.0-20210309170710-f93269e0d5c1
 	github.com/containerd/cri => github.com/k3s-io/cri v1.4.0-k3s.7 // k3s-release/1.4
 	github.com/coreos/flannel => github.com/rancher/flannel v0.12.0-k3s1
@@ -55,15 +55,15 @@ require (
 	github.com/google/go-containerregistry v0.0.0-20190617215043-876b8855d23c
 	github.com/k3s-io/helm-controller v0.10.5
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.19.15-0.20210910174846-91bb4787979b
+	github.com/rancher/k3s v1.19.16-0.20211004215742-0fbbc5af7c17
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.7.0
 	github.com/urfave/cli v1.22.2
 	google.golang.org/grpc v1.33.2
-	k8s.io/api v0.19.14
-	k8s.io/apimachinery v0.19.14
-	k8s.io/apiserver v0.19.14
+	k8s.io/api v0.19.15
+	k8s.io/apimachinery v0.19.15
+	k8s.io/apiserver v0.19.15
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/cri-api v0.21.1 // indirect
 	k8s.io/kubernetes v1.21.1
