@@ -1,0 +1,16 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- Random-Liu
+- dchen1107
+- derekwaynecarr
+- vishh
+- yujuhong
+- dashpole
+- sjenning
+reviewers:
+- sig-node-reviewers
+- tallclair
+labels:
+- area/kubelet
+- sig/node
