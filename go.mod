@@ -5,7 +5,7 @@ go 1.15
 replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.8.20
 	github.com/benmoss/go-powershell => github.com/k3s-io/go-powershell v0.0.0-20201118222746-51f4c451fbd7
-	github.com/containerd/containerd => github.com/k3s-io/containerd v1.4.9-k3s1
+	github.com/containerd/containerd => github.com/k3s-io/containerd v1.4.11-k3s1
 	github.com/containerd/continuity => github.com/k3s-io/continuity v0.0.0-20210309170710-f93269e0d5c1
 	github.com/containerd/cri => github.com/k3s-io/cri v1.4.0-k3s.7 // k3s-release/1.4
 	github.com/coreos/flannel => github.com/rancher/flannel v0.12.0-k3s1
@@ -60,7 +60,7 @@ require (
 	github.com/google/go-containerregistry v0.5.0
 	github.com/k3s-io/helm-controller v0.10.5
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.5-engine0.0.20210921232923-a44eec6c121e // engine-1.21
+	github.com/rancher/k3s v1.21.5-engine0.0.20211004202754-0e7afff02c23 // engine-1.21
 	github.com/rancher/wharfie v0.4.1
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
