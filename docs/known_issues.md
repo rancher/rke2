@@ -27,7 +27,7 @@ Ensure `values.cni.cniBinDir=/opt/cni/bin` and `values.cni.cniConfDir=/etc/cni/n
 2. After the install is complete, there should be `cni-node` pods in a CrashLoopBackoff. Manually edit their daemonset to include `securityContext.privileged: true` on the `install-cni` container.
 
 This can be performed via a custom overlay as follows:
-```yaml:
+```yaml
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
@@ -50,7 +50,7 @@ spec:
       - kube-system
       logLevel: info
       cniBinDir: /opt/cni/bin
-      cniConfDir: /etc/cni/net.d  
+      cniConfDir: /etc/cni/net.d
 ```
 
 For more information regarding exact failures with detailed logs when not following these steps, please see [Issue 504](https://github.com/rancher/rke2/issues/504).
