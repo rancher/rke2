@@ -21,8 +21,8 @@ Create a new release tag at the [image-build-kubernetes](https://github.com/ranc
 
 * Click "Releases"
 * Click "Draft a new release"
-* Enter the new release version (the RKE2 Kubernetes version), appended with `-buildYYYYMMdd`, into the "Tag version" box.  **NOTE** The build system is in UTC.
-    When converting the RKE2 version to the Kubernetes version, use dash instead of plus, and do not include any alpha/beta/rc components. For example, if preparing for RKE2 `v1.21.4+rke2r2` before 5 PM Pacific on Friday, August 27th 2021 you would tag `v1.21.4-rke2r2-build20210829`
+* Enter the new release version (the RKE2 Kubernetes version), appended with `-buildYYYYMMdd`, into the "Tag version" box.  **NOTE** The build system is in UTC. The command `date +"-build%Y%m%d"` can be used to get the correct format.
+* When converting the RKE2 version to the Kubernetes version, use dash instead of plus, and do not include any alpha/beta/rc components. For example, if preparing for RKE2 `v1.21.4+rke2r2` before 5 PM Pacific on Friday, August 27th 2021 you would tag `v1.21.4-rke2r2-build20210829`
 * Click the "Publish release" button. 
 
 This will take a few minutes for CI to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kubernetes).
@@ -32,7 +32,7 @@ This will take a few minutes for CI to run but upon completion, a new image will
 
 RKE2 depends on it's [Helm Charts](https://github.com/rancher/rke2-charts) being up-to-date with the expected versions for the Kubernetes components. The build process downloads these charts and bundles them into the runtime image.
 
-Create a PR in [rke2-charts](https://github.com/rancher/rke2-charts) that updates the version of the `kube-proxy` image in both the `image.tag` field of `packages/rke2-kube-proxy/charts/values.yaml`, and also in `packages/rke2-kube-proxy/charts/Chart.yaml`. Upon getting 2 approvals and merging, CI will create the needed build artifact that RKE2 will use.
+Create a PR in [rke2-charts](https://github.com/rancher/rke2-charts) that updates the version of the `kube-proxy` image in both the `image.tag` field of `packages/rke2-kube-proxy/charts/values.yaml`, and also in `packages/rke2-kube-proxy/charts/Chart.yaml`. Upon getting 1 approval and merging, CI will create the needed build artifact that RKE2 will use.
 
 ## Update RKE2
 
@@ -44,7 +44,7 @@ The following files have references that will need to be updated in the respecti
 * In v1.19 and older, pkg/images/image.go: `KubernetesVersion== "v1.19.15-rke2r1-build20210916"`
 * go.mod: ensure that the associated k3s version is used.
 
-Once these changes are made, submit a PR for review and let CI complete. When CI is finished and 2 approvals are had, merge the PR. CI will run for the master merge. 
+Once these changes are made, submit a PR for review and let CI complete. When CI is finished and upon getting 1 approval, merge the PR. CI will run for the master merge. 
 
 ## RKE2 Release RC
 
@@ -126,42 +126,66 @@ Be sure to review the rest of the sections as some of them may become irrelevant
 
 This step is specific to Rancher and serves to update Rancher's [Kontainer Driver Metadata](https://github.com/rancher/kontainer-driver-metadata/).
 
-* Create a PR in the latest [KDM](https://github.com/rancher/kontainer-driver-metadata/) dev branch to update the kubernetes versions in channels.yaml. The PR should consist of two commits. The first being the change made to channels.yaml to update the kubernetes versions. The second being go generate. To do this, run `go generate` and commit the changes this caused to data/data.json. Title this second commit "go generate".
-    * Please note if this is a new minor release of kubernetes, then a new entry will need to be created in `channels-rke2.yaml`. Ensure to set the min/max versions accordingly. If you are not certain what they should be, reach out to the team for input on this as it will depend on what Rancher will be supporting.
-    * As of v1.21.4 and above, every new release minor or patch requires a new entry be created in `channels-rke2.yaml`. It is possible to build off the server, agent, and chart arguments defined in other entries. For example, v1.21.4 has server args defined as follows:
-        ```
-        - version: v1.21.4+rke2r2
-        minChannelServerVersion: v2.6.0-alpha1
-        maxChannelServerVersion: v2.6.99
-        ...
-        charts: &charts-v1
-        rke2-cilium:
-            repo: rancher-rke2-charts
-            version: 1.9.808
-        ```
-        A later version can point to those arguments with no change:
-        ```
-        - version: v1.21.5+rke2r1
-        minChannelServerVersion: v2.6.0-alpha1
-        maxChannelServerVersion: v2.6.99
-        ...
-        charts: *charts-v1
-        ```
-        Or a later version can point to those arguments and create a new value with modification:
-        ```
-        - version: v1.21.5+rke2r1
-        minChannelServerVersion: v2.6.0-alpha1
-        maxChannelServerVersion: v2.6.99
-        ...
-        charts: &charts-v2
-        <<: *charts-v1
-        harvester-cloud-provider:
-            repo: rancher-rke2-charts
-            version: 0.1.200
-        ```
+Create a PR in the latest [KDM](https://github.com/rancher/kontainer-driver-metadata/) dev branch to update the kubernetes versions in channels.yaml. 
+* The PR should consist of two commits. The first being the change made to channels.yaml to update the kubernetes versions. The second being go generate. To do this, run `go generate` and commit the changes this caused to data/data.json. Title this second commit "go generate".
+* Please note if this is a new minor release of kubernetes, then a new entry will need to be created in `channels-rke2.yaml`. Ensure to set the min/max versions accordingly. If you are not certain what they should be, reach out to the team for input on this as it will depend on what Rancher will be supporting.
 
-* Create a backport PR in any additional dev branches as necessary.
-* The PRs should be merged in a timely manner, within about a day; however, they do not need to be merged before RC releases and they typically do not need to block the final release.
+As of v1.21.4 and above, every new release minor or patch requires a new entry be created in `channels-rke2.yaml`. It is possible to build off the server, agent, and chart arguments defined in other entries. For example, v1.21.4 has server args defined as follows:
+```
+- version: v1.21.4+rke2r2
+minChannelServerVersion: v2.6.0-alpha1
+maxChannelServerVersion: v2.6.99
+...
+charts: &charts-v1
+rke2-cilium:
+    repo: rancher-rke2-charts
+    version: 1.9.808
+```
+A later version can point to those arguments with no change:
+```
+- version: v1.21.5+rke2r1
+minChannelServerVersion: v2.6.0-alpha1
+maxChannelServerVersion: v2.6.99
+...
+charts: *charts-v1
+```
+Or a later version can point to those arguments and create a new value with modification:
+```
+- version: v1.21.5+rke2r1
+minChannelServerVersion: v2.6.0-alpha1
+maxChannelServerVersion: v2.6.99
+...
+charts: &charts-v2
+<<: *charts-v1
+harvester-cloud-provider:
+    repo: rancher-rke2-charts
+    version: 0.1.200
+```
+* To easily find chart differences, use the following:
+    ```
+    git fetch upstream --tags
+    git diff v1.21.4+rke2r2..v1.21.5+rke2r1 -- Dockerfile
+    ```
+* To easily compare server and agent arguments, use the following:
+    ```
+    curl https://github.com/rancher/rke2/releases/download/v1.21.4+rke2r2/rke2.linux-amd64 -L -o rke2-r1
+    curl https://github.com/rancher/rke2/releases/download/v1.21.5+rke2r1/rke2.linux-amd64 -L -o rke2-r2
+    chmod u+x rke2-r*
+
+    # verify verions
+    ./rke2-r1 --version
+    ./rke2-r2 --version
+
+    # output args to a file
+    ./rke2-r1 server --help >r1 && ./rke2-r1 agent --help >>r1args
+    ./rke2-r2 server --help >r2 && ./rke2-r2 agent --help >>r2args
+
+    # diff arguments
+    diff -y --suppress-common-lines r1args r2args
+    ```
+
+Create a backport PR in any additional dev branches as necessary. 
+The PRs should be merged in a timely manner, within about a day; however, they do not need to be merged before RC releases and they typically do not need to block the final release.
 
 ### Promoting to Stable
 
