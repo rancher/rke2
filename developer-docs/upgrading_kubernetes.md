@@ -21,7 +21,7 @@ Create a new release tag at the [image-build-kubernetes](https://github.com/ranc
 
 * Click "Releases"
 * Click "Draft a new release"
-* Enter the new release version (the RKE2 Kubernetes version), appended with `-buildYYYYMMdd`, into the "Tag version" box.  **NOTE** The build system is in UTC. The command `date +"-build%Y%m%d"` can be used to get the correct format.
+* Enter the new release version (the RKE2 Kubernetes version), appended with `-buildYYYYMMdd`, into the "Tag version" box.  **NOTE** The build system is in UTC. The command `TZ=utc date '+-build%Y%m%d'` can be used to get the correct format.
 * When converting the RKE2 version to the Kubernetes version, use dash instead of plus, and do not include any alpha/beta/rc components. For example, if preparing for RKE2 `v1.21.4+rke2r2` before 5 PM Pacific on Friday, August 27th 2021 you would tag `v1.21.4-rke2r2-build20210829`
 * Click the "Publish release" button. 
 
@@ -130,7 +130,7 @@ Create a PR in the latest [KDM](https://github.com/rancher/kontainer-driver-meta
 * The PR should consist of two commits. The first being the change made to channels.yaml to update the kubernetes versions. The second being go generate. To do this, run `go generate` and commit the changes this caused to data/data.json. Title this second commit "go generate".
 * Please note if this is a new minor release of kubernetes, then a new entry will need to be created in `channels-rke2.yaml`. Ensure to set the min/max versions accordingly. If you are not certain what they should be, reach out to the team for input on this as it will depend on what Rancher will be supporting.
 
-As of v1.21.4 and above, every new release minor or patch requires a new entry be created in `channels-rke2.yaml`. It is possible to build off the server, agent, and chart arguments defined in other entries. For example, v1.21.4 has server args defined as follows:
+Entries that include `charts`, `serverArgs`, and/or `agentArgs` fields may not be altered or removed once they have been published to a release branch. Once a version has been released, a new entry must be added following it. It is possible to build off the `charts`, `serverArgs, and `agentArgs` values defined in other entries using [yaml anchors](https://github.com/yaml/libyaml/blob/0.2.5/examples/anchors.yaml). For example, v1.21.4 has its charts defined as follows:
 ```
 - version: v1.21.4+rke2r2
 minChannelServerVersion: v2.6.0-alpha1
@@ -141,7 +141,7 @@ rke2-cilium:
     repo: rancher-rke2-charts
     version: 1.9.808
 ```
-A later version can point to those arguments with no change:
+A later version can point to the same charts definition with no change:
 ```
 - version: v1.21.5+rke2r1
 minChannelServerVersion: v2.6.0-alpha1
@@ -149,7 +149,7 @@ maxChannelServerVersion: v2.6.99
 ...
 charts: *charts-v1
 ```
-Or a later version can point to those arguments and create a new value with modification:
+Or a later version can define a new charts value that builds off the previous definition, with modifications:
 ```
 - version: v1.21.5+rke2r1
 minChannelServerVersion: v2.6.0-alpha1
