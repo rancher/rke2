@@ -67,6 +67,10 @@ publish-image-runtime: build-image-runtime
 validate:                                ## Run go fmt/vet
 	./scripts/validate
 
+.PHONY: validate-release
+validate-release: 
+	./scripts/validate-release
+
 .PHONY: run
 run: build-debug
 	./scripts/run
