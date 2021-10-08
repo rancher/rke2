@@ -37,20 +37,6 @@ Each mirror must have a name and set of endpoints. When pulling an image from a 
 
 **Note:** If no endpoint is configured, containerd assumes that the registry can be accessed anonymously via HTTPS on port 443, and is using a certificate trusted by the host operating system. For more information, you may [consult the containerd documentation](https://github.com/containerd/containerd/blob/master/docs/cri/registry.md#configure-registry-endpoint).
 
-The `rewrite` feature allows mapping of image path to namespaced registry URLs. 
-
-For exaample, the following configuration would pull the image `library/busybox:latest` from `https://registry..example.com:5000/proxy/`
-
-```yaml
-mirrors:
-  docker.io:
-    endpoint:
-      - "https://registry..example.com:5000"
-    rewrite:
-      "^library/(.*)": "proxy/library/$1"
-```
->**Note:** `rewrite` option is added in RKE2 release v1.20.
->
 ### Configs
 
 The configs section defines the TLS and credential configuration for each mirror. For each mirror you can define `auth` and/or `tls`. The TLS part consists of:
