@@ -13,33 +13,15 @@
     Uninstalls the RKE2 Windows service and cleans the RKE2 Windows Agent (Worker) Node
 #>
 
-[CmdletBinding()]
-param ( 
-    [Parameter()]
-    [String]
-    $Rke2Path
-)
-
-function Get-Args {   
-    if ($Rke2Path) {
-        $env:RKE2_PATH = $Rke2Path
-    }
-}
-
-function Set-Environment {
-    if (-Not  $env:RKE2_PATH) {
-        $env:RKE2_PATH = "c:/usr/local/bin"
-    }
-}
-
 $ErrorActionPreference = 'Stop'
 $WarningPreference = 'SilentlyContinue'
 $VerbosePreference = 'SilentlyContinue'
 $DebugPreference = 'SilentlyContinue'
 $InformationPreference = 'SilentlyContinue'
 
-function Check-Command($cmdname)
-{
+Set-StrictMode -Version Latest
+
+function Test-Command($cmdname) {
     return [bool](Get-Command -Name $cmdname -ErrorAction SilentlyContinue)
 }
 
@@ -61,8 +43,7 @@ function Write-LogFatal {
     exit 255
 }
 
-function Get-VmComputeNativeMethods()
-{
+function Get-VmComputeNativeMethods() {
     $ret = 'VmCompute.PrivatePInvoke.NativeMethods' -as [type]
     if (-not $ret) {
         $signature = @'
@@ -74,8 +55,7 @@ public static extern void HNSCall([MarshalAs(UnmanagedType.LPWStr)] string metho
     return $ret
 }
 
-function Invoke-HNSRequest
-{
+function Invoke-HNSRequest {
     param
     (
         [ValidateSet('GET', 'DELETE')]
@@ -105,10 +85,12 @@ function Invoke-HNSRequest
             $output = ($response | ConvertFrom-Json)
             if ($output.Error) {
                 Write-LogError $output;
-            } else {
+            }
+            else {
                 $output = $output.Output;
             }
-        } catch {
+        }
+        catch {
             Write-LogError $_.
         }
     }
@@ -139,6 +121,11 @@ Get-Process -ErrorAction Ignore -Name "containerd*" | ForEach-Object {
     $_ | Stop-Process -ErrorAction Ignore -Force
 }
 
+Get-Process -ErrorAction Ignore -Name "wins*" | ForEach-Object {
+    Write-LogInfo "Stopping process $($_.Name) ..."
+    $_ | Stop-Process -ErrorAction Ignore -Force
+}
+
 # clean up firewall rules
 Get-NetFirewallRule -PolicyStore ActiveStore -Name "rke2*" -ErrorAction Ignore | ForEach-Object {
     Write-LogInfo "Cleaning up firewall rule $($_.Name) ..."
@@ -146,7 +133,7 @@ Get-NetFirewallRule -PolicyStore ActiveStore -Name "rke2*" -ErrorAction Ignore |
 }
 
 # clean up rke2 service
-Get-Service -Name "rke2" -ErrorAction Ignore | Where-Object {$_.Status -eq "Running"} | ForEach-Object {
+Get-Service -Name "rke2" -ErrorAction Ignore | Where-Object { $_.Status -eq "Running" } | ForEach-Object {
     if ($_.Status -eq "Running") {
         Write-LogInfo "Stopping rke2 service ..."
         $_ | Stop-Service -Force -ErrorAction Ignore
@@ -167,44 +154,62 @@ Get-Service -Name "rke2" -ErrorAction Ignore | Where-Object {$_.Status -eq "Runn
             sc.exe delete rke2
         }
     }
-
 }
 
-function Clean-HNS () {
-try {
-    Get-HnsNetwork | Where-Object { $_.Name -eq 'Calico' -or $_.Name -eq 'vxlan0' -or $_.Name -eq 'nat' -or $_.Name -eq 'External'} | Select-Object Name, ID | ForEach-Object {
-        Write-LogInfo "Cleaning up HnsNetwork $($_.Name) ..."
-        hnsdiag delete networks ($_.ID)
+# clean up wins service
+Get-Service -Name "wins" -ErrorAction Ignore | Where-Object { $_.Status -eq "Running" } | ForEach-Object {
+    if ($_.Status -eq "Running") {
+        Write-LogInfo "Stopping wins service ..."
+        $_ | Stop-Service -Force -ErrorAction Ignore
+        Write-LogInfo "Removing the wins service ..."
+        if (($PSVersionTable.PSVersion.Major) -ge 6) {
+            Remove-Service wins
+        }
+        else {
+            sc.exe delete wins
+        }
     }
+    else {
+        Write-LogInfo "Removing the wins service ..."
+        if (($PSVersionTable.PSVersion.Major) -ge 6) {
+            Remove-Service wins
+        }
+        else {
+            sc.exe delete wins
+        }
+    }
+}
 
-    Invoke-HNSRequest -Method "GET" -Type "policylists" | Where-Object {-not [string]::IsNullOrEmpty($_.Id)} | ForEach-Object {
-        Write-LogInfo "Cleaning up HNSPolicyList `$(`$_.Id) ..."
-        Invoke-HNSRequest -Method "DELETE" -Type "policylists" -Id `$_.Id
-    }
+function Reset-HNS () {
+    try {
+        Get-HnsNetwork | Where-Object { $_.Name -eq 'Calico' -or $_.Name -eq 'vxlan0' -or $_.Name -eq 'nat' -or $_.Name -eq 'External' } | Select-Object Name, ID | ForEach-Object {
+            Write-LogInfo "Cleaning up HnsNetwork $($_.Name) ..."
+            hnsdiag delete networks $($_.ID)
+        }
 
-    Get-HnsEndpoint  | Select-Object Name, ID | ForEach-Object {
-        Write-LogInfo "Cleaning up HnsEndpoint $($_.Name) ..."
-        hnsdiag delete endpoints ($_.ID)
-    }
+        Invoke-HNSRequest -Method "GET" -Type "policylists" | Where-Object { -not [string]::IsNullOrEmpty($_.Id) } | ForEach-Object {
+            Write-LogInfo "Cleaning up HNSPolicyList $($_.ID) ..."
+            Invoke-HNSRequest -Method "DELETE" -Type "policylists" -Id ($_.ID)
+        }
+
+        Get-HnsEndpoint  | Select-Object Name, ID | ForEach-Object {
+            Write-LogInfo "Cleaning up HnsEndpoint $($_.Name) ..."
+            hnsdiag delete endpoints $($_.ID)
+        }
     
-    Get-HnsNamespace  | Select-Object ID | ForEach-Object {
-        Write-LogInfo "Cleaning up HnsEndpoint $($_.ID) ..."
-        hnsdiag delete namespace ($_.ID)
+        Get-HnsNamespace  | Select-Object ID | ForEach-Object {
+            Write-LogInfo "Cleaning up HnsEndpoint $($_.ID) ..."
+            hnsdiag delete namespace $($_.ID)
+        }
     }
-}
-catch {
-    Write-LogWarn "Could not clean: $($_)"
+    catch {
+        Write-LogWarn "Could not clean: $($_)"
     }   
 }
 
 # clean up data
-function Clean-Data () {
-    $cleanDirs = @(
-    "c:/usr"
-    "c:/etc"
-    "c:/run"
-    "c:/var"
-    )
+function Remove-Data () {
+    $cleanDirs = @("c:/usr", "c:/etc", "c:/run", "c:/var")
     foreach ($dir in $cleanDirs) {
         Write-LogInfo "Cleaning $dir..."
         if (Test-Path $dir) {
@@ -218,26 +223,79 @@ function Clean-Data () {
             Write-LogInfo "$dir is empty, moving on"
         }
     }
+    $cleanCustomDirs = @("$env:CATTLE_AGENT_BIN_PREFIX", "$env:CATTLE_AGENT_VAR_DIR", "$env:CATTLE_AGENT_CONFIG_DIR")
+    if (!([string]::IsNullOrEmpty($cleanCustomDirs))) {
+        foreach ($dirs in $cleanCustomDirs) {
+            if ($dirs.Contains("/")) {
+                $dirs = $dirs -Replace "/", "\"
+            }
+            $dirs = $dirs.Substring(0, $dirs.IndexOf('\'))
+            Write-LogInfo "Cleaning $dirs..."
+            if (Test-Path $dirs) {
+                $symLinkCheck = "Get-ChildItem -Path $dirs -Recurse -Attributes ReparsePoint"
+                if (!([string]::IsNullOrEmpty($symLinkCheck))) {
+                    Get-ChildItem -Path $dirs -Recurse -Attributes ReparsePoint | ForEach-Object { $_.Delete() }
+                }
+                Remove-Item -Path $dirs -Recurse -Force -ErrorAction SilentlyContinue
+            }
+            else {
+                Write-LogInfo "$dirs is empty, moving on"
+            }
+        }
+    }
 }
 
-function Clean-Containerd () {
-    if  (Check-Command ctr) {
-        $namespaces = $(List-Namespaces)
+function Remove-TempData () {
+    Write-LogInfo "Cleaning Temp Install Directory..."
+    if (Test-Path -Path C:\Users\Administrator\AppData\Local\Temp\rke2-install) {
+        Remove-Item -Force -Recurse C:\Users\Administrator\AppData\Local\Temp\rke2-install | Out-Null
+    }
+}
+
+function Reset-Environment () {
+    $customVars = @('CATTLE_AGENT_BINARY_URL', 'CATTLE_AGENT_CONFIG_DIR', 'CATTLE_AGENT_BIN_PREFIX', 'CATTLE_AGENT_LOGLEVEL', 'CATTLE_AGENT_VAR_DIR', 'CATTLE_CA_CHECKSUM', 'CATTLE_ID', 'CATTLE_LABELS', 'CATTLE_PRESERVE_WORKDIR', 'CATTLE_REMOTE_ENABLED', 'CATTLE_ROLE_CONTROLPLANE', 'CATTLE_ROLE_ETCD', 'CATTLE_ROLE_WORKER', 'CATTLE_SERVER', 'CATTLE_SERVER_CHECKSUM', 'CATTLE_TOKEN', 'RANCHER_CERT' )
+    Write-LogInfo "Cleaning RKE2 Environment Variables"
+    try {
+        foreach ($v in $customVars) {
+            Remove-Item Env:$v -Force -ErrorAction SilentlyContinue
+        }
+    }
+    catch {
+        Write-LogWarn "Could not reset environment variables: $($_)"
+    }
+}
+
+function Reset-machineEnvironment () {
+    $customVars = @('CATTLE_AGENT_VAR_DIR', 'CATTLE_AGENT_CONFIG_DIR', 'CATTLE_AGENT_BIN_PREFIX')
+    Write-LogInfo "Cleaning RKE2 Machine Environment Variables"
+    try {
+        foreach ($v in $customVars) {
+            $ErrorActionPreference = 'SilentlyContinue'
+            [Environment]::SetEnvironmentVariable($v, $null, "Machine") 
+        }
+    }
+    catch {
+        Write-LogWarn "Could not reset machine environment variables: $($_)"
+    }
+}
+function Remove-Containerd () {
+    if (Test-Command ctr) {
+        $namespaces = $(Find-Namespaces)
         foreach ($ns in $namespaces) {
-            $tasks = $(List-Tasks $ns)
-            foreach ($task in $tasks){
-                    Delete-Task $ns $task
+            $tasks = $(Find-Tasks $ns)
+            foreach ($task in $tasks) {
+                Remove-Task $ns $task
             }
-            $containers = $(List-ContainersInNamespace $ns)
+            $containers = $(Find-ContainersInNamespace $ns)
             foreach ($container in $containers) {
-            Delete-Container $ns $container
+                Remove-Container $ns $container
             }
 
-            $images = $(List-Images $ns)
+            $images = $(Find-Images $ns)
             foreach ($image in $images) {
-                    Delete-Image $ns $image
+                Remove-Image $ns $image
             }
-            Delete-Namespace $ns
+            Remove-Namespace $ns
         }    
     }
     else {
@@ -246,56 +304,57 @@ function Clean-Containerd () {
     }
 }
 
-function List-Namespaces () {
-    "$RKE2_PATH/ctr --namespace=$namespace namespace list -q"
+function Find-Namespaces () {
+    ctr --namespace=$namespace namespace list -q
 }
-
-function List-ContainersInNamespace() {
+function Find-ContainersInNamespace() {
     $namespace = $1
-    "$RKE2_PATH/ctr --namespace=$namespace container list -q"
+    ctr --namespace=$namespace container list -q
 }
 
-function List-Tasks() {
+function Find-Tasks() {
     $namespace = $1
-    "$RKE2_PATH/ctr -n $namespace task list -q"
+    ctr -n $namespace task list -q
 }
 
-function List-Images() {
+function Find-Images() {
     $namespace = $1
-    "$RKE2_PATH/ctr -n $namespace image list -q"
+    ctr -n $namespace image list -q
 }
 
-function Delete-Image() {
+function Remove-Image() {
     $namespace = $1
     $image = $2
-    "$RKE2_PATH/ctr -n $namespace image rm $image"
+    ctr -n $namespace image rm $image
 }
 
-function Delete-Task() {
+function Remove-Task() {
     $namespace = $1
     $task = $2
-    "$RKE2_PATH/ctr -n $namespace task delete --force $task"
+    ctr -n $namespace task delete --force $task
 }
 
-function Delete-Container() {
+function Remove-Container() {
     $namespace = $1
     $container = $2
-    "$RKE2_PATH/ctr --namespace=$namespace container delete $container"
+    ctr --namespace=$namespace container delete $container
 }
 
-function Delete-Namespace() {
+function Remove-Namespace() {
     $namespace = $1
-    "$RKE2_PATH/ctr namespace remove $namespace"
+    ctr namespace remove $namespace
 }
 
-function RKE2-Uninstall () {
-    Get-Args
-    Set-Environment
-    Clean-Containerd
-    Clean-HNS
-    Clean-Data
+function Rke2-Uninstall () {
+    $env:PATH+=";$env:CATTLE_AGENT_BIN_PREFIX/bin/"
+    Remove-Containerd    
+    Reset-HNS
+    Remove-Data
+    Remove-TempData
+    Reset-Environment
+    Reset-machineEnvironment
     Write-LogInfo "Finished!"
 }
 
-RKE2-Uninstall
+Rke2-Uninstall
 exit 0
