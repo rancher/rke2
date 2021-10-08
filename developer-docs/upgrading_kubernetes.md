@@ -174,7 +174,7 @@ harvester-cloud-provider:
     curl https://github.com/rancher/rke2/releases/download/v1.21.5+rke2r1/rke2.linux-amd64 -L -o rke2-r2
     chmod u+x rke2-r*
 
-    # verify verions
+    # verify versions
     ./rke2-r1 --version
     ./rke2-r2 --version
 
