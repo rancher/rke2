@@ -21,7 +21,7 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     docker.io/rancher/klipper-helm:v0.4.3-build20210225
     docker.io/rancher/pause:3.2
     docker.io/rancher/nginx-ingress-controller-defaultbackend:1.5-rancher1
-    docker.io/rancher/nginx-ingress-controller:nginx-0.30.0-rancher1
+    docker.io/rancher/nginx-ingress-controller:nginx-1.0.2-hardened1
 EOF
 
 
