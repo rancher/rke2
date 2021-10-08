@@ -128,7 +128,7 @@ This step is specific to Rancher and serves to update Rancher's [Kontainer Drive
 
 Create PRs in the [KDM](https://github.com/rancher/kontainer-driver-metadata/) `dev-2.6` and `dev-2.5` branches to update the kubernetes versions in `channels-rke2.yaml`. 
 * The PR should consist of two commits:
-    1.  Changes made to `channels-rke2.yaml` to update the kubernetes versions.
+    1. Changes made to `channels-rke2.yaml` to update the kubernetes versions.
     2. Run `go generate` and commit the changes this caused to data/data.json. Title this second commit "go generate".
 * Please note if this is a new minor release of kubernetes, then a new entry will need to be created in `channels-rke2.yaml`. Ensure to set the min/max versions accordingly. If you are not certain what they should be, reach out to the team for input on this as it will depend on what Rancher will be supporting.
 
