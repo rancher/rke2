@@ -126,11 +126,13 @@ Be sure to review the rest of the sections as some of them may become irrelevant
 
 This step is specific to Rancher and serves to update Rancher's [Kontainer Driver Metadata](https://github.com/rancher/kontainer-driver-metadata/).
 
-Create a PR in the latest [KDM](https://github.com/rancher/kontainer-driver-metadata/) dev branch to update the kubernetes versions in channels.yaml. 
-* The PR should consist of two commits. The first being the change made to channels.yaml to update the kubernetes versions. The second being go generate. To do this, run `go generate` and commit the changes this caused to data/data.json. Title this second commit "go generate".
+Create PRs in the [KDM](https://github.com/rancher/kontainer-driver-metadata/) `dev-2.6` and `dev-2.5` branches to update the kubernetes versions in `channels-rke2.yaml`. 
+* The PR should consist of two commits:
+    1.  Changes made to `channels-rke2.yaml` to update the kubernetes versions.
+    2. Run `go generate` and commit the changes this caused to data/data.json. Title this second commit "go generate".
 * Please note if this is a new minor release of kubernetes, then a new entry will need to be created in `channels-rke2.yaml`. Ensure to set the min/max versions accordingly. If you are not certain what they should be, reach out to the team for input on this as it will depend on what Rancher will be supporting.
 
-Entries that include `charts`, `serverArgs`, and/or `agentArgs` fields may not be altered or removed once they have been published to a release branch. Once a version has been released, a new entry must be added following it. It is possible to build off the `charts`, `serverArgs, and `agentArgs` values defined in other entries using [yaml anchors](https://github.com/yaml/libyaml/blob/0.2.5/examples/anchors.yaml). For example, v1.21.4 has its charts defined as follows:
+Entries that include `charts`, `serverArgs`, and/or `agentArgs` fields may not be altered or removed once they have been published to a release branch. Once a version has been released, a new entry must be added following it. It is possible to build off the `charts`, `serverArgs`, and `agentArgs` values defined in other entries using [yaml anchors](https://github.com/yaml/libyaml/blob/0.2.5/examples/anchors.yaml). For example, v1.21.4 has its charts defined as follows:
 ```
 - version: v1.21.4+rke2r2
 minChannelServerVersion: v2.6.0-alpha1
@@ -184,7 +186,8 @@ harvester-cloud-provider:
     diff -y --suppress-common-lines r1args r2args
     ```
 
-Create a backport PR in any additional dev branches as necessary. 
+Create a backport PR in any additional dev branches as necessary.
+Approval for PRs should come from people on the rke2/k3s team. Approval from the rancher team is not necessary (they control merging from dev branches to release branches).
 The PRs should be merged in a timely manner, within about a day; however, they do not need to be merged before RC releases and they typically do not need to block the final release.
 
 ### Promoting to Stable
