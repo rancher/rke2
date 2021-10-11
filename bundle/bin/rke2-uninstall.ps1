@@ -225,6 +225,7 @@ function Remove-Data () {
     }
     $cleanCustomDirs = @("$env:CATTLE_AGENT_BIN_PREFIX", "$env:CATTLE_AGENT_VAR_DIR", "$env:CATTLE_AGENT_CONFIG_DIR")
     if (!([string]::IsNullOrEmpty($cleanCustomDirs))) {
+        $ErrorActionPreference = 'SilentlyContinue'
         foreach ($dirs in $cleanCustomDirs) {
             if ($dirs.Contains("/")) {
                 $dirs = $dirs -Replace "/", "\"
@@ -253,11 +254,18 @@ function Remove-TempData () {
 }
 
 function Reset-Environment () {
-    $customVars = @('CATTLE_AGENT_BINARY_URL', 'CATTLE_AGENT_CONFIG_DIR', 'CATTLE_AGENT_BIN_PREFIX', 'CATTLE_AGENT_LOGLEVEL', 'CATTLE_AGENT_VAR_DIR', 'CATTLE_CA_CHECKSUM', 'CATTLE_ID', 'CATTLE_LABELS', 'CATTLE_PRESERVE_WORKDIR', 'CATTLE_REMOTE_ENABLED', 'CATTLE_ROLE_CONTROLPLANE', 'CATTLE_ROLE_ETCD', 'CATTLE_ROLE_WORKER', 'CATTLE_SERVER', 'CATTLE_SERVER_CHECKSUM', 'CATTLE_TOKEN', 'RANCHER_CERT' )
+    $customVars = @('CATTLE_AGENT_BINARY_URL', 'CATTLE_AGENT_CONFIG_DIR', 'CATTLE_AGENT_BIN_PREFIX', 'CATTLE_AGENT_LOGLEVEL', 'CATTLE_AGENT_VAR_DIR', 'CATTLE_CA_CHECKSUM', 'CATTLE_ID', 'CATTLE_LABELS', 'CATTLE_PRESERVE_WORKDIR', 'CATTLE_REMOTE_ENABLED', 'CATTLE_RKE2_VERSION', 'CATTLE_ROLE_CONTROLPLANE', 'CATTLE_ROLE_ETCD', 'CATTLE_ROLE_WORKER', 'CATTLE_SERVER', 'CATTLE_SERVER_CHECKSUM', 'CATTLE_TOKEN', 'RANCHER_CERT', 'RKE2_RESOLV_CONF', 'RKE2_PATH' )
     Write-LogInfo "Cleaning RKE2 Environment Variables"
     try {
-        foreach ($v in $customVars) {
-            Remove-Item Env:$v -Force -ErrorAction SilentlyContinue
+        ForEach ($v in $customVars) {
+            if ([Environment]::GetEnvironmentVariable($v, "Process")) {
+                Write-LogInfo "Cleaning $v"
+                [Environment]::SetEnvironmentVariable($v, $null, "Process")
+            }
+            if ([Environment]::GetEnvironmentVariable($v, "User")) {
+                Write-LogInfo "Cleaning $v"
+                [Environment]::SetEnvironmentVariable($v, $null, "User")
+            }
         }
     }
     catch {
@@ -265,17 +273,23 @@ function Reset-Environment () {
     }
 }
 
-function Reset-machineEnvironment () {
-    $customVars = @('CATTLE_AGENT_VAR_DIR', 'CATTLE_AGENT_CONFIG_DIR', 'CATTLE_AGENT_BIN_PREFIX')
+function Reset-MachineEnvironment () {
+    $customMachineVars = @('CATTLE_AGENT_VAR_DIR', 'CATTLE_AGENT_CONFIG_DIR', 'CATTLE_AGENT_BIN_PREFIX')
     Write-LogInfo "Cleaning RKE2 Machine Environment Variables"
     try {
-        foreach ($v in $customVars) {
-            $ErrorActionPreference = 'SilentlyContinue'
-            [Environment]::SetEnvironmentVariable($v, $null, "Machine") 
+        ForEach ($v in $customMachineVars) {
+            if ([Environment]::GetEnvironmentVariable($v, "Machine")) {
+                Write-LogInfo "Cleaning $v"
+                [Environment]::SetEnvironmentVariable($v, $null, "Machine")
+            }
+            if ([Environment]::GetEnvironmentVariable($v, "User")) {
+                Write-LogInfo "Cleaning $v"
+                [Environment]::SetEnvironmentVariable($v, $null, "User")
+            }
         }
     }
     catch {
-        Write-LogWarn "Could not reset machine environment variables: $($_)"
+        Write-LogWarn "Could not reset machine environment variable: $($_)"
     }
 }
 function Remove-Containerd () {
@@ -346,13 +360,13 @@ function Remove-Namespace() {
 }
 
 function Rke2-Uninstall () {
-    $env:PATH+=";$env:CATTLE_AGENT_BIN_PREFIX/bin/"
+    $env:PATH += ";$env:CATTLE_AGENT_BIN_PREFIX/bin/"
     Remove-Containerd    
     Reset-HNS
     Remove-Data
     Remove-TempData
     Reset-Environment
-    Reset-machineEnvironment
+    Reset-MachineEnvironment
     Write-LogInfo "Finished!"
 }
 
