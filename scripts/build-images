@@ -20,6 +20,7 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/nginx-ingress-controller-defaultbackend:1.5-rancher1
     ${REGISTRY}/rancher/nginx-ingress-controller:nginx-1.0.2-hardened1
+    ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.0
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
 EOF
 
