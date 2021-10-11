@@ -101,29 +101,32 @@ function Invoke-HNSRequest {
 # cleanup
 Write-Host "Beginning the uninstall process"
 
-Get-Process -ErrorAction Ignore -Name "rke2*" | ForEach-Object {
-    Write-LogInfo "Stopping process $($_.Name) ..."
-    $_ | Stop-Process -ErrorAction Ignore -Force
-}
+function Stop-Processes () {
 
-Get-Process -ErrorAction Ignore -Name "kube-proxy*" | ForEach-Object {
-    Write-LogInfo "Stopping process $($_.Name) ..."
-    $_ | Stop-Process -ErrorAction Ignore -Force
-}
-
-Get-Process -ErrorAction Ignore -Name "kubelet*" | ForEach-Object {
-    Write-LogInfo "Stopping process $($_.Name) ..."
-    $_ | Stop-Process -ErrorAction Ignore -Force
-}
-
-Get-Process -ErrorAction Ignore -Name "containerd*" | ForEach-Object {
-    Write-LogInfo "Stopping process $($_.Name) ..."
-    $_ | Stop-Process -ErrorAction Ignore -Force
-}
-
-Get-Process -ErrorAction Ignore -Name "wins*" | ForEach-Object {
-    Write-LogInfo "Stopping process $($_.Name) ..."
-    $_ | Stop-Process -ErrorAction Ignore -Force
+    Get-Process -ErrorAction Ignore -Name "rke2*" | ForEach-Object {
+        Write-LogInfo "Stopping process $($_.Name) ..."
+        $_ | Stop-Process -ErrorAction Ignore -Force
+    }
+    
+    Get-Process -ErrorAction Ignore -Name "kube-proxy*" | ForEach-Object {
+        Write-LogInfo "Stopping process $($_.Name) ..."
+        $_ | Stop-Process -ErrorAction Ignore -Force
+    }
+    
+    Get-Process -ErrorAction Ignore -Name "kubelet*" | ForEach-Object {
+        Write-LogInfo "Stopping process $($_.Name) ..."
+        $_ | Stop-Process -ErrorAction Ignore -Force
+    }
+    
+    Get-Process -ErrorAction Ignore -Name "containerd*" | ForEach-Object {
+        Write-LogInfo "Stopping process $($_.Name) ..."
+        $_ | Stop-Process -ErrorAction Ignore -Force
+    }
+    
+    Get-Process -ErrorAction Ignore -Name "wins*" | ForEach-Object {
+        Write-LogInfo "Stopping process $($_.Name) ..."
+        $_ | Stop-Process -ErrorAction Ignore -Force
+    }
 }
 
 # clean up firewall rules
@@ -132,50 +135,52 @@ Get-NetFirewallRule -PolicyStore ActiveStore -Name "rke2*" -ErrorAction Ignore |
     $_ | Remove-NetFirewallRule -ErrorAction Ignore | Out-Null
 }
 
-# clean up rke2 service
-Get-Service -Name "rke2" -ErrorAction Ignore | Where-Object { $_.Status -eq "Running" } | ForEach-Object {
-    if ($_.Status -eq "Running") {
-        Write-LogInfo "Stopping rke2 service ..."
-        $_ | Stop-Service -Force -ErrorAction Ignore
-        Write-LogInfo "Removing the rke2 service ..."
-        if (($PSVersionTable.PSVersion.Major) -ge 6) {
-            Remove-Service rke2
+function Invoke-CleanServices () {
+    # clean up rke2 service
+    Get-Service -Name "rke2" -ErrorAction Ignore | Where-Object { $_.Status -eq "Running" } | ForEach-Object {
+        if ($_.Status -eq "Running") {
+            Write-LogInfo "Stopping rke2 service ..."
+            $_ | Stop-Service -Force -ErrorAction Ignore
+            Write-LogInfo "Removing the rke2 service ..."
+            if (($PSVersionTable.PSVersion.Major) -ge 6) {
+                Remove-Service rke2
+            }
+            else {
+                sc.exe delete rke2
+            }
         }
         else {
-            sc.exe delete rke2
+            Write-LogInfo "Removing the rke2 service ..."
+            if (($PSVersionTable.PSVersion.Major) -ge 6) {
+                Remove-Service rke2
+            }
+            else {
+                sc.exe delete rke2
+            }
         }
     }
-    else {
-        Write-LogInfo "Removing the rke2 service ..."
-        if (($PSVersionTable.PSVersion.Major) -ge 6) {
-            Remove-Service rke2
-        }
-        else {
-            sc.exe delete rke2
-        }
-    }
-}
 
-# clean up wins service
-Get-Service -Name "wins" -ErrorAction Ignore | Where-Object { $_.Status -eq "Running" } | ForEach-Object {
-    if ($_.Status -eq "Running") {
-        Write-LogInfo "Stopping wins service ..."
-        $_ | Stop-Service -Force -ErrorAction Ignore
-        Write-LogInfo "Removing the wins service ..."
-        if (($PSVersionTable.PSVersion.Major) -ge 6) {
-            Remove-Service wins
+    # clean up wins service
+    Get-Service -Name "wins" -ErrorAction Ignore | Where-Object { $_.Status -eq "Running" } | ForEach-Object {
+        if ($_.Status -eq "Running") {
+            Write-LogInfo "Stopping wins service ..."
+            $_ | Stop-Service -Force -ErrorAction Ignore
+            Write-LogInfo "Removing the wins service ..."
+            if (($PSVersionTable.PSVersion.Major) -ge 6) {
+                Remove-Service wins
+            }
+            else {
+                sc.exe delete wins
+            }
         }
         else {
-            sc.exe delete wins
-        }
-    }
-    else {
-        Write-LogInfo "Removing the wins service ..."
-        if (($PSVersionTable.PSVersion.Major) -ge 6) {
-            Remove-Service wins
-        }
-        else {
-            sc.exe delete wins
+            Write-LogInfo "Removing the wins service ..."
+            if (($PSVersionTable.PSVersion.Major) -ge 6) {
+                Remove-Service wins
+            }
+            else {
+                sc.exe delete wins
+            }
         }
     }
 }
@@ -295,6 +300,12 @@ function Reset-MachineEnvironment () {
 function Remove-Containerd () {
     if (Test-Command ctr) {
         $namespaces = $(Find-Namespaces)
+        if (-Not($namespaces)) {
+            $ErrorActionPreference = 'SilentlyContinue'
+            $namespaces = @('default', 'cattle-system', 'kube-system', 'fleet-default', 'calico-system')
+            Write-LogInfo "Could not find containerd namespaces using default list `r`n$namespaces"
+            return $namespaces
+        }
         foreach ($ns in $namespaces) {
             $tasks = $(Find-Tasks $ns)
             foreach ($task in $tasks) {
@@ -310,6 +321,8 @@ function Remove-Containerd () {
                 Remove-Image $ns $image
             }
             Remove-Namespace $ns
+            # TODO
+            # clean pods with crictl
         }    
     }
     else {
@@ -320,6 +333,7 @@ function Remove-Containerd () {
 
 function Find-Namespaces () {
     ctr --namespace=$namespace namespace list -q
+    # return $namespace
 }
 function Find-ContainersInNamespace() {
     $namespace = $1
@@ -360,9 +374,11 @@ function Remove-Namespace() {
 }
 
 function Rke2-Uninstall () {
-    $env:PATH += ";$env:CATTLE_AGENT_BIN_PREFIX/bin/"
-    Remove-Containerd    
+    $env:PATH+=";$env:CATTLE_AGENT_BIN_PREFIX/bin/;c:\var\lib\rancher\rke2\bin"
+    Remove-Containerd
     Reset-HNS
+    Stop-Processes
+    Invoke-CleanServices
     Remove-Data
     Remove-TempData
     Reset-Environment
