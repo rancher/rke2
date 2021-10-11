@@ -11,7 +11,7 @@ all_services=(
     kube-scheduler
     metrics-server
 )
-export SERVER_ARGS='--disable=rke2-ingress-nginx-chart --kube-apiserver-arg=kubelet-preferred-address-types=InternalIP'
+export SERVER_ARGS='--disable=rke2-ingress-nginx --kube-apiserver-arg=kubelet-preferred-address-types=InternalIP'
 
 export NUM_SERVERS=1
 export NUM_AGENTS=1
