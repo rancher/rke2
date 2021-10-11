@@ -159,7 +159,6 @@ func addClusterRoleLabel(roles []rbacv1.ClusterRole) {
 	for i := range roles {
 		addDefaultMetadata(&roles[i])
 	}
-	return
 }
 
 // cribbed from k8s.io/kubernetes/plugin/pkg/auth/authorizer/rbac/bootstrappolicy/policy.go
@@ -167,7 +166,6 @@ func addClusterRoleBindingLabel(rolebindings []rbacv1.ClusterRoleBinding) {
 	for i := range rolebindings {
 		addDefaultMetadata(&rolebindings[i])
 	}
-	return
 }
 
 // cribbed from k8s.io/kubernetes/plugin/pkg/auth/authorizer/rbac/bootstrappolicy/policy.go
@@ -175,5 +173,4 @@ func addRoleLabel(roles []rbacv1.Role) {
 	for i := range roles {
 		addDefaultMetadata(&roles[i])
 	}
-	return
 }

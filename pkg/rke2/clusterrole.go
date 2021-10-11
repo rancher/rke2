@@ -25,14 +25,14 @@ func setClusterRoles() cmds.StartupHook {
 				logrus.Fatalf("clusterrole: new k8s client: %v", err)
 			}
 
-			stopCh := make(chan struct{})
-			defer close(stopCh)
+			stopChan := make(chan struct{})
+			defer close(stopChan)
 
 			// kube-apiserver has a post-start hook that reconciles the built-in cluster RBAC on every startup.
 			// We're reusing that here to bootstrap our own roles and bindings.
 			hookContext := genericapiserver.PostStartHookContext{
 				LoopbackClientConfig: config,
-				StopCh:               stopCh,
+				StopCh:               stopChan,
 			}
 
 			policy := rbacrest.PolicyData{
