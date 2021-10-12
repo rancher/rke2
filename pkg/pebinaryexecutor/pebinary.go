@@ -222,8 +222,13 @@ func (p *PEBinaryConfig) KubeProxy(ctx context.Context, args []string) error {
 	return nil
 }
 
+// APIServerHandlers isn't supported in the binary executor.
+func (p *PEBinaryConfig) APIServerHandlers(ctx context.Context) (authenticator.Request, http.Handler, error) {
+	panic("kube-api-server is unsupported on windows")
+}
+
 // APIServer isn't supported in the binary executor.
-func (p *PEBinaryConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) (authenticator.Request, http.Handler, error) {
+func (p *PEBinaryConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) error {
 	panic("kube-api-server is unsupported on windows")
 }
 

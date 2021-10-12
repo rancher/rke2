@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -108,6 +109,7 @@ type StaticPodConfig struct {
 	CISMode               bool
 	DisableETCD           bool
 	IsServer              bool
+	Authenticator         authenticator.Request
 }
 
 type CloudProviderConfig struct {
@@ -206,14 +208,22 @@ func (s *StaticPodConfig) KubeProxy(ctx context.Context, args []string) error {
 	})
 }
 
-// APIServer sets up the apiserver static pod once etcd is available, returning the authenticator and request handler.
-func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) (authenticator.Request, http.Handler, error) {
+// APIServerHandlers returning the authenticator and request handler for requests to the apiserver endpoint.
+func (s *StaticPodConfig) APIServerHandlers(ctx context.Context) (authenticator.Request, http.Handler, error) {
+	for s.Authenticator == nil {
+		runtime.Gosched()
+	}
+	return s.Authenticator, http.NotFoundHandler(), nil
+}
+
+// APIServer sets up the apiserver static pod once etcd is available.
+func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeAPIServer)
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
 	if err := images.Pull(s.ImagesDir, images.KubeAPIServer, image); err != nil {
-		return nil, nil, err
+		return err
 	}
 
 	args = append([]string{"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}, args...)
@@ -238,10 +248,13 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 		}
 		args = append(extraArgs, args...)
 		if err := writeDefaultPolicyFile(s.AuditPolicyFile); err != nil {
-			return nil, nil, err
+			return err
 		}
 	}
-	auth, err := auth.FromArgs(args)
+	s.Authenticator, err = auth.FromArgs(args)
+	if err != nil {
+		return err
+	}
 	for i, arg := range args {
 		// This is an option k3s adds that does not exist upstream
 		if strings.HasPrefix(arg, "--advertise-port=") {
@@ -258,7 +271,7 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 	if s.ControlPlaneResources.KubeAPIServerCPURequest == "" {
 		s.ControlPlaneResources.KubeAPIServerCPURequest = defaultKubeAPIServerCPURequest
 	}
-	after(etcdReady, func() error {
+	return after(etcdReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:       "kube-apiserver",
 			Args:          args,
@@ -273,7 +286,6 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 			Files:         files,
 		})
 	})
-	return auth, http.NotFoundHandler(), err
 }
 
 var permitPortSharingFlag = []string{"--permit-port-sharing=true"}

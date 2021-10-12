@@ -126,6 +126,14 @@ func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Co
 				boolFlag.Hidden = true
 			}
 			flag = boolFlag
+		} else if durationFlag, ok := flag.(*cli.DurationFlag); ok {
+			if opt.Usage != "" {
+				durationFlag.Usage = opt.Usage
+			}
+			if opt.Hide {
+				durationFlag.Hidden = true
+			}
+			flag = durationFlag
 		} else {
 			errs = append(errs, fmt.Errorf("unsupported type %T for flag %s", flag, name))
 		}

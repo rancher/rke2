@@ -307,8 +307,8 @@ github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5Kwzbycv
 github.com/fatih/color v1.9.0/go.mod h1:eQcE1qtQxscV5RaZvpXrrb8Drkc3/DdQ+uUYCNjL+zU=
 github.com/felixge/httpsnoop v1.0.1 h1:lvB5Jl89CsZtGIWuTcDM1E/vkVs49/Ml7JJe07l8SPQ=
 github.com/felixge/httpsnoop v1.0.1/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
-github.com/flannel-io/flannel v0.14.1-0.20210827074410-fca1560c91cc h1:t/L/tIYcAayH7XICVYtAscY/PXaJDKXsKheAMCtiKS0=
-github.com/flannel-io/flannel v0.14.1-0.20210827074410-fca1560c91cc/go.mod h1:fIcQpjXVBEE22oxqfZN0cXN0ZInsMDqTF5YoeGo6DgY=
+github.com/flannel-io/flannel v0.15.1 h1:9v5/fapXePDnXVsFBVnji4IeLoXcO81bO8nEbQioYVQ=
+github.com/flannel-io/flannel v0.15.1/go.mod h1:fIcQpjXVBEE22oxqfZN0cXN0ZInsMDqTF5YoeGo6DgY=
 github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568/go.mod h1:xEzjJPgXI435gkrCt3MPfRiAkVrwSbHsst4LCFVfpJc=
 github.com/fogleman/gg v1.2.1-0.20190220221249-0403632d5b90/go.mod h1:R/bRT+9gY/C5z7JzPU0zXsXHKM4/ayA+zqcVNZzPa1k=
 github.com/form3tech-oss/jwt-go v3.2.2+incompatible/go.mod h1:pbq4aXjuKjdthFRnoDwaVPLA+WlJuPGy+QneDUgJi2k=
@@ -936,8 +936,8 @@ github.com/qri-io/starlib v0.4.2-0.20200213133954-ff2e8cd5ef8d/go.mod h1:7DPO4do
 github.com/quobyte/api v0.1.8/go.mod h1:jL7lIHrmqQ7yh05OJ+eEEdHr0u/kmT1Ff9iHd+4H6VI=
 github.com/rancher/dynamiclistener v0.2.6 h1:qcNhQQOidheum5K6mtLxDTJQMTWKm1zm/PjZ5x0xV7A=
 github.com/rancher/dynamiclistener v0.2.6/go.mod h1:iXFvJLvLjmTzEJBrLFZl9UaMfDLOhv6fHp9fHQRlHGg=
-github.com/rancher/k3s v1.22.3-0.20211007194742-737f722315b9 h1:MBvfb5YV9S/vdHsxJRD0Dy1w0zZievM/6zCY9nR2nHU=
-github.com/rancher/k3s v1.22.3-0.20211007194742-737f722315b9/go.mod h1:0TRVQfMggq2PdzFfz0LXT8DMfPhgiiEkOaBYK7GWU4c=
+github.com/rancher/k3s v1.22.3-0.20211021113956-61084d6120b6 h1:+jlkmYCJ2GMxuvnx2PVLRio/AGau0mKb5mMYTjfQZzI=
+github.com/rancher/k3s v1.22.3-0.20211021113956-61084d6120b6/go.mod h1:fv9wt7d/KIxseCZGOg6SkTevY6X47H31aX1+zge/pDU=
 github.com/rancher/lasso v0.0.0-20210616224652-fc3ebd901c08 h1:NxR8Fh0eE7/5/5Zvlog9B5NVjWKqBSb1WYMUF7/IE5c=
 github.com/rancher/lasso v0.0.0-20210616224652-fc3ebd901c08/go.mod h1:9qZd/S8DqWzfKtjKGgSoHqGEByYmUE3qRaBaaAHwfEM=
 github.com/rancher/remotedialer v0.2.0 h1:xD7t3K6JYwTdAsxmGtTHQMkEkFgKouQ1foLxVW424Dc=
