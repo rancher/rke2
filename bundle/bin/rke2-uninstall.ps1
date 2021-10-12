@@ -319,7 +319,6 @@ function Remove-Containerd () {
             Write-Host "Could not find containerd namespaces, will use default list instead:`r`n$namespaces"
         }
         foreach ($ns in $namespaces) {
-            Write-Host $ns
             $tasks = $(Find-Tasks $ns)
             foreach ($task in $tasks) {
                 Remove-Task $ns $task
@@ -389,13 +388,14 @@ function Remove-Namespace() {
 function Rke2-Uninstall () {
     $env:PATH += ";$env:CATTLE_AGENT_BIN_PREFIX/bin/;c:\var\lib\rancher\rke2\bin"
     Remove-Containerd
-    Reset-HNS
     Stop-Processes
     Invoke-CleanServices
     Remove-Data
     Remove-TempData
     Reset-Environment
     Reset-MachineEnvironment
+    Write-LogInfo "HNS will be cleaned next, temporary network disruption may occur. HNS cleanup is the final step."
+    Reset-HNS
     Write-LogInfo "Finished!"
 }
 
