@@ -11,6 +11,7 @@ var (
 		"debug":           copy,
 		"log":             copy,
 		"alsologtostderr": copy,
+		"node-name":       copy,
 		"data-dir": {
 			Usage:   "(data) Folder to hold state",
 			Default: rke2Path,
@@ -26,7 +27,8 @@ var (
 		"s3-bucket":          copy,
 		"s3-region":          copy,
 		"s3-folder":          copy,
-		"node-name":          copy,
+		"s3-insecure":        copy,
+		"s3-timeout":         copy,
 	})
 )
 
