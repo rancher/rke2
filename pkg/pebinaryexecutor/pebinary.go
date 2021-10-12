@@ -222,8 +222,13 @@ func (p *PEBinaryConfig) KubeProxy(args []string) error {
 	return nil
 }
 
+// APIServerHandlers isn't supported in the binary executor.
+func (p *PEBinaryConfig) APIServerHandlers() (authenticator.Request, http.Handler, error) {
+	panic("kube-api-server is unsupported on windows")
+}
+
 // APIServer isn't supported in the binary executor.
-func (p *PEBinaryConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) (authenticator.Request, http.Handler, error) {
+func (p *PEBinaryConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) error {
 	panic("kube-api-server is unsupported on windows")
 }
 
@@ -248,7 +253,7 @@ func (p *PEBinaryConfig) CloudControllerManager(ccmRBACReady <-chan struct{}, ar
 }
 
 // ETCD isn't supported in the binary executor.
-func (p *PEBinaryConfig) ETCD(args executor.ETCDConfig) error {
+func (p *PEBinaryConfig) ETCD(ctx context.Context, args executor.ETCDConfig) error {
 	panic("etcd is unsupported on windows")
 }
 
