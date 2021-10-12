@@ -31,7 +31,7 @@ function check_release_branch() {
     TAG_BRANCH=$(git branch --all -q --contains $GIT_TAG | grep origin | grep -v origin$ | grep -v "HEAD" | sed -e 's/^[[:space:]]*//')
     if [ "$TAG_BRANCH" == "remotes/origin/master" ]; then
         K8S_VERSION_GO_MOD=$(grep 'k8s.io/kubernetes v' go.mod | head -n1 | awk '{print $2}')
-        if [ "$MAJOR.$MINOR" == "$K8S_VERSION_GO_MOD" ]; then
+        if [ "v$MAJOR.$MINOR.$PATCH" == "$K8S_VERSION_GO_MOD" ]; then
             info "Tag $GIT_TAG is cut from master"
             return
         fi
