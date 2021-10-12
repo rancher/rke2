@@ -126,6 +126,8 @@ var (
 		"etcd-s3-bucket":                    copy,
 		"etcd-s3-region":                    copy,
 		"etcd-s3-folder":                    copy,
+		"etcd-s3-insecure":                  copy,
+		"etcd-s3-timeout":                   copy,
 		"disable-helm-controller":           drop,
 	})
 )
