@@ -297,16 +297,29 @@ function Reset-MachineEnvironment () {
         Write-LogWarn "Could not reset machine environment variable: $($_)"
     }
 }
+
 function Remove-Containerd () {
-    if (Test-Command ctr) {
+    $CONTAINERD_ADDRESS = "\\.\\pipe\\containerd-containerd"
+    crictl config --set runtime-endpoint=npipe:\\.\\pipe\\containerd-containerd
+    function Invoke-Ctr {
+        param (
+            [parameter()]
+            [string]
+            $cmd
+        )
+        $baseCommand = "ctr -a $CONTAINERD_ADDRESS"
+        Invoke-Expression -Command "$(-join $baseCommand,$cmd)"
+    }
+
+    if (ctr) {
         $namespaces = $(Find-Namespaces)
         if (-Not($namespaces)) {
             $ErrorActionPreference = 'SilentlyContinue'
             $namespaces = @('default', 'cattle-system', 'kube-system', 'fleet-default', 'calico-system')
-            Write-LogInfo "Could not find containerd namespaces using default list `r`n$namespaces"
-            return $namespaces
+            Write-Host "Could not find containerd namespaces, will use default list instead:`r`n$namespaces"
         }
         foreach ($ns in $namespaces) {
+            Write-Host $ns
             $tasks = $(Find-Tasks $ns)
             foreach ($task in $tasks) {
                 Remove-Task $ns $task
@@ -323,7 +336,8 @@ function Remove-Containerd () {
             Remove-Namespace $ns
             # TODO
             # clean pods with crictl
-        }    
+            # $CONTAINER_RUNTIME_ENDPOINT = "npipe:\\.\\pipe\\containerd-containerd"
+        }
     }
     else {
         Write-LogError "PATH is misconfigured or ctr is missing from PATH"
@@ -332,49 +346,48 @@ function Remove-Containerd () {
 }
 
 function Find-Namespaces () {
-    ctr --namespace=$namespace namespace list -q
-    # return $namespace
+    Invoke-Ctr -cmd "namespace list -q"
 }
 function Find-ContainersInNamespace() {
-    $namespace = $1
-    ctr --namespace=$namespace container list -q
+    $namespace = $args[0]
+    Invoke-Ctr -cmd "-n $namespace container list -q"
 }
 
 function Find-Tasks() {
-    $namespace = $1
-    ctr -n $namespace task list -q
+    $namespace = $args[0]
+    Invoke-Ctr -cmd "-n $namespace task list -q"
 }
 
 function Find-Images() {
-    $namespace = $1
-    ctr -n $namespace image list -q
+    $namespace = $args[0]
+    Invoke-Ctr -cmd "-n $namespace image list -q"
 }
 
 function Remove-Image() {
-    $namespace = $1
-    $image = $2
-    ctr -n $namespace image rm $image
+    $namespace = $args[0]
+    $image = $args[1]
+    Invoke-Ctr -cmd "-n $namespace image rm $image"
 }
 
 function Remove-Task() {
-    $namespace = $1
-    $task = $2
-    ctr -n $namespace task delete --force $task
+    $namespace = $args[0]
+    $task = $args[1]
+    Invoke-Ctr -cmd "-n $namespace task delete --force $task"
 }
 
 function Remove-Container() {
-    $namespace = $1
-    $container = $2
-    ctr --namespace=$namespace container delete $container
+    $namespace = $args[0]
+    $container = $args[1]
+    Invoke-Ctr -cmd "-n $namespace container delete $container"
 }
 
 function Remove-Namespace() {
-    $namespace = $1
-    ctr namespace remove $namespace
+    $namespace = $args[0]
+    Invoke-Ctr -cmd "namespace remove $namespace"
 }
 
 function Rke2-Uninstall () {
-    $env:PATH+=";$env:CATTLE_AGENT_BIN_PREFIX/bin/;c:\var\lib\rancher\rke2\bin"
+    $env:PATH += ";$env:CATTLE_AGENT_BIN_PREFIX/bin/;c:\var\lib\rancher\rke2\bin"
     Remove-Containerd
     Reset-HNS
     Stop-Processes
