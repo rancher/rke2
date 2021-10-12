@@ -102,30 +102,17 @@ function Invoke-HNSRequest {
 Write-Host "Beginning the uninstall process"
 
 function Stop-Processes () {
-
-    Get-Process -ErrorAction Ignore -Name "rke2*" | ForEach-Object {
-        Write-LogInfo "Stopping process $($_.Name) ..."
-        $_ | Stop-Process -ErrorAction Ignore -Force
-    }
-    
-    Get-Process -ErrorAction Ignore -Name "kube-proxy*" | ForEach-Object {
-        Write-LogInfo "Stopping process $($_.Name) ..."
-        $_ | Stop-Process -ErrorAction Ignore -Force
-    }
-    
-    Get-Process -ErrorAction Ignore -Name "kubelet*" | ForEach-Object {
-        Write-LogInfo "Stopping process $($_.Name) ..."
-        $_ | Stop-Process -ErrorAction Ignore -Force
-    }
-    
-    Get-Process -ErrorAction Ignore -Name "containerd*" | ForEach-Object {
-        Write-LogInfo "Stopping process $($_.Name) ..."
-        $_ | Stop-Process -ErrorAction Ignore -Force
-    }
-    
-    Get-Process -ErrorAction Ignore -Name "wins*" | ForEach-Object {
-        Write-LogInfo "Stopping process $($_.Name) ..."
-        $_ | Stop-Process -ErrorAction Ignore -Force
+    $ProcessNames = @('rke2', 'kube-proxy', 'kubelet', 'containerd', 'wins', 'calico-node')
+    foreach ($ProcessName in $ProcessNames) {
+        Write-LogInfo "Checking if $ProcessName process exists"
+        if ((Get-Process -Name $ProcessName -ErrorAction SilentlyContinue)) {
+            Write-LogInfo "$ProcessName process found, stopping now"
+            Stop-Process -Name $ProcessName
+            while (-Not(Get-Process -Name $ProcessName).HasExited) {
+                Write-LogInfo "Waiting for $ProcessName process to stop"
+                Start-Sleep -s 5
+            }
+        }
     }
 }
 
@@ -136,50 +123,23 @@ Get-NetFirewallRule -PolicyStore ActiveStore -Name "rke2*" -ErrorAction Ignore |
 }
 
 function Invoke-CleanServices () {
-    # clean up rke2 service
-    Get-Service -Name "rke2" -ErrorAction Ignore | Where-Object { $_.Status -eq "Running" } | ForEach-Object {
-        if ($_.Status -eq "Running") {
-            Write-LogInfo "Stopping rke2 service ..."
-            $_ | Stop-Service -Force -ErrorAction Ignore
-            Write-LogInfo "Removing the rke2 service ..."
+    $ServiceNames = @('rke2', 'wins')
+    # clean up wins and rke2 service
+    foreach ($ServiceName in $ServiceNames) {
+        Write-LogInfo "Checking if $ServiceName service exists"
+        if ((Get-Service -Name $ServiceName -ErrorAction SilentlyContinue)) {
+            Write-LogInfo "$ServiceName service found, stopping now"
+            Stop-Service -Name $ServiceName
+            while ((Get-Service -Name $ServiceName).Status -ne 'Stopped') {
+                Write-LogInfo "Waiting for $ServiceName service to stop"
+                Start-Sleep -s 5
+            }
+            Write-LogInfo "$ServiceName service has stopped. Removing the $ServiceName service ..."
             if (($PSVersionTable.PSVersion.Major) -ge 6) {
-                Remove-Service rke2
+                Remove-Service $ServiceName
             }
             else {
-                sc.exe delete rke2
-            }
-        }
-        else {
-            Write-LogInfo "Removing the rke2 service ..."
-            if (($PSVersionTable.PSVersion.Major) -ge 6) {
-                Remove-Service rke2
-            }
-            else {
-                sc.exe delete rke2
-            }
-        }
-    }
-
-    # clean up wins service
-    Get-Service -Name "wins" -ErrorAction Ignore | Where-Object { $_.Status -eq "Running" } | ForEach-Object {
-        if ($_.Status -eq "Running") {
-            Write-LogInfo "Stopping wins service ..."
-            $_ | Stop-Service -Force -ErrorAction Ignore
-            Write-LogInfo "Removing the wins service ..."
-            if (($PSVersionTable.PSVersion.Major) -ge 6) {
-                Remove-Service wins
-            }
-            else {
-                sc.exe delete wins
-            }
-        }
-        else {
-            Write-LogInfo "Removing the wins service ..."
-            if (($PSVersionTable.PSVersion.Major) -ge 6) {
-                Remove-Service wins
-            }
-            else {
-                sc.exe delete wins
+                sc.exe delete $ServiceName
             }
         }
     }
@@ -300,7 +260,7 @@ function Reset-MachineEnvironment () {
 
 function Remove-Containerd () {
     $CONTAINERD_ADDRESS = "\\.\\pipe\\containerd-containerd"
-    crictl config --set runtime-endpoint=npipe:\\.\\pipe\\containerd-containerd
+    crictl config --set runtime-endpoint="npipe:$CONTAINERD_ADDRESS"
     function Invoke-Ctr {
         param (
             [parameter()]
@@ -316,7 +276,7 @@ function Remove-Containerd () {
         if (-Not($namespaces)) {
             $ErrorActionPreference = 'SilentlyContinue'
             $namespaces = @('default', 'cattle-system', 'kube-system', 'fleet-default', 'calico-system')
-            Write-Host "Could not find containerd namespaces, will use default list instead:`r`n$namespaces"
+            Write-LogInfo "Could not find containerd namespaces, will use default list instead:`r`n$namespaces"
         }
         foreach ($ns in $namespaces) {
             $tasks = $(Find-Tasks $ns)
@@ -385,7 +345,7 @@ function Remove-Namespace() {
     Invoke-Ctr -cmd "namespace remove $namespace"
 }
 
-function Rke2-Uninstall () {
+function Invoke-Rke2Uninstall () {
     $env:PATH += ";$env:CATTLE_AGENT_BIN_PREFIX/bin/;c:\var\lib\rancher\rke2\bin"
     Remove-Containerd
     Stop-Processes
@@ -399,5 +359,5 @@ function Rke2-Uninstall () {
     Write-LogInfo "Finished!"
 }
 
-Rke2-Uninstall
+Invoke-Rke2Uninstall
 exit 0
