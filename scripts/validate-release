@@ -28,7 +28,11 @@ function parse_tag() {
 }
 
 function check_release_branch() {
-    TAG_BRANCH=$(git branch --all -q --contains $GIT_TAG | grep -v origin$ | grep -v "HEAD" | sed -e 's/^[[:space:]]*//')
+    TAG_BRANCH=$(git branch --all -q --contains $GIT_TAG | grep origin | grep -v origin$ | grep -v "HEAD" | sed -e 's/^[[:space:]]*//')
+    if [ "$TAG_BRANCH" == "remotes/origin/master" ] && [ "$MAJOR.$MINOR" == "1.22"  ]; then
+        info "Tag $GIT_TAG is cut from master"
+        return
+    fi
     if [ ! "$TAG_BRANCH" = "remotes/origin/release-$MAJOR.$MINOR" ]; then
         fatal "Tag is cut from the wrong branch $TAG_BRANCH"
     fi
@@ -45,22 +49,14 @@ function check_kubernetes_version() {
 
 }
 
-function check_kube_proxy_version() {
-    KUBE_PROXY_VERSION=$(grep -B1 "rke2-kube-proxy" Dockerfile | grep -oP 'CHART_VERSION="\K[^"]+')
-    if [[ ! "$KUBE_PROXY_VERSION" =~ v$MAJOR.$MINOR.$PATCH-$RKE2_PATCH-$BUILD_REGEX ]]; then
-        fatal "kube proxy chart version [$KUBE_PROXY_VERSION] is incorrect for this tag"
-    fi
-
-}
-
 function check_win_binaries() {
-    CRICTL_WINDOWS_VERSION=$(grep -oP 'CRICTL_VERSION="\K[^"]+' Dockerfile.windows | grep -oP "v([0-9]+)\.([0-9]+)")
+    CRICTL_WINDOWS_VERSION=$(grep 'CRICTL_VERSION=' Dockerfile.windows | cut -d '=' -f 2- | grep -oE "v([0-9]+)\.([0-9]+)")
     if [ ! "$CRICTL_WINDOWS_VERSION" = "v$MAJOR.$MINOR" ]; then
         fatal "crictl windows binary version [$CRICTL_WINDOWS_VERSION] does not match kubernetes version"
     fi
 
-    CALICO_WINDOWS_VERSION=$(grep -oP 'CALICO_VERSION="\K[^"]+' Dockerfile.windows)
-    CALICO_LINUX_VERSION=$(grep "rke2-calico.yaml" Dockerfile | grep -oP 'CHART_VERSION="\K[^"]+' | grep -oP "v([0-9]+)\.([0-9]+)\.([0-9]+)")
+    CALICO_WINDOWS_VERSION=$(grep 'CALICO_VERSION=' Dockerfile.windows | cut -d '=' -f 2-)
+    CALICO_LINUX_VERSION=$(grep "rke2-calico.yaml" Dockerfile | grep 'CHART_VERSION=' | cut -d '=' -f 2- | grep -oE "v([0-9]+)\.([0-9]+)\.([0-9]+)")
     if [ ! "$CALICO_WINDOWS_VERSION" = "$CALICO_LINUX_VERSION" ]; then
         fatal "Calico windows binary version [$CALICO_WINDOWS_VERSION] does not match Calico chart version [$CALICO_LINUX_VERSION]"
     fi
@@ -69,8 +65,8 @@ function check_win_binaries() {
 
 . ./scripts/version.sh
 
+git fetch origin -f --tags
 parse_tag $DRONE_TAG
 check_release_branch
 check_kubernetes_version
-check_kube_proxy_version
 check_win_binaries
