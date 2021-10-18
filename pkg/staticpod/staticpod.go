@@ -89,7 +89,17 @@ func writeFile(dir, name string, content []byte) error {
 		return nil
 	}
 
-	tmp := filepath.Join(dir, name+".tmp")
+	// Create the new manifest in a temporary directory up one level from the static pods dir and then
+	// rename it into place.  Creating manifests in the destination directory risks the Kubelet
+	// picking them up when they're partially written, or creating duplicate pods if it picks it up
+	// before the temp file is renamed over the existing file.
+	tmpdir, err := os.MkdirTemp(dir+"/..", name)
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmpdir)
+
+	tmp := filepath.Join(tmpdir, name)
 	if err := ioutil.WriteFile(tmp, content, 0644); err != nil {
 		return err
 	}
