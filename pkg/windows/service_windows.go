@@ -6,11 +6,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/Freman/eventloghook"
+	"github.com/pkg/errors"
 	"github.com/rancher/k3s/pkg/version"
+	"github.com/rancher/wins/pkg/logs"
+	"github.com/rancher/wins/pkg/profilings"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/windows/svc"
-	"golang.org/x/sys/windows/svc/eventlog"
 )
 
 type service struct{}
@@ -39,11 +40,24 @@ func StartService() error {
 		return err
 	}
 
-	elog, err := eventlog.Open(version.Program)
+	// ETW tracing
+	etw, err := logs.NewEtwProviderHook(version.Program)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "could not create ETW provider logrus hook")
 	}
-	logrus.AddHook(eventloghook.NewHook(elog))
+	logrus.AddHook(etw)
+
+	el, err := logs.NewEventLogHook(version.Program)
+	if err != nil {
+		return errors.Wrap(err, "could not create eventlog logrus hook")
+	}
+	logrus.AddHook(el)
+
+	// Creates a Win32 event defined on a Global scope at stackdump-{pid} that can be signaled by
+	// built-in administrators of the Windows machine or by the local system.
+	// If this Win32 event (Global//stackdump-{pid}) is signaled, a goroutine launched by this call
+	// will dump the current stack trace into {windowsTemporaryDirectory}/{default.WindowsServiceName}.{pid}.stack.logs
+	profilings.SetupDumpStacks(version.Program, os.Getpid())
 
 	stop := make(chan struct{})
 	go watchService(stop)
