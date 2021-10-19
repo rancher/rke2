@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+set -e
+
+BUILD_REGEX="build[0-9]+"
+
+info() {
+    echo '[INFO] ' "$@"
+}
+
+fatal() {
+    echo '[ERROR] ' "$@" >&2
+    exit 1
+}
+
+function parse_tag() {
+    if [ -z $1 ]; then
+        fatal "tag required as argument"
+        exit 1
+    fi
+    tag=$1
+    if [[ "${tag}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)([-+][a-zA-Z0-9]+)?[-+](rke2r[0-9]+)$ ]]; then
+        MAJOR=${BASH_REMATCH[1]}
+        MINOR=${BASH_REMATCH[2]}
+        PATCH=${BASH_REMATCH[3]}
+        RC=${BASH_REMATCH[4]}
+        RKE2_PATCH=${BASH_REMATCH[5]}
+    fi
+}
+
+function check_release_branch() {
+    TAG_BRANCH=$(git branch --all -q --contains $GIT_TAG | grep origin | grep -v origin$ | grep -v "HEAD" | sed -e 's/^[[:space:]]*//')
+    if [ "$TAG_BRANCH" == "remotes/origin/master" ]; then
+        K8S_VERSION_GO_MOD=$(grep 'k8s.io/kubernetes v' go.mod | head -n1 | awk '{print $2}')
+        if [ "v$MAJOR.$MINOR.$PATCH" == "$K8S_VERSION_GO_MOD" ]; then
+            info "Tag $GIT_TAG is cut from master"
+            return
+        fi
+    fi
+    if [ ! "$TAG_BRANCH" = "remotes/origin/release-$MAJOR.$MINOR" ]; then
+        fatal "Tag is cut from the wrong branch $TAG_BRANCH"
+    fi
+}
+
+function check_kubernetes_version() {
+    if [[ ! "$KUBERNETES_IMAGE_TAG" =~ v$MAJOR.$MINOR.$PATCH-$RKE2_PATCH-$BUILD_REGEX ]]; then
+        fatal "Kubernetes image tag [$KUBERNETES_IMAGE_TAG] is incorrect for this tag"
+    fi
+
+    if [[ ! "$KUBERNETES_VERSION" =~ v$MAJOR.$MINOR.$PATCH ]]; then
+        fatal "Kubernetes version variable [$KUBERNETES_VERSION] is incorrect, please correct the version to v$MAJOR.$MINOR.$PATCH"
+    fi
+
+}
+
+function check_kube_proxy_version() {
+    KUBE_PROXY_VERSION=$(grep -B1 "rke2-kube-proxy" Dockerfile | grep 'CHART_VERSION=' | cut -d '=' -f 2-)
+    if [[ ! "$KUBE_PROXY_VERSION" =~ v$MAJOR.$MINOR.$PATCH-$RKE2_PATCH-$BUILD_REGEX ]]; then
+        fatal "kube proxy chart version [$KUBE_PROXY_VERSION] is incorrect for this tag"
+    fi
+
+}
+
+function check_win_binaries() {
+    CRICTL_WINDOWS_VERSION=$(grep 'CRICTL_VERSION=' Dockerfile.windows | cut -d '=' -f 2- | grep -oE "v([0-9]+)\.([0-9]+)")
+    if [ ! "$CRICTL_WINDOWS_VERSION" = "v$MAJOR.$MINOR" ]; then
+        fatal "crictl windows binary version [$CRICTL_WINDOWS_VERSION] does not match kubernetes version"
+    fi
+
+    CALICO_WINDOWS_VERSION=$(grep 'CALICO_VERSION=' Dockerfile.windows | cut -d '=' -f 2- | grep -oE "v([0-9]+)\.([0-9]+)")
+    CALICO_LINUX_VERSION=$(grep "rke2-calico.yaml" Dockerfile | grep 'CHART_VERSION=' | cut -d '=' -f 2- | grep -oE "v([0-9]+)\.([0-9]+)")
+    if [ ! "$CALICO_WINDOWS_VERSION" = "$CALICO_LINUX_VERSION" ]; then
+        fatal "Calico windows binary version [$CALICO_WINDOWS_VERSION] does not match Calico chart version [$CALICO_LINUX_VERSION]"
+    fi
+}
+
+
+. ./scripts/version.sh
+
+git fetch origin -f --tags
+parse_tag $DRONE_TAG
+check_release_branch
+check_kubernetes_version
+check_kube_proxy_version
+check_win_binaries
