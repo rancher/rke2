@@ -30,7 +30,11 @@ Prior to RKE2 v1.20, private registries must use TLS, with a cert trusted by the
 3. [Install RKE2](#install-rke2) using the `system-default-registry` parameter, or use the [containerd registry configuration](containerd_registry_configuration.md) to use your registry as a mirror for docker.io.
 
 ## Install RKE2
-These steps should only be performed after completing one of either the [Tarball Method](#tarball-method) or [Private Registry Method](#private-registry-method).
+The following options to install RKE2 should only be performed after completing one of either the [Tarball Method](#tarball-method) or [Private Registry Method](#private-registry-method).
+
+RKE2 can be installed either by running the [binary](#rke2-binary-install) directly or by using the [install.sh script](#rke2-installsh-script-install).
+
+### RKE2 Binary Install
 
 1. Obtain the rke2 binary file `rke2.linux-amd64`.
 2. Ensure the binary is named `rke2` and place it in `/usr/local/bin`. Ensure it is executable.
@@ -40,3 +44,34 @@ system-default-registry: "registry.example.com:5000"
 ```
 
 **Note:** The `system-default-registry` parameter must specify only valid RFC 3986 URI authorities, i.e. a host and optional port.
+
+### RKE2 Install.sh Script Install
+
+You may use the `install.sh script` and define the `INSTALL_RKE2_ARTIFACT_PATH` to reduce steps and create the systemd service file.
+
+1. Download the rke2, rke2-images, and sha256sum archives from the release into a directory, as in the example below:
+
+```
+# mkdir /root/rke2-artifacts && cd /root/rke2-artifacts/
+# curl -OLs https://github.com/rancher/rke2/releases/download/v1.21.5%2Brke2r2/rke2-images.linux-amd64.tar.zst
+# curl -OLs https://github.com/rancher/rke2/releases/download/v1.21.5%2Brke2r2/rke2.linux-amd64.tar.gz
+# curl -OLs https://github.com/rancher/rke2/releases/download/v1.21.5%2Brke2r2/sha256sum-amd64.txt
+# curl -sfL https://get.rke2.io --output install.sh
+```
+
+2. Next, run install.sh using the directory, as in the example below:
+
+``` 
+# chmod +x install.sh
+# INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts ./install.sh
+[INFO]  staging local checksums from /root/rke2-artifacts/sha256sum-amd64.txt
+[INFO]  staging zst airgap image tarball from /root/rke2-artifacts/rke2-images.linux-amd64.tar.zst
+[INFO]  staging tarball from /root/rke2-artifacts/rke2.linux-amd64.tar.gz
+[INFO]  verifying airgap tarball
+grep: /tmp/rke2-install.nc03lrohgR/rke2-images.checksums: No such file or directory
+[INFO]  installing airgap tarball to /var/lib/rancher/rke2/agent/images
+[INFO]  verifying tarball
+[INFO]  unpacking tarball file to /usr/local
+```
+
+3. Enable and run the service as outlined [here.](https://docs.rke2.io/install/quickstart/#2-enable-the-rke2-server-service)
