@@ -23,10 +23,11 @@ _To release once have approval from QA:_
 - [ ] PM: Dev and QA team to be notified of the incoming releases - add event to team calendar
 - [ ] PM: Dev and QA team to be notified of the date we will mark the latest release as stable - add event to team calendar [ONLY APPLICABLE FOR LATEST MINOR RELEASE]
 - [ ] QA: Review changes and understand testing efforts
-- [ ] Release Captain: Prepare release notes in our private release-notes repo (submit PR for changes taking care to carefully check links and the components, once merged, create the release in GitHub and mark as a draft and check the pre-release box, fill in title, set target release branch, leave tag version blank for now until we are ready to release)
+- [ ] Release Captain: Prepare release notes in our private [release-notes repo](https://github.com/rancherlabs/release-notes) (submit PR for changes taking care to carefully check links and the components, once merged, create the release in GitHub and mark as a draft and check the pre-release box, fill in title, set target release branch, leave tag version blank for now until we are ready to release)
 - [ ] QA: Validate and close out all issues in the release milestone.
 
 **Vendor and release work:**
+To find more information on specific steps, please see documentation [here](https://github.com/rancher/rke2/blob/master/developer-docs/upgrading_kubernetes.md)
 - [ ] Release Captain: Tag new Hardened Kubernetes release
 - [ ] Release Captain: Update Helm chart versions
 - [ ] Release Captain: Update RKE2
@@ -37,11 +38,10 @@ _To release once have approval from QA:_
 - [ ] Release Captain: Tag RKE2 packaging release "testing"
 - [ ] Release Captain: Tag RKE2 packaging release "latest"
 
-
 **Post-Release work:**
 - [ ] Release Captain: Once release is fully complete (CI is all green and all release artifacts exist), edit the release, uncheck "Pre-release", and save.
-- [ ] 
 - [ ] Release Captain: Tag RKE2 packaging "stable"
 - [ ] Release Captain: Update stable release in channels.yaml
-- [ ] Release Captain: Prepare PRs as needed to update [KDM](https://github.com/rancher/kontainer-driver-metadata/) in the appropriate dev branches.
+- [ ] Father time: Wait 24 hours
+- [ ] Release Captain: Prepare PRs as needed to update [KDM](https://github.com/rancher/kontainer-driver-metadata/) in the appropriate dev branches.  For more information on the structure of the PR, see the [docs](https://github.com/rancher/rke2/blob/master/developer-docs/upgrading_kubernetes.md#update-rancher-kdm)
 - [ ] PM: Close the milestone in GitHub.
