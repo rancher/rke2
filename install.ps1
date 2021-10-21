@@ -95,6 +95,8 @@ function Write-DebugLog() {
 function Write-FatalLog() {
     Write-Output "[ERROR] $($args -join " ")"
     if ([string]::IsNullOrEmpty($suffix)) {
+        $archInfo = Get-ArchitectureInfo
+        $suffix = $archInfo.Suffix
         Write-Output "[ALT] Please visit 'https://github.com/rancher/rke2/releases' directly and download the latest rke2.$suffix.tar.gz"
     }
     exit 1
@@ -422,7 +424,6 @@ function Copy-LocalBinaryTarball() {
     )
     $archInfo = Get-ArchitectureInfo
     $suffix = $archInfo.Suffix    
-    $arch = $archInfo.Arch
 
     if (-Not $CommitHash) {
         Write-InfoLog "staging local binary tarball from $ArtifactPath/rke2.$suffix.tar.gz"
@@ -452,6 +453,7 @@ function Copy-LocalAirgapTarball() {
 
     $archInfo = Get-ArchitectureInfo
     $arch = $archInfo.Arch
+    $suffix = $archInfo.Suffix
 
     if (-Not $CommitHash) {
         if (Test-Path -Path "$Path/rke2-windows-$BuildVersion-$arch-images.tar.zst" -PathType Leaf) {
