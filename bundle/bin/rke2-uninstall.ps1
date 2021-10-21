@@ -107,7 +107,7 @@ function Stop-Processes () {
         Write-LogInfo "Checking if $ProcessName process exists"
         if ((Get-Process -Name $ProcessName -ErrorAction SilentlyContinue)) {
             Write-LogInfo "$ProcessName process found, stopping now"
-            Stop-Process -Name $ProcessName
+            Stop-Process -Name $ProcessName -Confirm $false
             while (-Not(Get-Process -Name $ProcessName).HasExited) {
                 Write-LogInfo "Waiting for $ProcessName process to stop"
                 Start-Sleep -s 5
@@ -129,7 +129,7 @@ function Invoke-CleanServices () {
         Write-LogInfo "Checking if $ServiceName service exists"
         if ((Get-Service -Name $ServiceName -ErrorAction SilentlyContinue)) {
             Write-LogInfo "$ServiceName service found, stopping now"
-            Stop-Service -Name $ServiceName
+            Stop-Service -Name $ServiceName -Confirm $false
             while ((Get-Service -Name $ServiceName).Status -ne 'Stopped') {
                 Write-LogInfo "Waiting for $ServiceName service to stop"
                 Start-Sleep -s 5
@@ -179,7 +179,7 @@ function Remove-Data () {
         Write-LogInfo "Cleaning $dir..."
         if (Test-Path $dir) {
             $symLinkCheck = "Get-ChildItem -Path $dir -Recurse -Attributes ReparsePoint"
-            if (!([string]::IsNullOrEmpty($symLinkCheck))) {
+            if ($symLinkCheck) {
                 Get-ChildItem -Path $dir -Recurse -Attributes ReparsePoint | ForEach-Object { $_.Delete() }
             }
             Remove-Item -Path $dir -Recurse -Force -ErrorAction SilentlyContinue
@@ -189,7 +189,7 @@ function Remove-Data () {
         }
     }
     $cleanCustomDirs = @("$env:CATTLE_AGENT_BIN_PREFIX", "$env:CATTLE_AGENT_VAR_DIR", "$env:CATTLE_AGENT_CONFIG_DIR")
-    if (!([string]::IsNullOrEmpty($cleanCustomDirs))) {
+    if ($cleanCustomDirs) {
         $ErrorActionPreference = 'SilentlyContinue'
         foreach ($dirs in $cleanCustomDirs) {
             if ($dirs.Contains("/")) {
@@ -199,7 +199,7 @@ function Remove-Data () {
             Write-LogInfo "Cleaning $dirs..."
             if (Test-Path $dirs) {
                 $symLinkCheck = "Get-ChildItem -Path $dirs -Recurse -Attributes ReparsePoint"
-                if (!([string]::IsNullOrEmpty($symLinkCheck))) {
+                if ($symLinkCheck) {
                     Get-ChildItem -Path $dirs -Recurse -Attributes ReparsePoint | ForEach-Object { $_.Delete() }
                 }
                 Remove-Item -Path $dirs -Recurse -Force -ErrorAction SilentlyContinue
