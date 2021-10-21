@@ -27,20 +27,21 @@ _To release once have approval from QA:_
 - [ ] QA: Validate and close out all issues in the release milestone.
 
 **Vendor and release work:**
-- [ ] Release Captain: Vendor in the new patch version and release rancher/kubernetes
-- [ ] Release Captain: Tag and release any necessary RCs for QA to test RKE2 and KDM on the Rancher side
-- [ ] Release Captain: Tag and release when have QA approval
-- [ ] Release Captain: Update helm chart versions
+- [ ] Release Captain: Tag new Hardened Kubernetes release
+- [ ] Release Captain: Update Helm chart versions
+- [ ] Release Captain: Update RKE2
+- [ ] Release Captain: Tag new RKE2 RC
+- [ ] Release Captain: Tag new RKE2 packaging RC "testing"
+- [ ] Release Captain: Tag the RKE2 release
 - [ ] Release Captain: Add release notes to release
-- [ ] Release Captain: Tag new RKE packaging RC "Testing"
-- [ ] Release Captain: Tag RKE2 packaging release "Testing"
+- [ ] Release Captain: Tag RKE2 packaging release "testing"
+- [ ] Release Captain: Tag RKE2 packaging release "latest"
+
 
 **Post-Release work:**
 - [ ] Release Captain: Once release is fully complete (CI is all green and all release artifacts exist), edit the release, uncheck "Pre-release", and save.
 - [ ] 
-- [ ] Release Captain: Prepare PRs as needed to update [KDM](https://github.com/rancher/kontainer-driver-metadata/) in the appropriate dev branches.
-- [ ] Release Captain: Tag RKE2 packaging release "Latest"
-- [ ] Release Captain: Uncheck "pre-release" after 24 hours in "Latest"
 - [ ] Release Captain: Tag RKE2 packaging "stable"
 - [ ] Release Captain: Update stable release in channels.yaml
+- [ ] Release Captain: Prepare PRs as needed to update [KDM](https://github.com/rancher/kontainer-driver-metadata/) in the appropriate dev branches.
 - [ ] PM: Close the milestone in GitHub.
