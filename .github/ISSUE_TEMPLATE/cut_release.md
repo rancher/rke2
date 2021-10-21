@@ -40,8 +40,8 @@ To find more information on specific steps, please see documentation [here](http
 
 **Post-Release work:**
 - [ ] Release Captain: Once release is fully complete (CI is all green and all release artifacts exist), edit the release, uncheck "Pre-release", and save.
+- [ ] Wait 24 hours
 - [ ] Release Captain: Tag RKE2 packaging "stable"
 - [ ] Release Captain: Update stable release in channels.yaml
-- [ ] Father time: Wait 24 hours
 - [ ] Release Captain: Prepare PRs as needed to update [KDM](https://github.com/rancher/kontainer-driver-metadata/) in the appropriate dev branches.  For more information on the structure of the PR, see the [docs](https://github.com/rancher/rke2/blob/master/developer-docs/upgrading_kubernetes.md#update-rancher-kdm)
 - [ ] PM: Close the milestone in GitHub.
