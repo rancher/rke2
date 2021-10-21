@@ -15,7 +15,7 @@ const (
 )
 
 var (
-	DisableItems = []string{"rke2-coredns", "rke2-ingress-nginx", "rke2-kube-proxy", "rke2-metrics-server"}
+	DisableItems = []string{"rke2-coredns", "rke2-ingress-nginx", "rke2-metrics-server"}
 	CNIItems     = []string{"calico", "canal", "cilium"}
 
 	config = rke2.Config{}
@@ -126,6 +126,8 @@ var (
 		"etcd-s3-bucket":                    copy,
 		"etcd-s3-region":                    copy,
 		"etcd-s3-folder":                    copy,
+		"etcd-s3-insecure":                  copy,
+		"etcd-s3-timeout":                   copy,
 		"disable-helm-controller":           drop,
 	})
 )

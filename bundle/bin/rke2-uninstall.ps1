@@ -101,29 +101,19 @@ function Invoke-HNSRequest {
 # cleanup
 Write-Host "Beginning the uninstall process"
 
-Get-Process -ErrorAction Ignore -Name "rke2*" | ForEach-Object {
-    Write-LogInfo "Stopping process $($_.Name) ..."
-    $_ | Stop-Process -ErrorAction Ignore -Force
-}
-
-Get-Process -ErrorAction Ignore -Name "kube-proxy*" | ForEach-Object {
-    Write-LogInfo "Stopping process $($_.Name) ..."
-    $_ | Stop-Process -ErrorAction Ignore -Force
-}
-
-Get-Process -ErrorAction Ignore -Name "kubelet*" | ForEach-Object {
-    Write-LogInfo "Stopping process $($_.Name) ..."
-    $_ | Stop-Process -ErrorAction Ignore -Force
-}
-
-Get-Process -ErrorAction Ignore -Name "containerd*" | ForEach-Object {
-    Write-LogInfo "Stopping process $($_.Name) ..."
-    $_ | Stop-Process -ErrorAction Ignore -Force
-}
-
-Get-Process -ErrorAction Ignore -Name "wins*" | ForEach-Object {
-    Write-LogInfo "Stopping process $($_.Name) ..."
-    $_ | Stop-Process -ErrorAction Ignore -Force
+function Stop-Processes () {
+    $ProcessNames = @('rke2', 'kube-proxy', 'kubelet', 'containerd', 'wins', 'calico-node')
+    foreach ($ProcessName in $ProcessNames) {
+        Write-LogInfo "Checking if $ProcessName process exists"
+        if ((Get-Process -Name $ProcessName -ErrorAction SilentlyContinue)) {
+            Write-LogInfo "$ProcessName process found, stopping now"
+            Stop-Process -Name $ProcessName -Confirm $false
+            while (-Not(Get-Process -Name $ProcessName).HasExited) {
+                Write-LogInfo "Waiting for $ProcessName process to stop"
+                Start-Sleep -s 5
+            }
+        }
+    }
 }
 
 # clean up firewall rules
@@ -132,50 +122,25 @@ Get-NetFirewallRule -PolicyStore ActiveStore -Name "rke2*" -ErrorAction Ignore |
     $_ | Remove-NetFirewallRule -ErrorAction Ignore | Out-Null
 }
 
-# clean up rke2 service
-Get-Service -Name "rke2" -ErrorAction Ignore | Where-Object { $_.Status -eq "Running" } | ForEach-Object {
-    if ($_.Status -eq "Running") {
-        Write-LogInfo "Stopping rke2 service ..."
-        $_ | Stop-Service -Force -ErrorAction Ignore
-        Write-LogInfo "Removing the rke2 service ..."
-        if (($PSVersionTable.PSVersion.Major) -ge 6) {
-            Remove-Service rke2
-        }
-        else {
-            sc.exe delete rke2
-        }
-    }
-    else {
-        Write-LogInfo "Removing the rke2 service ..."
-        if (($PSVersionTable.PSVersion.Major) -ge 6) {
-            Remove-Service rke2
-        }
-        else {
-            sc.exe delete rke2
-        }
-    }
-}
-
-# clean up wins service
-Get-Service -Name "wins" -ErrorAction Ignore | Where-Object { $_.Status -eq "Running" } | ForEach-Object {
-    if ($_.Status -eq "Running") {
-        Write-LogInfo "Stopping wins service ..."
-        $_ | Stop-Service -Force -ErrorAction Ignore
-        Write-LogInfo "Removing the wins service ..."
-        if (($PSVersionTable.PSVersion.Major) -ge 6) {
-            Remove-Service wins
-        }
-        else {
-            sc.exe delete wins
-        }
-    }
-    else {
-        Write-LogInfo "Removing the wins service ..."
-        if (($PSVersionTable.PSVersion.Major) -ge 6) {
-            Remove-Service wins
-        }
-        else {
-            sc.exe delete wins
+function Invoke-CleanServices () {
+    $ServiceNames = @('rke2', 'wins')
+    # clean up wins and rke2 service
+    foreach ($ServiceName in $ServiceNames) {
+        Write-LogInfo "Checking if $ServiceName service exists"
+        if ((Get-Service -Name $ServiceName -ErrorAction SilentlyContinue)) {
+            Write-LogInfo "$ServiceName service found, stopping now"
+            Stop-Service -Name $ServiceName -Confirm $false
+            while ((Get-Service -Name $ServiceName).Status -ne 'Stopped') {
+                Write-LogInfo "Waiting for $ServiceName service to stop"
+                Start-Sleep -s 5
+            }
+            Write-LogInfo "$ServiceName service has stopped. Removing the $ServiceName service ..."
+            if (($PSVersionTable.PSVersion.Major) -ge 6) {
+                Remove-Service $ServiceName
+            }
+            else {
+                sc.exe delete $ServiceName
+            }
         }
     }
 }
@@ -214,7 +179,7 @@ function Remove-Data () {
         Write-LogInfo "Cleaning $dir..."
         if (Test-Path $dir) {
             $symLinkCheck = "Get-ChildItem -Path $dir -Recurse -Attributes ReparsePoint"
-            if (!([string]::IsNullOrEmpty($symLinkCheck))) {
+            if ($symLinkCheck) {
                 Get-ChildItem -Path $dir -Recurse -Attributes ReparsePoint | ForEach-Object { $_.Delete() }
             }
             Remove-Item -Path $dir -Recurse -Force -ErrorAction SilentlyContinue
@@ -224,7 +189,8 @@ function Remove-Data () {
         }
     }
     $cleanCustomDirs = @("$env:CATTLE_AGENT_BIN_PREFIX", "$env:CATTLE_AGENT_VAR_DIR", "$env:CATTLE_AGENT_CONFIG_DIR")
-    if (!([string]::IsNullOrEmpty($cleanCustomDirs))) {
+    if ($cleanCustomDirs) {
+        $ErrorActionPreference = 'SilentlyContinue'
         foreach ($dirs in $cleanCustomDirs) {
             if ($dirs.Contains("/")) {
                 $dirs = $dirs -Replace "/", "\"
@@ -233,7 +199,7 @@ function Remove-Data () {
             Write-LogInfo "Cleaning $dirs..."
             if (Test-Path $dirs) {
                 $symLinkCheck = "Get-ChildItem -Path $dirs -Recurse -Attributes ReparsePoint"
-                if (!([string]::IsNullOrEmpty($symLinkCheck))) {
+                if ($symLinkCheck) {
                     Get-ChildItem -Path $dirs -Recurse -Attributes ReparsePoint | ForEach-Object { $_.Delete() }
                 }
                 Remove-Item -Path $dirs -Recurse -Force -ErrorAction SilentlyContinue
@@ -253,11 +219,18 @@ function Remove-TempData () {
 }
 
 function Reset-Environment () {
-    $customVars = @('CATTLE_AGENT_BINARY_URL', 'CATTLE_AGENT_CONFIG_DIR', 'CATTLE_AGENT_BIN_PREFIX', 'CATTLE_AGENT_LOGLEVEL', 'CATTLE_AGENT_VAR_DIR', 'CATTLE_CA_CHECKSUM', 'CATTLE_ID', 'CATTLE_LABELS', 'CATTLE_PRESERVE_WORKDIR', 'CATTLE_REMOTE_ENABLED', 'CATTLE_ROLE_CONTROLPLANE', 'CATTLE_ROLE_ETCD', 'CATTLE_ROLE_WORKER', 'CATTLE_SERVER', 'CATTLE_SERVER_CHECKSUM', 'CATTLE_TOKEN', 'RANCHER_CERT' )
+    $customVars = @('CATTLE_AGENT_BINARY_URL', 'CATTLE_AGENT_CONFIG_DIR', 'CATTLE_AGENT_BIN_PREFIX', 'CATTLE_AGENT_LOGLEVEL', 'CATTLE_AGENT_VAR_DIR', 'CATTLE_CA_CHECKSUM', 'CATTLE_ID', 'CATTLE_LABELS', 'CATTLE_PRESERVE_WORKDIR', 'CATTLE_REMOTE_ENABLED', 'CATTLE_RKE2_VERSION', 'CATTLE_ROLE_CONTROLPLANE', 'CATTLE_ROLE_ETCD', 'CATTLE_ROLE_WORKER', 'CATTLE_SERVER', 'CATTLE_SERVER_CHECKSUM', 'CATTLE_TOKEN', 'RANCHER_CERT', 'RKE2_RESOLV_CONF', 'RKE2_PATH' )
     Write-LogInfo "Cleaning RKE2 Environment Variables"
     try {
-        foreach ($v in $customVars) {
-            Remove-Item Env:$v -Force -ErrorAction SilentlyContinue
+        ForEach ($v in $customVars) {
+            if ([Environment]::GetEnvironmentVariable($v, "Process")) {
+                Write-LogInfo "Cleaning $v"
+                [Environment]::SetEnvironmentVariable($v, $null, "Process")
+            }
+            if ([Environment]::GetEnvironmentVariable($v, "User")) {
+                Write-LogInfo "Cleaning $v"
+                [Environment]::SetEnvironmentVariable($v, $null, "User")
+            }
         }
     }
     catch {
@@ -265,22 +238,46 @@ function Reset-Environment () {
     }
 }
 
-function Reset-machineEnvironment () {
-    $customVars = @('CATTLE_AGENT_VAR_DIR', 'CATTLE_AGENT_CONFIG_DIR', 'CATTLE_AGENT_BIN_PREFIX')
+function Reset-MachineEnvironment () {
+    $customMachineVars = @('CATTLE_AGENT_VAR_DIR', 'CATTLE_AGENT_CONFIG_DIR', 'CATTLE_AGENT_BIN_PREFIX')
     Write-LogInfo "Cleaning RKE2 Machine Environment Variables"
     try {
-        foreach ($v in $customVars) {
-            $ErrorActionPreference = 'SilentlyContinue'
-            [Environment]::SetEnvironmentVariable($v, $null, "Machine") 
+        ForEach ($v in $customMachineVars) {
+            if ([Environment]::GetEnvironmentVariable($v, "Machine")) {
+                Write-LogInfo "Cleaning $v"
+                [Environment]::SetEnvironmentVariable($v, $null, "Machine")
+            }
+            if ([Environment]::GetEnvironmentVariable($v, "User")) {
+                Write-LogInfo "Cleaning $v"
+                [Environment]::SetEnvironmentVariable($v, $null, "User")
+            }
         }
     }
     catch {
-        Write-LogWarn "Could not reset machine environment variables: $($_)"
+        Write-LogWarn "Could not reset machine environment variable: $($_)"
     }
 }
+
 function Remove-Containerd () {
-    if (Test-Command ctr) {
+    $CONTAINERD_ADDRESS = "\\.\\pipe\\containerd-containerd"
+    crictl config --set runtime-endpoint="npipe:$CONTAINERD_ADDRESS"
+    function Invoke-Ctr {
+        param (
+            [parameter()]
+            [string]
+            $cmd
+        )
+        $baseCommand = "ctr -a $CONTAINERD_ADDRESS"
+        Invoke-Expression -Command "$(-join $baseCommand,$cmd)"
+    }
+
+    if (ctr) {
         $namespaces = $(Find-Namespaces)
+        if (-Not($namespaces)) {
+            $ErrorActionPreference = 'SilentlyContinue'
+            $namespaces = @('default', 'cattle-system', 'kube-system', 'fleet-default', 'calico-system')
+            Write-LogInfo "Could not find containerd namespaces, will use default list instead:`r`n$namespaces"
+        }
         foreach ($ns in $namespaces) {
             $tasks = $(Find-Tasks $ns)
             foreach ($task in $tasks) {
@@ -296,7 +293,10 @@ function Remove-Containerd () {
                 Remove-Image $ns $image
             }
             Remove-Namespace $ns
-        }    
+            # TODO
+            # clean pods with crictl
+            # $CONTAINER_RUNTIME_ENDPOINT = "npipe:\\.\\pipe\\containerd-containerd"
+        }
     }
     else {
         Write-LogError "PATH is misconfigured or ctr is missing from PATH"
@@ -305,56 +305,59 @@ function Remove-Containerd () {
 }
 
 function Find-Namespaces () {
-    ctr --namespace=$namespace namespace list -q
+    Invoke-Ctr -cmd "namespace list -q"
 }
 function Find-ContainersInNamespace() {
-    $namespace = $1
-    ctr --namespace=$namespace container list -q
+    $namespace = $args[0]
+    Invoke-Ctr -cmd "-n $namespace container list -q"
 }
 
 function Find-Tasks() {
-    $namespace = $1
-    ctr -n $namespace task list -q
+    $namespace = $args[0]
+    Invoke-Ctr -cmd "-n $namespace task list -q"
 }
 
 function Find-Images() {
-    $namespace = $1
-    ctr -n $namespace image list -q
+    $namespace = $args[0]
+    Invoke-Ctr -cmd "-n $namespace image list -q"
 }
 
 function Remove-Image() {
-    $namespace = $1
-    $image = $2
-    ctr -n $namespace image rm $image
+    $namespace = $args[0]
+    $image = $args[1]
+    Invoke-Ctr -cmd "-n $namespace image rm $image"
 }
 
 function Remove-Task() {
-    $namespace = $1
-    $task = $2
-    ctr -n $namespace task delete --force $task
+    $namespace = $args[0]
+    $task = $args[1]
+    Invoke-Ctr -cmd "-n $namespace task delete --force $task"
 }
 
 function Remove-Container() {
-    $namespace = $1
-    $container = $2
-    ctr --namespace=$namespace container delete $container
+    $namespace = $args[0]
+    $container = $args[1]
+    Invoke-Ctr -cmd "-n $namespace container delete $container"
 }
 
 function Remove-Namespace() {
-    $namespace = $1
-    ctr namespace remove $namespace
+    $namespace = $args[0]
+    Invoke-Ctr -cmd "namespace remove $namespace"
 }
 
-function Rke2-Uninstall () {
-    $env:PATH+=";$env:CATTLE_AGENT_BIN_PREFIX/bin/"
-    Remove-Containerd    
-    Reset-HNS
+function Invoke-Rke2Uninstall () {
+    $env:PATH += ";$env:CATTLE_AGENT_BIN_PREFIX/bin/;c:\var\lib\rancher\rke2\bin"
+    Remove-Containerd
+    Stop-Processes
+    Invoke-CleanServices
     Remove-Data
     Remove-TempData
     Reset-Environment
-    Reset-machineEnvironment
+    Reset-MachineEnvironment
+    Write-LogInfo "HNS will be cleaned next, temporary network disruption may occur. HNS cleanup is the final step."
+    Reset-HNS
     Write-LogInfo "Finished!"
 }
 
-Rke2-Uninstall
+Invoke-Rke2Uninstall
 exit 0

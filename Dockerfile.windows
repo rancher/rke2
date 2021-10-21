@@ -5,7 +5,7 @@ RUN apk --no-cache add \
     unzip
 
 # Dapper/Drone/CI environment
-FROM rancher/hardened-build-base:v1.16.6b7 AS dapper
+FROM rancher/hardened-build-base:v1.16.7b7 AS dapper
 ENV DAPPER_ENV GODEBUG REPO TAG DRONE_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME GCLOUD_AUTH ENABLE_REGISTRY
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
@@ -42,12 +42,12 @@ FROM build as windows-runtime-collect
 ARG KUBERNETES_VERSION=dev
 
 # windows runtime image
-ENV CRICTL_VERSION="v1.21.0"
-ENV CONTAINERD_VERSION="1.5.4"
+ENV CRICTL_VERSION="v1.22.0"
+ENV CONTAINERD_VERSION="1.5.7"
 ENV WINS_VERSION="0.1.1"
 ENV FLANNEL_VERSION="v0.14.0"
-ENV CALICO_VERSION="v3.19.2"
-ENV CNI_PLUGIN_VERSION="v0.9.1"
+ENV CALICO_VERSION="v3.20.1"
+ENV CNI_PLUGIN_VERSION="v1.0.1"
 
 RUN mkdir -p rancher
 RUN curl -sLO https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz
@@ -92,8 +92,7 @@ RUN curl -sL https://github.com/Microsoft/SDN/raw/master/Kubernetes/windows/hns.
 
 RUN tar xzvf crictl-${CRICTL_VERSION}-windows-amd64.tar.gz crictl.exe -C rancher/
 RUN tar xvzf containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz -C rancher/
-RUN tar xzvf cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz ./flannel.exe ./win-overlay.exe ./host-local.exe -C rancher/
-RUN tar xzvf flannel-${FLANNEL_VERSION}-windows-amd64.tar.gz flanneld.exe -C rancher/
+RUN tar xzvf cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz ./win-overlay.exe ./host-local.exe -C rancher/
 
 RUN unzip calico-windows-${CALICO_VERSION}.zip
 RUN mv CalicoWindows/calico-node.exe rancher/

@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -108,6 +109,7 @@ type StaticPodConfig struct {
 	CISMode               bool
 	DisableETCD           bool
 	IsServer              bool
+	Authenticator         authenticator.Request
 }
 
 type CloudProviderConfig struct {
@@ -149,7 +151,7 @@ func (s *StaticPodConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfi
 }
 
 // Kubelet starts the kubelet in a subprocess with watching goroutine.
-func (s *StaticPodConfig) Kubelet(args []string) error {
+func (s *StaticPodConfig) Kubelet(ctx context.Context, args []string) error {
 	extraArgs := []string{
 		"--volume-plugin-dir=/var/lib/kubelet/volumeplugins",
 		"--file-check-frequency=5s",
@@ -180,7 +182,7 @@ func (s *StaticPodConfig) Kubelet(args []string) error {
 }
 
 // KubeProxy starts Kube Proxy as a static pod.
-func (s *StaticPodConfig) KubeProxy(args []string) error {
+func (s *StaticPodConfig) KubeProxy(ctx context.Context, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeProxy)
 	if err != nil {
 		return err
@@ -206,14 +208,22 @@ func (s *StaticPodConfig) KubeProxy(args []string) error {
 	})
 }
 
-// APIServer sets up the apiserver static pod once etcd is available, returning the authenticator and request handler.
-func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) (authenticator.Request, http.Handler, error) {
+// APIServerHandlers returning the authenticator and request handler for requests to the apiserver endpoint.
+func (s *StaticPodConfig) APIServerHandlers(ctx context.Context) (authenticator.Request, http.Handler, error) {
+	for s.Authenticator == nil {
+		runtime.Gosched()
+	}
+	return s.Authenticator, http.NotFoundHandler(), nil
+}
+
+// APIServer sets up the apiserver static pod once etcd is available.
+func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeAPIServer)
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
 	if err := images.Pull(s.ImagesDir, images.KubeAPIServer, image); err != nil {
-		return nil, nil, err
+		return err
 	}
 
 	args = append([]string{"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}, args...)
@@ -238,10 +248,13 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 		}
 		args = append(extraArgs, args...)
 		if err := writeDefaultPolicyFile(s.AuditPolicyFile); err != nil {
-			return nil, nil, err
+			return err
 		}
 	}
-	auth, err := auth.FromArgs(args)
+	s.Authenticator, err = auth.FromArgs(args)
+	if err != nil {
+		return err
+	}
 	for i, arg := range args {
 		// This is an option k3s adds that does not exist upstream
 		if strings.HasPrefix(arg, "--advertise-port=") {
@@ -258,7 +271,7 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 	if s.ControlPlaneResources.KubeAPIServerCPURequest == "" {
 		s.ControlPlaneResources.KubeAPIServerCPURequest = defaultKubeAPIServerCPURequest
 	}
-	after(etcdReady, func() error {
+	return after(etcdReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:       "kube-apiserver",
 			Args:          args,
@@ -273,13 +286,12 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 			Files:         files,
 		})
 	})
-	return auth, http.NotFoundHandler(), err
 }
 
 var permitPortSharingFlag = []string{"--permit-port-sharing=true"}
 
 // Scheduler starts the kube-scheduler static pod, once the apiserver is available.
-func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) error {
+func (s *StaticPodConfig) Scheduler(ctx context.Context, apiReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeScheduler)
 	if err != nil {
 		return err
@@ -300,8 +312,8 @@ func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) err
 			Command:       "kube-scheduler",
 			Args:          args,
 			Image:         image,
-			HealthPort:    10251,
-			HealthProto:   "HTTP",
+			HealthPort:    10259,
+			HealthProto:   "HTTPS",
 			CPURequest:    s.ControlPlaneResources.KubeSchedulerCPURequest,
 			CPULimit:      s.ControlPlaneResources.KubeSchedulerCPULimit,
 			MemoryRequest: s.ControlPlaneResources.KubeSchedulerMemoryRequest,
@@ -336,7 +348,7 @@ func after(after <-chan struct{}, f func() error) error {
 }
 
 // ControllerManager starts the kube-controller-manager static pod, once the apiserver is available.
-func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []string) error {
+func (s *StaticPodConfig) ControllerManager(ctx context.Context, apiReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeControllerManager)
 	if err != nil {
 		return err
@@ -371,8 +383,8 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 			Args:          args,
 			Image:         image,
 			Dirs:          onlyExisting(ssldirs),
-			HealthPort:    10252,
-			HealthProto:   "HTTP",
+			HealthPort:    10257,
+			HealthProto:   "HTTPS",
 			CPURequest:    s.ControlPlaneResources.KubeControllerManagerCPURequest,
 			CPULimit:      s.ControlPlaneResources.KubeControllerManagerCPULimit,
 			MemoryRequest: s.ControlPlaneResources.KubeControllerManagerMemoryRequest,
@@ -386,7 +398,7 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 
 // CloudControllerManager starts the cloud-controller-manager static pod, once the cloud controller manager RBAC
 // (and subsequently, the api server) is available.
-func (s *StaticPodConfig) CloudControllerManager(ccmRBACReady <-chan struct{}, args []string) error {
+func (s *StaticPodConfig) CloudControllerManager(ctx context.Context, ccmRBACReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.CloudControllerManager)
 	if err != nil {
 		return err
@@ -403,8 +415,8 @@ func (s *StaticPodConfig) CloudControllerManager(ccmRBACReady <-chan struct{}, a
 			Args:          args,
 			Image:         image,
 			Dirs:          onlyExisting(ssldirs),
-			HealthPort:    10252,
-			HealthProto:   "HTTP",
+			HealthPort:    10258,
+			HealthProto:   "HTTPS",
 			CPURequest:    s.ControlPlaneResources.CloudControllerManagerCPURequest,
 			CPULimit:      s.ControlPlaneResources.CloudControllerManagerCPULimit,
 			MemoryRequest: s.ControlPlaneResources.CloudControllerManagerMemoryRequest,
@@ -438,7 +450,7 @@ func (s *StaticPodConfig) CurrentETCDOptions() (opts executor.InitialOptions, er
 }
 
 // ETCD starts the etcd static pod.
-func (s *StaticPodConfig) ETCD(args executor.ETCDConfig) error {
+func (s *StaticPodConfig) ETCD(ctx context.Context, args executor.ETCDConfig) error {
 	image, err := s.Resolver.GetReference(images.ETCD)
 	if err != nil {
 		return err

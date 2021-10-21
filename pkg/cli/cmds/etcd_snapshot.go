@@ -29,6 +29,8 @@ var k3sFlags = map[string]*K3SFlagOption{
 	"s3-bucket":          copy,
 	"s3-region":          copy,
 	"s3-folder":          copy,
+	"s3-insecure":        copy,
+	"s3-timeout":         copy,
 }
 
 var subcommands = []cli.Command{

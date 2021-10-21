@@ -1,8 +1,9 @@
+#Requires -RunAsAdministrator
 <#
 .SYNOPSIS 
     Installs Rancher RKE2 to create Windows Worker Nodes.
 .DESCRIPTION 
-    Run the script to install all Rancher RKE2 related needs. (kubernetes, docker, network)
+    Run the script to install all Rancher RKE2 related needs. (kubernetes, containerd, network)
 .NOTES
     Environment variables:
       System Agent Variables
@@ -108,7 +109,7 @@ function Rke2-Installer {
         Write-Host -ForegroundColor Gray ("{0,-44}" -f ($args -join " "))
     }
     function Write-LogFatal {
-        Write-Host -NoNewline -ForegroundColor DarkRed "FATA: "
+        Write-Host -NoNewline -ForegroundColor DarkRed "FATAL: "
         Write-Host -ForegroundColor Gray ("{0,-44}" -f ($args -join " "))
         exit 255
     }
@@ -229,6 +230,7 @@ function Rke2-Installer {
             [System.Environment]::SetEnvironmentVariable('CATTLE_AGENT_CONFIG_DIR', "C:/etc/rancher/agent", 'Machine')
             Write-LogInfo "Using default agent configuration directory $( $env:CATTLE_AGENT_CONFIG_DIR )"
         }
+
         if (-Not (Test-Path $env:CATTLE_AGENT_CONFIG_DIR)) {
             New-Item -Path $env:CATTLE_AGENT_CONFIG_DIR -ItemType Directory -Force
         }
@@ -238,16 +240,17 @@ function Rke2-Installer {
             [System.Environment]::SetEnvironmentVariable('CATTLE_AGENT_VAR_DIR', "C:/var/lib/rancher/agent", 'Machine')
             Write-LogInfo "Using default agent var directory $( $env:CATTLE_AGENT_VAR_DIR )"
         }
+
         if (-Not (Test-Path $env:CATTLE_AGENT_VAR_DIR)) {
             New-Item -Path $env:CATTLE_AGENT_VAR_DIR -ItemType Directory -Force
         }
-
 
         if (-Not $env:CATTLE_AGENT_BIN_PREFIX) {
             $env:CATTLE_AGENT_BIN_PREFIX = "C:/usr/local"
             [System.Environment]::SetEnvironmentVariable('CATTLE_AGENT_BIN_PREFIX', "C:/usr/local", 'Machine')
             Write-LogInfo "Using default agent bin prefix $( $env:CATTLE_AGENT_BIN_PREFIX )"
         }
+
         if (-Not (Test-Path $env:CATTLE_AGENT_BIN_PREFIX)) {
             New-Item -Path "$($env:CATTLE_AGENT_BIN_PREFIX)/bin" -ItemType Directory -Force
         }
@@ -305,7 +308,7 @@ function Rke2-Installer {
         }
     }
     function Get-Rke2Config() {
-        $retries = 5
+        $retries = 0
         $path = "C:\etc\rancher\rke2"
         $file = "config.yaml"
         if (-Not(Test-Path $path)) {
@@ -315,25 +318,60 @@ function Rke2-Installer {
         if (-Not(Test-Path $configFile)) {
             $Uri = "$($env:CATTLE_SERVER)/v3/connect/config-yaml"
             Write-LogInfo "Pulling RKE2 config.yaml from $Uri"
-            while ($LASTEXITCODE -ne 0 -and $retries -lt 6) {
+            try {
                 if (-Not $env:CATTLE_CA_CHECKSUM) {
-                    Start-Sleep -Seconds 12
-                    curl.exe -sfL $Uri -o $configFile -H "Authorization: Bearer $($env:CATTLE_TOKEN)" -H "X-Cattle-Id: $($env:CATTLE_ID)" -H "X-Cattle-Role-Worker: $($env:CATTLE_ROLE_WORKER)" -H "X-Cattle-Labels: $($env:CATTLE_LABELS)" -H "X-Cattle-Taints: $($env:CATTLE_TAINTS)" -H "X-Cattle-Address: $($env:CATTLE_ADDRESS)" -H "X-Cattle-Internal-Address: $($env:CATTLE_INTERNAL_ADDRESS)" -H "Content-Type: application/json"
-                    $retries++
-                } 
+                    do {
+                        # $ErrorActionPreference = "SilentlyContinue"
+                        curl.exe -sfL $Uri -o $configFile -H "Authorization: Bearer $($env:CATTLE_TOKEN)" -H "X-Cattle-Id: $($env:CATTLE_ID)" -H "X-Cattle-Role-Worker: $($env:CATTLE_ROLE_WORKER)" -H "X-Cattle-Labels: $($env:CATTLE_LABELS)" -H "X-Cattle-Taints: $($env:CATTLE_TAINTS)" -H "X-Cattle-Address: $($env:CATTLE_ADDRESS)" -H "X-Cattle-Internal-Address: $($env:CATTLE_INTERNAL_ADDRESS)" -H "Content-Type: application/json"
+                        $retries++
+                        if (-Not(Test-Path $configFile)) {
+                            Start-Sleep -Seconds 12
+                        }
+                    } 
+                    while ((-Not(Test-Path $configFile) -and $retries -lt 6 -and $LASTEXITCODE -ne 0))
+                }
                 else {
-                    Start-Sleep -Seconds 12
-                    curl.exe --insecure --cacert $env:RANCHER_CERT -sfL $Uri -o $configFile -H "Authorization: Bearer $($env:CATTLE_TOKEN)" -H "X-Cattle-Id: $($env:CATTLE_ID)" -H "X-Cattle-Role-Worker: $($env:CATTLE_ROLE_WORKER)" -H "X-Cattle-Labels: $($env:CATTLE_LABELS)" -H "X-Cattle-Taints: $($env:CATTLE_TAINTS)" -H "X-Cattle-Address: $($env:CATTLE_ADDRESS)" -H "X-Cattle-Internal-Address: $($env:CATTLE_INTERNAL_ADDRESS)" -H "Content-Type: application/json"
-                    $retries++
+                    do {
+                        # $ErrorActionPreference = "SilentlyContinue"
+                        curl.exe --insecure --cacert $env:RANCHER_CERT -sfL $Uri -o $configFile -H "Authorization: Bearer $($env:CATTLE_TOKEN)" -H "X-Cattle-Id: $($env:CATTLE_ID)" -H "X-Cattle-Role-Worker: $($env:CATTLE_ROLE_WORKER)" -H "X-Cattle-Labels: $($env:CATTLE_LABELS)" -H "X-Cattle-Taints: $($env:CATTLE_TAINTS)" -H "X-Cattle-Address: $($env:CATTLE_ADDRESS)" -H "X-Cattle-Internal-Address: $($env:CATTLE_INTERNAL_ADDRESS)" -H "Content-Type: application/json"
+                        $retries++
+                        if (-Not(Test-Path $configFile)) {
+                            Start-Sleep -Seconds 12
+                        }        
+                    } 
+                    while ((-Not(Test-Path $configFile) -and $retries -lt 6 -and $LASTEXITCODE -ne 0))
+                } 
+                trap {
+                    if ($retries -lt 6) {
+                        Write-LogInfo "retry number: $retries"
+                        continue
+                    }
+                    if ($retries -ge 6) {
+                        throw [System.Net.WebException]::new()
+                    }
+                    elseif (-Not(Test-Path $configFile)) {
+                        throw [System.IO.FileNotFoundException]
+                    }
+                    else {
+                        throw [Microsoft.PowerShell.Commands.WriteErrorException]::new()                    
+                    }
                 }
             }
-        }
-        if ((Test-Path $configFile)) {
-            Write-LogInfo "RKE2 config.yaml pulled successfully"
-            Write-Debug "RKE2 config.yaml contents: $(Get-Content $configFile)"
-        }
-        if ($retries -ge 6 -or (-Not(Test-Path $configFile))) {
-            Write-LogFatal "RKE2 config file wasn't found after $retries retries."
+            catch [System.IO.FileNotFoundException] {
+                Write-Error -Message "RKE2 config file wasn't found after $retries retries. Max Retries Exceeded." -Exception ([System.Net.WebException]::new()) -ErrorAction Stop -ForegroundColor Red
+                exit 1
+            }
+            catch [System.Net.WebException] {
+                Write-Error -Message "RKE2 config file $configFile was not available from $Uri" -Exception ([System.IO.FileNotFoundException]) -ErrorAction Stop  -ForegroundColor Red
+                exit 1
+            }
+            catch [Microsoft.PowerShell.Commands.WriteErrorException] {
+                Write-LogFatal "An unexpected error occurred while running the RKE2 Windows Agent Rancher installation script: `r`n$($_)"
+            }
+
+            if ((Test-Path $configFile)) {
+                Write-LogInfo "RKE2 config.yaml pulled successfully"
+            }
         }
     }
 
@@ -432,7 +470,7 @@ function Rke2-Installer {
         New-CattleId
         Get-Rke2Config
         Get-Rke2Info
-        
+
         if ($env:CATTLE_RKE2_VERSION) {
             Invoke-Expression -Command "$($env:CATTLE_AGENT_BIN_PREFIX)/bin/install.ps1 -Version $($env:CATTLE_RKE2_VERSION)"
         }
@@ -458,7 +496,7 @@ function Rke2-Installer {
             Start-Sleep -s 5
         }
 
-        Write-LogInfo "Starting for RKE2 agent service"
+        Write-LogInfo "Starting the RKE2 agent service"
         Start-Service -Name $rke2ServiceName
     }
 

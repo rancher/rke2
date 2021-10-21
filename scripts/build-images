@@ -13,21 +13,21 @@ EOF
 
 xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
-    ${REGISTRY}/rancher/hardened-coredns:v1.8.3-build20210720
-    ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.8.3-build20210729
-    ${REGISTRY}/rancher/hardened-dns-node-cache:1.20.0-build20210803
-    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-${IMAGE_BUILD_VERSION}
-    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.3.6-${IMAGE_BUILD_VERSION}
-    ${REGISTRY}/rancher/klipper-helm:v0.6.4-build20210813
+    ${REGISTRY}/rancher/hardened-coredns:v1.8.5-build20211006
+    ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.8.5-build20211006
+    ${REGISTRY}/rancher/hardened-dns-node-cache:1.21.1-build20211006
+    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20210915
+    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.5.0-build20210915
+    ${REGISTRY}/rancher/klipper-helm:v0.6.5-build20210915
     ${REGISTRY}/rancher/pause:${PAUSE_VERSION}
-    ${REGISTRY}/rancher/mirrored-jettech-kube-webhook-certgen:v1.5.1
-    ${REGISTRY}/rancher/nginx-ingress-controller:nginx-0.47.0-hardened1
+    ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.0
+    ${REGISTRY}/rancher/nginx-ingress-controller:nginx-1.0.2-hardened1
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.19.1-build20210611
-    ${REGISTRY}/rancher/hardened-flannel:v0.14.0-build20210611
+    ${REGISTRY}/rancher/hardened-calico:v3.20.1-build20211006
+    ${REGISTRY}/rancher/hardened-flannel:v0.15.1-build20211021
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
@@ -39,13 +39,14 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
-    ${REGISTRY}/rancher/mirrored-calico-operator:v1.17.6
-    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.19.2
-    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.19.2
-    ${REGISTRY}/rancher/mirrored-calico-typha:v3.19.2
-    ${REGISTRY}/rancher/mirrored-calico-node:v3.19.2
-    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.19.2
-    ${REGISTRY}/rancher/mirrored-calico-cni:v3.19.2
+    ${REGISTRY}/rancher/mirrored-calico-operator:v1.20.3
+    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.20.1
+    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.20.1
+    ${REGISTRY}/rancher/mirrored-calico-typha:v3.20.1
+    ${REGISTRY}/rancher/mirrored-calico-node:v3.20.1
+    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.20.1
+    ${REGISTRY}/rancher/mirrored-calico-cni:v3.20.1
+    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.20.1
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
@@ -60,8 +61,8 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
-    ${REGISTRY}/rancher/hardened-multus-cni:v3.7.1-build20210416
-    ${REGISTRY}/rancher/hardened-cni-plugins:v0.9.1-build20210414
+    ${REGISTRY}/rancher/hardened-multus-cni:v3.7.1-build20211007
+    ${REGISTRY}/rancher/hardened-cni-plugins:v0.9.1-build20211006
     ${REGISTRY}/rancher/hardened-sriov-network-operator:v1.0.0-build20210429
     ${REGISTRY}/rancher/hardened-sriov-network-config-daemon:v1.0.0-build20210429
     ${REGISTRY}/rancher/hardened-sriov-network-device-plugin:v3.3.1-build20210310
