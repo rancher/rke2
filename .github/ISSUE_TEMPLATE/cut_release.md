@@ -13,6 +13,7 @@ Task covering patch release work.
 Dev Complete: RELEASE_DATE (Typically ~1 week prior to upstream release date)
 
 **List of required releases:**
+
 _To release as soon as able for QA:_
 - VERSION
 
