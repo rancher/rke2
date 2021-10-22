@@ -51,13 +51,12 @@ system-default-registry: "registry.example.com:5000"
 
 1. Download the install script, rke2, rke2-images, and sha256sum archives from the release into a directory, as in the example below:
 
-```
-# mkdir /root/rke2-artifacts && cd /root/rke2-artifacts/
-# curl -OLs https://github.com/rancher/rke2/releases/download/v1.21.5%2Brke2r2/rke2-images.linux-amd64.tar.zst
-# curl -OLs https://github.com/rancher/rke2/releases/download/v1.21.5%2Brke2r2/rke2.linux-amd64.tar.gz
-# curl -OLs https://github.com/rancher/rke2/releases/download/v1.21.5%2Brke2r2/sha256sum-amd64.txt
-# curl -sfL https://get.rke2.io --output install.sh
-```
+```bash
+mkdir /root/rke2-artifacts && cd /root/rke2-artifacts/
+curl -OLs https://github.com/rancher/rke2/releases/download/v1.21.5%2Brke2r2/rke2-images.linux-amd64.tar.zst
+curl -OLs https://github.com/rancher/rke2/releases/download/v1.21.5%2Brke2r2/rke2.linux-amd64.tar.gz
+curl -OLs https://github.com/rancher/rke2/releases/download/v1.21.5%2Brke2r2/sha256sum-amd64.txt
+curl -sfL https://get.rke2.io --output install.sh
 
 2. Next, run install.sh using the directory, as in the example below:
 
