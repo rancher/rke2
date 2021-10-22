@@ -25,7 +25,7 @@ EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
     ${REGISTRY}/rancher/hardened-calico:v3.13.3-build20210223
-    ${REGISTRY}/rancher/hardened-flannel:v0.13.0-rancher1-build20210223
+    ${REGISTRY}/rancher/hardened-flannel:v0.14.1-build20211022
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
