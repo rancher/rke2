@@ -61,17 +61,7 @@ system-default-registry: "registry.example.com:5000"
 
 2. Next, run install.sh using the directory, as in the example below:
 
-``` 
-# chmod +x install.sh
-# INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts ./install.sh
-[INFO]  staging local checksums from /root/rke2-artifacts/sha256sum-amd64.txt
-[INFO]  staging zst airgap image tarball from /root/rke2-artifacts/rke2-images.linux-amd64.tar.zst
-[INFO]  staging tarball from /root/rke2-artifacts/rke2.linux-amd64.tar.gz
-[INFO]  verifying airgap tarball
-grep: /tmp/rke2-install.nc03lrohgR/rke2-images.checksums: No such file or directory
-[INFO]  installing airgap tarball to /var/lib/rancher/rke2/agent/images
-[INFO]  verifying tarball
-[INFO]  unpacking tarball file to /usr/local
-```
+```bash
+INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts sh install.sh
 
 3. Enable and run the service as outlined [here.](https://docs.rke2.io/install/quickstart/#2-enable-the-rke2-server-service)
