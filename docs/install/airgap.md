@@ -49,7 +49,7 @@ system-default-registry: "registry.example.com:5000"
 
 You may use the `install.sh script` and define the `INSTALL_RKE2_ARTIFACT_PATH` to reduce steps and create the systemd service file.
 
-1. Download the rke2, rke2-images, and sha256sum archives from the release into a directory, as in the example below:
+1. Download the install script, rke2, rke2-images, and sha256sum archives from the release into a directory, as in the example below:
 
 ```
 # mkdir /root/rke2-artifacts && cd /root/rke2-artifacts/
