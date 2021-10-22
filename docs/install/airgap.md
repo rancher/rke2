@@ -47,7 +47,7 @@ system-default-registry: "registry.example.com:5000"
 
 ### RKE2 Install.sh Script Install
 
-You may use the `install.sh script` and define the `INSTALL_RKE2_ARTIFACT_PATH` to reduce steps and create the systemd service file.
+`install.sh` may be used in an offline mode by setting the `INSTALL_RKE2_ARTIFACT_PATH` variable to a path containing pre-downloaded artifacts. This will run though a normal install, including creating systemd units.
 
 1. Download the install script, rke2, rke2-images, and sha256sum archives from the release into a directory, as in the example below:
 
