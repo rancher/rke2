@@ -77,7 +77,8 @@ ARG CHARTS_REPO="https://rke2-charts.rancher.io"
 ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
-RUN CHART_VERSION="v3.13.300-build2021022302" CHART_FILE=/charts/rke2-canal.yaml             CHART_BOOTSTRAP=true    /charts/build-chart.sh
+RUN CHART_VERSION="v3.13.3-build2021102204" \
+    CHART_PACKAGE="rke2-canal-1.19-1.20"      CHART_FILE=/charts/rke2-canal.yaml             CHART_BOOTSTRAP=true    /charts/build-chart.sh
 RUN CHART_VERSION="1.10.101-build2021022301"  CHART_FILE=/charts/rke2-coredns.yaml           CHART_BOOTSTRAP=true    /charts/build-chart.sh
 RUN CHART_VERSION="4.0.305"                   CHART_FILE=/charts/rke2-ingress-nginx.yaml     CHART_BOOTSTRAP=false   /charts/build-chart.sh
 RUN CHART_VERSION="v1.19.15-rke2r2-build2021100401" \
