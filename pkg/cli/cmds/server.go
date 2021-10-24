@@ -45,7 +45,7 @@ var (
 			Default: rke2Path,
 		},
 		"supervisor-port": {
-			Usage: "(networking) The K3s supervisor port",
+			Usage:   "(networking) The K3s supervisor port",
 			Default: "9345",
 		},
 		"disable-agent":                     hide,
