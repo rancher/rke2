@@ -44,6 +44,10 @@ var (
 			Usage:   "(data) Folder to hold state",
 			Default: rke2Path,
 		},
+		"supervisor-port": {
+			Usage: "(networking) The K3s supervisor port",
+			Default: "9345",
+		},
 		"disable-agent":                     hide,
 		"cluster-cidr":                      copy,
 		"service-cidr":                      copy,
