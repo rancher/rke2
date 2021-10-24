@@ -46,6 +46,10 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 
 	managed.RegisterDriver(&etcd.ETCD{})
 
+	if clx.IsSet("supervisor-port") {
+		cmds.ServerConfig.SupervisorPort = clx.Int("supervisor-port")
+	}
+
 	if clx.IsSet("cloud-provider-config") || clx.IsSet("cloud-provider-name") {
 		if clx.IsSet("node-external-ip") {
 			return nil, errors.New("can't set node-external-ip while using cloud provider")
