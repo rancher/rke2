@@ -107,7 +107,7 @@ function Stop-Processes () {
         Write-LogInfo "Checking if $ProcessName process exists"
         if ((Get-Process -Name $ProcessName -ErrorAction SilentlyContinue)) {
             Write-LogInfo "$ProcessName process found, stopping now"
-            Stop-Process -Name $ProcessName -Confirm $false
+            Stop-Process -Name $ProcessName
             while (-Not(Get-Process -Name $ProcessName).HasExited) {
                 Write-LogInfo "Waiting for $ProcessName process to stop"
                 Start-Sleep -s 5
@@ -129,7 +129,7 @@ function Invoke-CleanServices () {
         Write-LogInfo "Checking if $ServiceName service exists"
         if ((Get-Service -Name $ServiceName -ErrorAction SilentlyContinue)) {
             Write-LogInfo "$ServiceName service found, stopping now"
-            Stop-Service -Name $ServiceName -Confirm $false
+            Stop-Service -Name $ServiceName
             while ((Get-Service -Name $ServiceName).Status -ne 'Stopped') {
                 Write-LogInfo "Waiting for $ServiceName service to stop"
                 Start-Sleep -s 5
