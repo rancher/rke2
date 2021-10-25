@@ -50,7 +50,6 @@ system-default-registry: "registry.example.com:5000"
 `install.sh` may be used in an offline mode by setting the `INSTALL_RKE2_ARTIFACT_PATH` variable to a path containing pre-downloaded artifacts. This will run though a normal install, including creating systemd units.
 
 1. Download the install script, rke2, rke2-images, and sha256sum archives from the release into a directory, as in the example below:
-
 ```bash
 mkdir /root/rke2-artifacts && cd /root/rke2-artifacts/
 curl -OLs https://github.com/rancher/rke2/releases/download/v1.21.5%2Brke2r2/rke2-images.linux-amd64.tar.zst
@@ -58,11 +57,8 @@ curl -OLs https://github.com/rancher/rke2/releases/download/v1.21.5%2Brke2r2/rke
 curl -OLs https://github.com/rancher/rke2/releases/download/v1.21.5%2Brke2r2/sha256sum-amd64.txt
 curl -sfL https://get.rke2.io --output install.sh
 ```
-
 2. Next, run install.sh using the directory, as in the example below:
-
 ```bash
 INSTALL_RKE2_ARTIFACT_PATH=/root/rke2-artifacts sh install.sh
 ```
-
 3. Enable and run the service as outlined [here.](https://docs.rke2.io/install/quickstart/#2-enable-the-rke2-server-service)
