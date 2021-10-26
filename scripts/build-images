@@ -18,7 +18,7 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     docker.io/rancher/hardened-etcd:v3.4.13-k3s1-build20210223
     docker.io/rancher/hardened-flannel:v0.14.1-build20211022
     docker.io/rancher/hardened-k8s-metrics-server:v0.3.6-build20210223
-    docker.io/rancher/klipper-helm:v0.6.4-build20210813"
+    docker.io/rancher/klipper-helm:v0.6.4-build20210813
     docker.io/rancher/pause:3.2
     docker.io/rancher/nginx-ingress-controller:nginx-1.0.2-hardened1
     docker.io/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.0
