@@ -64,8 +64,9 @@ replace (
 require (
 	github.com/Microsoft/hcsshim v0.8.21
 	github.com/containerd/continuity v0.1.0
-	github.com/google/go-containerregistry v0.5.0
+	github.com/google/go-containerregistry v0.6.0
 	github.com/google/gopacket v1.1.19
+	github.com/gruntwork-io/terratest v0.38.2
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.11.7
 	github.com/onsi/ginkgo v1.16.4
@@ -77,6 +78,7 @@ require (
 	github.com/rancher/wrangler v0.8.3
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.5
+	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
 	google.golang.org/grpc v1.40.0
 	k8s.io/api v0.22.2
