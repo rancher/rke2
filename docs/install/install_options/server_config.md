@@ -50,7 +50,7 @@ OPTIONS:
    --etcd-s3-bucket value                        (db) S3 bucket name
    --etcd-s3-region value                        (db) S3 region / bucket location (optional) (default: "us-east-1")
    --etcd-s3-folder value                        (db) S3 folder
-   --disable value                               (components) Do not deploy packaged components and delete any deployed components (valid items: rke2-coredns, rke2-ingress-nginx, rke2-kube-proxy, rke2-metrics-server)
+   --disable value                               (components) Do not deploy packaged components and delete any deployed components (valid items: rke2-coredns, rke2-ingress-nginx, rke2-metrics-server)
    --disable-scheduler                           (components) Disable Kubernetes default scheduler
    --disable-cloud-controller                    (components) Disable rke2 default cloud controller manager
    --disable-kube-proxy                          (components) Disable running kube-proxy
