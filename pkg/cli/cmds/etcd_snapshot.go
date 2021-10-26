@@ -10,6 +10,7 @@ import (
 const defaultSnapshotRentention = 5
 
 var k3sFlags = map[string]*K3SFlagOption{
+	"config":          copy,
 	"debug":           copy,
 	"log":             copy,
 	"alsologtostderr": copy,
