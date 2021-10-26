@@ -82,7 +82,7 @@ RUN CHART_VERSION="v3.13.3-build2021102204" \
     CHART_PACKAGE="rke2-canal-1.19-1.20"      CHART_FILE=/charts/rke2-canal.yaml          CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.10.101-build2021022303"  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="4.0.305"                   CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
-RUN CHART_VERSION="v1.20.11-rke2r2-build2021100401" \
+RUN CHART_VERSION="v1.20.11-rke2r3-build2021102601" \
     CHART_PACKAGE="rke2-kube-proxy-1.20"      CHART_FILE=/charts/rke2-kube-proxy.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="2.11.100-build2021022300"  CHART_FILE=/charts/rke2-metrics-server.yaml CHART_BOOTSTRAP=false  /charts/build-chart.sh
 RUN CHART_VERSION="1.0.000"                   CHART_FILE=/charts/rancher-vsphere-cpi.yaml CHART_BOOTSTRAP=true   CHART_REPO="https://charts.rancher.io" /charts/build-chart.sh
@@ -94,7 +94,7 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM rancher/k3s:v1.20.11-k3s2 AS k3s
-FROM rancher/hardened-kubernetes:v1.20.11-rke2r2-build20211004 AS kubernetes
+FROM rancher/hardened-kubernetes:v1.20.11-rke2r3-build20211026 AS kubernetes
 FROM rancher/hardened-containerd:v1.4.11-k3s1-build20211004 AS containerd
 FROM rancher/hardened-crictl:v1.19.0-build20210223 AS crictl
 FROM rancher/hardened-runc:v1.0.1-build20210908 AS runc
