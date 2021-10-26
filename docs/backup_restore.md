@@ -51,7 +51,7 @@ These options can be set in the configuration file:
 | Options | Description |
 | ----------- | --------------- |
 | `etcd-disable-snapshots` | Disable automatic etcd snapshots |
-| `etcd-snapshot-schedule-cron` value  |  Snapshot interval time in cron spec. eg. every 5 hours `* */5 * * *`(default: `0 */12 * * *`) |
+| `etcd-snapshot-schedule-cron` value  |  Snapshot interval time in cron spec. eg. every 4 hours `0 */4 * * *`(default: `0 */12 * * *`) |
 | `etcd-snapshot-retention` value  | Number of snapshots to retain (default: 5) |
 | `etcd-snapshot-dir` value  | Directory to save db snapshots. (Default location: `${data-dir}/db/snapshots`) |
 | `cluster-reset`  | Forget all peers and become sole member of a new cluster. This can also be set with the environment variable `[$RKE2_CLUSTER_RESET]`.
