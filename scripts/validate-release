@@ -60,20 +60,6 @@ function check_kube_proxy_version() {
 
 }
 
-function check_win_binaries() {
-    CRICTL_WINDOWS_VERSION=$(grep 'CRICTL_VERSION=' Dockerfile.windows | cut -d '=' -f 2- | grep -oE "v([0-9]+)\.([0-9]+)")
-    if [ ! "$CRICTL_WINDOWS_VERSION" = "v$MAJOR.$MINOR" ]; then
-        fatal "crictl windows binary version [$CRICTL_WINDOWS_VERSION] does not match kubernetes version"
-    fi
-
-    CALICO_WINDOWS_VERSION=$(grep 'CALICO_VERSION=' Dockerfile.windows | cut -d '=' -f 2- | grep -oE "v([0-9]+)\.([0-9]+)")
-    CALICO_LINUX_VERSION=$(grep "rke2-calico.yaml" Dockerfile | grep 'CHART_VERSION=' | cut -d '=' -f 2- | grep -oE "v([0-9]+)\.([0-9]+)")
-    if [ ! "$CALICO_WINDOWS_VERSION" = "$CALICO_LINUX_VERSION" ]; then
-        fatal "Calico windows binary version [$CALICO_WINDOWS_VERSION] does not match Calico chart version [$CALICO_LINUX_VERSION]"
-    fi
-}
-
-
 . ./scripts/version.sh
 
 git fetch origin -f --tags
@@ -81,4 +67,3 @@ parse_tag $DRONE_TAG
 check_release_branch
 check_kubernetes_version
 check_kube_proxy_version
-check_win_binaries
