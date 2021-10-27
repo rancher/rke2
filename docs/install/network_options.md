@@ -79,6 +79,7 @@ IPv4/IPv6 dual-stack networking enables the allocation of both IPv4 and IPv6 add
     ```bash
     --cluster-cidr 10.42.0.0/16,2001:cafe:42:0::/56
     --service-cidr 10.43.0.0/16,2001:cafe:42:1::/112
+    ```
 
 Each CNI plugin requires a different configuration for dual-stack:
 
@@ -114,7 +115,7 @@ Starting with RKE2 v1.21 it is possible to deploy the Multus CNI meta-plugin. No
 
 [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni) is a CNI plugin that enables attaching multiple network interfaces to pods. Multus does not replace CNI plugins, instead it acts as a CNI plugin multiplexer. Multus is useful in certain use cases, especially when pods are network intensive and require extra network interfaces that support dataplane acceleration techniques such as SR-IOV.
 
-Multus can not be deployed standalone. It always requires at least one conventional CNI plugin that fulfills the Kubernetes cluster network requirements. That CNI plugin becomes the default for Multus, and will be used to provide the primary interface for all pods. 
+Multus can not be deployed standalone. It always requires at least one conventional CNI plugin that fulfills the Kubernetes cluster network requirements. That CNI plugin becomes the default for Multus, and will be used to provide the primary interface for all pods.
 
 To enable Multus, pass `multus` as the first value to the `--cni` flag, followed by the name of the plugin you want to use alongside Multus (or `none` if you will provide your own default plugin). Note that multus must always be in the
 first position of the list. For example, to use Multus with `canal` as the default plugin you could specify `--cni=multus,canal` or `--cni=multus --cni=canal`.
