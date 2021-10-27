@@ -20,6 +20,7 @@ replace (
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20210316141917-a8c4a9ee0f6b
 	github.com/rancher/wharfie => github.com/rancher/wharfie v0.4.2
 	go.etcd.io/etcd => github.com/k3s-io/etcd v0.5.0-alpha.5.0.20201208200253-50621aee4aea
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20210225134936-a50acf3fe073
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 	google.golang.org/grpc => google.golang.org/grpc v1.27.1
 	gopkg.in/square/go-jose.v2 => gopkg.in/square/go-jose.v2 v2.2.2
@@ -63,7 +64,7 @@ require (
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.10.8
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.5-engine0.0.20211027005819-c5a915453822
+	github.com/rancher/k3s v1.21.5-engine0.0.20211027204600-7d0ecf3ab239 // engine-1.21
 	github.com/rancher/wharfie v0.4.1
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
@@ -80,5 +81,3 @@ require (
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 	sigs.k8s.io/yaml v1.2.0
 )
-
-replace golang.org/x/sys => golang.org/x/sys v0.0.0-20210225134936-a50acf3fe073
