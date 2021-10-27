@@ -60,7 +60,7 @@ require (
 	github.com/google/go-containerregistry v0.5.0
 	github.com/k3s-io/helm-controller v0.10.8
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.5-engine0.0.20211025224418-174b3881a212 // engine-1.21
+	github.com/rancher/k3s v1.21.5-engine0.0.20211027005819-c5a915453822 // engine-1.21
 	github.com/rancher/wharfie v0.4.1
 	github.com/rancher/wrangler v0.6.2
 	github.com/rancher/wrangler-api v0.6.0
