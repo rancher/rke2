@@ -114,7 +114,7 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM rancher/k3s:v1.22.2-k3s1 AS k3s
-FROM rancher/hardened-kubernetes:v1.22.2-rke2r1-build20210924 AS kubernetes
+FROM rancher/hardened-kubernetes:v1.22.3-rke2r1-build20211028 AS kubernetes
 FROM rancher/hardened-containerd:v1.5.7-k3s1-build20211011 AS containerd
 FROM rancher/hardened-crictl:v1.22.0-build20210915 AS crictl
 FROM rancher/hardened-runc:v1.0.2-build20210915 AS runc
