@@ -27,12 +27,16 @@ rke2 server --cluster-reset
 
 **Result:**  A message in the logs say that RKE2 can be restarted without the flags. Start rke2 again and it should start rke2 as a 1 member cluster.
 
-### Restoring a Cluster from a Snapshot
+### Restoring a Snapshot to Existing Nodes
 
-When RKE2 is restored from backup, the old data directory will be moved to `/var/lib/rancher/rke2/server/db/etcd-old-%date%/`. Then RKE2 will attempt to restore the snapshot by creating a new data directory, then starting etcd with a new RKE2 cluster with one etcd member.
+When RKE2 is restored from backup, the old data directory will be moved to `/var/lib/rancher/rke2/server/db/etcd-old-%date%/`. RKE2 will then attempt to restore the snapshot by creating a new data directory and start etcd with a new RKE2 cluster with one etcd member.
 
-To restore the cluster from backup, first you need to stop RKE2 service if its enabled via systemd. Once stopped, run RKE2 with the `--cluster-reset` option, with the `--cluster-reset-restore-path` also given:
+1. You must stop RKE2 service on all server nodes if its enabled via systemd. Use the following command to do so:
+```
+systemctl stop rke2-server
+```
 
+2. Next, you will initiate the restore from snapshot on the first server node with the following commands:
 ```
 systemctl stop rke2-server
 rke2 server \
@@ -40,9 +44,58 @@ rke2 server \
   --cluster-reset-restore-path=<PATH-TO-SNAPSHOT>
 ```
 
-**Result:**  A message in the logs says that RKE2 can be restarted without the flags. Start RKE2 again and should run successfully and be restored from the specified snapshot.
+3. Once the restore process is complete, start the rke2-server service on the first server node as follows:
+```
+systemctl start rke2-server
+```
+
+4. Remove rke2 db directory on the other server nodes as follows:
+```
+rm -rf /var/lib/rancher/rke2/server/db
+```
+
+5. Start the rke2-server service on other server nodes with the following command:
+```
+systemctl start rke2-server
+```
+
+**Result:**  A message in the logs says that RKE2 can be restarted without the flags. Start RKE2 again, and it should run successfully and be restored from the specified snapshot.
 
 When rke2 resets the cluster, it creates an empty file at `/var/lib/rancher/rke2/server/db/reset-flag`. This file is harmless to leave in place, but must be removed in order to perform subsequent resets or restores. This file is deleted when rke2 starts normally.
+
+
+### Restoring a Snapshot to New Nodes
+
+1. First, the following should be backed up as a result of known issue in which bootstrap data might not save on restore:
+```
+/var/lib/rancher/rke2/server/cred
+/var/lib/rancher/rke2/server/tls
+/var/lib/rancher/rke2/server/token
+/etc/rancher
+```
+
+2. Restore the files in Step 1 above to the first new server node.
+
+
+3. Install desired rke2 version on the first new server node as in the following example:
+```
+curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION="v1.20.8+rke2r1" sh -`
+```
+
+4. Next, you will initiate the restore from snapshot on the first server node with the following commands:
+```
+systemctl stop rke2-server
+rke2 server \
+  --cluster-reset \
+  --cluster-reset-restore-path=<PATH-TO-SNAPSHOT>
+```
+
+5. Once the restore process is complete, start the rke2-server service on the first server node as follows:
+```
+systemctl start rke2-server
+```
+
+6. You can continue to add new server and worker nodes to cluster per standard [RKE2 HA installation documentation](https://docs.rke2.io/install/ha/#3-launch-additional-server-nodes).
 
 ### Options
 
