@@ -65,7 +65,7 @@ When rke2 resets the cluster, it creates an empty file at `/var/lib/rancher/rke2
 
 ### Restoring a Snapshot to New Nodes
 
-**Warning:** For all versions of rke2 v.1.20.9 and prior, you will need to back up and restore certificates first due to a known issue in which bootstrap data might not save on restore (Steps 1 - 3 below assume this scenario). See [note](#other-version-specific-notes) below for an additional version-specific restore caveat on restore.
+**Warning:** For all versions of rke2 v.1.20.9 and prior, you will need to back up and restore certificates first due to a known issue in which bootstrap data might not save on restore (Steps 1 - 3 below assume this scenario). See [note](#other-notes-on-restoring-a-snapshot) below for an additional version-specific restore caveat on restore.
 
 1. Back up the following: `/var/lib/rancher/rke2/server/cred`, `/var/lib/rancher/rke2/server/tls`, `/var/lib/rancher/rke2/server/token`, `/etc/rancher`
 
