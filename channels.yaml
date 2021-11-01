@@ -1,6 +1,6 @@
 channels:
 - name: stable
-  latest: v1.21.5+rke2r2
+  latest: v1.21.6+rke2r1
 - name: latest
   latestRegexp: .*
   excludeRegexp: (^[^+]+-|v1\.21\.3\+rke2r2)
@@ -18,6 +18,8 @@ channels:
 - name: v1.21
   latestRegexp: v1\.21\..*
   excludeRegexp: (^[^+]+-|v1\.21\.3\+rke2r2)
+- name: v1.22
+  latestRegexp: v1\.22\..*
 github:
   owner: rancher
   repo: rke2
