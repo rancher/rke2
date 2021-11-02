@@ -105,7 +105,8 @@ systemctl start rke2-server
 curl -sfL https://get.rke2.io | sudo INSTALL_RKE2_VERSION=v1.20.11+rke2r1
 rke2 server \
  --cluster-reset \
- --cluster-reset-restore-path=<PATH-TO-SNAPSHOT> --token <token used in the original cluster>
+ --cluster-reset-restore-path=<PATH-TO-SNAPSHOT> \
+ --token=<token used in the original cluster>
 rke2-killall.sh
 ```
 > Once the restore process is complete, enable and start the rke2-server service on the first server node as follows:    
