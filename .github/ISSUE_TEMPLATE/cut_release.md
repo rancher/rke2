@@ -41,6 +41,7 @@ To find more information on specific steps, please see documentation [here](http
   - [ ] If server args, agent args, or charts are changed, link relevant rancher/rancher issue or create new rancher/rancher issue
   - [ ] If any new issues are created, escalated to Rancher PJM so they know and can plan for it 
 - [ ] EM: Review and merge above PR
+- [ ] QA: Post merge, run rancher with KDM pointed at the dev branch (where the PR in the previous step was merged) and test import, upgrade, and provisioning against those RCs. This work may be split between Rancher and RKE2 QAs.
 - [ ] Release Captain: Tag the RKE2 release
 - [ ] Release Captain: Add release notes to release
 - [ ] Release Captain: Tag RKE2 packaging release "testing"
