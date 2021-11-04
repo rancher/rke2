@@ -53,7 +53,7 @@ To find more information on specific steps, please see documentation [here](http
 - [ ] Wait 24 hours
 - [ ] Release Captain: Tag RKE2 packaging "stable"
 - [ ] Release Captain: Update stable release in channels.yaml
-- [ ] Release Captain: Prepare PRs as needed to update [KDM](https://github.com/rancher/kontainer-driver-metadata/) in the appropriate dev branches to go from RC to non-RC release. Link this PR to rancher/rancher issue that is tracking the version bump.
+- [ ] Release Captain: Prepare PRs as needed to update [KDM](https://github.com/rancher/kontainer-driver-metadata/) in the appropriate dev branches to go from RC to non-RC release. Link this PR to rancher/rancher issue that is tracking the version bump (created in the "Prep work" phase)
 - [ ] EM: Review and merge above PR. Update issue so that QA knows to test
 - [ ] QA: Final validation of above PR and tracked through the linked ticket
 - [ ] PJM: Close the milestone in GitHub.
