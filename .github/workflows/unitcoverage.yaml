@@ -1,5 +1,13 @@
 name: Unit Test Coverage
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - "install.sh"
+      - "tests/install/**"
+  pull_request:
+    paths-ignore:
+      - "install.sh"
+      - "tests/install/**"
 jobs:
   test:
     name: Unit Tests
