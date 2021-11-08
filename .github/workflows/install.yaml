@@ -1,0 +1,31 @@
+name: Installer
+on:
+  push:
+    paths:
+      - "install.sh"
+      - "tests/vagrant/install/**"
+  pull_request:
+    paths:
+      - "install.sh"
+      - "tests/vagrant/install/**"
+  workflow_dispatch: {}
+jobs:
+  vagrant:
+    name: "Vagrant"
+    # nested virtualization is only available on macOS hosts
+    runs-on: macos-10.15
+    timeout-minutes: 40
+    strategy:
+      matrix:
+        vm: [centos7, centos8, microos]
+      max-parallel: 2
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+        with: {fetch-depth: 1}
+      - name: "Vagrant Plugin(s)"
+        working-directory: tests/vagrant/install/${{ matrix.vm }}
+        run: vagrant plugin install vagrant-reload
+      - name: "Vagrant VM"
+        working-directory: tests/vagrant/install/${{ matrix.vm }}
+        run: vagrant up
