@@ -1,5 +1,7 @@
 This document lists all of the images used by RKE2 and any of its packaged components (Helm charts), along with info on where they are built and what other images they copy content from. If you find an image not on this list, please open a PR.
 
+The **Chart** column indicates the Helm chart that uses this image. `CORE` indicates that this is not used by a Helm chart, but by the supervisor itself to host a control-plane component. `CORE FROM` indicates that one of the `CORE` images has a `COPY --from` line in the Dockerfile that loads content from this image.
+
 | Chart | Image | Build Repo | Source Images | Hardened |
 | ----- | ----- | ---------- | ------------- | -------- |
 | CORE | rancher/hardened-kubernetes | rancher/image-build-kubernetes | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
@@ -64,4 +66,4 @@ This document lists all of the images used by RKE2 and any of its packaged compo
 | harvester-csi-driver | docker.io/rancher/longhornio-csi-attacher | Longhorn team |  | FALSE |
 | harvester-csi-driver | docker.io/rancher/longhornio-csi-node-driver-registrar | Longhorn team |  | FALSE |
 | harvester-csi-driver | docker.io/rancher/longhornio-csi-provisioner | Longhorn team |  | FALSE |
-| harvester-csi-driver | docker.io/rancher/longhornio-csi-resizer: | Longhorn team |  | FALSE |
+| harvester-csi-driver | docker.io/rancher/longhornio-csi-resizer | Longhorn team |  | FALSE |
