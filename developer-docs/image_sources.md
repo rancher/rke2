@@ -5,7 +5,7 @@ The **Chart** column indicates the Helm chart that uses this image. `CORE` indic
 | Chart | Image | Build Repo | Source Images | Hardened |
 | ----- | ----- | ---------- | ------------- | -------- |
 | CORE | rancher/hardened-kubernetes | rancher/image-build-kubernetes | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
-| CORE | rancher/rke2-runtime | rancher/rke2 | ‣ rancher/k3s<br>rancher/hardened-kubernetes<br>‣ rancher/hardened-containerd<br>‣ rancher/hardened-crictl<br>‣ rancher/hardened-runc | TRUE |
+| CORE | rancher/rke2-runtime | rancher/rke2 | ‣ rancher/k3s<br>‣ rancher/hardened-kubernetes<br>‣ rancher/hardened-containerd<br>‣ rancher/hardened-crictl<br>‣ rancher/hardened-runc | TRUE |
 | CORE FROM | rancher/hardened-containerd | rancher/image-build-containerd | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
 | CORE FROM | rancher/hardened-crictl | rancher/image-build-crictl | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
 | CORE FROM | rancher/hardened-runc | rancher/image-build-runc | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
