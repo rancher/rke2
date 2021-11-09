@@ -165,7 +165,7 @@ func (s *StaticPodConfig) Kubelet(ctx context.Context, args []string) error {
 	args = append(extraArgs, args...)
 	go func() {
 		for {
-			cmd := exec.Command(s.KubeletPath, args...)
+			cmd := exec.CommandContext(ctx, s.KubeletPath, args...)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			addDeathSig(cmd)
