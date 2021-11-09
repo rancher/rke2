@@ -6,7 +6,7 @@ cd $(dirname $0)/..
 source ./scripts/version.sh
 mkdir -p build
 
-WINDOWS_IMAGES=(${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rancher/pause:3.5-windows-1809-amd64 rancher/pause:3.5-windows-2004-amd64 rancher/pause:3.5-windows-20H2-amd64)
+WINDOWS_IMAGES=(${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rancher/pause:${PAUSE_VERSION}-windows-1809-amd64 rancher/pause:${PAUSE_VERSION}-windows-ltsc2022-amd64)
 for IMAGE in "${WINDOWS_IMAGES[@]}"; do
   echo "${IMAGE}" >> build/windows-images.txt
 done
