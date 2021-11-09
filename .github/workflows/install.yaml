@@ -1,23 +1,31 @@
 name: Installer
 on:
   push:
+    branches:
+      - master
     paths:
       - "install.sh"
       - "tests/vagrant/install/**"
   pull_request:
+    branches:
+      - master
     paths:
       - "install.sh"
       - "tests/vagrant/install/**"
   workflow_dispatch: {}
 jobs:
-  vagrant:
-    name: "Vagrant"
+  test:
+    name: "Smoke Test"
     # nested virtualization is only available on macOS hosts
     runs-on: macos-10.15
     timeout-minutes: 40
     strategy:
       matrix:
-        vm: [centos7, centos8, microos]
+        vm:
+        - centos7
+        - centos8
+#        - microos
+#        - ubuntu-focal
       max-parallel: 2
     steps:
       - name: "Checkout"
@@ -29,3 +37,9 @@ jobs:
       - name: "Vagrant VM"
         working-directory: tests/vagrant/install/${{ matrix.vm }}
         run: vagrant up
+      - name: "Wait for Canal"
+        working-directory: tests/vagrant/install/${{ matrix.vm }}
+        run: vagrant up --provision-with=rke2-wait-for-canal
+      - name: "Wait for CoreDNS"
+        working-directory: tests/vagrant/install/${{ matrix.vm }}
+        run: vagrant up --provision-with=rke2-wait-for-coredns
