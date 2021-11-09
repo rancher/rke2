@@ -936,8 +936,8 @@ github.com/qri-io/starlib v0.4.2-0.20200213133954-ff2e8cd5ef8d/go.mod h1:7DPO4do
 github.com/quobyte/api v0.1.8/go.mod h1:jL7lIHrmqQ7yh05OJ+eEEdHr0u/kmT1Ff9iHd+4H6VI=
 github.com/rancher/dynamiclistener v0.2.6 h1:qcNhQQOidheum5K6mtLxDTJQMTWKm1zm/PjZ5x0xV7A=
 github.com/rancher/dynamiclistener v0.2.6/go.mod h1:iXFvJLvLjmTzEJBrLFZl9UaMfDLOhv6fHp9fHQRlHGg=
-github.com/rancher/k3s v1.22.3-0.20211027211712-46eea2f10a11 h1:xz3eDheaIB3awnDVYPR0Zld3JpGfOPC/Gg7LbwWyyRo=
-github.com/rancher/k3s v1.22.3-0.20211027211712-46eea2f10a11/go.mod h1:9Q5yIdALvUQYK2pc8S/vtlSB5oUtJxrKhuhY0JeEWwU=
+github.com/rancher/k3s v1.22.4-0.20211111210241-cee09930cdc1 h1:bCERPWJ4IS60kqGAK5Cu2cylgQmI/oM5tIsmbrmgWvk=
+github.com/rancher/k3s v1.22.4-0.20211111210241-cee09930cdc1/go.mod h1:Wo+0R2y5lcGOFyktniGpGzyeFr+7kyb5Nf0I4sLlC3M=
 github.com/rancher/lasso v0.0.0-20210616224652-fc3ebd901c08 h1:NxR8Fh0eE7/5/5Zvlog9B5NVjWKqBSb1WYMUF7/IE5c=
 github.com/rancher/lasso v0.0.0-20210616224652-fc3ebd901c08/go.mod h1:9qZd/S8DqWzfKtjKGgSoHqGEByYmUE3qRaBaaAHwfEM=
 github.com/rancher/remotedialer v0.2.0 h1:xD7t3K6JYwTdAsxmGtTHQMkEkFgKouQ1foLxVW424Dc=
@@ -946,8 +946,9 @@ github.com/rancher/wharfie v0.4.2 h1:nahGwEO3QP1CsNslY7+MWK2NUhjH2BOAVhujewzoTmU
 github.com/rancher/wharfie v0.4.2/go.mod h1:cb8mSczpmw7ItbPF3K1W7crWuJLVdyV49sZZuaY4BS8=
 github.com/rancher/wins v0.1.1 h1:WyqxkAyCstwuv+04tdJiGODXv0De/lOyRHV6MJVfrUo=
 github.com/rancher/wins v0.1.1/go.mod h1:SdPsn8b5PoVj1ozvjRc8VNyjNvOGSoQy4HkN5Q6yTqo=
-github.com/rancher/wrangler v0.8.5 h1:aHUVvJrOhD6CGrAELWKDpo1MBDC8vKtEQZvjMPnw2cs=
-github.com/rancher/wrangler v0.8.5/go.mod h1:dKEaHNB4izxmPUtpq1Hvr3z3Oh+9k5pCZyFO9sUhlaY=
+github.com/rancher/wrangler v0.8.3/go.mod h1:dKEaHNB4izxmPUtpq1Hvr3z3Oh+9k5pCZyFO9sUhlaY=
+github.com/rancher/wrangler v0.8.8 h1:3EEQmfUqZ/UG4hERHhihB+Q2F1s/W4CmfsPmXv17wS8=
+github.com/rancher/wrangler v0.8.8/go.mod h1:dKEaHNB4izxmPUtpq1Hvr3z3Oh+9k5pCZyFO9sUhlaY=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=
 github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446/go.mod h1:uYEyJGbgTkfkS4+E/PavXkNJcbFIpEtjt2B0KDQ5+9M=
 github.com/robfig/cron/v3 v3.0.1 h1:WdRxkvbJztn8LMz/QEvLN5sBU+xKpSqwwUO1Pjr4qDs=
