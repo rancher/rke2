@@ -134,15 +134,12 @@ dump-logs() {
         local hostname=$(docker exec $name hostname)
         docker logs $name >$node/logs/system.log 2>&1
         if [[ $name == rke2-* ]]; then
+            docker cp $name:/var/lib/rancher/rke2/agent/containerd/containerd.log $node/logs/containerd.log
+            docker cp $name:/var/lib/rancher/rke2/agent/logs/kubelet.log $node/logs/kubelet.log
+            docker cp $name:/var/log/pods $node/logs/pods
             docker exec $server kubectl describe node/$hostname >$node/logs/kubectl-describe-node.txt
-            docker cp $name:/var/lib/rancher/rke2/agent/containerd/containerd.log $node/logs/containerd.log 2>/dev/null
             docker exec $name crictl pods >$node/logs/crictl-pods.txt
             docker exec $name crictl ps -a >$node/logs/crictl-ps.txt
-            docker exec $name crictl ps -a -o json >$node/metadata/crictl-ps.json
-            for container in $(jq -r '.containers[].id' <$node/metadata/crictl-ps.json); do
-                local cname=$(jq -r '.containers[] | select(.id == "'$container'") | .metadata.name' <$node/metadata/crictl-ps.json)
-                docker exec $name crictl logs $container >$node/logs/$cname-$container.log 2>&1
-            done
         fi
         for log in $node/logs/*.log; do
             echo
