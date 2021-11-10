@@ -71,20 +71,20 @@ require (
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.14.0
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.22.3-0.20211027211712-46eea2f10a11 // release-1.22
+	github.com/rancher/k3s v1.22.4-0.20211110232020-97f494a24da3 // release-1.22
 	github.com/rancher/wharfie v0.4.1
 	github.com/rancher/wins v0.1.1
-	github.com/rancher/wrangler v0.8.3
+	github.com/rancher/wrangler v0.8.8
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.5
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
 	google.golang.org/grpc v1.40.0
-	k8s.io/api v0.22.2
-	k8s.io/apimachinery v0.22.2
-	k8s.io/apiserver v0.22.2
+	k8s.io/api v0.22.3
+	k8s.io/apimachinery v0.22.3
+	k8s.io/apiserver v0.22.3
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/cri-api v0.22.2
-	k8s.io/kubernetes v1.22.2
+	k8s.io/cri-api v0.22.3
+	k8s.io/kubernetes v1.22.3
 	k8s.io/utils v0.0.0-20210819203725-bdf08cb9a70a
 	sigs.k8s.io/yaml v1.2.0
 )
