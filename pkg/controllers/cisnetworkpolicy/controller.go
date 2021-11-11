@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/rancher/k3s/pkg/server"
-	coreclient "github.com/rancher/wrangler-api/pkg/generated/controllers/core/v1"
+	coreclient "github.com/rancher/wrangler/pkg/generated/controllers/core/v1"
 	"github.com/sirupsen/logrus"
 	core "k8s.io/api/core/v1"
 	netv1 "k8s.io/api/networking/v1"
