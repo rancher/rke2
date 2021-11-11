@@ -90,6 +90,7 @@ These can be run locally with Vagrant:
 - [CentOS 7](../tests/vagrant/install/centos7) (stand-in for RHEL 7)
 - [CentOS 8](../tests/vagrant/install/centos8) (stand-in for RHEL 8)
 - [MicroOS](../tests/vagrant/install/microos) (stand-in for SLE-Micro)
+- [Ubuntu 20.04](../tests/vagrant/install/ubuntu-focal) (Focal Fossa)
 
 When adding new installer test(s) please copy the prevalent style for the `Vagrantfile`.
 Ideally, the boxes used for additional assertions will support the default `virtualbox` provider which
@@ -118,6 +119,8 @@ These can be set on the CLI or exported before invoking Vagrant:
   The number of vCPU for the guest to use.
 - `TEST_VM_MEMORY` (default :arrow_right: 2048)
   The number of megabytes of memory for the guest to use.
+- `TEST_VM_BOOT_TIMEOUT` (default :arrow_right: 600)
+  The time in seconds that Vagrant will wait for the machine to boot and be accessible.
 - `INSTALL_PACKAGES`
   A space-delimited string of package names (or locations accessible to the guest's native package manager) that will 
   be installed prior to invoking the RKE2 install script. Useful for overriding the `rke2-selinux` RPM via URL pointing

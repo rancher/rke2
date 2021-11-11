@@ -3,11 +3,11 @@ on:
   push:
     paths-ignore:
       - "install.sh"
-      - "tests/install/**"
+      - "tests/vagrant/**"
   pull_request:
     paths-ignore:
       - "install.sh"
-      - "tests/install/**"
+      - "tests/vagrant/**"
 jobs:
   test:
     name: Unit Tests
