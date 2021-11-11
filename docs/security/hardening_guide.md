@@ -64,6 +64,10 @@ sysctls are applied at boot by running the following command during start-up:
 sysctl -p /usr/local/share/rke2/rke2-cis-sysctl.conf
 ```
 
+Please perform this step only on fresh installations, before actually using RKE2 to deploy Kubernetes. Many
+Kubernetes components, including CNI plugins, are setting up their own sysctls. Restarting the
+`systemd-sysctl` service on a running Kubernetes cluster can result in unexpected side-effects.
+
 #### Create the etcd user
 On some Linux distributions, the `useradd` command will not create a group. The `-U` flag is included below to account for that. This flag tells `useradd` to create a group with the same name as the user.
  
