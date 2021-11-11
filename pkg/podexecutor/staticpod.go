@@ -150,7 +150,7 @@ func (s *StaticPodConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfi
 }
 
 // Kubelet starts the kubelet in a subprocess with watching goroutine.
-func (s *StaticPodConfig) Kubelet(args []string) error {
+func (s *StaticPodConfig) Kubelet(ctx context.Context, args []string) error {
 	extraArgs := []string{
 		"--volume-plugin-dir=/var/lib/kubelet/volumeplugins",
 		"--file-check-frequency=5s",
@@ -165,7 +165,7 @@ func (s *StaticPodConfig) Kubelet(args []string) error {
 	args = append(extraArgs, args...)
 	go func() {
 		for {
-			cmd := exec.Command(s.KubeletPath, args...)
+			cmd := exec.CommandContext(ctx, s.KubeletPath, args...)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			addDeathSig(cmd)
@@ -181,7 +181,7 @@ func (s *StaticPodConfig) Kubelet(args []string) error {
 }
 
 // KubeProxy starts Kube Proxy as a static pod.
-func (s *StaticPodConfig) KubeProxy(args []string) error {
+func (s *StaticPodConfig) KubeProxy(ctx context.Context, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeProxy)
 	if err != nil {
 		return err
@@ -287,7 +287,7 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 var permitPortSharingFlag = []string{"--permit-port-sharing=true"}
 
 // Scheduler starts the kube-scheduler static pod, once the apiserver is available.
-func (s *StaticPodConfig) Scheduler(apiReady <-chan struct{}, args []string) error {
+func (s *StaticPodConfig) Scheduler(ctx context.Context, apiReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeScheduler)
 	if err != nil {
 		return err
@@ -344,7 +344,7 @@ func after(after <-chan struct{}, f func() error) error {
 }
 
 // ControllerManager starts the kube-controller-manager static pod, once the apiserver is available.
-func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []string) error {
+func (s *StaticPodConfig) ControllerManager(ctx context.Context, apiReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeControllerManager)
 	if err != nil {
 		return err
@@ -394,7 +394,7 @@ func (s *StaticPodConfig) ControllerManager(apiReady <-chan struct{}, args []str
 
 // CloudControllerManager starts the cloud-controller-manager static pod, once the cloud controller manager RBAC
 // (and subsequently, the api server) is available.
-func (s *StaticPodConfig) CloudControllerManager(ccmRBACReady <-chan struct{}, args []string) error {
+func (s *StaticPodConfig) CloudControllerManager(ctx context.Context, ccmRBACReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.CloudControllerManager)
 	if err != nil {
 		return err
