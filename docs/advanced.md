@@ -22,6 +22,31 @@ For advanced customization of this file you can create another file called `conf
 
 The `config.toml.tmpl` will be treated as a Go template file, and the `config.Node` structure is being passed to the template. See [this template](https://github.com/k3s-io/k3s/blob/master/pkg/agent/templates/templates.go#L16-L32) for an example of how to use the structure to customize the configuration file.
 
+## Configuring an HTTP proxy
+
+If you are running RKE2 in an environment, which only has external connectivity through an HTTP proxy, you can configure your proxy settings on the RKE2 systemd service. These proxy settings will then be used in RKE2 and passed down to the embedded containerd and kubelet.
+
+Add the necessary `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` variables to the environment file of your systemd service, usually:
+
+- `/etc/default/rke2-server`
+- `/etc/default/rke2-agent`
+
+The `NO_PROXY` variable must include your internal networks, as well as the cluster pod and service IP ranges.
+
+```
+HTTP_PROXY=http://your-proxy.example.com:8888
+HTTPS_PROXY=http://your-proxy.example.com:8888
+NO_PROXY=127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.svc,.cluster.local
+```
+
+If you want to configure the proxy settings for containerd without affecting RKE2 and the Kubelet, you can prefix the variables with `CONTAINERD_`:
+
+```
+CONTAINERD_HTTP_PROXY=http://your-proxy.example.com:8888
+CONTAINERD_HTTPS_PROXY=http://your-proxy.example.com:8888
+CONTAINERD_NO_PROXY=127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.svc,.cluster.local
+```
+
 ## Secrets Encryption Config
 
 RKE2 supports encrypting Secrets at rest, and will do the following automatically:
