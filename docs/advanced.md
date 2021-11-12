@@ -39,7 +39,7 @@ HTTPS_PROXY=http://your-proxy.example.com:8888
 NO_PROXY=127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.svc,.cluster.local
 ```
 
-If you just want to configure the proxy settings for containerd to pull container images through the proxy, you can alsoe prefix these variables with `CONTAINERD_`:
+If you want to configure the proxy settings for containerd without affecting RKE2 and the Kubelet, you can prefix the variables with `CONTAINERD_`:
 
 ```
 CONTAINERD_HTTP_PROXY=http://your-proxy.example.com:8888
