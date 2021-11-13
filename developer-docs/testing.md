@@ -87,9 +87,9 @@ ___
 
 Installer tests should be run anytime one makes a modification to the installer script(s).
 These can be run locally with Vagrant:
-- [CentOS 7](../tests/vagrant/install/centos7) (stand-in for RHEL 7)
-- [CentOS 8](../tests/vagrant/install/centos8) (stand-in for RHEL 8)
-- [MicroOS](../tests/vagrant/install/microos) (stand-in for SLE-Micro)
+- [CentOS 7](../tests/vagrant/install/centos-7) (stand-in for RHEL 7)
+- [CentOS 8](../tests/vagrant/install/centos-8) (stand-in for RHEL 8)
+- [MicroOS](../tests/vagrant/install/opensuse-microos) (stand-in for SLE-Micro)
 - [Ubuntu 20.04](../tests/vagrant/install/ubuntu-focal) (Focal Fossa)
 
 When adding new installer test(s) please copy the prevalent style for the `Vagrantfile`.
