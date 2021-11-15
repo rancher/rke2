@@ -16,8 +16,8 @@ crane --platform windows/amd64 pull \
 # 2022/LTSC
 crane --platform windows/amd64 pull \
   ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
-  rancher/pause:${PAUSE_VERSION}-windows-lstc2022-amd64 \
-  rke2-windows-lstc2022-amd64-images.tar
+  rancher/pause:${PAUSE_VERSION}-windows-ltsc2022-amd64 \
+  rke2-windows-ltsc2022-amd64-images.tar
 
 WINDOWS_TARFILES=(rke2-windows-1809-amd64-images.tar rke2-windows-ltsc2022-amd64-images.tar)
 for TARFILE in "${WINDOWS_TARFILES[@]}"; do
