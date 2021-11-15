@@ -1,14 +1,13 @@
 name: Installer
 on:
   push:
-    branches:
-      - master
+    branches: [main, master]
     paths:
+      - "channels.yaml"
       - "install.sh"
       - "tests/vagrant/install/**"
   pull_request:
-    branches:
-      - master
+    branches: [main, master]
     paths:
       - "install.sh"
       - "tests/vagrant/install/**"
@@ -20,26 +19,53 @@ jobs:
     runs-on: macos-10.15
     timeout-minutes: 40
     strategy:
+      fail-fast: false
       matrix:
-        vm:
-        - centos7
-        - centos8
-#        - microos
-#        - ubuntu-focal
+        channel: [stable]
+        vm: [centos-7, centos-8, opensuse-microos, ubuntu-focal]
+        include:
+          - {channel: latest, vm: centos-8}
+          - {channel: latest, vm: ubuntu-focal}
+          - {channel: testing, vm: centos-8}
+          - {channel: testing, vm: ubuntu-focal}
       max-parallel: 2
+    defaults:
+      run:
+        working-directory: tests/vagrant/install/${{ matrix.vm }}
+    env:
+      INSTALL_RKE2_CHANNEL: ${{ matrix.channel }}
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
         with: {fetch-depth: 1}
+      - name: "Vagrant Cache"
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.vagrant.d/boxes
+            ~/.vagrant.d/gems
+          key: install-${{ hashFiles(format('tests/vagrant/install/{0}/Vagrantfile', matrix.vm)) }}
+        id: vagrant-cache
+        continue-on-error: true
       - name: "Vagrant Plugin(s)"
-        working-directory: tests/vagrant/install/${{ matrix.vm }}
         run: vagrant plugin install vagrant-reload
-      - name: "Vagrant VM"
-        working-directory: tests/vagrant/install/${{ matrix.vm }}
+      - name: "Vagrant Up ⏩ Install RKE2"
         run: vagrant up
-      - name: "Wait for Canal"
-        working-directory: tests/vagrant/install/${{ matrix.vm }}
-        run: vagrant up --provision-with=rke2-wait-for-canal
-      - name: "Wait for CoreDNS"
-        working-directory: tests/vagrant/install/${{ matrix.vm }}
-        run: vagrant up --provision-with=rke2-wait-for-coredns
+      - name: "⏳ Node"
+        run: vagrant provision --provision-with=rke2-wait-for-node
+      - name: "⏳ Canal"
+        run: vagrant provision --provision-with=rke2-wait-for-canal
+        continue-on-error: true
+      - name: "⏳ CoreDNS"
+        run: vagrant provision --provision-with=rke2-wait-for-coredns
+        continue-on-error: true
+      - name: "⏳ Metrics Server"
+        run: vagrant provision --provision-with=rke2-wait-for-metrics-server
+        continue-on-error: true
+      - name: "⏳ Ingress NGINX"
+        run: vagrant provision --provision-with=rke2-wait-for-ingress-nginx
+        continue-on-error: true
+      - name: "rke2-status"
+        run: vagrant provision --provision-with=rke2-status
+      - name: "rke2-procps"
+        run: vagrant provision --provision-with=rke2-procps
