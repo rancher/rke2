@@ -253,7 +253,7 @@ func (p *PEBinaryConfig) CloudControllerManager(ctx context.Context, ccmRBACRead
 }
 
 // ETCD isn't supported in the binary executor.
-func (p *PEBinaryConfig) ETCD(ctx context.Context, args executor.ETCDConfig) error {
+func (p *PEBinaryConfig) ETCD(ctx context.Context, args executor.ETCDConfig, extraArgs []string) error {
 	panic("etcd is unsupported on windows")
 }
 
