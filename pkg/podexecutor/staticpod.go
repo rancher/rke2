@@ -446,7 +446,7 @@ func (s *StaticPodConfig) CurrentETCDOptions() (opts executor.InitialOptions, er
 }
 
 // ETCD starts the etcd static pod.
-func (s *StaticPodConfig) ETCD(ctx context.Context, args executor.ETCDConfig) error {
+func (s *StaticPodConfig) ETCD(ctx context.Context, args executor.ETCDConfig, extraArgs []string) error {
 	image, err := s.Resolver.GetReference(images.ETCD)
 	if err != nil {
 		return err
@@ -460,7 +460,7 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, args executor.ETCDConfig) er
 		return err
 	}
 
-	confFile, err := args.ToConfigFile()
+	confFile, err := args.ToConfigFile(extraArgs)
 	if err != nil {
 		return err
 	}
