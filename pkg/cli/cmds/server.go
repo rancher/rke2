@@ -58,6 +58,7 @@ var (
 		"write-kubeconfig":                  copy,
 		"write-kubeconfig-mode":             copy,
 		"kube-apiserver-arg":                copy,
+		"etcd-arg":                          copy,
 		"kube-scheduler-arg":                copy,
 		"kube-controller-arg":               drop,
 		"kube-controller-manager-arg":       copy,
