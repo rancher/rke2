@@ -62,6 +62,7 @@ require (
 	github.com/rancher/k3s v1.21.5-engine0.0.20211115202002-6e4cc7c29fa8 // engine-1.21
 	github.com/rancher/wharfie v0.4.1
 	github.com/rancher/wrangler v0.8.8
+	github.com/rancher/wrangler-api v0.6.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.2
 	google.golang.org/grpc v1.38.0
