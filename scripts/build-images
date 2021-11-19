@@ -13,13 +13,15 @@ EOF
 
 xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
-    ${REGISTRY}/rancher/hardened-coredns:v1.6.9-${IMAGE_BUILD_VERSION}
+    ${REGISTRY}/rancher/hardened-coredns:v1.8.5-build20211119
+    ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.8.5-build20211119
+    ${REGISTRY}/rancher/hardened-dns-node-cache:1.21.2-build20211119
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-${IMAGE_BUILD_VERSION}
-    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.3.6-${IMAGE_BUILD_VERSION}
+    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.5.0-build20211119
     ${REGISTRY}/rancher/klipper-helm:v0.6.6-build20211022
     ${REGISTRY}/rancher/pause:${PAUSE_VERSION}
-    ${REGISTRY}/rancher/nginx-ingress-controller:nginx-1.0.2-hardened1
     ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.0
+    ${REGISTRY}/rancher/nginx-ingress-controller:nginx-1.0.2-hardened2
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
 EOF
 
@@ -47,14 +49,14 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-cpi-release-manager:v1.2.1
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v2.1.0
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v2.1.0
-    ${REGISTRY}/rancher/mirrored-k8scsi-csi-attacher:v3.0.0
-    ${REGISTRY}/rancher/mirrored-k8scsi-csi-node-driver-registrar:v2.0.1
-    ${REGISTRY}/rancher/mirrored-k8scsi-csi-provisioner:v2.0.0
-    ${REGISTRY}/rancher/mirrored-k8scsi-csi-resizer:v1.0.0
-    ${REGISTRY}/rancher/mirrored-k8scsi-livenessprobe:v2.1.0
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-cpi-release-manager:v1.20.0
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v2.3.0
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v2.3.0
+    ${REGISTRY}/rancher/mirrored-k8scsi-csi-node-driver-registrar:v2.1.0
+    ${REGISTRY}/rancher/mirrored-k8scsi-csi-resizer:v1.1.0
+    ${REGISTRY}/rancher/mirrored-k8scsi-livenessprobe:v2.2.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v3.2.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v2.2.0
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
