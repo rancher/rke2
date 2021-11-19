@@ -26,15 +26,16 @@ The **Chart** column indicates the Helm chart that uses this image. `CORE` indic
 | rke2-canal FROM | rancher/hardened-cni-plugins | rancher/image-build-cni-plugins | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
 | rke2-canal | rancher/hardened-flannel | rancher/image-build-flannel | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
 |  |  |  |  |  |
-| rke2-multus | rancher/hardened-ib-sriov-cni | rancher/image-build-ib-sriov-cni | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
-| rke2-multus | rancher/hardened-cni-plugins | rancher/image-build-cni-plugins | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
 | rke2-multus | rancher/hardened-multus-cni | rancher/image-build-multus | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
-| rke2-multus | rancher/hardened-sriov-cni  | rancher/image-build-sriov-cni | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
-| rke2-multus | rancher/hardened-sriov-network-config-daemon  | rancher/image-build-sriov-operator | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base<br>goboring/golang | TRUE |
-| rke2-multus | rancher/hardened-sriov-network-device-plugin | rancher/image-build-sriov-network-device-plugin | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
-| rke2-multus | rancher/hardened-sriov-network-operator | rancher/image-build-sriov-operator | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
-| rke2-multus | rancher/hardened-sriov-network-resources-injector | rancher/image-build-sriov-network-resources-injector | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
-| rke2-multus | rancher/hardened-sriov-network-webhook | rancher/image-build-sriov-operator | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
+| rke2-multus | rancher/hardened-cni-plugins | rancher/image-build-cni-plugins | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
+|  |  |  |  |  |
+| rancher-sriov | rancher/hardened-sriov-cni  | rancher/image-build-sriov-cni | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
+| rancher-sriov | rancher/hardened-ib-sriov-cni | rancher/image-build-ib-sriov-cni | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
+| rancher-sriov | rancher/hardened-sriov-network-config-daemon  | rancher/image-build-sriov-operator | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base<br>goboring/golang | TRUE |
+| rancher-sriov | rancher/hardened-sriov-network-device-plugin | rancher/image-build-sriov-network-device-plugin | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
+| rancher-sriov | rancher/hardened-sriov-network-operator | rancher/image-build-sriov-operator | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
+| rancher-sriov | rancher/hardened-sriov-network-resources-injector | rancher/image-build-sriov-network-resources-injector | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
+| rancher-sriov | rancher/hardened-sriov-network-webhook | rancher/image-build-sriov-operator | ‣ ubi7/ubi-minimal<br>‣ rancher/hardened-build-base | TRUE |
 |  |  |  |  |  |
 | rke2-calico | rancher/mirrored-calico-operator | rancher/image-mirror |  | FALSE |
 | rke2-calico | rancher/mirrored-calico-ctl | rancher/image-mirror |  | FALSE |
