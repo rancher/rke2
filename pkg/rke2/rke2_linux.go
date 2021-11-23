@@ -1,13 +1,18 @@
+//go:build linux
 // +build linux
 
 package rke2
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/rancher/k3s/pkg/agent/config"
@@ -62,9 +67,13 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 			Path: cfg.CloudProviderConfig,
 		}
 		if clx.String("node-name") == "" && cfg.CloudProviderName == "aws" {
-			fqdn, err := hostnameFQDN()
-			if err != nil {
-				return nil, err
+			fqdn := hostnameFromMetadataEndpoint(context.Background())
+			if fqdn == "" {
+				hostFQDN, err := hostnameFQDN()
+				if err != nil {
+					return nil, err
+				}
+				fqdn = hostFQDN
 			}
 			if err := clx.Set("node-name", fqdn); err != nil {
 				return nil, err
@@ -198,4 +207,35 @@ func hostnameFQDN() (string, error) {
 	}
 
 	return strings.TrimSpace(b.String()), nil
+}
+
+func hostnameFromMetadataEndpoint(ctx context.Context) string {
+	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://169.254.169.254/latest/metadata/local-hostname", nil)
+	if err != nil {
+		logrus.Debugf("Failed to create request for metadata endpoint: %v", err)
+		return ""
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		logrus.Debugf("Failed to get local-hostname from metadata endpoint: %v", err)
+		return ""
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		logrus.Debugf("Metadata endpoint returned unacceptable status code %d", resp.StatusCode)
+		return ""
+	}
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logrus.Debugf("Failed to read response body from metadata endpoint: %v", err)
+		return ""
+	}
+
+	return strings.TrimSpace(string(b))
 }
