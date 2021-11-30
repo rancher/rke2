@@ -28,19 +28,12 @@ Create a new release tag at the [image-build-kubernetes](https://github.com/ranc
 This will take a few minutes for CI to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kubernetes).
 
 
-### Helm Chart
-
-RKE2 depends on it's [Helm Charts](https://github.com/rancher/rke2-charts) being up-to-date with the expected versions for the Kubernetes components. The build process downloads these charts and bundles them into the runtime image.
-
-Create a PR in [rke2-charts](https://github.com/rancher/rke2-charts) that updates the version of the `kube-proxy` image in both the `image.tag` field of `packages/rke2-kube-proxy/charts/values.yaml`, and also in `packages/rke2-kube-proxy/charts/Chart.yaml`. Upon getting 1 approval and merging, CI will create the needed build artifact that RKE2 will use.
-
 ## Update RKE2
 
 The following files have references that will need to be updated in the respective locations. Replace the found version with the desired version. There are also references in documentation that should be updated and kept in sync. 
 
-* Dockerfile: `RUN CHART_VERSION="v1.21.4-build2021041301"     CHART_FILE=/charts/rke2-kube-proxy.yaml`
-* Dockerfile: `FROM rancher/k3s:v1.21.4-k3s1 AS k3s`
-* version.sh: `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.21.4}`
+* Dockerfile: `FROM rancher/k3s:v1.22.4-k3s1 AS k3s`
+* version.sh: `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.22.4}`
 * In v1.19 and older, pkg/images/image.go: `KubernetesVersion== "v1.19.15-rke2r1-build20210916"`
 * go.mod: ensure that the associated k3s version is used.
 
