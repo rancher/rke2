@@ -15,6 +15,7 @@ metadata:
   namespace: "${CHART_NAMESPACE:="kube-system"}"
   annotations:
     helm.cattle.io/chart-url: "${CHART_URL}"
+    fleet.cattle.io/bundle-id: "${CHART_NAME}"
 spec:
   bootstrap: ${CHART_BOOTSTRAP:=false}
   chartContent: $(base64 -w0 < "${CHART_TMP}")
