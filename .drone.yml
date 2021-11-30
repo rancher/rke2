@@ -9,7 +9,7 @@ platform:
 
 steps:
   - name: validate-release
-    image: rancher/dapper:v0.5.5
+    image: rancher/dapper:v0.5.8
     commands:
       - docker pull --quiet rancher/hardened-build-base:v1.16.10b7
       - dapper -f Dockerfile --target dapper make validate-release
@@ -23,7 +23,7 @@ steps:
         - drone-publish.rancher.io
 
   - name: build
-    image: rancher/dapper:v0.5.5
+    image: rancher/dapper:v0.5.8
     environment:
       ENABLE_REGISTRY: 'true'
       GCLOUD_AUTH:
@@ -37,7 +37,7 @@ steps:
         path: /var/run/docker.sock
 
   - name: package-images
-    image: rancher/dapper:v0.5.5
+    image: rancher/dapper:v0.5.8
     commands:
       - docker pull --quiet rancher/hardened-build-base:v1.16.10b7
       - dapper -f Dockerfile --target dapper make package-images
@@ -51,7 +51,7 @@ steps:
         - drone-publish.rancher.io
 
   - name: scan
-    image: rancher/dapper:v0.5.5
+    image: rancher/dapper:v0.5.8
     failure: ignore
     commands:
       - dapper -f Dockerfile --target dapper make scan-images
@@ -63,7 +63,7 @@ steps:
         - drone-publish.rancher.io
 
   - name: test
-    image: rancher/dapper:v0.5.5
+    image: rancher/dapper:v0.5.8
     secrets: [ gcloud_auth ]
     environment:
       ENABLE_REGISTRY: 'true'
@@ -115,7 +115,7 @@ steps:
         - refs/tags/*
 
   - name: package-windows-images
-    image: rancher/dapper:v0.5.5
+    image: rancher/dapper:v0.5.8
     commands:
       - docker pull --quiet rancher/hardened-build-base:v1.16.10b7
       - dapper -f Dockerfile --target dapper make package-windows-images
@@ -165,7 +165,7 @@ platform:
 
 steps:
   - name: dispatch
-    image: rancher/dapper:v0.5.5
+    image: rancher/dapper:v0.5.8
     commands:
       - dapper -f Dockerfile --target dapper make dispatch
     environment:
