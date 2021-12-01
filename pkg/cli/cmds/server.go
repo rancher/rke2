@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/rancher/k3s/pkg/cli/cmds"
+	"github.com/rancher/k3s/pkg/configfilearg"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/rancher/wrangler/pkg/slice"
 	"github.com/sirupsen/logrus"
@@ -138,6 +139,7 @@ func NewServerCommand() cli.Command {
 	cmd := k3sServerBase
 	cmd.Flags = append(cmd.Flags, serverFlag...)
 	cmd.Flags = append(cmd.Flags, commonFlag...)
+	configfilearg.DefaultParser.ValidFlags[cmd.Name] = cmd.Flags
 	return cmd
 }
 

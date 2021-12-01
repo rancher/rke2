@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
+	"github.com/rancher/k3s/pkg/configfilearg"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/urfave/cli"
 )
@@ -36,6 +37,7 @@ var (
 func NewEtcdSnapshotCommand() cli.Command {
 	cmd := k3sEtcdSnapshotBase
 	cmd.Flags = append(cmd.Flags, commonFlag...)
+	configfilearg.DefaultParser.ValidFlags[cmd.Name] = cmd.Flags
 	return cmd
 }
 
