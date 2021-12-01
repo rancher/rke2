@@ -3,6 +3,7 @@ package cmds
 import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/rancher/k3s/pkg/cli/etcdsnapshot"
+	"github.com/rancher/k3s/pkg/configfilearg"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/urfave/cli"
 )
@@ -80,7 +81,9 @@ var (
 )
 
 func NewEtcdSnapshotCommand() cli.Command {
-	return k3sEtcdSnapshotBase
+	cmd := k3sEtcdSnapshotBase
+	configfilearg.DefaultParser.ValidFlags[cmd.Name] = cmd.Flags
+	return cmd
 }
 
 func EtcdSnapshotRun(clx *cli.Context) error {

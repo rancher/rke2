@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"github.com/rancher/k3s/pkg/cli/cmds"
+	"github.com/rancher/k3s/pkg/configfilearg"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/rancher/rke2/pkg/windows"
 	"github.com/urfave/cli"
@@ -64,6 +65,7 @@ func NewAgentCommand() cli.Command {
 	cmd.Flags = append(cmd.Flags, commonFlag...)
 	cmd.Flags = append(cmd.Flags, deprecatedFlags...)
 	cmd.Subcommands = agentSubcommands()
+	configfilearg.DefaultParser.ValidFlags[cmd.Name] = cmd.Flags
 	return cmd
 }
 
