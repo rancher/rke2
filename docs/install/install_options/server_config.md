@@ -32,6 +32,7 @@ OPTIONS:
    --write-kubeconfig value, -o value            (client) Write kubeconfig for admin client to this file [$RKE2_KUBECONFIG_OUTPUT]
    --write-kubeconfig-mode value                 (client) Write kubeconfig with this mode [$RKE2_KUBECONFIG_MODE]
    --kube-apiserver-arg value                    (flags) Customized flag for kube-apiserver process
+   --etcd-arg value                              (flags) Customized flag for etcd process
    --kube-controller-manager-arg value           (flags) Customized flag for kube-controller-manager process
    --kube-scheduler-arg value                    (flags) Customized flag for kube-scheduler process
    --etcd-expose-metrics                         (db) Expose etcd metrics to client interface. (Default false)
