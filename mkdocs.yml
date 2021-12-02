@@ -45,6 +45,7 @@ nav:
     - upgrade/basic_upgrade.md
     - upgrade/automated_upgrade.md
   - Security:
+    - security/about_hardened_images.md
     - security/hardening_guide.md
     - security/cis_self_assessment15.md
     - security/cis_self_assessment16.md
