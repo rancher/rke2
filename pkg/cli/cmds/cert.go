@@ -5,6 +5,7 @@ import (
 
 	"github.com/rancher/k3s/pkg/cli/cert"
 	"github.com/rancher/k3s/pkg/cli/cmds"
+	"github.com/rancher/k3s/pkg/configfilearg"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/urfave/cli"
 )
@@ -37,7 +38,9 @@ var (
 )
 
 func NewCertRotateCommand() cli.Command {
-	return k3sCertBase
+	cmd := k3sCertBase
+	configfilearg.DefaultParser.ValidFlags[cmd.Name] = cmd.Flags
+	return cmd
 }
 
 func CertificateRotationRun(clx *cli.Context) error {
