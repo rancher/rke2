@@ -44,7 +44,11 @@ func NewCertRotateCommand() cli.Command {
 }
 
 func CertificateRotationRun(clx *cli.Context) error {
-	if err := ioutil.WriteFile(rke2.ForceRestartFile(clx.String("data-dir")), []byte{}, 0600); err != nil {
+	dataDir := clx.String("data-dir")
+	if dataDir == "" {
+		dataDir = rke2Path
+	}
+	if err := ioutil.WriteFile(rke2.ForceRestartFile(dataDir), []byte{}, 0600); err != nil {
 		return err
 	}
 	return cert.Run(clx)

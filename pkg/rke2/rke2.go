@@ -146,6 +146,7 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 		}
 	} else {
 		forceRestart = true
+		os.Remove(ForceRestartFile(dataDir))
 	}
 	disabledItems := map[string]bool{
 		"kube-apiserver":           disableAPIServer || forceRestart,
