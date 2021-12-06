@@ -164,16 +164,15 @@ function Get-ArchitectureInfo() {
 
 # get Windows Server Build Version
 function Get-BuildVersion() {
-    $BuildVersion = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name ReleaseId).ReleaseId
-    if ("$BuildVersion" -eq "2009") {
-        $BuildVersion = "20H2"
+    $buildVersion = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name ReleaseId).ReleaseId
+    if ("$buildVersion" -eq "2009") {
+        $buildVersion = "20H2"
     }
-    if ("$BuildVersion" -eq "1809" -or "2022" -or "2004" -or "20H2") {
-        Write-InfoLog "build version: $BuildVersion"
-        return $BuildVersion
+    if ("$buildVersion" -eq "1809" -or "2022" -or "2004" -or "20H2") {
+        return $buildVersion
     }
     else {
-        Write-FatalLog "unsupported build version $BuildVersion"
+        Write-FatalLog "unsupported build version $buildVersion"
         exit 1
     }
 }
@@ -347,7 +346,6 @@ function Copy-LocalBinaryChecksums() {
         return @{ ExpectedBinaryChecksum = $expectedBinaryChecksum; ExpectedBinaryAirgapChecksum = $expectedBinaryAirgapChecksum }
     }
     else {
-        Write-InfoLog "staging local binary checksums from $Path/sha256sum-$arch.txt"
         Copy-Item -Path "$Path/sha256sum-$arch.txt" -Destination $DestinationPath -Force
         $expectedBinaryChecksum = Find-Checksum -ChecksumFilePath $DestinationPath -Pattern "rke2.$suffix.tar.gz"
         $expectedBinaryAirgapChecksum = ""
@@ -357,6 +355,7 @@ function Copy-LocalBinaryChecksums() {
         }
         return @{ ExpectedBinaryChecksum = $expectedBinaryChecksum; ExpectedBinaryAirgapChecksum = $expectedBinaryAirgapChecksum }
     }
+     return @{ ExpectedBinaryChecksum = ""; ExpectedBinaryAirgapChecksum = "" }
 }
 
 function Copy-LocalImageChecksums() {
@@ -386,12 +385,11 @@ function Copy-LocalImageChecksums() {
             return @{ ExpectedImageChecksum = $expectedImageChecksum ; ExpectedImageAirgapChecksum = $expectedImageAirgapChecksum }
         }
     }
-    # TODO: possibly add a condition where commithash is not set and no local checksums are present 
+    # TODO: possibly add a condition where commithash is not set and no local checksums are present
     else {
         if (Test-Path -Path "$Path/rke2-windows-$BuildVersion-$arch-images.tar.gz" -PathType Leaf) {
             $expectedImageAirgapChecksum = ""
             $expectedImageChecksum = Find-Checksum -ChecksumFilePath $DestinationPath -Pattern "rke2-windows-$BuildVersion-$arch-images.tar.gz"
-            Write-InfoLog "staging local image checksums from $Path/sha256sum-$arch.txt"
             Copy-Item -Path "$Path/sha256sum-$arch.txt" -Destination $DestinationPath -Force
             $expectedImageAirgapChecksum = Find-Checksum -ChecksumFilePath $TempImageChecksums -Pattern "rke2-windows-$BuildVersion-$arch-images.tar.gz"
             return @{ ExpectedImageChecksum = $expectedImageChecksum ; ExpectedImageAirgapChecksum = $expectedImageAirgapChecksum }
@@ -399,12 +397,13 @@ function Copy-LocalImageChecksums() {
         elseif (Test-Path -Path "$Path/rke2-windows-$BuildVersion-$arch-images.tar.zst" -PathType Leaf) {
             $expectedImageAirgapChecksum = ""
             $expectedImageChecksum = Find-Checksum -ChecksumFilePath $DestinationPath -Pattern "rke2-windows-$BuildVersion-$arch-images.tar.zst"
-            Write-InfoLog "staging local image checksums from $Path/sha256sum-$arch.txt"
+            Write-Host "staging local image checksums from $Path/sha256sum-$arch.txt"
             Copy-Item -Path "$Path/sha256sum-$arch.txt" -Destination $DestinationPath -Force
             $expectedImageAirgapChecksum = Find-Checksum -ChecksumFilePath $TempImageChecksums -Pattern "rke2-windows-$BuildVersion-$arch-images.tar.zst"
             return @{ ExpectedImageChecksum = $expectedImageChecksum ; ExpectedImageAirgapChecksum = $expectedImageAirgapChecksum }
         }
     }
+    return @{ ExpectedImageChecksum = ""; ExpectedImageAirgapChecksum = "" }
 }
 
 
@@ -709,7 +708,7 @@ switch ($Method) {
                 $BINARY_CHECKSUM_EXPECTED = $binaryChecksums.ExpectedBinaryAirgapChecksum
                 $AIRGAP_CHECKSUM_EXPECTED = $imageChecksums.ExpectedImageAirgapChecksum
                 Copy-LocalAirgapTarball -Path $ArtifactPath -DestinationPath $TMP_AIRGAP_TARBALL
-                Copy-LocalBinaryTarball -Path $ArtifactPath -DestinationPath $TMP_BINARY_TARBAL
+                Copy-LocalBinaryTarball -Path $ArtifactPath -DestinationPath $TMP_BINARY_TARBALL
             }
         }
         else {
