@@ -138,14 +138,28 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	}
 	executor.Set(ex)
 
+	// check for force restart file
+	var forceRestart bool
+	if _, err := os.Stat(ForceRestartFile(dataDir)); err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+	} else {
+		forceRestart = true
+		os.Remove(ForceRestartFile(dataDir))
+	}
 	disabledItems := map[string]bool{
-		"kube-apiserver":           disableAPIServer,
-		"kube-scheduler":           disableScheduler,
-		"kube-controller-manager":  disableControllerManager,
-		"cloud-controller-manager": disableCloudControllerManager,
-		"etcd":                     disableETCD,
+		"kube-apiserver":           disableAPIServer || forceRestart,
+		"kube-scheduler":           disableScheduler || forceRestart,
+		"kube-controller-manager":  disableControllerManager || forceRestart,
+		"cloud-controller-manager": disableCloudControllerManager || forceRestart,
+		"etcd":                     disableETCD || forceRestart,
 	}
 	return removeOldPodManifests(dataDir, disabledItems, clusterReset)
+}
+
+func ForceRestartFile(dataDir string) string {
+	return filepath.Join(dataDir, "force-restart")
 }
 
 func podManifestsDir(dataDir string) string {
