@@ -185,13 +185,14 @@ The PRs should be merged in a timely manner, within about a day; however, they d
 
 ### Promoting to Stable
 
-After 24 hours, we'll promote the release to stable by updating the channel server's config as we did at above, however this time changing "latest" to "stable". We need to do the same thing for RPM's too. This involves the same steps for RPM releases but changing "latest" to "stable" in the release name. E.g. `v1.21.4+rke2r1.stable.0`.
+After 24 hours, we'll promote the release to stable and need to rebuild the RPM's. This involves the same steps for RPM releases but changing "latest" to "stable" in the release name. E.g. `v1.21.5+rke2r1.stable.0`.
+NOTE: All releases for the month need to be marked as stable, not just the highest release (e.g. v1.19.15, v1.20.11, and v1.21.5 all get marked as stable, not just v1.21.5). 
 
 ### Updating Channel Server
 
 After promoting the release to stable, we need to update the channel server. This is done by editing the `channels.yaml` file in the [repo](https://github.com/rancher/rke2/blob/master/channels.yaml).
 
-* Update the line: `latest: <release>` to be the recent release. e.g. `v1.21.4+rke2r1`.
+* Update the line: `latest: <release>` to be the recent release. e.g. `v1.21.5+rke2r1`.
 * Verify updated in the JSON output from a call [here](https://update.rke2.io/v1-release/channels).
 
 ## Release Process
