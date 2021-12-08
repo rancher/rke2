@@ -60,8 +60,8 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
-    ${REGISTRY}/rancher/hardened-multus-cni:v3.7.1-build20210416
-    ${REGISTRY}/rancher/hardened-cni-plugins:v0.9.1-build20210414
+    ${REGISTRY}/rancher/hardened-multus-cni:v3.7.1-build20211119
+    ${REGISTRY}/rancher/hardened-cni-plugins:v0.9.1-build20211119
     ${REGISTRY}/rancher/hardened-sriov-network-operator:v1.0.0-build20210429
     ${REGISTRY}/rancher/hardened-sriov-network-config-daemon:v1.0.0-build20210429
     ${REGISTRY}/rancher/hardened-sriov-network-device-plugin:v3.3.1-build20210310
