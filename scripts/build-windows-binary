@@ -5,6 +5,10 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
+if [ "${GOARCH}" == "s390x" ]; then
+  exit 0
+fi
+
 if [ -z "${GODEBUG}" ]; then
     EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -w"
     DEBUG_GO_GCFLAGS=""

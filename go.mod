@@ -14,7 +14,7 @@ replace (
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.2
 	github.com/googleapis/gax-go/v2 => github.com/googleapis/gax-go/v2 v2.0.5
 	github.com/juju/errors => github.com/k3s-io/nocode v0.0.0-20200630202308-cb097102c09f
-	github.com/k3s-io/helm-controller => github.com/k3s-io/helm-controller v0.11.8
+	github.com/k3s-io/helm-controller => github.com/k3s-io/helm-controller v0.11.9
 	github.com/kubernetes-sigs/cri-tools => github.com/k3s-io/cri-tools v1.22.0-k3s1
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.3
@@ -67,7 +67,7 @@ require (
 	github.com/google/go-containerregistry v0.7.0
 	github.com/google/gopacket v1.1.19
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
-	github.com/k3s-io/helm-controller v0.11.7
+	github.com/k3s-io/helm-controller v0.11.9
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.17.0
 	github.com/pkg/errors v0.9.1
