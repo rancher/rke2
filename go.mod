@@ -12,14 +12,14 @@ replace (
 	github.com/docker/docker => github.com/docker/docker v20.10.2+incompatible
 	github.com/docker/libnetwork => github.com/docker/libnetwork v0.8.0-dev.2.0.20190624125649-f0e46a78ea34
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.2
+	github.com/googleapis/gax-go/v2 => github.com/googleapis/gax-go/v2 v2.0.5
 	github.com/juju/errors => github.com/k3s-io/nocode v0.0.0-20200630202308-cb097102c09f
 	github.com/k3s-io/helm-controller => github.com/k3s-io/helm-controller v0.11.8
 	github.com/kubernetes-sigs/cri-tools => github.com/k3s-io/cri-tools v1.22.0-k3s1
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
-	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.2
+	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.3
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20210316141917-a8c4a9ee0f6b
 	github.com/rancher/remotedialer => github.com/rancher/remotedialer v0.2.0
-	github.com/rancher/wharfie => github.com/rancher/wharfie v0.4.2
 	go.etcd.io/etcd/api/v3 => github.com/k3s-io/etcd/api/v3 v3.5.0-k3s2
 	go.etcd.io/etcd/client/v3 => github.com/k3s-io/etcd/client/v3 v3.5.0-k3s2
 	go.etcd.io/etcd/etcdutl/v3 => github.com/k3s-io/etcd/etcdutl/v3 v3.5.0-k3s2
@@ -63,21 +63,21 @@ replace (
 require (
 	github.com/Microsoft/hcsshim v0.8.23
 	github.com/containerd/continuity v0.1.0
-	github.com/google/go-containerregistry v0.5.0
+	github.com/google/go-containerregistry v0.6.1-0.20211111182346-7a6ee45528a9
 	github.com/google/gopacket v1.1.19
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.11.7
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.14.0
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.22.5-0.20211207232931-2561285e8e99 // release-1.22
-	github.com/rancher/wharfie v0.4.1
+	github.com/rancher/k3s v1.22.5-0.20211210005434-d64a8da87162 // release-1.22
+	github.com/rancher/wharfie v0.5.1
 	github.com/rancher/wins v0.1.1
-	github.com/rancher/wrangler v0.8.8
+	github.com/rancher/wrangler v0.8.10
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.5
-	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
-	google.golang.org/grpc v1.40.0
+	golang.org/x/sys v0.0.0-20211004093028-2c5d950f24ef
+	google.golang.org/grpc v1.41.0
 	k8s.io/api v0.22.4
 	k8s.io/apimachinery v0.22.4
 	k8s.io/apiserver v0.22.4
