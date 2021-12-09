@@ -36,7 +36,6 @@ import (
 
 var (
 	releasePattern = regexp.MustCompile("^v[0-9]")
-	ps             = string(os.PathSeparator)
 )
 
 // binDirForDigest returns the path to dataDir/data/refDigest/bin.
@@ -114,31 +113,19 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 				return "", errors.Wrapf(err, "failed to load private registry configuration from %s", nodeConfig.AgentConfig.PrivateRegistry)
 			}
 
-			// Prefer registries.yaml auth config
-			kcs := []authn.Keychain{registry}
-
 			// Try to enable Kubelet image credential provider plugins; fall back to legacy docker credentials
 			if agent.ImageCredProvAvailable(&nodeConfig.AgentConfig) {
 				plugins, err := plugin.RegisterCredentialProviderPlugins(nodeConfig.AgentConfig.ImageCredProvConfig, nodeConfig.AgentConfig.ImageCredProvBinDir)
 				if err != nil {
 					return "", err
 				}
-				kcs = append(kcs, plugins)
+				registry.DefaultKeychain = plugins
 			} else {
-				kcs = append(kcs, authn.DefaultKeychain)
+				registry.DefaultKeychain = authn.DefaultKeychain
 			}
 
-			multiKeychain := authn.NewMultiKeychain(kcs...)
-
 			logrus.Infof("Pulling runtime image %s", ref.Name())
-			img, err = remote.Image(registry.Rewrite(ref),
-				remote.WithAuthFromKeychain(multiKeychain),
-				remote.WithTransport(registry),
-				remote.WithPlatform(v1.Platform{
-					Architecture: runtime.GOARCH,
-					OS:           runtime.GOOS,
-				}),
-			)
+			img, err = registry.Image(ref, remote.WithPlatform(v1.Platform{Architecture: runtime.GOARCH, OS: runtime.GOOS}))
 			if err != nil {
 				return "", errors.Wrapf(err, "failed to get runtime image %s", ref.Name())
 			}
@@ -146,8 +133,8 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 
 		// Extract binaries and charts
 		extractPaths := map[string]string{
-			ps + "bin":    refBinDir,
-			ps + "charts": refChartsDir,
+			"/bin":    refBinDir,
+			"/charts": refChartsDir,
 		}
 		if err := extract.ExtractDirs(img, extractPaths); err != nil {
 			return "", errors.Wrap(err, "failed to extract runtime image")
