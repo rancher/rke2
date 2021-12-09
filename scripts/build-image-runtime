@@ -10,6 +10,7 @@ DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
     --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
     --build-arg MAJOR=${VERSION_MAJOR} \
     --build-arg MINOR=${VERSION_MINOR} \
+    --build-arg DAPPER_HOST_ARCH=${GOARCH} \
     --build-arg CACHEBUST="$(date +%s%N)" \
     --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
     --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH} \
@@ -17,17 +18,18 @@ DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
     --file Dockerfile \
     .
 
-DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
-    --build-arg TAG=${VERSION} \
-    --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
-    --build-arg MAJOR=${VERSION_MAJOR} \
-    --build-arg MINOR=${VERSION_MINOR} \
-    --build-arg CACHEBUST="$(date +%s%N)" \
-    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
-    --target windows-runtime \
-    --file Dockerfile.windows \
-    .
-
+if [ "${GOARCH}" != "s390x" ]; then
+  DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
+      --build-arg TAG=${VERSION} \
+      --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
+      --build-arg MAJOR=${VERSION_MAJOR} \
+      --build-arg MINOR=${VERSION_MINOR} \
+      --build-arg CACHEBUST="$(date +%s%N)" \
+      --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
+      --target windows-runtime \
+      --file Dockerfile.windows \
+      .
+fi
 mkdir -p build/images
 docker image save \
     --output build/images/${PROG}-runtime.tar \

@@ -8,3 +8,7 @@ manifests:
     platform: 
       architecture: amd64
       os: windows
+  - image: rancher/rke2-runtime:{{replace "+" "-" build.tag}}-linux-s390x
+      platform:
+        architecture: s390x
+        os: linux
