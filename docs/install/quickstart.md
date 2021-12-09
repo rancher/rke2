@@ -8,8 +8,15 @@ This guide will help you quickly launch a cluster with default options.
 
 ### Prerequisites
 
-Make sure your environment fulfills the [requirements.](https://docs.rke2.io/install/requirements/)
+- Make sure your environment fulfills the [requirements.](https://docs.rke2.io/install/requirements/)
 If NetworkManager is installed and enabled on your hosts, [ensure that it is configured to ignore CNI-managed interfaces.](https://docs.rke2.io/known_issues/#networkmanager)
+
+- For RKE2 versions 1.21 and higher, if the host kernel has [AppArmor](https://apparmor.net/), the AppArmor userspace must be present also. You must install the apparmor_parser prior to the RKE2 installation:
+
+    ```
+    zypper install apparmor-parser
+    systemctl restart rke2-server.service
+    ```
 
 ### Server Node Installation
 --------------
