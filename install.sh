@@ -156,6 +156,10 @@ setup_arch() {
         ARCH=amd64
         SUFFIX=$(uname -s | tr '[:upper:]' '[:lower:]')-${ARCH}
         ;;
+    s390x)
+        ARCH=s390x
+        SUFFIX=$(uname -s | tr '[:upper:]' '[:lower:]')-${ARCH}
+        ;;
     *)
         fatal "unsupported architecture ${ARCH}"
         ;;

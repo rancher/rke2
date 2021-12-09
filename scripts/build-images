@@ -18,7 +18,7 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-dns-node-cache:1.21.2-build20211119
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20220112
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.5.0-build20211119
-    ${REGISTRY}/rancher/klipper-helm:v0.6.7-build20211110
+    ${REGISTRY}/rancher/klipper-helm:v0.6.8-build20211123
     ${REGISTRY}/rancher/pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.0
     ${REGISTRY}/rancher/nginx-ingress-controller:nginx-1.0.2-hardened2
@@ -30,6 +30,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
     ${REGISTRY}/rancher/hardened-flannel:v0.16.1-build20220119
 EOF
 
+if [ "${GOARCH}" != "s390x" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.11.2
     ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.11.2
@@ -80,6 +81,6 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
     ${REGISTRY}/rancher/longhornio-csi-provisioner:v2.1.2
     ${REGISTRY}/rancher/longhornio-csi-attacher:v3.2.1
 EOF
-
+fi
 # Continue to provide a legacy airgap archive set with the default CNI images
 cat build/images-core.txt build/images-canal.txt > build/images.txt

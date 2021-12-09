@@ -1,6 +1,8 @@
 ARG KUBERNETES_VERSION=dev
 # Build environment
-FROM rancher/hardened-build-base:v1.16.10b7 AS build
+FROM rancher/hardened-build-base:v1.16.14b7 AS build
+ARG DAPPER_HOST_ARCH
+ENV ARCH $DAPPER_HOST_ARCH
 RUN set -x \
     && apk --no-cache add \
     bash \
@@ -9,13 +11,15 @@ RUN set -x \
     git \
     libseccomp-dev \
     rsync \
-    mingw-w64-gcc \
     gcc \
     bsd-compat-headers \
     py-pip \
-    pigz \
     tar \
-    yq
+    yq \
+    pigz
+RUN if [ "${ARCH}" != "s390x" ]; then \
+    	apk --no-cache add mingw-w64-gcc; \
+    fi
 
 # Dapper/Drone/CI environment
 FROM build AS dapper

@@ -54,7 +54,9 @@ if type -a go-assert-static.sh >/dev/null 2>&1; then
     go-assert-static.sh bin/${PROG}
 fi
 
-# assert that rke2 is linked to goboring
-if type -a go-assert-boring.sh >/dev/null 2>&1; then
+if [ "${GOARCH}" != "s390x" ]; then
+  # assert that rke2 is linked to goboring
+  if type -a go-assert-boring.sh >/dev/null 2>&1; then
     go-assert-boring.sh bin/${PROG}
+  fi
 fi
