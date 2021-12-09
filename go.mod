@@ -3,9 +3,10 @@ module github.com/rancher/rke2
 go 1.15
 
 replace (
+	github.com/Microsoft/go-winio => github.com/Microsoft/go-winio v0.4.19
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.8.20
 	github.com/benmoss/go-powershell => github.com/k3s-io/go-powershell v0.0.0-20201118222746-51f4c451fbd7
-	github.com/containerd/containerd => github.com/k3s-io/containerd v1.4.11-k3s1
+	github.com/containerd/containerd => github.com/k3s-io/containerd v1.4.12-k3s1
 	github.com/containerd/continuity => github.com/k3s-io/continuity v0.0.0-20210309170710-f93269e0d5c1
 	github.com/containerd/cri => github.com/k3s-io/cri v1.4.0-k3s.7 // k3s-release/1.4
 	github.com/coreos/flannel => github.com/rancher/flannel v0.12.0-k3s1
@@ -16,9 +17,8 @@ replace (
 	github.com/juju/errors => github.com/k3s-io/nocode v0.0.0-20200630202308-cb097102c09f
 	github.com/kubernetes-sigs/cri-tools => github.com/k3s-io/cri-tools v1.21.0-k3s1
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
-	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.2
+	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.3
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20210316141917-a8c4a9ee0f6b
-	github.com/rancher/wharfie => github.com/rancher/wharfie v0.4.2
 	go.etcd.io/etcd => github.com/k3s-io/etcd v0.5.0-alpha.5.0.20201208200253-50621aee4aea
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 	google.golang.org/grpc => google.golang.org/grpc v1.27.1
@@ -56,15 +56,15 @@ replace (
 
 require (
 	github.com/containerd/continuity v0.1.0
-	github.com/google/go-containerregistry v0.5.0
+	github.com/google/go-containerregistry v0.6.1-0.20211111182346-7a6ee45528a9
 	github.com/k3s-io/helm-controller v0.11.7
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.7-engine0.0.20211206174428-5153c527ebae // engine-1.21
-	github.com/rancher/wharfie v0.4.1
-	github.com/rancher/wrangler v0.8.8
+	github.com/rancher/k3s v1.21.7-engine0.0.20211210005443-50b358048bfb // engine-1.21
+	github.com/rancher/wharfie v0.5.1
+	github.com/rancher/wrangler v0.8.10
 	github.com/sirupsen/logrus v1.8.1
-	github.com/urfave/cli v1.22.2
-	google.golang.org/grpc v1.38.0
+	github.com/urfave/cli v1.22.4
+	google.golang.org/grpc v1.41.0
 	k8s.io/api v0.21.7
 	k8s.io/apimachinery v0.21.7
 	k8s.io/apiserver v0.21.7

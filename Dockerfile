@@ -96,7 +96,7 @@ RUN rm -vf /charts/*.sh /charts/*.md
 FROM rancher/hardened-kubernetes:v1.20.13-rke2r1-build20211119 AS kubernetes
 FROM rancher/hardened-containerd:v1.4.12-k3s1-build20211118 AS containerd
 FROM rancher/hardened-crictl:v1.20.0-build20211118 AS crictl
-FROM rancher/hardened-runc:v1.0.2-build20211118 AS runc
+FROM rancher/hardened-runc:v1.0.3-build20211210 AS runc
 
 FROM scratch AS runtime-collect
 COPY --from=runc \
