@@ -61,7 +61,7 @@ require (
 	github.com/google/go-containerregistry v0.5.0
 	github.com/google/gopacket v1.1.19
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
-	github.com/k3s-io/helm-controller v0.11.7
+	github.com/k3s-io/helm-controller v0.11.9
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/k3s v1.21.7-engine0.0.20211208184924-bee0e661b1c4 // engine-1.21
 	github.com/rancher/wharfie v0.4.1

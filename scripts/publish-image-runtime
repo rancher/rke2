@@ -6,4 +6,6 @@ cd $(dirname $0)/..
 source ./scripts/version.sh
 
 docker image push ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH}
-docker image push ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64
+if [ "${GOARCH}" != "s390x" ]; then
+  docker image push ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64
+fi

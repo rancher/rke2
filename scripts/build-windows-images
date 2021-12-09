@@ -4,6 +4,11 @@ set -ex
 cd $(dirname $0)/..
 
 source ./scripts/version.sh
+
+if [ "${GOARCH}" == "s390x" ]; then
+  exit 0
+fi
+
 mkdir -p build
 
 WINDOWS_IMAGES=(${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rancher/pause:${PAUSE_VERSION}-windows-1809-amd64 rancher/pause:${PAUSE_VERSION}-windows-ltsc2022-amd64)
