@@ -89,17 +89,19 @@ func Server(clx *cli.Context, cfg Config) error {
 		}
 	}
 	cisMode := isCISMode(clx)
-	var defaultNamespaces = []string{
+	defaultNamespaces := []string{
 		metav1.NamespaceSystem,
 		metav1.NamespaceDefault,
 		metav1.NamespacePublic,
 	}
+	dataDir := clx.String("data-dir")
 	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
 		setPSPs(cisMode),
 		setNetworkPolicies(cisMode, defaultNamespaces),
 		setClusterRoles(),
 		restrictServiceAccounts(cisMode, defaultNamespaces),
 		setKubeProxyDisabled(),
+		cleanupStaticPodsOnSelfDelete(dataDir),
 	)
 
 	var leaderControllers rawServer.CustomControllers
