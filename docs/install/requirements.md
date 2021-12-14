@@ -45,11 +45,7 @@ This will require a reboot for the `Containers` feature to properly function.
 
 Hardware requirements scale based on the size of your deployments. Minimum recommendations are outlined here.
 
-### Linux
-*    RAM: 512MB Minimum (we recommend at least 1GB)
-*    CPU: 1 Minimum
-
-### Windows
+### Linux/Windows
 *    RAM: 4GB Minimum (we recommend at least 8GB)
 *    CPU: 2 Minimum (we recommend at least 4CPU)
 
