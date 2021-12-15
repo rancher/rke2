@@ -103,7 +103,7 @@ RUN CHART_VERSION="v3.19.2-205"               CHART_FILE=/charts/rke2-calico.yam
 RUN CHART_VERSION="v1.0.101"                  CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.16.401-build2021111901"  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="4.0.306"                   CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
-RUN CHART_VERSION="v1.21.7-rke2r3-build2021121001" \
+RUN CHART_VERSION="v1.21.8-rke2r1-build2021121501" \
     CHART_PACKAGE="rke2-kube-proxy-1.21"      CHART_FILE=/charts/rke2-kube-proxy.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="2.11.100-build2021111904"  CHART_FILE=/charts/rke2-metrics-server.yaml CHART_BOOTSTRAP=false  /charts/build-chart.sh
 RUN CHART_VERSION="v3.7.1-build2021111906"    CHART_FILE=/charts/rke2-multus.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
@@ -117,7 +117,7 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
-FROM rancher/hardened-kubernetes:v1.21.7-rke2r3-build20211210 AS kubernetes
+FROM rancher/hardened-kubernetes:v1.21.8-rke2r1-build20211215 AS kubernetes
 FROM rancher/hardened-containerd:v1.4.12-k3s1-build20211118 AS containerd
 FROM rancher/hardened-crictl:v1.21.0-build20211118 AS crictl
 FROM rancher/hardened-runc:v1.0.3-build20211210 AS runc
