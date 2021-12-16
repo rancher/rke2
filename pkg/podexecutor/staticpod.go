@@ -226,7 +226,6 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 		return err
 	}
 
-	args = append([]string{"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}, args...)
 	auditLogFile := filepath.Join(s.DataDir, "server/logs/audit.log")
 	if s.CloudProvider != nil {
 		extraArgs := []string{
@@ -255,6 +254,7 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 	if err != nil {
 		return err
 	}
+	kubeletPreferredAddressTypesFound := false
 	for i, arg := range args {
 		// This is an option k3s adds that does not exist upstream
 		if strings.HasPrefix(arg, "--advertise-port=") {
@@ -263,6 +263,12 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 		if strings.HasPrefix(arg, "--basic-auth-file=") {
 			args = append(args[:i], args[i+1:]...)
 		}
+		if strings.HasPrefix(arg, "--kubelet-preferred-address-types=") {
+			kubeletPreferredAddressTypesFound = true
+		}
+	}
+	if !kubeletPreferredAddressTypesFound {
+		args = append([]string{"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}, args...)
 	}
 	files := []string{}
 	if !s.DisableETCD {
