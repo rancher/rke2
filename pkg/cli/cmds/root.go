@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/rancher/k3s/pkg/version"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/rke2"
@@ -153,7 +154,10 @@ func validateCISReqs(nodeType string) error {
 	// etcd user only needs to exist on servers
 	if nodeType == "server" {
 		if _, err := user.Lookup("etcd"); err != nil {
-			ce = append(ce, fmt.Errorf("missing required %w", err))
+			ce = append(ce, errors.Wrap(err, "missing required"))
+		}
+		if _, err := user.LookupGroup("etcd"); err != nil {
+			ce = append(ce, errors.Wrap(err, "missing required"))
 		}
 	}
 
