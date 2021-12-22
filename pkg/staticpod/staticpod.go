@@ -210,7 +210,7 @@ func pod(args Args) (*v1.Pod, error) {
 			path = "/healthz"
 		}
 		p.Spec.Containers[0].LivenessProbe = &v1.Probe{
-			Handler: v1.Handler{
+			ProbeHandler: v1.ProbeHandler{
 				HTTPGet: &v1.HTTPGetAction{
 					Path: path,
 					Port: intstr.IntOrString{
