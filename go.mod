@@ -56,15 +56,15 @@ replace (
 
 require (
 	github.com/containerd/continuity v0.1.0
-	github.com/google/go-containerregistry v0.6.1-0.20211111182346-7a6ee45528a9
+	github.com/google/go-containerregistry v0.7.0
 	github.com/k3s-io/helm-controller v0.11.7
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/k3s v1.21.7-engine0.0.20211221182857-bcd63e54dd9f // engine-1.21
-	github.com/rancher/wharfie v0.5.1
+	github.com/rancher/wharfie v0.5.2
 	github.com/rancher/wrangler v0.8.10
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.4
-	google.golang.org/grpc v1.41.0
+	google.golang.org/grpc v1.42.0
 	k8s.io/api v0.21.8
 	k8s.io/apimachinery v0.21.8
 	k8s.io/apiserver v0.21.8
