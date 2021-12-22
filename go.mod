@@ -64,7 +64,7 @@ replace (
 require (
 	github.com/Microsoft/hcsshim v0.8.23
 	github.com/containerd/continuity v0.1.0
-	github.com/google/go-containerregistry v0.6.1-0.20211111182346-7a6ee45528a9
+	github.com/google/go-containerregistry v0.7.0
 	github.com/google/gopacket v1.1.19
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.11.7
@@ -72,13 +72,13 @@ require (
 	github.com/onsi/gomega v1.14.0
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/k3s v1.22.6-0.20211221182917-05f1bc6e2a62 // release-1.22
-	github.com/rancher/wharfie v0.5.1
+	github.com/rancher/wharfie v0.5.2
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.5
-	golang.org/x/sys v0.0.0-20211004093028-2c5d950f24ef
-	google.golang.org/grpc v1.41.0
+	golang.org/x/sys v0.0.0-20211110154304-99a53858aa08
+	google.golang.org/grpc v1.42.0
 	k8s.io/api v0.22.5
 	k8s.io/apimachinery v0.22.5
 	k8s.io/apiserver v0.22.5
