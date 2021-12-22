@@ -239,7 +239,7 @@ func preloadBootstrapFromRuntime(imagesDir string, resolver *images.Resolver) (v
 			return img, err
 		}
 		if err != nil {
-			logrus.Errorf("Failed to load runtime image %s: %v", ref.Name(), err)
+			logrus.Warnf("Failed to load runtime image %s from tarball: %v", ref.Name(), err)
 		}
 	}
 	return nil, nil
