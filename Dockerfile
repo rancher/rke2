@@ -78,7 +78,7 @@ ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
 RUN CHART_VERSION="1.9.604"                   CHART_FILE=/charts/rke2-cilium.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="v3.13.3-build2021102204" \
+RUN CHART_VERSION="v3.13.3-build2021102205" \
     CHART_PACKAGE="rke2-canal-1.19-1.20"      CHART_FILE=/charts/rke2-canal.yaml          CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.16.401-build2021111901"  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="4.0.306"                   CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
