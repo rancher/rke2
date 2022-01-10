@@ -91,7 +91,7 @@ For details on configuring the RKE2 Windows agent, refer to the [Windows agent c
 
 ### Configuration File
 
-By default, RKE2 will launch with the values present in the YAML file located at `/etc/rancher/rke2/config.yaml`.
+By default, RKE2 will launch with the values present in the YAML (not .yml) file located at `/etc/rancher/rke2/config.yaml`.
 
 An example of a basic `server` config file is below:
 
