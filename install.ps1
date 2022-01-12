@@ -76,6 +76,8 @@ param (
     $ChannelUrl = "https://update.rke2.io/v1-release/channels"
 )
 
+#Requires -RunAsAdministrator
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
