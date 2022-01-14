@@ -76,6 +76,9 @@ param (
     $ChannelUrl = "https://update.rke2.io/v1-release/channels"
 )
 
+# --- bail if we are not administrator ---
+#Requires -RunAsAdministrator
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
@@ -122,12 +125,6 @@ function Confirm-WindowsFeatures {
 
 # setup_env defines needed environment variables.
 function Set-Environment() {
-    # --- bail if we are not administrator ---
-    $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
-    $currentRole = [Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
-    if (-NOT $currentRole.IsInRole($adminRole)) {
-        Write-FatalLog "You need to be administrator to perform this install"
-    }
     if ($env:CATTLE_AGENT_BIN_PREFIX) {
         $TarPrefix = $env:CATTLE_AGENT_BIN_PREFIX
         [System.Environment]::SetEnvironmentVariable('CATTLE_AGENT_BIN_PREFIX', $TarPrefix, 'Machine')
