@@ -85,7 +85,7 @@ Each CNI plugin requires a different configuration for dual-stack:
 
 === "Canal CNI plugin"
 
-    Canal does not support dual-stack at the moment. To track the progress on this, please check the [dual-stack in canal issue](https://github.com/rancher/rke2/issues/1883)
+    Canal automatically detects the RKE2 configuration for dual-stack and does not need any extra configuration. Dual-stack is currently not supported in the windows installations of RKE2.
 
 === "Cilium CNI plugin"
 
