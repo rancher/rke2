@@ -22,6 +22,7 @@ var k3sFlags = map[string]*K3SFlagOption{
 	},
 	"name":               copy,
 	"dir":                copy,
+	"snapshot-compress":  copy,
 	"s3":                 copy,
 	"s3-endpoint":        copy,
 	"s3-endpoint-ca":     copy,
