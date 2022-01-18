@@ -31,6 +31,7 @@ var (
 		"s3-folder":          copy,
 		"s3-insecure":        copy,
 		"s3-timeout":         copy,
+		"snapshot-compress":  copy,
 	})
 )
 
