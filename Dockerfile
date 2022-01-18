@@ -96,7 +96,7 @@ ARG CHART_REPO="https://rke2-charts.rancher.io"
 ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
-RUN CHART_VERSION="1.10.404"                  CHART_FILE=/charts/rke2-cilium.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="1.11.001"                  CHART_FILE=/charts/rke2-cilium.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="v3.20.3-build2022011406"   CHART_FILE=/charts/rke2-canal.yaml          CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="v3.21.201"                 CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="v1.0.202"                  CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
