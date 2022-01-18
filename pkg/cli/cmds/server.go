@@ -86,6 +86,7 @@ var (
 		"etcd-snapshot-retention":           copy,
 		"etcd-snapshot-dir":                 copy,
 		"etcd-snapshot-name":                copy,
+		"etcd-snapshot-compress":            copy,
 		"node-name":                         copy,
 		"with-node-id":                      drop,
 		"node-label":                        copy,
