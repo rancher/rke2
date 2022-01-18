@@ -19,7 +19,7 @@ replace (
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.3
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20210316141917-a8c4a9ee0f6b
 	github.com/rancher/remotedialer => github.com/rancher/remotedialer v0.2.0
-	go.etcd.io/etcd => github.com/k3s-io/etcd v0.5.0-alpha.5.0.20201208200253-50621aee4aea
+	go.etcd.io/etcd => github.com/k3s-io/etcd v0.5.0-alpha.5.0.20220113195313-6c2233a709e8
 	golang.org/x/sys => golang.org/x/sys v0.0.0-20210225134936-a50acf3fe073
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 	google.golang.org/grpc => google.golang.org/grpc v1.27.1
@@ -63,7 +63,7 @@ require (
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.11.9
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.8-engine0.0.20220107181517-803a3cfc146f // engine-1.21
+	github.com/rancher/k3s v1.21.8-engine0.0.20220118180854-8755fd45f6eb // engine-1.21
 	github.com/rancher/wharfie v0.5.2
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
