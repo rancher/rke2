@@ -46,7 +46,6 @@ metadata:
     rke2-upgrade: server
 spec:
   concurrency: 1
-  cordon: true
   nodeSelector:
     matchExpressions:
        - {key: rke2-upgrade, operator: Exists}
@@ -54,6 +53,7 @@ spec:
        # When using k8s version 1.19 or older, swap control-plane with master
        - {key: node-role.kubernetes.io/control-plane, operator: In, values: ["true"]}
   serviceAccountName: system-upgrade
+  cordon: true
 #  drain:
 #    force: true
   upgrade:
