@@ -5,7 +5,7 @@ go 1.16
 replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.8.22
 	github.com/benmoss/go-powershell => github.com/k3s-io/go-powershell v0.0.0-20201118222746-51f4c451fbd7
-	github.com/containerd/containerd => github.com/k3s-io/containerd v1.5.8-k3s2
+	github.com/containerd/containerd => github.com/k3s-io/containerd v1.5.9-k3s1
 	github.com/docker/distribution => github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker => github.com/docker/docker v20.10.7+incompatible
 	github.com/docker/libnetwork => github.com/docker/libnetwork v0.8.0-dev.2.0.20190624125649-f0e46a78ea34
@@ -19,10 +19,10 @@ replace (
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 	github.com/rancher/remotedialer => github.com/rancher/remotedialer v0.2.0
 	github.com/rancher/wrangler => github.com/rancher/wrangler v0.8.10
-	go.etcd.io/etcd/api/v3 => github.com/k3s-io/etcd/api/v3 v3.5.0-k3s2
-	go.etcd.io/etcd/client/v3 => github.com/k3s-io/etcd/client/v3 v3.5.0-k3s2
-	go.etcd.io/etcd/etcdutl/v3 => github.com/k3s-io/etcd/etcdutl/v3 v3.5.0-k3s2
-	go.etcd.io/etcd/server/v3 => github.com/k3s-io/etcd/server/v3 v3.5.0-k3s2
+	go.etcd.io/etcd/api/v3 => github.com/k3s-io/etcd/api/v3 v3.5.1-k3s1
+	go.etcd.io/etcd/client/v3 => github.com/k3s-io/etcd/client/v3 v3.5.1-k3s1
+	go.etcd.io/etcd/etcdutl/v3 => github.com/k3s-io/etcd/etcdutl/v3 v3.5.1-k3s1
+	go.etcd.io/etcd/server/v3 => github.com/k3s-io/etcd/server/v3 v3.5.1-k3s1
 	golang.org/x/sys => golang.org/x/sys v0.0.0-20210831042530-f4d43177bf5e
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20210831024726-fe130286e0e2
 	google.golang.org/grpc => google.golang.org/grpc v1.40.0
@@ -69,7 +69,7 @@ require (
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.17.0
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.23.1-rc1.0.20220107175637-0144d23bb27c // master
+	github.com/rancher/k3s v1.23.2-0.20220118190149-27fe2c3c1bfb // master
 	github.com/rancher/wharfie v0.5.2
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
