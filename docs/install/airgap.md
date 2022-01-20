@@ -9,7 +9,7 @@ All files mentioned in the steps can be obtained from the assets of the desired 
 
 If running on a SELinux system enforcing air-gapped node, you must first install the necessary SELinux policy RPM before performing these steps. See our [RPM Documentation](https://docs.rke2.io/install/methods/#rpm) to determine what you need.
  
-If running on a SELinux, Centos, or RHEL 8 system enforcing air-gapped node, the following are required dependencies when doing an [RPM install](https://docs.rke2.io/install/methods/#rpm):
+If running on a SELinux, CentOS, or RHEL 8 system enforcing air-gapped node, the following are required dependencies when doing an [RPM install](https://docs.rke2.io/install/methods/#rpm):
            
     Installing dependencies:
     container-selinux           
