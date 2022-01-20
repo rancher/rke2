@@ -7,9 +7,22 @@ You can either deploy via the `rke2-airgap-images` tarball release artifact, or 
 
 All files mentioned in the steps can be obtained from the assets of the desired released rke2 version [here](https://github.com/rancher/rke2/releases).
 
-If running on an SELinux enforcing air-gapped node, you must first install the necessary SELinux policy RPM before performing these steps. See our [RPM Documentation](https://github.com/rancher/rke2#rpm-repositories) to determine what you need.
+If running on an air-gapped node with SELinux enabled, you must manually install the necessary SELinux policy RPM before performing these steps. See our [RPM Documentation](https://docs.rke2.io/install/methods/#rpm) to determine what you need.
+ 
+If running on an air-gapped node running SELinux, CentOS, or RHEL 8, with SELinux enabled, the following are required dependencies when doing an [RPM install](https://docs.rke2.io/install/methods/#rpm):
+           
+    Installing dependencies:
+    container-selinux           
+    iptables                    
+    libnetfilter_conntrack      
+    libnfnetlink                
+    libnftnl                    
+    policycoreutils-python-utils
+    rke2-common                 
+    rke2-selinux
 
 ## Tarball Method
+
 1. Download the airgap images tarballs from the RKE release artifacts list for the version and platform of RKE2 you are using.
     * Use `rke2-images.linux-amd64.tar.zst`, or `rke2-images.linux-amd64.tar.gz` for releases prior to v1.20. Zstandard offers better compression ratios and faster decompression speeds compared to gzip.  
     * If using the default Canal CNI (`--cni=canal`), you can use either the `rke2-image` legacy archive as described above, or `rke2-images-core` and `rke2-images-canal` archives.
