@@ -76,7 +76,15 @@ If you wish to utilize the metrics server, you will need to open port 10250 on e
 | TCP | 2379 | RKE2 server nodes | etcd client port
 | TCP | 2380 | RKE2 server nodes | etcd peer port
 | TCP | 30000-32767 | RKE2 server and agent nodes | NodePort port range
-
+| UDP | 8742 | RKE2 server and agent nodes | Cilium VXLAN
+| TCP | 4240 | RKE2 server and agent nodes | Cilium health checks
+| ICMP | 8/0 | RKE2 server and agent nodes | Cilium health checks
+| TCP | 179 | RKE2 server and agent nodes | Required for Calico if using BGP mode
+| UDP | 4789 | RKE2 server and agent nodes | Calico VXLAN
+| TCP | 5473 | RKE2 server and agent nodes | Required for Calico if using Typha
+| UDP | 4789 | RKE2 server and agent nodes | Canal VXLAN
+| UDP | 51820 | RKE2 server and agent nodes | Canal with WireGuard mode for IPV4
+| UDP | 51821 | RKE2 server and agent nodes | Canal with WireGuard mode for IPV6 (dual-stack)
 
 <figcaption>Inbound Rules for RKE2 Windows Agent Nodes</figcaption>
 
