@@ -7,7 +7,7 @@ You can either deploy via the `rke2-airgap-images` tarball release artifact, or 
 
 All files mentioned in the steps can be obtained from the assets of the desired released rke2 version [here](https://github.com/rancher/rke2/releases).
 
-If running on an SELinux enforcing air-gapped node, you must first install the necessary SELinux policy RPM before performing these steps. See our [RPM Documentation](https://github.com/rancher/rke2#rpm-repositories) to determine what you need.
+If running on an SELinux enforcing air-gapped node, you must first install the necessary SELinux policy RPM before performing these steps. See our [RPM Documentation](https://docs.rke2.io/install/methods/#rpm) to determine what you need.
 
 ## Tarball Method
 1. Download the airgap images tarballs from the RKE release artifacts list for the version and platform of RKE2 you are using.
