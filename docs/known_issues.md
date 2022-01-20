@@ -57,11 +57,9 @@ For more information regarding exact failures with detailed logs when not follow
 
 ## Control Groups V2
 
-Linux distributions, more and more, are shipping with kernels and userspaces that support cgroups v2,
-e.g. since Fedora 31. However, at the time of this writing, the `containerd` that is built and shipped
-with RKE2 is a 1.3.x fork (with back-ported SELinux commits from 1.4.x) which does not support cgroups v2.
-Until RKE2 ships with `containerd` v1.4.x running it on cgroups v2 capable systems requires a little up-front
-configuration:
+RKE2 >v1.19.5 ships with `containerd` v1.4.x or later, hence should run on cgroups v2 capable systems.
+Older versions (< 1.19.5) is shipped with containerd 1.3.x fork (with back-ported SELinux commits from 1.4.x)
+which does not support cgroups v2 and requires a little up-front configuration:
 
 Assuming a `systemd`-based system, setting the [systemd.unified_cgroup_hierarchy=0](https://www.freedesktop.org/software/systemd/man/systemd.html#systemd.unified_cgroup_hierarchy)
 kernel parameter will indicate to systemd that it should run with hybrid (cgroups v1 + v2) support.
