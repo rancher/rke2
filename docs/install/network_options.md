@@ -29,7 +29,7 @@ The next tabs inform how to deploy each CNI plugin and override the default opti
           iface: "eth1"
     ```
 
-    Starting with RKE2 v1.23 it is possible to use flannels [wireguard backend](https://github.com/flannel-io/flannel/blob/master/Documentation/backends.md#wireguard) for in-kernel WireGuard encapsulatation and encryption ([Users of kernels < 5.6 need to install a module](https://www.wireguard.com/install/)). This can be achieved using the following config:
+    Starting with RKE2 v1.23 it is possible to use flannels [wireguard backend](https://github.com/flannel-io/flannel/blob/master/Documentation/backends.md#wireguard) for in-kernel WireGuard encapsulation and encryption ([Users of kernels < 5.6 need to install a module](https://www.wireguard.com/install/)). This can be achieved using the following config:
     
     ```yaml
     apiVersion: helm.cattle.io/v1
