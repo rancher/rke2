@@ -57,7 +57,7 @@ For more information regarding exact failures with detailed logs when not follow
 
 ## Control Groups V2
 
-RKE2 >v1.19.5 ships with `containerd` v1.4.x or later, hence should run on cgroups v2 capable systems.
+RKE2 v1.19.5+ ships with `containerd` v1.4.x or later, hence should run on cgroups v2 capable systems.
 Older versions (< 1.19.5) is shipped with containerd 1.3.x fork (with back-ported SELinux commits from 1.4.x)
 which does not support cgroups v2 and requires a little up-front configuration:
 
