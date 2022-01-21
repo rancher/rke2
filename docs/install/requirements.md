@@ -83,7 +83,7 @@ If you wish to utilize the metrics server, you will need to open port 10250 on e
 | UDP | 4789 | RKE2 server and agent nodes | Calico CNI with VXLAN
 | TCP | 5473 | RKE2 server and agent nodes | Calico CNI with Typha
 | UDP | 8472 | RKE2 server and agent nodes | Canal CNI with VXLAN
-| TCP | 9099 | RKE2 server and agent nodes | Canal health checks
+| TCP | 9099 | RKE2 server and agent nodes | Canal CNI health checks
 | UDP | 51820 | RKE2 server and agent nodes | Canal CNI with WireGuard IPv4
 | UDP | 51821 | RKE2 server and agent nodes | Canal CNI with WireGuard IPv6/dual-stack
 
