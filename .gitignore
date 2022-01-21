@@ -9,3 +9,4 @@
 /rke2
 /build
 .vagrant
+.DS_Store

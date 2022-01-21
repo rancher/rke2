@@ -1,10 +1,10 @@
 # Upgrade Kubernetes Process
 
-From time to time we need to update the version of Kubernetes used by RKE2. This document serves as a how-to for that process and constitutes a "release". The following steps are laid out in order.
+From time to time, we need to update the version of Kubernetes used by RKE2. This document serves as a how-to for said process and elaborates on what constitutes a "release". Although the steps described in the document are laid out in order, the overall flow looks this way:
 
-This process will need to be done any time a new release is needed.
+![Upgrading kubernetes](upgrading_kubernetes.svg)
 
-A handy checklist can be found [here](#release-checklist).
+**NOTE:** This process will be needed whenever a new release is required, even when no new kubernetes release is available. A handy checklist can be found [here](#release-process).
 
 ## QA Releases
 
@@ -74,7 +74,7 @@ Once QA signs off on the RC, it's time to cut the primary release. Go to the [rk
 * Enter the desired version into the "Tag version" box. 
     * Example tag: `v1.21.4+rke2r1`
 
-Leave the release as "prerelease". This will be unchecked as soon as CI completes successfully.
+Ensure "prerelease" checkbox is selected. This will be unchecked as soon as CI completes successfully.
 
 Once complete, the process is repeated in the [rke2-packaging](https://github.com/rancher/rke2-packaging) repository.
 
