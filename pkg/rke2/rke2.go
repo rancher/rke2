@@ -220,9 +220,9 @@ func removeOldPodManifests(dataDir string, disabledItems map[string]bool, cluste
 		containerdErr := make(chan error)
 
 		// start containerd
-		go startContainerd(dataDir, containerdErr, containerdCmd)
+		go startContainerd(ctx, dataDir, containerdErr, containerdCmd)
 		// start kubelet
-		go startKubelet(dataDir, kubeletErr, kubeletCmd)
+		go startKubelet(ctx, dataDir, kubeletErr, kubeletCmd)
 		// check for any running containers from the disabled items list
 		go checkForRunningContainers(ctx, disabledItems, kubeletErr, containerdErr)
 
@@ -262,7 +262,12 @@ func isCISMode(clx *cli.Context) bool {
 	return profile == CISProfile15 || profile == CISProfile16
 }
 
-func startKubelet(dataDir string, errChan chan error, cmd *exec.Cmd) {
+func startKubelet(ctx context.Context, dataDir string, errChan chan error, cmd *exec.Cmd) {
+	if err := containerdk3s.WaitForContainerd(ctx, containerdSock); err != nil {
+		logrus.Errorf("Failed to wait for containerd startup: %v", err)
+		return
+	}
+
 	args := []string{
 		"--fail-swap-on=false",
 		"--container-runtime=remote",
@@ -280,7 +285,7 @@ func startKubelet(dataDir string, errChan chan error, cmd *exec.Cmd) {
 	errChan <- cmd.Run()
 }
 
-func startContainerd(dataDir string, errChan chan error, cmd *exec.Cmd) {
+func startContainerd(ctx context.Context, dataDir string, errChan chan error, cmd *exec.Cmd) {
 	args := []string{
 		"-c", filepath.Join(dataDir, "agent", "etc", "containerd", "config.toml"),
 		"-a", containerdSock,
