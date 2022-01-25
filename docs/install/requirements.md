@@ -24,8 +24,7 @@ RKE2 has been tested and validated on the following operating systems, and their
 The RKE2 Windows Node (Worker) agent has been tested and validated on the following operating systems, and their subsequent non-major releases:
 
 * Windows Server 2019 LTSC (amd64) (OS Build 17763.2061)
-* Windows Server SAC 2004 (amd64) (OS Build 19041.1110)
-* Windows Server SAC 20H2 (amd64) (OS Build 19042.1110)
+* Windows Server 2022 LTSC (amd64) (OS Build 20348.169)
 
 **Note** The Windows Server Containers feature needs to be enabled for the RKE2 Windows agent to work.
 
@@ -36,7 +35,7 @@ powershell -Command "Start-Process PowerShell -Verb RunAs"
 
 In the new Powershell window, run the following command.
 ```powershell
-Enable-WindowsOptionalFeature -Online -FeatureName containers –All
+Enable-WindowsOptionalFeature -Online -FeatureName Containers –All
 ```
 
 This will require a reboot for the `Containers` feature to properly function.
