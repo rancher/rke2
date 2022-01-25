@@ -103,6 +103,7 @@ var (
 		"resolv-conf":                       copy,
 		"flannel-iface":                     drop,
 		"flannel-conf":                      drop,
+		"flannel-ipv6-masq":                 drop,
 		"kubelet-arg":                       copy,
 		"kube-proxy-arg":                    copy,
 		"rootless":                          drop,
