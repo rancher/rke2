@@ -5,11 +5,13 @@ on:
     paths:
       - "channels.yaml"
       - "install.sh"
+      - "install.ps1"
       - "tests/vagrant/install/**"
   pull_request:
     branches: [main, master]
     paths:
       - "install.sh"
+      - "install.ps1"
       - "tests/vagrant/install/**"
   workflow_dispatch: {}
 jobs:
@@ -22,7 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         channel: [stable]
-        vm: [centos-7, centos-8, opensuse-microos, ubuntu-focal]
+        vm: [centos-7, centos-8, opensuse-microos, ubuntu-focal, windows-2019, windows-2022]
         include:
           - {channel: latest, vm: centos-8}
           - {channel: latest, vm: ubuntu-focal}
@@ -52,20 +54,27 @@ jobs:
       - name: "Vagrant Up ⏩ Install RKE2"
         run: vagrant up
       - name: "⏳ Node"
+        if: ${{ !contains(matrix.vm, 'windows') }}
         run: vagrant provision --provision-with=rke2-wait-for-node
       - name: "⏳ Canal"
+        if: ${{ !contains(matrix.vm, 'windows') }}
         run: vagrant provision --provision-with=rke2-wait-for-canal
         continue-on-error: true
       - name: "⏳ CoreDNS"
+        if: ${{ !contains(matrix.vm, 'windows') }}
         run: vagrant provision --provision-with=rke2-wait-for-coredns
         continue-on-error: true
       - name: "⏳ Metrics Server"
+        if: ${{ !contains(matrix.vm, 'windows') }}
         run: vagrant provision --provision-with=rke2-wait-for-metrics-server
         continue-on-error: true
       - name: "⏳ Ingress NGINX"
+        if: ${{ !contains(matrix.vm, 'windows') }}
         run: vagrant provision --provision-with=rke2-wait-for-ingress-nginx
         continue-on-error: true
       - name: "rke2-status"
+        if: ${{ !contains(matrix.vm, 'windows') }}
         run: vagrant provision --provision-with=rke2-status
       - name: "rke2-procps"
+        if: ${{ !contains(matrix.vm, 'windows') }}
         run: vagrant provision --provision-with=rke2-procps
