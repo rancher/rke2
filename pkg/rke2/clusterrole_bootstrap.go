@@ -1,7 +1,6 @@
 package rke2
 
 import (
-	rbacapiv1 "k8s.io/api/rbac/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,8 +25,8 @@ var (
 )
 
 // clusterRoles returns a list of clusterrolebindings to bootstrap
-func clusterRoles() []rbacapiv1.ClusterRole {
-	roles := []rbacapiv1.ClusterRole{
+func clusterRoles() []rbacv1.ClusterRole {
+	roles := []rbacv1.ClusterRole{
 		{
 			ObjectMeta: metav1.ObjectMeta{Name: kubeProxyName},
 			Rules: []rbacv1.PolicyRule{
@@ -64,8 +63,8 @@ func clusterRoles() []rbacapiv1.ClusterRole {
 }
 
 // clusterRoleBindings returns a list of clusterrolebindings to bootstrap
-func clusterRoleBindings() []rbacapiv1.ClusterRoleBinding {
-	rolebindings := []rbacapiv1.ClusterRoleBinding{
+func clusterRoleBindings() []rbacv1.ClusterRoleBinding {
+	rolebindings := []rbacv1.ClusterRoleBinding{
 		// https://github.com/kubernetes/kubernetes/issues/65939#issuecomment-403218465
 		ClusterRoleBindingName(rbacv1helpers.NewClusterBinding("system:kubelet-api-admin").Users("kube-apiserver"), kubeletAPIServerRoleBindingName).BindingOrDie(),
 		ClusterRoleBindingNamespacedUsers(ClusterRoleBindingName(rbacv1helpers.NewClusterBinding("system:auth-delegator"), cloudControllerManagerName+"-auth-delegator"), metav1.NamespaceSystem, cloudControllerManagerName).BindingOrDie(),
@@ -78,15 +77,15 @@ func clusterRoleBindings() []rbacapiv1.ClusterRoleBinding {
 }
 
 // roles returns a map of namespace to roles to bootstrap into that namespace
-func roles() map[string][]rbacapiv1.Role {
+func roles() map[string][]rbacv1.Role {
 	return nil
 }
 
 // roleBindings returns a map of namespace to rolebindings to bootstrap into that namespace
-func roleBindings() map[string][]rbacapiv1.RoleBinding {
+func roleBindings() map[string][]rbacv1.RoleBinding {
 	ccmAuthReader := RoleBindingNamespacedUsers(RoleBindingName(rbacv1helpers.NewRoleBinding("extension-apiserver-authentication-reader", metav1.NamespaceSystem), cloudControllerManagerName+"-authentication-reader"), metav1.NamespaceSystem, cloudControllerManagerName).BindingOrDie()
 	addDefaultMetadata(&ccmAuthReader)
-	return map[string][]rbacapiv1.RoleBinding{
+	return map[string][]rbacv1.RoleBinding{
 		metav1.NamespaceSystem: {
 			ccmAuthReader,
 		},
