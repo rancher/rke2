@@ -1,0 +1,89 @@
+#!/usr/bin bash
+
+set -x
+
+VERSION_REGEX='/(v?([0-9]+(\.[0-9]+)*?)(-([0-9]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)|(-?([A-Za-z\-~]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)))?)$/'
+TMP_OUT_FILE='./bill-of-materials-tmp.txt'
+BILL_OF_MATERIALS_OUT_FILE=${BILL_OF_MATERIALS_OUT_FILE:-'./bill-of-materials.txt'}
+IMAGES_ARRAY=('')
+
+# {1} is the filename
+function lookLibrariesInFile(){
+    awk ${VERSION_REGEX} ${1} >> $TMP_OUT_FILE
+    echo "awk ${VERSION_REGEX} ${1} >> $TMP_OUT_FILE"
+}
+
+# {1} value to find
+function appendUniqueValueImagesArr(){
+    if [[ ! " ${IMAGES_ARRAY[@]} " =~ " ${1} " ]]; then
+        IMAGES_ARRAY+=("$1")
+        echo $1 >> $TMP_OUT_FILE
+    fi
+}
+
+# {1} fileName Destination
+function fillEnvVarsToFile(){
+    if [[ "${ETCD_VERSION}" == "" ]]; then
+        source ./version.sh
+    fi
+    envsubst < $TMP_OUT_FILE > $BILL_OF_MATERIALS_OUT_FILE
+    rm $TMP_OUT_FILE
+    awk '!/#/' "${BILL_OF_MATERIALS_OUT_FILE}" > tmpfile && mv tmpfile "${BILL_OF_MATERIALS_OUT_FILE}"
+}
+
+function cleanVariables(){
+    unset IMAGES_ARRAY VERSION_REGEX TMP_OUT_FILE row_arr img_arr
+}
+
+echo "BUILD IMAGES" >>$TMP_OUT_FILE && echo '' >> $TMP_OUT_FILE
+
+# loop over files inside build script to map all libraries and versions from build process
+while read line; do
+    if [[ -f "../$line" ]]; then
+        lookLibrariesInFile "../$line"
+    fi
+done < "./build"
+echo '' >> $TMP_OUT_FILE && echo '' >> $TMP_OUT_FILE
+
+
+echo "GO MOD" >>$TMP_OUT_FILE && echo '' >> $TMP_OUT_FILE
+
+cat ../go.mod >>  $TMP_OUT_FILE
+
+echo '' >> $TMP_OUT_FILE && echo '' >> $TMP_OUT_FILE
+echo 'IMAGE SOURCES' >> $TMP_OUT_FILE && echo '' >> $TMP_OUT_FILE
+
+# Get from developer-tools/image_resources.md file
+while read line; do
+
+    #Read table only
+    if [[ "$line" == *"/"* ]]; then
+
+        # Split table into array
+        IFS='|' read -r -a row_arr <<<"$line"
+
+        # Validate row Items  
+        # chart | image | buildRepo | SourceImages | Hardened
+
+        appendUniqueValueImagesArr "${row_arr[2]}"
+
+        if [[ "${row_arr[3]}" == *"/"* ]]; then
+            appendUniqueValueImagesArr "${row_arr[3]}"
+        fi
+
+        if [[ "${row_arr[4]}" != "" ]]; then
+            new=$(echo "${row_arr[4]}" | sed 's|<br>|;|g' | sed 's|‣||g')
+
+            IFS=';' read -r -a img_arr <<<"$new"
+
+            for si in ${img_arr[@]}; do
+                appendUniqueValueImagesArr "${si}"
+            done
+        fi 
+    fi
+
+done < "../developer-docs/image_sources.md"
+
+fillEnvVarsToFile
+
+echo "final file: $BILL_OF_MATERIALS_OUT_FILE"
