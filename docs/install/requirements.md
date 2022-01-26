@@ -90,6 +90,7 @@ If you wish to utilize the metrics server, you will need to open port 10250 on e
 <figcaption>Inbound Rules for RKE2 Windows Agent Nodes</figcaption>
 
 ### Windows Specific Inbound Network Rules
+
 | Protocol | Port | Source | Description
 |-----|-----|----------------|---|
 | UDP | 4789 | RKE2 server nodes | Required for Calico and Flannel VXLAN
