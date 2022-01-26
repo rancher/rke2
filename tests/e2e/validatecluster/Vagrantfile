@@ -63,9 +63,6 @@ def provision(vm, roles, role_num, node_num)
       YAML
     end
   end
-  if vm.box.include?("microos")
-    vm.provision 'rke2-reload', type: 'reload', run: 'once'
-  end
 end
 
 def osConfigure(vm)
@@ -77,15 +74,10 @@ def osConfigure(vm)
   if vm.box.include?("Leap")
     vm.provision "shell", inline: "zypper install -y jq"
   end
-  if vm.box.include?("microos")
-    vm.provision "shell", inline: "transactional-update pkg install -y jq"
-    vm.provision 'reload', run: 'once'
-  end
-
 end
 
 Vagrant.configure("2") do |config|
-  config.vagrant.plugins = ["vagrant-rke2", "vagrant-reload"]
+  config.vagrant.plugins = ["vagrant-rke2", "vagrant-reload", "vagrant-libvirt"]
   # Default provider is libvirt, virtualbox is only provided as a backup
   config.vm.provider "libvirt" do |v|
     v.cpus = NODE_CPUS
