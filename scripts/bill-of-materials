@@ -1,64 +1,69 @@
-#!/usr/bin bash
+#!/usr/bin/env bash
+set -ex
 
-set -x
-
-VERSION_REGEX='/(v?([0-9]+(\.[0-9]+)*?)(-([0-9]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)|(-?([A-Za-z\-~]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)))?)$/'
-TMP_OUT_FILE='./bill-of-materials-tmp.txt'
-BILL_OF_MATERIALS_OUT_FILE=${BILL_OF_MATERIALS_OUT_FILE:-'./bill-of-materials.txt'}
-IMAGES_ARRAY=('')
+VERSION_REGEX="/(v?([0-9]+(\.[0-9]+)*?)(-([0-9]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)|(-?([A-Za-z\-~]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)))?)$/"
+TMP_OUT_FILE="./bill-of-materials-tmp.txt"
+BILL_OF_MATERIALS_OUT_FILE=${BILL_OF_MATERIALS_OUT_FILE:-"./bill-of-materials.txt"}
+IMAGES_ARRAY=("")
 
 # {1} is the filename
-function lookLibrariesInFile(){
-    awk ${VERSION_REGEX} ${1} >> $TMP_OUT_FILE
+lookupLibrariesInFile(){
+    awk "${VERSION_REGEX}" "${1}" >> $TMP_OUT_FILE
     echo "awk ${VERSION_REGEX} ${1} >> $TMP_OUT_FILE"
 }
 
 # {1} value to find
-function appendUniqueValueImagesArr(){
-    if [[ ! " ${IMAGES_ARRAY[@]} " =~ " ${1} " ]]; then
+appendUniqueValueImagesArr(){
+    if [[ ! " ${IMAGES_ARRAY[*]} " =~ " ${1} " ]]; then
         IMAGES_ARRAY+=("$1")
-        echo $1 >> $TMP_OUT_FILE
+        # IMAGES_ARRAY="${IMAGES_ARRAY}$1"
+        echo "$1" >> $TMP_OUT_FILE
     fi
 }
 
 # {1} fileName Destination
-function fillEnvVarsToFile(){
-    if [[ "${ETCD_VERSION}" == "" ]]; then
-        source ./version.sh
+fillEnvVarsToFile(){
+    if [ "${ETCD_VERSION}" = "" ]; then
+        . ./version.sh
     fi
-    envsubst < $TMP_OUT_FILE > $BILL_OF_MATERIALS_OUT_FILE
+    envsubst < $TMP_OUT_FILE > "$BILL_OF_MATERIALS_OUT_FILE"
     rm $TMP_OUT_FILE
-    awk '!/#/' "${BILL_OF_MATERIALS_OUT_FILE}" > tmpfile && mv tmpfile "${BILL_OF_MATERIALS_OUT_FILE}"
+    awk "!/#/" "${BILL_OF_MATERIALS_OUT_FILE}" > tmpfile && mv tmpfile "${BILL_OF_MATERIALS_OUT_FILE}"
 }
 
-function cleanVariables(){
+prettyOutfile(){
+    sed -e 's/^[ \t]*//;s/[ \t]*$//' -e 's/-X //g' < ./bill-of-materials.txt > tmpfile && mv tmpfile bill-of-materials.txt
+}
+
+# {1} title
+addTitle(){
+    echo "" >> $TMP_OUT_FILE && echo "" >> $TMP_OUT_FILE
+    echo "${1}" >>$TMP_OUT_FILE && echo "" >> $TMP_OUT_FILE
+}
+
+cleanVariables(){
     unset IMAGES_ARRAY VERSION_REGEX TMP_OUT_FILE row_arr img_arr
 }
 
-echo "BUILD IMAGES" >>$TMP_OUT_FILE && echo '' >> $TMP_OUT_FILE
+addTitle "BUILD IMAGES"
 
-# loop over files inside build script to map all libraries and versions from build process
-while read line; do
-    if [[ -f "../$line" ]]; then
-        lookLibrariesInFile "../$line"
+# loop over script files in build folder to map all libraries and versions from build process
+while read -r line; do
+    if [ -f "../$line" ]; then
+        lookupLibrariesInFile "../$line"
     fi
 done < "./build"
-echo '' >> $TMP_OUT_FILE && echo '' >> $TMP_OUT_FILE
 
-
-echo "GO MOD" >>$TMP_OUT_FILE && echo '' >> $TMP_OUT_FILE
-
+addTitle "GO MOD"
 cat ../go.mod >>  $TMP_OUT_FILE
-
-echo '' >> $TMP_OUT_FILE && echo '' >> $TMP_OUT_FILE
-echo 'IMAGE SOURCES' >> $TMP_OUT_FILE && echo '' >> $TMP_OUT_FILE
+addTitle "IMAGE SOURCES"
 
 # Get from developer-tools/image_resources.md file
-while read line; do
+while read -r line; do
 
     #Read table only
-    if [[ "$line" == *"/"* ]]; then
-
+    if echo "$line" | grep -q "[a-zA-Z]*\/"; then
+    
         # Split table into array
         IFS='|' read -r -a row_arr <<<"$line"
 
@@ -67,16 +72,16 @@ while read line; do
 
         appendUniqueValueImagesArr "${row_arr[2]}"
 
-        if [[ "${row_arr[3]}" == *"/"* ]]; then
+        if echo "${row_arr[3]}" | grep -q "[a-zA-Z]*\/"; then
             appendUniqueValueImagesArr "${row_arr[3]}"
         fi
 
-        if [[ "${row_arr[4]}" != "" ]]; then
-            new=$(echo "${row_arr[4]}" | sed 's|<br>|;|g' | sed 's|‣||g')
+        if [ "${row_arr[4]}" != "" ]; then
+            new=$(echo "${row_arr[4]}" | sed "s|<br>|;|g" | sed "s|‣||g")
 
             IFS=';' read -r -a img_arr <<<"$new"
 
-            for si in ${img_arr[@]}; do
+            for si in "${img_arr[@]}"; do
                 appendUniqueValueImagesArr "${si}"
             done
         fi 
@@ -84,6 +89,4 @@ while read line; do
 
 done < "../developer-docs/image_sources.md"
 
-fillEnvVarsToFile
-
-echo "final file: $BILL_OF_MATERIALS_OUT_FILE"
+fillEnvVarsToFile && prettyOutfile
