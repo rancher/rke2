@@ -2,7 +2,7 @@
 
 From time to time, we need to update the version of Kubernetes used by RKE2. This document serves as a how-to for said process and elaborates on what constitutes a "release". Although the steps described in the document are laid out in order, the overall flow looks this way:
 
-![Upgrading kubernetes](upgrading_kubernetes.svg)
+![Upgrading Kubernetes](upgrading_kubernetes.svg)
 
 **NOTE:** This process will be needed whenever a new release is required, even when no new kubernetes release is available. A handy checklist can be found [here](#release-process).
 
