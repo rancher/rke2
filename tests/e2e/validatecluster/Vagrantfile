@@ -55,6 +55,7 @@ def provision(vm, roles, role_num, node_num)
     vm.provision :rke2, run: 'once' do |rke2|
       rke2.env = %W[INSTALL_RKE2_TYPE=agent #{install_type}]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
+      rke2.install_kubectl = false
       rke2.config = <<~YAML
         write-kubeconfig-mode: 0644
         node-external-ip: #{node_ip}
