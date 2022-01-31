@@ -57,7 +57,8 @@ var _ = Describe("Verify Create", func() {
 					g.Expect(node.Status).Should(Equal("Ready"))
 				}
 			}, "420s", "5s").Should(Succeed())
-			_, _ = e2e.ParseNodes(kubeConfigFile, true)
+			_, err := e2e.ParseNodes(kubeConfigFile, true)
+			Expect(err).NotTo(HaveOccurred())
 
 			fmt.Printf("\nFetching Pods status\n")
 			Eventually(func(g Gomega) {
@@ -71,7 +72,8 @@ var _ = Describe("Verify Create", func() {
 					}
 				}
 			}, "420s", "5s").Should(Succeed())
-			_, _ = e2e.ParsePods(kubeConfigFile, true)
+			_, err = e2e.ParsePods(kubeConfigFile, true)
+			Expect(err).NotTo(HaveOccurred())
 		})
 		// It("Verifies ClusterIP Service", func() {
 		// 	_, err := e2e.DeployWorkload("clusterip.yaml", kubeConfigFile)
