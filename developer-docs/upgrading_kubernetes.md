@@ -4,19 +4,18 @@ From time to time, we need to update the version of Kubernetes used by RKE2. Thi
 
 **NOTE:** This process will be needed whenever a new release is required, even when no new Kubernetes release is available. A handy checklist can be found [here](#release-process-overview).
 
-- [Upgrade Kubernetes Process](#upgrade-kubernetes-process)
-  - [QA Releases](#qa-releases)
-  - [Hardened Kubernetes](#hardened-kubernetes)
-  - [Update RKE2](#update-rke2)
-  - [RKE2 Release RC](#rke2-release-rc)
-    - [RKE2 Packaging](#rke2-packaging)
-    - [Primary Release](#primary-release)
-    - [Release Notes](#release-notes)
-      - [Packaged Components](#packaged-components)
-  - [Update Rancher KDM](#update-rancher-kdm)
-    - [Promoting to Stable](#promoting-to-stable)
-    - [Updating Channel Server](#updating-channel-server)
-  - [Release Process Overview](#release-process-overview)
+- [QA Releases](#qa-releases)
+- [Hardened Kubernetes](#hardened-kubernetes)
+- [Update RKE2](#update-rke2)
+- [RKE2 Release RC](#rke2-release-rc)
+  - [RKE2 Packaging](#rke2-packaging)
+  - [Primary Release](#primary-release)
+  - [Release Notes](#release-notes)
+    - [Packaged Components](#packaged-components)
+- [Update Rancher KDM](#update-rancher-kdm)
+  - [Promoting to Stable](#promoting-to-stable)
+  - [Updating Channel Server](#updating-channel-server)
+- [Release Process Overview](#release-process-overview)
 
 ## QA Releases
 
