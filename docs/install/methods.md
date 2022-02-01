@@ -54,7 +54,7 @@ Files are installed with the prefix of `/usr` rather than `/usr/local`.
 
 #### Repositories
 
-Signed RPMs are published for RKE2 within the `rpm-testing.rancher.io` and `rpm.rancher.io` RPM repositories. If you run the https://get.rke2.io script on nodes supporting RPMs, it will use these RPM rpeos by default. But you can also install them yourself.
+Signed RPMs are published for RKE2 within the `rpm-testing.rancher.io` and `rpm.rancher.io` RPM repositories. If you run the https://get.rke2.io script on nodes supporting RPMs, it will use these RPM repos by default. But you can also install them yourself.
 
 The RPMs provide `systemd` units for managing `rke2`, but will need to be configured via configuration file before starting the services for the first time.
 
