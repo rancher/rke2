@@ -22,7 +22,7 @@ var installType = flag.String("installType", "", "a string")
 
 func Test_E2EClusterValidation(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Create Cluster Test Suite")
+	RunSpecs(t, "Validate Cluster Suite")
 }
 
 var (
@@ -45,8 +45,7 @@ var _ = Describe("Verify Create", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		It("Checks Node and Pod Status", func() {
-			fmt.Printf("\nFetching node status\n")
+		It("Checks Node Status", func() {
 			Eventually(func(g Gomega) {
 				nodes, err := e2e.ParseNodes(kubeConfigFile, false)
 				g.Expect(err).NotTo(HaveOccurred())
@@ -56,8 +55,9 @@ var _ = Describe("Verify Create", func() {
 			}, "420s", "5s").Should(Succeed())
 			_, err := e2e.ParseNodes(kubeConfigFile, true)
 			Expect(err).NotTo(HaveOccurred())
+		})
 
-			fmt.Printf("\nFetching Pods status\n")
+		It("Checks Pod Status", func() {
 			Eventually(func(g Gomega) {
 				pods, err := e2e.ParsePods(kubeConfigFile, false)
 				g.Expect(err).NotTo(HaveOccurred())
@@ -69,31 +69,24 @@ var _ = Describe("Verify Create", func() {
 					}
 				}
 			}, "420s", "5s").Should(Succeed())
-			_, err = e2e.ParsePods(kubeConfigFile, true)
+			_, err := e2e.ParsePods(kubeConfigFile, true)
 			Expect(err).NotTo(HaveOccurred())
 		})
+
 		It("Verifies ClusterIP Service", func() {
 			_, err := e2e.DeployWorkload("clusterip.yaml", kubeConfigFile)
-			if err != nil {
-				fmt.Println("Cluster IP manifest not deployed", err)
-			}
-			Eventually(func(g Gomega) {
+			Expect(err).NotTo(HaveOccurred())
+			Eventually(func() (string, error) {
 				cmd := "kubectl get pods -o=name -l k8s-app=nginx-app-clusterip --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
-				res, _ := e2e.RunCommand(cmd)
-				g.Expect(res).Should((ContainSubstring("test-clusterip")))
-			}, "240s", "5s").Should(Succeed())
+				return e2e.RunCommand(cmd)
+			}, "240s", "5s").Should(ContainSubstring("test-clusterip"))
 
 			clusterip, _ := e2e.FetchClusterIP(kubeConfigFile, "nginx-clusterip-svc")
 			cmd := "\"curl -L --insecure http://" + clusterip + "/name.html\""
-			fmt.Println(cmd)
-			for _, element := range serverNodeNames {
-				nodeName := strings.TrimSpace(element)
-				if nodeName == "" {
-					continue
-				}
-				res, _ := e2e.RunCmdOnNode(cmd, nodeName)
-				fmt.Println(res)
-				Eventually(res).Should(ContainSubstring("test-clusterip"))
+			for _, nodeName := range serverNodeNames {
+				Eventually(func() (string, error) {
+					return e2e.RunCmdOnNode(cmd, nodeName)
+				}, "5s", "1s").Should(ContainSubstring("test-clusterip"), "failed cmd: "+cmd)
 			}
 		})
 
@@ -116,8 +109,7 @@ var _ = Describe("Verify Create", func() {
 		// 		fmt.Println(res)
 		// 		Eventually(func(g Gomega) {
 		// 			cmd := "kubectl get pods -o=name -l k8s-app=nginx-app-nodeport --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
-		// 			res, _ := e2e.RunCommand(cmd)
-		// 			g.Expect(res).Should(ContainSubstring("test-nodeport"), "nodeport pod was not created")
+		// 			g.Expect(e2e.RunCommand(cmd)).Should(ContainSubstring("test-nodeport"), "nodeport pod was not created")
 		// 		}, "240s", "5s").Should(Succeed())
 
 		// 	}

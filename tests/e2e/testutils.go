@@ -40,16 +40,15 @@ func CountOfStringInSlice(str string, pods []Pod) int {
 }
 
 func CreateCluster(nodeOS string, serverCount int, agentCount int, installType string) ([]string, []string, error) {
-	serverNodeNames := make([]string, serverCount+1)
+	serverNodeNames := []string{}
 	for i := 0; i < serverCount; i++ {
-		serverNodeNames[i] = "server-" + strconv.Itoa(i)
+		serverNodeNames = append(serverNodeNames, "server-"+strconv.Itoa(i))
 	}
-	agentNodeNames := make([]string, agentCount+1)
+	agentNodeNames := []string{}
 	for i := 0; i < agentCount; i++ {
-		agentNodeNames[i] = "agent-" + strconv.Itoa(i)
+		agentNodeNames = append(agentNodeNames, "agent-"+strconv.Itoa(i))
 	}
-	nodeRoles := strings.Join(serverNodeNames, " ") + strings.Join(agentNodeNames, " ")
-	nodeRoles = strings.TrimSpace(nodeRoles)
+	nodeRoles := strings.Join(serverNodeNames, " ") + " " + strings.Join(agentNodeNames, " ")
 	nodeBoxes := strings.Repeat(nodeOS+" ", serverCount+agentCount)
 	nodeBoxes = strings.TrimSpace(nodeBoxes)
 	cmd := fmt.Sprintf("NODE_ROLES=\"%s\" NODE_BOXES=\"%s\" %s vagrant up &> vagrant.log", nodeRoles, nodeBoxes, installType)
@@ -194,12 +193,7 @@ func ParsePods(kubeconfig string, print bool) ([]Pod, error) {
 // RunCmdOnNode executes a command from within the given node
 func RunCmdOnNode(cmd string, nodename string) (string, error) {
 	runcmd := "vagrant ssh -c " + cmd + " " + nodename
-	out, err := RunCommand(runcmd)
-	if err != nil {
-		return "", err
-	}
-	return out, nil
-
+	return RunCommand(runcmd)
 }
 
 // RunCommand execute a command on the host
