@@ -218,7 +218,7 @@ func hostnameFromMetadataEndpoint(ctx context.Context) string {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://169.254.169.254/latest/metadata/local-hostname", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://169.254.169.254/latest/meta-data/local-hostname", nil)
 	if err != nil {
 		logrus.Debugf("Failed to create request for metadata endpoint: %v", err)
 		return ""
