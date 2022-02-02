@@ -1,10 +1,21 @@
 # Upgrade Kubernetes Process
 
-From time to time we need to update the version of Kubernetes used by RKE2. This document serves as a how-to for that process and constitutes a "release". The following steps are laid out in order.
+From time to time, we need to update the version of Kubernetes used by RKE2. This document serves as a how-to for said process and elaborates on what constitutes a "release". The steps described in the document are laid out in order.
 
-This process will need to be done any time a new release is needed.
+**NOTE:** This process will be needed whenever a new release is required, even when no new Kubernetes release is available. A handy checklist can be found [here](#release-process-overview).
 
-A handy checklist can be found [here](#release-checklist).
+- [QA Releases](#qa-releases)
+- [Hardened Kubernetes](#hardened-kubernetes)
+- [Update RKE2](#update-rke2)
+- [RKE2 Release RC](#rke2-release-rc)
+  - [RKE2 Packaging](#rke2-packaging)
+  - [Primary Release](#primary-release)
+  - [Release Notes](#release-notes)
+    - [Packaged Components](#packaged-components)
+- [Update Rancher KDM](#update-rancher-kdm)
+  - [Promoting to Stable](#promoting-to-stable)
+  - [Updating Channel Server](#updating-channel-server)
+- [Release Process Overview](#release-process-overview)
 
 ## QA Releases
 
@@ -74,7 +85,7 @@ Once QA signs off on the RC, it's time to cut the primary release. Go to the [rk
 * Enter the desired version into the "Tag version" box. 
     * Example tag: `v1.21.4+rke2r1`
 
-Leave the release as "prerelease". This will be unchecked as soon as CI completes successfully.
+Ensure "prerelease" checkbox is selected.
 
 Once complete, the process is repeated in the [rke2-packaging](https://github.com/rancher/rke2-packaging) repository.
 
@@ -119,11 +130,11 @@ Be sure to review the rest of the sections as some of them may become irrelevant
 
 This step is specific to Rancher and serves to update Rancher's [Kontainer Driver Metadata](https://github.com/rancher/kontainer-driver-metadata/).
 
-Create PRs in the [KDM](https://github.com/rancher/kontainer-driver-metadata/) `dev-2.6` and `dev-2.5` branches to update the kubernetes versions in `channels-rke2.yaml`. 
+Create PRs in the [KDM](https://github.com/rancher/kontainer-driver-metadata/) `dev-2.6` and `dev-2.5` branches to update the Kubernetes versions in `channels-rke2.yaml`. 
 * The PR should consist of two commits:
-    1. Changes made to `channels-rke2.yaml` to update the kubernetes versions.
+    1. Changes made to `channels-rke2.yaml` to update the Kubernetes versions.
     2. Run `go generate` and commit the changes this caused to data/data.json. Title this second commit "go generate".
-* Please note if this is a new minor release of kubernetes, then a new entry will need to be created in `channels-rke2.yaml`. Ensure to set the min/max versions accordingly. If you are not certain what they should be, reach out to the team for input on this as it will depend on what Rancher will be supporting.
+* Please note if this is a new minor release of Kubernetes, then a new entry will need to be created in `channels-rke2.yaml`. Ensure to set the min/max versions accordingly. If you are not certain what they should be, reach out to the team for input on this as it will depend on what Rancher will be supporting.
 
 Entries that include `charts`, `serverArgs`, and/or `agentArgs` fields may not be altered or removed once they have been published to a release branch. Once a version has been released, a new entry must be added following it. It is possible to build off the `charts`, `serverArgs`, and `agentArgs` values defined in other entries using [yaml anchors](https://github.com/yaml/libyaml/blob/0.2.5/examples/anchors.yaml). For example, v1.21.4 has its charts defined as follows:
 ```
@@ -195,9 +206,11 @@ After promoting the release to stable, we need to update the channel server. Thi
 * Update the line: `latest: <release>` to be the recent release. e.g. `v1.21.5+rke2r1`.
 * Verify updated in the JSON output from a call [here](https://update.rke2.io/v1-release/channels).
 
-## Release Process
+## Release Process Overview
 
-Process overview. Be sure to reference the sections above for further detail on each step.
+![Upgrading Kubernetes](upgrading_kubernetes.svg)
+
+Be sure to reference the sections above for further detail on each step.
 
 - Tag new Hardened Kubernetes release
 - Update Helm chart versions

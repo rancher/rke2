@@ -24,8 +24,7 @@ RKE2 has been tested and validated on the following operating systems, and their
 The RKE2 Windows Node (Worker) agent has been tested and validated on the following operating systems, and their subsequent non-major releases:
 
 * Windows Server 2019 LTSC (amd64) (OS Build 17763.2061)
-* Windows Server SAC 2004 (amd64) (OS Build 19041.1110)
-* Windows Server SAC 20H2 (amd64) (OS Build 19042.1110)
+* Windows Server 2022 LTSC (amd64) (OS Build 20348.169)
 
 **Note** The Windows Server Containers feature needs to be enabled for the RKE2 Windows agent to work.
 
@@ -36,7 +35,7 @@ powershell -Command "Start-Process PowerShell -Verb RunAs"
 
 In the new Powershell window, run the following command.
 ```powershell
-Enable-WindowsOptionalFeature -Online -FeatureName containers –All
+Enable-WindowsOptionalFeature -Online -FeatureName Containers –All
 ```
 
 This will require a reboot for the `Containers` feature to properly function.
@@ -76,19 +75,21 @@ If you wish to utilize the metrics server, you will need to open port 10250 on e
 | TCP | 2379 | RKE2 server nodes | etcd client port
 | TCP | 2380 | RKE2 server nodes | etcd peer port
 | TCP | 30000-32767 | RKE2 server and agent nodes | NodePort port range
-| UDP | 8742 | RKE2 server and agent nodes | Cilium VXLAN
-| TCP | 4240 | RKE2 server and agent nodes | Cilium health checks
-| ICMP | 8/0 | RKE2 server and agent nodes | Cilium health checks
+| UDP | 8472 | RKE2 server and agent nodes | Cilium CNI VXLAN
+| TCP | 4240 | RKE2 server and agent nodes | Cilium CNI health checks
+| ICMP | 8/0 | RKE2 server and agent nodes | Cilium CNI health checks
 | TCP | 179 | RKE2 server and agent nodes | Calico CNI with BGP
 | UDP | 4789 | RKE2 server and agent nodes | Calico CNI with VXLAN
 | TCP | 5473 | RKE2 server and agent nodes | Calico CNI with Typha
-| UDP | 4789 | RKE2 server and agent nodes | Canal CNI with VXLAN
+| UDP | 8472 | RKE2 server and agent nodes | Canal CNI with VXLAN
+| TCP | 9099 | RKE2 server and agent nodes | Canal CNI health checks
 | UDP | 51820 | RKE2 server and agent nodes | Canal CNI with WireGuard IPv4
 | UDP | 51821 | RKE2 server and agent nodes | Canal CNI with WireGuard IPv6/dual-stack
 
 <figcaption>Inbound Rules for RKE2 Windows Agent Nodes</figcaption>
 
 ### Windows Specific Inbound Network Rules
+
 | Protocol | Port | Source | Description
 |-----|-----|----------------|---|
 | UDP | 4789 | RKE2 server nodes | Required for Calico and Flannel VXLAN
