@@ -93,12 +93,12 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 		_, err := e2e.DeployWorkload("nodeport.yaml", kubeConfigFile)
 		Expect(err).NotTo(HaveOccurred())
 		for _, nodeName := range serverNodeNames {
-			node_external_ip, err := e2e.FetchNodeExternalIP(nodeName)
+			nodeExternalIP, err := e2e.FetchNodeExternalIP(nodeName)
 			Expect(err).NotTo(HaveOccurred())
 			cmd := "kubectl get service nginx-nodeport-svc --kubeconfig=" + kubeConfigFile + " --output jsonpath=\"{.spec.ports[0].nodePort}\""
 			nodeport, err := e2e.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred(), "failed cmd: "+cmd)
-			cmd = "curl -L --insecure http://" + node_external_ip + ":" + nodeport + "/name.html"
+			cmd = "curl -L --insecure http://" + nodeExternalIP + ":" + nodeport + "/name.html"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
 			}, "5s", "1s").Should(ContainSubstring("test-nodeport"), "failed cmd: "+cmd)

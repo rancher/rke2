@@ -61,14 +61,14 @@ func CreateCluster(nodeOS string, serverCount int, agentCount int, installType s
 }
 
 func DeployWorkload(workload string, kubeconfig string) (string, error) {
-	resource_dir := "../resource_files"
-	files, err := ioutil.ReadDir(resource_dir)
+	resourceDir := "../resource_files"
+	files, err := ioutil.ReadDir(resourceDir)
 	if err != nil {
 		fmt.Println("Unable to read resource manifest file for ", workload)
 	}
 	fmt.Println("\nDeploying", workload)
 	for _, f := range files {
-		filename := filepath.Join(resource_dir, f.Name())
+		filename := filepath.Join(resourceDir, f.Name())
 		if strings.TrimSpace(f.Name()) == workload {
 			cmd := "kubectl apply -f " + filename + " --kubeconfig=" + kubeconfig
 			return RunCommand(cmd)
