@@ -14,13 +14,14 @@ import (
 
 // Valid nodeOS: generic/ubuntu2004, opensuse/Leap-15.3.x86_64
 var nodeOS = flag.String("nodeOS", "generic/ubuntu2004", "VM operating system")
-var serverCount = flag.Int("serverCount", 1, "number of server nodes")
+var serverCount = flag.Int("serverCount", 3, "number of server nodes")
 var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 
 // Valid format: RELEASE_VERSION=v1.22.6+rke2r1 or nil for latest commit from master
 var installType = flag.String("installType", "", "a string")
 
 func Test_E2EClusterValidation(t *testing.T) {
+	flag.Parse()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Validate Cluster Suite")
 }
@@ -107,26 +108,6 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 			}, "120s", "5s").Should(ContainSubstring("test-nodeport"), "failed cmd: "+cmd)
 		}
 	})
-
-	// It("Verifies LoadBalancer Service", func() {
-	// 	_, err := e2e.DeployWorkload("loadbalancer.yaml", kubeConfigFile)
-	// 	Expect(err).NotTo(HaveOccurred())
-	// 	for _, nodeName := range serverNodeNames {
-	// 		ip, err := e2e.FetchNodeExternalIP(nodeName)
-	// 		Expect(err).NotTo(HaveOccurred())
-	// 		cmd := "kubectl get service nginx-loadbalancer-svc --kubeconfig=" + kubeConfigFile + " --output jsonpath=\"{.spec.ports[0].port}\""
-	// 		port, err := e2e.RunCommand(cmd)
-	// 		Expect(err).NotTo(HaveOccurred(), "failed cmd: "+cmd)
-	// 		cmd = "curl -L --insecure http://" + ip + ":" + port + "/name.html"
-	// 		Eventually(func() (string, error) {
-	// 			return e2e.RunCommand(cmd)
-	// 		}, "5s", "1s").Should(ContainSubstring("test-loadbalancer"), "failed cmd: "+cmd)
-	// 		cmd = "kubectl get pods -o=name -l k8s-app=nginx-app-loadbalancer --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
-	// 		Eventually(func() (string, error) {
-	// 			return e2e.RunCommand(cmd)
-	// 		}, "120s", "5s").Should(ContainSubstring("test-loadbalancer"), "failed cmd: "+cmd)
-	// 	}
-	// })
 
 	It("Verifies Ingress", func() {
 		_, err := e2e.DeployWorkload("ingress.yaml", kubeConfigFile)
