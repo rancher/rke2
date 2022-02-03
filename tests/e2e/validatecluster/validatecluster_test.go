@@ -176,7 +176,7 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 	})
 })
 
-var failed = false
+var failed bool
 var _ = AfterEach(func() {
 	failed = failed || CurrentGinkgoTestDescription().Failed
 })
