@@ -1,7 +1,12 @@
 # Testing Standards in RKE2
 
-Go testing in RKE2 comes in 2 forms: Unit, Integration. This document will 
-explain *when* each test should be written and *how* each test should be
+Go testing in RKE2 comes in 4 forms:
+- [Unit](#unit-tests)
+- [Integration](#integration-tests)
+- [Smoke](#installer-tests)
+- [End-to-End (E2E)](#end-to-end-e2e-tests)
+
+This document will explain *when* each test should be written and *how* each test should be
 generated, formatted, and run.
 
 Note: all shell commands given are relative to the root RKE2 repo directory.
@@ -131,6 +136,52 @@ These can be set on the CLI or exported before invoking Vagrant:
     - `RKE2_KUBECONFIG_MODE=0644` (hard-coded)
     - `RKE2_TOKEN=vagrant` (hard-coded)
 
+___
+
+## End-to-End (E2E) Tests
+
+E2E tests cover multi-node RKE2 configuration and administration: bringup, update, teardown etc. across a wide range of operating systems. E2E tests are run nightly as part of RKE2 quality assurance (QA).
+
+### Framework 
+End-to-end tests utilize [Ginkgo](https://onsi.github.io/ginkgo/) and [Gomega](https://onsi.github.io/gomega/) like the integration tests, but rely on [Vagrant](https://www.vagrantup.com/) to provide the underlying cluster configuration. 
+
+Currently tested operating systems are:
+- [Ubuntu 20.04](https://app.vagrantup.com/generic/boxes/ubuntu2004)
+- [Leap 15.3](https://app.vagrantup.com/opensuse/boxes/Leap-15.3.x86_64) (stand-in for SLE-Server)
+
+### Format
+
+All E2E tests should be placed under `tests/e2e/<TEST_NAME>`.  
+All E2E test functions should be named: `Test_E2E<TEST_NAME>`.  
+A E2E test consists of two parts:
+1. `Vagrantfile`: a vagrant file which describes and configures the VMs upon which the cluster and test will run
+2. `<TEST_NAME>.go`: A go test file which calls `vagrant up` and controls the actual testing of the cluster
+
+See the [validate cluster test](../tests/e2e/validatecluster/validatecluster_test.go) as an example.
+
+### Running
+
+Generally, E2E tests are run as a nightly Jenkins job for QA. They can still be run locally but additional setup is required. By default, all E2E tests are designed with `libvirt` as the underlying VM provider. Instructions for installing libvirt and its associated vagrant plugin, `vagrant-libvirt` can be found [here.](https://github.com/vagrant-libvirt/vagrant-libvirt#installation) `VirtualBox` is also supported as a backup VM provider.
+
+Once setup is complete, all E2E tests can be run with:
+```bash
+go test -timeout=15m ./tests/e2e/... -run E2E
+```
+Tests can be run individually with:
+```bash
+go test -timeout=15m ./tests/e2e/validatecluster/... -run E2E
+#or
+go test -timeout=15m ./tests/e2e/... -run E2EClusterValidation
+```
+
+Additionally, to generate junit reporting for the tests, the Ginkgo CLI is used. Installation instructions can be found [here.](https://onsi.github.io/ginkgo/#getting-started)  
+
+To run the all E2E tests and generate JUnit testing reports:
+```
+ginkgo --junit-report=result.xml ./tests/e2e/...
+```
+
+Note: The `go test` default timeout is 10 minutes, thus the `-timeout` flag should be used. The `ginkgo` default timeout is 1 hour, no timeout flag is needed.
 ___
 
 ## Contributing New Or Updated Tests
