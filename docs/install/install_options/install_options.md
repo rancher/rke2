@@ -14,10 +14,12 @@ The primary way to configure RKE2 is through its [config file](#configuration-fi
 
 ### Configuring the Linux Installation Script
 
-As mentioned in the [Quick-Start Guide](../../install/quickstart.md), you can use the installation script available at https://get.rke2.io to install RKE2 as a service.
+As mentioned in the [Quick-Start Guide](../../install/quickstart.md), you can use the installation script available at <https://get.rke2.io> to install RKE2 as a service.
 
-The simplest form of this command is as follows:
+The simplest form of this command is running, as root user or through `sudo`, as follows:
+
 ```sh
+# curl -sfL https://get.rke2.io | sudo sh -
 curl -sfL https://get.rke2.io | sh -
 ```
 
@@ -27,7 +29,7 @@ When using this method to install RKE2, the following environment variables can 
 |-----------------------------|---------------------------------------------|
 | <span style="white-space: nowrap">`INSTALL_RKE2_VERSION`</span> | Version of RKE2 to download from GitHub. Will attempt to download the latest release from the `stable` channel if not specified. `INSTALL_RKE2_CHANNEL` should also be set if installing on an RPM-based system and the desired version does not exist in the `stable` channel. |
 | <span style="white-space: nowrap">`INSTALL_RKE2_TYPE`</span> | Type of systemd service to create, can be either "server" or "agent" Default is "server". |
-| <span style="white-space: nowrap">`INSTALL_RKE2_CHANNEL_URL`</span> | Channel URL for fetching RKE2 download URL. Defaults to https://update.rke2.io/v1-release/channels. |
+| <span style="white-space: nowrap">`INSTALL_RKE2_CHANNEL_URL`</span> | Channel URL for fetching RKE2 download URL. Defaults to `https://update.rke2.io/v1-release/channels`. |
 | <span style="white-space: nowrap">`INSTALL_RKE2_CHANNEL`</span> | Channel to use for fetching RKE2 download URL. Defaults to `stable`. Options include: `stable`, `latest`, `testing`. |
 | <span style="white-space: nowrap">`INSTALL_RKE2_METHOD`</span> | Method of installation to use. Default is on RPM-based systems `rpm`, all else `tar`. |
 

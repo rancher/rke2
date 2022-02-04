@@ -13,28 +13,35 @@ If NetworkManager is installed and enabled on your hosts, [ensure that it is con
 
 - For RKE2 versions 1.21 and higher, if the host kernel supports [AppArmor](https://apparmor.net/), the AppArmor tools (usually available via the `apparmor-parser` package) must also be present prior to installing RKE2.
 
+- The RKE2 installation process must be run as the root user or through `sudo`.
+
 ### Server Node Installation
 --------------
 RKE2 provides an installation script that is a convenient way to install it as a service on systemd based systems. This script is available at https://get.rke2.io. To install RKE2 using this method do the following:
 
 #### 1. Run the installer
-```
+
+```sh
 curl -sfL https://get.rke2.io | sh -
 ```
-This will install the `rke2-server` service and the `rke2` binary onto your machine.
+
+This will install the `rke2-server` service and the `rke2` binary onto your machine. Due to its nature, It will fail unless it runs as the root user or through `sudo`.
 
 #### 2. Enable the rke2-server service
-```
+
+```sh
 systemctl enable rke2-server.service
 ```
 
 #### 3. Start the service
-```
+
+```sh
 systemctl start rke2-server.service
 ```
 
 #### 4. Follow the logs, if you like
-```
+
+```sh
 journalctl -u rke2-server -f
 ```
 
@@ -49,43 +56,54 @@ After running this installation:
 **Note:** If you are adding additional server nodes, you must have an odd number in total. An odd number is needed to maintain quorum. See the [High Availability documentation](ha.md) for more details.
 
 ### Linux Agent (Worker) Node Installation
+
+The steps on this section requires root level access or `sudo` to work.
+
 #### 1. Run the installer
-```
+
+```sh
 curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh -
 ```
-This will install the `rke2-agent` service and the `rke2` binary onto your machine.
+
+This will install the `rke2-agent` service and the `rke2` binary onto your machine. Due to its nature, It will fail unless it runs as the root user or through `sudo`.
 
 #### 2. Enable the rke2-agent service
-```
+
+```sh
 systemctl enable rke2-agent.service
 ```
 
 #### 3. Configure the rke2-agent service
-```
+
+```sh
 mkdir -p /etc/rancher/rke2/
 vim /etc/rancher/rke2/config.yaml
 ```
+
 Content for config.yaml:
-```bash
+
+```yaml
 server: https://<server>:9345
 token: <token from server node>
 ```
+
 **Note:** The `rke2 server` process listens on port `9345` for new nodes to register. The Kubernetes API is still served on port `6443`, as normal.
 
 #### 4. Start the service
-```
+
+```sh
 systemctl start rke2-agent.service
 ```
 
 **Follow the logs, if you like**
-```
+
+```sh
 journalctl -u rke2-agent -f
 ```
 
 **Note:** Each machine must have a unique hostname. If your machines do not have unique hostnames, set the `node-name` parameter in the `config.yaml` file and provide a value with a valid and unique hostname for each node.
 
 To read more about the config.yaml file, see the [Install Options documentation.](./install_options/install_options.md#configuration-file)
-
 
 ### Windows Agent (Worker) Node Installation
 **Windows Support is currently Experimental as of v1.21.3+rke2r1**

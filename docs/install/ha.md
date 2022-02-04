@@ -62,6 +62,7 @@ Note: The NGINX Ingress and Metrics Server addons will **not** be deployed when 
 Additional server nodes are launched much like the first, except that you must specify the `server` and `token` parameters so that they can successfully connect to the initial server node.
 
 Here is an example of what the RKE2 config file would look like for additional server nodes if you are following this guide:
+
 ```yaml
 server: https://my-kubernetes-domain.com:9345
 token: my-shared-secret
@@ -70,16 +71,20 @@ tls-san:
   - another-kubernetes-domain.com
 
 ```
+
 As mentioned previously, you must have an odd number of server nodes in total.
 
 ### 4. Confirm cluster is functional
 Once you've launched the `rke2 server` process on all server nodes, ensure that the cluster has come up properly with
+
 ```bash
 /var/lib/rancher/rke2/bin/kubectl \
         --kubeconfig /etc/rancher/rke2/rke2.yaml get nodes
 ```
+
 You should see your server nodes in the Ready state.
 
+**NOTE**: By default, any `kubectl` command will require root user access, unless `RKE2_KUBECONFIG_MODE` override is provided. Read more about it in [cluster access page](https://docs.rke2.io/cluster_access).
 
 ### 5. Optional: Join Agent Nodes
 
