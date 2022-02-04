@@ -6,7 +6,7 @@ title: Installation Methods
 
 RKE2 can be installed to a system in a number of ways, two of which are the preferred and supported methods. Those methods are tarball and RPM. The install script referenced in the Quick Start is a wrapper around these two methods.
 
-This document explains these installation methods in greater detail. 
+This document explains these installation methods in greater detail.
 
 ### Tarball
 
@@ -14,13 +14,14 @@ To install RKE2 via install you first need to get the install script. This can b
 
 This gets the script and immediately starts the install process.
 
-```bash
+```sh
+# curl -sfL https://get.rke2.io | sudo sh -
 curl -sfL https://get.rke2.io | sh -
 ```
 
 This will download the install script and make it executable.
 
-```bash
+```sh
 curl -sfL https://get.rke2.io --output install.sh
 chmod +x install.sh
 ```
@@ -44,7 +45,6 @@ Tarball structure / contents
 * share - contains the RKE2 license as well as a sysctl configuration file used for when RKE2 is ran in CIS mode
 
 To configure the system any further, you'll want to reference the either the [server](install_options/server_config.md) or [agent](install_options/linux_agent_config.md) documentation.
-
 
 ### RPM
 
@@ -106,12 +106,13 @@ EOF
 
 After the repository is configured, you can run either of the following commands:
 
-```bash
+```sh
 yum -y install rke2-server
 ```
+
 or
 
-```bash
+```sh
 yum -y install rke2-agent
 ```
 

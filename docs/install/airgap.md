@@ -2,29 +2,30 @@
 
 **Important:** If your node has NetworkManager installed and enabled, [ensure that it is configured to ignore CNI-managed interfaces.](https://docs.rke2.io/known_issues/#networkmanager)
 
-RKE2 can be installed in an air-gapped environment with two different methods.
-You can either deploy via the `rke2-airgap-images` tarball release artifact, or by using a private registry.
+RKE2 can be installed in an air-gapped environment with two different methods. You can either deploy via the `rke2-airgap-images` tarball release artifact, or by using a private registry.
 
 All files mentioned in the steps can be obtained from the assets of the desired released rke2 version [here](https://github.com/rancher/rke2/releases).
 
 If running on an air-gapped node with SELinux enabled, you must manually install the necessary SELinux policy RPM before performing these steps. See our [RPM Documentation](https://docs.rke2.io/install/methods/#rpm) to determine what you need.
- 
+
 If running on an air-gapped node running SELinux, CentOS, or RHEL 8, with SELinux enabled, the following are required dependencies when doing an [RPM install](https://docs.rke2.io/install/methods/#rpm):
-           
+
     Installing dependencies:
-    container-selinux           
-    iptables                    
-    libnetfilter_conntrack      
-    libnfnetlink                
-    libnftnl                    
+    container-selinux
+    iptables
+    libnetfilter_conntrack
+    libnfnetlink
+    libnftnl
     policycoreutils-python-utils
-    rke2-common                 
+    rke2-common
     rke2-selinux
+
+All the steps listed on this document must be run as the root user or through `sudo`.
 
 ## Tarball Method
 
 1. Download the airgap images tarballs from the RKE release artifacts list for the version and platform of RKE2 you are using.
-    * Use `rke2-images.linux-amd64.tar.zst`, or `rke2-images.linux-amd64.tar.gz` for releases prior to v1.20. Zstandard offers better compression ratios and faster decompression speeds compared to gzip.  
+    * Use `rke2-images.linux-amd64.tar.zst`, or `rke2-images.linux-amd64.tar.gz` for releases prior to v1.20. Zstandard offers better compression ratios and faster decompression speeds compared to gzip.
     * If using the default Canal CNI (`--cni=canal`), you can use either the `rke2-image` legacy archive as described above, or `rke2-images-core` and `rke2-images-canal` archives.
     * If using the alternative Cilium CNI (`--cni=cilium`), you must download the `rke2-images-core` and `rke2-images-cilium` archives instead.
     * If using your own CNI (`--cni=none`), you can download only the `rke2-images-core` archive.
@@ -52,6 +53,7 @@ RKE2 can be installed either by running the [binary](#rke2-binary-install) direc
 1. Obtain the rke2 binary file `rke2.linux-amd64`.
 2. Ensure the binary is named `rke2` and place it in `/usr/local/bin`. Ensure it is executable.
 3. Run the binary with the desired parameters. For example, if using the Private Registry Method, your config file would have the following:
+
 ```yaml
 system-default-registry: "registry.example.com:5000"
 ```
