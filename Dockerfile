@@ -97,7 +97,7 @@ COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
 RUN CHART_VERSION="1.10.404"                  CHART_FILE=/charts/rke2-cilium.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="v3.20.3-build2022011406"   CHART_FILE=/charts/rke2-canal.yaml          CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="v3.20.201"                 CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="v3.21.401"                 CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="v1.0.202"                  CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.16.401-build2021111901"  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="4.0.306"                   CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
