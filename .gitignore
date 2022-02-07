@@ -8,5 +8,5 @@
 /data
 /rke2
 /build
-.vagrant
+.vagrant/
 .DS_Store

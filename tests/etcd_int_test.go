@@ -6,8 +6,7 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/reporters"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/rancher/rke2/tests/util"
 )
@@ -102,7 +101,5 @@ var _ = Describe("etcd snapshots", func() {
 
 func Test_IntegrationEtcd(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecsWithDefaultAndCustomReporters(t, "Etcd Suite", []Reporter{
-		reporters.NewJUnitReporter("/tmp/results/junit-etcd.xml"),
-	})
+	RunSpecs(t, "Etcd Suite")
 }

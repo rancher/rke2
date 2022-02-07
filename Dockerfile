@@ -82,7 +82,7 @@ RUN set -x \
     sudo \
     vim
 # For integration tests
-RUN go get github.com/onsi/ginkgo/ginkgo github.com/onsi/gomega/...
+RUN go get github.com/onsi/ginkgo/v2 github.com/onsi/gomega/...
 RUN GO111MODULE=off GOBIN=/usr/local/bin go get github.com/go-delve/delve/cmd/dlv
 RUN echo 'alias abort="echo -e '\''q\ny\n'\'' | dlv connect :2345"' >> /root/.bashrc
 ENV PATH=/var/lib/rancher/rke2/bin:$PATH

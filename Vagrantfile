@@ -91,7 +91,7 @@ Vagrant.configure("2") do |config|
         source /etc/environment
         source /etc/profile.d/sh.local
         set -eux -o pipefail
-        go get -u github.com/onsi/ginkgo/ginkgo
+        go get -u github.com/onsi/ginkgo/v2
         go get -d github.com/kubernetes-sigs/cri-tools/...
         cd "$GOPATH"/src/github.com/kubernetes-sigs/cri-tools
         git checkout $CRI_TOOLS_VERSION
