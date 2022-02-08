@@ -87,6 +87,7 @@ metadata:
   name: %s
   annotations:
     psp.rke2.io/global-unrestricted: resolved
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
 spec:
   privileged: true
   allowPrivilegeEscalation: true
