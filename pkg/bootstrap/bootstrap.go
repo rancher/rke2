@@ -1,9 +1,11 @@
 package bootstrap
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -293,13 +295,13 @@ func setChartValues(manifestsDir string, nodeConfig *daemonconfig.Node, cfg cmds
 // If the file cannot be decoded as a HelmChart, it is silently skipped. Any other IO error is considered
 // a failure.
 func rewriteChart(fileName string, info os.FileInfo, chartValues map[string]string, serializer *json.Serializer) error {
-	bytes, err := ioutil.ReadFile(fileName)
+	b, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to read manifest %s", fileName)
 	}
 
 	// Ignore manifest if it cannot be decoded
-	obj, _, err := serializer.Decode(bytes, nil, nil)
+	obj, _, err := serializer.Decode(b, nil, nil)
 	if err != nil {
 		logrus.Debugf("Failed to decode manifest %s: %s", fileName, err)
 		return nil
@@ -319,21 +321,37 @@ func rewriteChart(fileName string, info os.FileInfo, chartValues map[string]stri
 		chart.Spec.Set = map[string]intstr.IntOrString{}
 	}
 
+	var changed bool
 	for k, v := range chartValues {
-		chart.Spec.Set[k] = intstr.FromString(v)
+		val := intstr.FromString(v)
+		if cur, ok := chart.Spec.Set[k]; ok {
+			curBytes, _ := cur.MarshalJSON()
+			newBytes, _ := val.MarshalJSON()
+			if bytes.Equal(curBytes, newBytes) {
+				continue
+			}
+		}
+		changed = true
+		chart.Spec.Set[k] = val
+	}
+
+	if !changed {
+		logrus.Infof("No cluster configuration value changes necessary for HelmChart %s", fileName)
+		return nil
+	}
+
+	var buf bytes.Buffer
+	if err := serializer.Encode(chart, &buf); err != nil {
+		return errors.Wrapf(err, "Failed to serialize modified HelmChart %s", fileName)
 	}
 
 	f, err := os.OpenFile(fileName, os.O_RDWR|os.O_TRUNC, info.Mode())
 	if err != nil {
 		return errors.Wrapf(err, "Unable to open HelmChart %s", fileName)
 	}
+	defer f.Close()
 
-	if err := serializer.Encode(chart, f); err != nil {
-		_ = f.Close()
-		return errors.Wrapf(err, "Failed to serialize modified HelmChart %s", fileName)
-	}
-
-	if err := f.Close(); err != nil {
+	if _, err := io.Copy(f, &buf); err != nil {
 		return errors.Wrapf(err, "Failed to write modified HelmChart %s", fileName)
 	}
 
