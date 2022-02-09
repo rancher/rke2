@@ -14,7 +14,9 @@ RUN set -x \
     gcc \
     bsd-compat-headers \
     py-pip \
-    pigz
+    pigz \
+    tar \
+    yq
 RUN if [ "${ARCH}" != "s390x" ]; then \
     	apk --no-cache add mingw-w64-gcc; \
     fi
@@ -94,6 +96,7 @@ VOLUME /var/lib/rancher/k3s
 
 FROM build AS charts
 ARG CHART_REPO="https://rke2-charts.rancher.io"
+ARG KUBERNETES_VERSION=""
 ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
