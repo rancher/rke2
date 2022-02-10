@@ -114,26 +114,26 @@ var _ = Describe("Verify Upgrade", func() {
 			}
 		})
 
-		It("Verifies LoadBalancer Service", func() {
-			_, err := e2e.DeployWorkload("loadbalancer.yaml", kubeConfigFile)
-			Expect(err).NotTo(HaveOccurred(), "Loadbalancer manifest not deployed")
-			for _, nodeName := range serverNodenames {
-				ip, _ := e2e.FetchNodeExternalIP(nodeName)
-				cmd := "kubectl get service nginx-loadbalancer-svc --kubeconfig=" + kubeConfigFile + " --output jsonpath=\"{.spec.ports[0].port}\""
-				port, err := e2e.RunCommand(cmd)
-				Expect(err).NotTo(HaveOccurred())
+		// It("Verifies LoadBalancer Service", func() {
+		// 	_, err := e2e.DeployWorkload("loadbalancer.yaml", kubeConfigFile)
+		// 	Expect(err).NotTo(HaveOccurred(), "Loadbalancer manifest not deployed")
+		// 	for _, nodeName := range serverNodenames {
+		// 		ip, _ := e2e.FetchNodeExternalIP(nodeName)
+		// 		cmd := "kubectl get service nginx-loadbalancer-svc --kubeconfig=" + kubeConfigFile + " --output jsonpath=\"{.spec.ports[0].port}\""
+		// 		port, err := e2e.RunCommand(cmd)
+		// 		Expect(err).NotTo(HaveOccurred())
 
-				cmd = "kubectl get pods -o=name -l k8s-app=nginx-app-loadbalancer --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
-				Eventually(func() (string, error) {
-					return e2e.RunCommand(cmd)
-				}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"))
+		// 		cmd = "kubectl get pods -o=name -l k8s-app=nginx-app-loadbalancer --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
+		// 		Eventually(func() (string, error) {
+		// 			return e2e.RunCommand(cmd)
+		// 		}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"))
 
-				cmd = "curl -L --insecure http://" + ip + ":" + port + "/name.html"
-				Eventually(func() (string, error) {
-					return e2e.RunCommand(cmd)
-				}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"), "failed cmd: "+cmd)
-			}
-		})
+		// 		cmd = "curl -L --insecure http://" + ip + ":" + port + "/name.html"
+		// 		Eventually(func() (string, error) {
+		// 			return e2e.RunCommand(cmd)
+		// 		}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"), "failed cmd: "+cmd)
+		// 	}
+		// })
 
 		It("Verifies Ingress", func() {
 			_, err := e2e.DeployWorkload("ingress.yaml", kubeConfigFile)
@@ -206,11 +206,6 @@ var _ = Describe("Verify Upgrade", func() {
 			_, err = e2e.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred())
 			fmt.Println("Data stored in pvc: local-path-test")
-
-			cmd = "kubectl delete pod volume-test --kubeconfig=" + kubeConfigFile
-			res, err := e2e.RunCommand(cmd)
-			Expect(err).NotTo(HaveOccurred())
-			fmt.Println(res)
 
 		})
 
@@ -287,23 +282,23 @@ var _ = Describe("Verify Upgrade", func() {
 			}
 		})
 
-		It("After upgrade verifies LoadBalancer Service", func() {
-			for _, nodeName := range serverNodenames {
-				ip, _ := e2e.FetchNodeExternalIP(nodeName)
-				cmd := "kubectl get service nginx-loadbalancer-svc --kubeconfig=" + kubeConfigFile + " --output jsonpath=\"{.spec.ports[0].port}\""
-				port, err := e2e.RunCommand(cmd)
-				Expect(err).NotTo(HaveOccurred())
-				Eventually(func() (string, error) {
-					cmd := "curl -L --insecure http://" + ip + ":" + port + "/name.html"
-					return e2e.RunCommand(cmd)
-				}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"))
+		// It("After upgrade verifies LoadBalancer Service", func() {
+		// 	for _, nodeName := range serverNodenames {
+		// 		ip, _ := e2e.FetchNodeExternalIP(nodeName)
+		// 		cmd := "kubectl get service nginx-loadbalancer-svc --kubeconfig=" + kubeConfigFile + " --output jsonpath=\"{.spec.ports[0].port}\""
+		// 		port, err := e2e.RunCommand(cmd)
+		// 		Expect(err).NotTo(HaveOccurred())
+		// 		cmd = "curl -L --insecure http://" + ip + ":" + port + "/name.html"
+		// 		Eventually(func() (string, error) {
+		// 			return e2e.RunCommand(cmd)
+		// 		}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"), "failed cmd: "+cmd)
 
-				Eventually(func() (string, error) {
-					cmd := "kubectl get pods -o=name -l k8s-app=nginx-app-loadbalancer --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
-					return e2e.RunCommand(cmd)
-				}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"))
-			}
-		})
+		// 		Eventually(func() (string, error) {
+		// 			cmd := "kubectl get pods -o=name -l k8s-app=nginx-app-loadbalancer --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
+		// 			return e2e.RunCommand(cmd)
+		// 		}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"))
+		// 	}
+		// })
 
 		It("After upgrade verifies Ingress", func() {
 			for _, nodeName := range serverNodenames {
@@ -318,7 +313,7 @@ var _ = Describe("Verify Upgrade", func() {
 		})
 
 		It("After upgrade verifies Daemonset", func() {
-			nodes, _ := e2e.ParseNodes(kubeConfigFile, false) //nodes :=
+			nodes, _ := e2e.ParseNodes(kubeConfigFile, false)
 			pods, _ := e2e.ParsePods(kubeConfigFile, false)
 
 			Eventually(func(g Gomega) {
@@ -338,10 +333,15 @@ var _ = Describe("Verify Upgrade", func() {
 		})
 
 		It("After upgrade verify Local Path Provisioner storage ", func() {
+			cmd := "kubectl exec volume-test cat /data/test --kubeconfig=" + kubeConfigFile
 			Eventually(func() (string, error) {
-				cmd := "kubectl exec volume-test cat /data/test --kubeconfig=" + kubeConfigFile
 				return e2e.RunCommand(cmd)
-			}, "180s", "2s").Should(ContainSubstring("local-path-test"))
+			}, "180s", "2s").Should(ContainSubstring("local-path-test"), "failed cmd: "+cmd)
+
+			cmd = "kubectl delete pod volume-test --kubeconfig=" + kubeConfigFile
+			res, err := e2e.RunCommand(cmd)
+			Expect(err).NotTo(HaveOccurred())
+			fmt.Println(res)
 		})
 	})
 })
