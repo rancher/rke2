@@ -18,7 +18,10 @@ def provision(vm, roles, role_num, node_num)
   node_ip = "#{NETWORK_PREFIX}.#{100+node_num}"
   vm.network "private_network", ip: node_ip, netmask: "255.255.255.0"
 
-  osConfigure(vm)
+  vagrant_defaults = '../vagrantdefaults.rb'
+  load vagrant_defaults if File.exists?(vagrant_defaults)
+  
+  defaultOSConfigure(vm)
   
   if !RELEASE_VERSION.empty?
     install_type = "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"
@@ -63,17 +66,6 @@ def provision(vm, roles, role_num, node_num)
         token: vagrant-rke2
       YAML
     end
-  end
-end
-
-def osConfigure(vm)
-
-  if vm.box.include?("ubuntu2004")
-    vm.provision "shell", inline: "systemd-resolve --set-dns=8.8.8.8 --interface=eth0"
-    vm.provision "shell", inline: "apt install -y jq"
-  end
-  if vm.box.include?("Leap")
-    vm.provision "shell", inline: "zypper install -y jq"
   end
 end
 
