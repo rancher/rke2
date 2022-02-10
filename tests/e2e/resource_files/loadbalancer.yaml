@@ -27,6 +27,8 @@ metadata:
    k8s-app: nginx-app-loadbalancer
 spec:
  type: LoadBalancer
+ externalIPs:
+ - 10.10.10.100
  ports:
  - port: 81
    targetPort: 80

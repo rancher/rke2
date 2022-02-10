@@ -109,6 +109,26 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 		}
 	})
 
+	It("Verifies LoadBalancer Service", func() {
+		_, err := e2e.DeployWorkload("loadbalancer.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+		ip, err := e2e.FetchNodeExternalIP(serverNodeNames[0])
+		Expect(err).NotTo(HaveOccurred(), "Loadbalancer manifest not deployed")
+		cmd := "kubectl get service nginx-loadbalancer-svc --kubeconfig=" + kubeConfigFile + " --output jsonpath=\"{.spec.ports[0].port}\""
+		port, err := e2e.RunCommand(cmd)
+		Expect(err).NotTo(HaveOccurred())
+
+		cmd = "kubectl get pods -o=name -l k8s-app=nginx-app-loadbalancer --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
+		Eventually(func() (string, error) {
+			return e2e.RunCommand(cmd)
+		}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"))
+
+		cmd = "curl -L --insecure http://" + ip + ":" + port + "/name.html"
+		Eventually(func() (string, error) {
+			return e2e.RunCommand(cmd)
+		}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"), "failed cmd: "+cmd)
+	})
+
 	It("Verifies Ingress", func() {
 		_, err := e2e.DeployWorkload("ingress.yaml", kubeConfigFile)
 		Expect(err).NotTo(HaveOccurred())
