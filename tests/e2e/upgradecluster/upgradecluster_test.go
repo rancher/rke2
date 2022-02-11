@@ -96,7 +96,7 @@ var _ = Describe("Verify Upgrade", func() {
 			Expect(err).NotTo(HaveOccurred(), "NodePort manifest not deployed")
 
 			for _, nodeName := range serverNodeNames {
-				node_external_ip, _ := e2e.FetchNodeExternalIP(nodeName)
+				nodeExternalIP, _ := e2e.FetchNodeExternalIP(nodeName)
 				cmd := "kubectl get service nginx-nodeport-svc --kubeconfig=" + kubeConfigFile + " --output jsonpath=\"{.spec.ports[0].nodePort}\""
 				nodeport, err := e2e.RunCommand(cmd)
 				Expect(err).NotTo(HaveOccurred(), "failed cmd: "+cmd)
@@ -106,7 +106,7 @@ var _ = Describe("Verify Upgrade", func() {
 					return e2e.RunCommand(cmd)
 				}, "240s", "5s").Should(ContainSubstring("test-nodeport"), "nodeport pod was not created")
 
-				cmd = "curl -L --insecure http://" + node_external_ip + ":" + nodeport + "/name.html"
+				cmd = "curl -L --insecure http://" + nodeExternalIP + ":" + nodeport + "/name.html"
 				fmt.Println(cmd)
 				Eventually(func() (string, error) {
 					return e2e.RunCommand(cmd)
@@ -263,7 +263,7 @@ var _ = Describe("Verify Upgrade", func() {
 		It("After upgrade verifies NodePort Service", func() {
 
 			for _, nodeName := range serverNodeNames {
-				node_external_ip, _ := e2e.FetchNodeExternalIP(nodeName)
+				nodeExternalIP, _ := e2e.FetchNodeExternalIP(nodeName)
 				cmd := "kubectl get service nginx-nodeport-svc --kubeconfig=" + kubeConfigFile + " --output jsonpath=\"{.spec.ports[0].nodePort}\""
 				nodeport, err := e2e.RunCommand(cmd)
 				Expect(err).NotTo(HaveOccurred())
@@ -273,7 +273,7 @@ var _ = Describe("Verify Upgrade", func() {
 					return e2e.RunCommand(cmd)
 				}, "240s", "5s").Should(ContainSubstring("test-nodeport"), "nodeport pod was not created")
 
-				cmd = "curl -L --insecure http://" + node_external_ip + ":" + nodeport + "/name.html"
+				cmd = "curl -L --insecure http://" + nodeExternalIP + ":" + nodeport + "/name.html"
 				fmt.Println(cmd)
 				Eventually(func() (string, error) {
 					return e2e.RunCommand(cmd)
