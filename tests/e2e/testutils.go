@@ -112,6 +112,18 @@ func FetchNodeExternalIP(nodename string) (string, error) {
 	return nodeip, nil
 }
 
+func GetVagrantLog() string {
+	log, err := os.Open("vagrant.log")
+	if err != nil {
+		return err.Error()
+	}
+	bytes, err := ioutil.ReadAll(log)
+	if err != nil {
+		return err.Error()
+	}
+	return string(bytes)
+}
+
 func GenKubeConfigFile(serverName string) (string, error) {
 	cmd := fmt.Sprintf("vagrant ssh %s -c \"sudo cat /etc/rancher/rke2/rke2.yaml\"", serverName)
 	kubeConfig, err := RunCommand(cmd)
