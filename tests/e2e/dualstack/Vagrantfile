@@ -9,7 +9,7 @@ NODE_CPUS = (ENV['NODE_CPUS'] || 2).to_i
 NODE_MEMORY = (ENV['NODE_MEMORY'] || 2048).to_i
 # Virtualbox >= 6.1.28 require `/etc/vbox/network.conf` for expanded private networks 
 NETWORK4_PREFIX = "10.10.10"
-NETWORK6_PREFIX = "fd12:feed:beef:1"
+NETWORK6_PREFIX = "a11:decf:c0ff:ee"
 install_type = ""
 
 def provision(vm, roles, role_num, node_num)
@@ -45,43 +45,46 @@ def provision(vm, roles, role_num, node_num)
   end
   vm.provision "shell", inline: "ping -c 2 rke2.io"
   
-  # if roles.include?("server") && role_num == 0
-  #   vm.provision :rke2, run: 'once' do |rke2|
-  #     rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
-  #     rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
-  #     rke2.config = <<~YAML
-  #       write-kubeconfig-mode: 0644
-  #       node-external-ip: #{node_ip4}
-  #       token: vagrant-rke2
-  #       cluster-cidr: 10.42.0.0/16,2001:cafe:42:0::/56
-  #       service-cidr: 10.43.0.0/16,2001:cafe:42:1::/112
-  #     YAML
-  #   end
-  # elsif roles.include?("server") && role_num != 0
-  #   vm.provision :rke2, run: 'once' do |rke2|
-  #     rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
-  #     rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
-  #     rke2.config = <<~YAML
-  #       write-kubeconfig-mode: 0644
-  #       node-external-ip: #{node_ip4}
-  #       server: https://#{NETWORK4_PREFIX}.100:9345
-  #       token: vagrant-rke2
-  #     YAML
-  #   end
-  # end
-  # if roles.include?("agent")
-  #   vm.provision :rke2, run: 'once' do |rke2|
-  #     rke2.env = %W[INSTALL_RKE2_TYPE=agent #{install_type}]
-  #     rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
-  #     rke2.install_path = false
-  #     rke2.config = <<~YAML
-  #       write-kubeconfig-mode: 0644
-  #       node-external-ip: #{node_ip4}
-  #       server: https://#{NETWORK4_PREFIX}.100:9345
-  #       token: vagrant-rke2
-  #     YAML
-  #   end
-  # end
+  if roles.include?("server") && role_num == 0
+    vm.provision :rke2, run: 'once' do |rke2|
+      rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
+      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
+      rke2.config = <<~YAML
+        write-kubeconfig-mode: 0644
+        node-external-ip: #{node_ip4},#{node_ip6}
+        token: vagrant-rke2
+        cluster-cidr: 10.42.0.0/16,2001:cafe:42:0::/56
+        service-cidr: 10.43.0.0/16,2001:cafe:42:1::/112
+        cni: canal
+      YAML
+    end
+  elsif roles.include?("server") && role_num != 0
+    vm.provision :rke2, run: 'once' do |rke2|
+      rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
+      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
+      rke2.config = <<~YAML
+        write-kubeconfig-mode: 0644
+        node-external-ip: #{node_ip4},#{node_ip6}
+        server: https://#{NETWORK4_PREFIX}.100:9345
+        token: vagrant-rke2
+        cluster-cidr: 10.42.0.0/16,2001:cafe:42:0::/56
+        service-cidr: 10.43.0.0/16,2001:cafe:42:1::/112
+      YAML
+    end
+  end
+  if roles.include?("agent")
+    vm.provision :rke2, run: 'once' do |rke2|
+      rke2.env = %W[INSTALL_RKE2_TYPE=agent #{install_type}]
+      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
+      rke2.install_path = false
+      rke2.config = <<~YAML
+        write-kubeconfig-mode: 0644
+        node-external-ip: #{node_ip4},#{node_ip6}
+        server: https://#{NETWORK4_PREFIX}.100:9345
+        token: vagrant-rke2
+      YAML
+    end
+  end
 end
 
 Vagrant.configure("2") do |config|
