@@ -28,7 +28,7 @@ def provision(vm, roles, role_num, node_num)
     :libvirt__ipv6_address => "#{NETWORK6_PREFIX}::1",
     :libvirt__ipv6_prefix => "64"
   
-  vm.provision "shell", path: "../scripts/ipv6.sh", args: [NETWORK6_PREFIX, node_ip6]
+  vm.provision "shell", path: "../scripts/ipv6.sh", args: [node_ip6]
   
   
   vagrant_defaults = '../vagrantdefaults.rb'
