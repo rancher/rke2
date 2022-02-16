@@ -87,6 +87,34 @@ RKE2 supports encrypting Secrets at rest, and will do the following automaticall
 
 Once enabled any created secret will be encrypted with this key. Note that if you disable encryption then any encrypted secrets will not be readable until you enable encryption again using the same key.
 
+## Single-Server Encryption Key Rotation
+
+To rotate secrets encryption keys on a single-node cluster:
+
+- Start the RKE2 server with the flag `--secrets-encryption`
+
+>**Note:** Starting RKE2 without encryption and enabling it at a later time is currently *not* supported.
+
+1. Prepare:
+
+    ```
+    rke2 secrets-encrypt prepare
+    ```
+
+2. Kill RKE2 cluster and restart the `kube-apiserver` pod with the same arguments
+3. Rotate:
+
+    ```
+    rke2 secrets-encrypt rotate
+    ```
+
+4. Kill RKE2 cluster and restart the `kube-apiserver` pod with the same arguments
+5. Reencrypt:
+
+    ```
+    rke2 secrets-encrypt reencrypt
+    ```
+
 ## Node Labels and Taints
 
 RKE2 agents can be configured with the options `node-label` and `node-taint` which adds a label and taint to the kubelet. The two options only add labels and/or taints at registration time, and can only be added once and not removed after that through rke2 commands.
