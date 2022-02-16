@@ -60,6 +60,8 @@ Next, we need to create a release candidate (RC). The Drone (CI) process that bu
     * Example tag: `v1.21.4+rke2r2`
     * **NOTE** Make sure to create the tag against the correct release branch. In the example above, that would map to release branch `release-1.21`.
 
+Ensure "prerelease" checkbox is selected.
+
 CI will run and build the release assets as well as kick off an image build for [RKE2 Upgrade images](https://hub.docker.com/r/rancher/rke2-upgrade/tags?page=1&ordering=last_updated).
 
 _**Note: Once an RC is released for QA, the release branch associated with the RC is now considered frozen until the final release is complete. If additional PRs need to get merged in after an RC, but before the final release, you should notify the RKE2 team of this immediately. After merging, an additional RC will need to be released for QA.**_
