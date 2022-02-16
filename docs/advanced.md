@@ -99,14 +99,19 @@ To rotate secrets encryption keys on a single-node cluster:
     rke2 secrets-encrypt prepare
     ```
 
-2. Kill RKE2 cluster and restart the `kube-apiserver` pod with the same arguments
+2. Restart the `kube-apiserver` pod. The example below uses deletion, which causes a restart due to replica set:
+
+    ```
+    kubectl delete pod <kube-apiserver pod name> -n kube-system
+    ```
+
 3. Rotate:
 
     ```
     rke2 secrets-encrypt rotate
     ```
 
-4. Kill RKE2 cluster and restart the `kube-apiserver` pod with the same arguments
+4. Restart the `kube-apiserver` pod again
 5. Reencrypt:
 
     ```
