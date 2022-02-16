@@ -11,7 +11,7 @@ There are other differences than their audiences, and this document elaborates o
 
 As its name suggests, the main target for this documentation is Rancher RKE2 users. Covering RKE2 topics such as architecture, installation and upgrade process, and security from an end-user perspective.
 
-The documentation's source lingers as markdown files in the `docs/` directory within this repository. These documents are processed using [mkdocs](https://www.mkdocs.org/) and served on <https://docs.rke2.io/> as a documentation website.
+The markdown files in the `docs/` directory within this repository are the documentation's source. These documents are processed using [mkdocs](https://www.mkdocs.org/) and served on <https://docs.rke2.io/> as a documentation website.
 
 Since the documents use a specific markdown superset, [pymdown](https://facelessuser.github.io/pymdown-extensions/), it is preferred to process them using `mkdocs` beforehand to have a better understanding. However, any markdown preview tool should be able to render them.
 
@@ -26,6 +26,6 @@ Worth noting that the second option should only be used whenever running a docke
 
 Like this file, the target audience for these documents is the RKE2 developers and contributors. The topics may not hold a specific order, technicalities may come along, and are focused on transmitting internal processes around RKE2.
 
-The documents linger as plain markdown files in this repository's `developer-docs/` directory. These files are intended to be read using any markdown preview tool, being Github's web view the default one, so no enhanced versions of this markdown language are allowed. The only exception to this rule is usage of [embedded mermaid diagrams supported by Github](https://github.blog/2022-02-14-include-diagrams-markdown-files-mermaid/).
+The developer docs are the markdown files in this repository's `developer-docs/` directory. These files are intended to be read using any markdown preview tool, being Github's web view the default one, so no enhanced versions of this markup language are allowed. The only exception to this rule is usage of [embedded mermaid diagrams supported by Github](https://github.blog/2022-02-14-include-diagrams-markdown-files-mermaid/).
 
-As hinted in the last section, the diagrams within the developer docs are written in a markdown-like [mermaid](https://mermaidjs.github.io/) syntax and held in code blocks with <code>```mermaid</code> language specifier. These diagrams can be created and edited with the help of the Mermaid live editor; then, it is a matter of copying and pasting the result in the markdown file.
+As hinted in the last section, the diagrams within the developer docs are written in the markdown-like [Mermaid](https://mermaidjs.github.io/) syntax and held in code blocks with the <code>```mermaid</code> language specifier. These diagrams can be created and edited with the help of the [Mermaid live editor](https://mermaid.live/); then, it is a matter of copying and pasting the result in a markdown file.
