@@ -91,8 +91,6 @@ Once enabled any created secret will be encrypted with this key. Note that if yo
 
 To rotate secrets encryption keys on a single-node cluster:
 
-- Start the RKE2 server with the flag `--secrets-encryption`
-
 >**Note:** Starting RKE2 without encryption and enabling it at a later time is currently *not* supported.
 
 1. Prepare:
