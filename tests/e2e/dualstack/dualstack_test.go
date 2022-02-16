@@ -74,6 +74,22 @@ var _ = Describe("Verify DualStack Configuration", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
+	It("Verifies ClusterIP Service", func() {
+		_, err := e2e.DeployWorkload("dualstack-clusterip.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+		Eventually(func() (string, error) {
+			cmd := "kubectl get pods -o=name -l app=clusterip-demo --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
+			return e2e.RunCommand(cmd)
+		}, "240s", "5s").Should(ContainSubstring("test-clusterip"))
+
+		clusterips, _ := e2e.FetchClusterIP(kubeConfigFile, "nginx-clusterip-svc")
+
+		cmd := "\"curl -L --insecure http://" + clusterips + "/name.html\""
+		for _, nodeName := range serverNodeNames {
+			Expect(e2e.RunCmdOnNode(cmd, nodeName)).Should(ContainSubstring("test-clusterip"), "failed cmd: "+cmd)
+		}
+	})
+
 })
 
 var failed bool
