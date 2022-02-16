@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-dualstack-clusterip
+spec:
+  selector:
+    matchLabels:
+      k8s-app: nginx-app-ds-clusterip
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        k8s-app: nginx-app-ds-clusterip
+    spec:
+      containers:
+      - name: nginx
+        image: ranchertest/mytestcontainer
+        ports:
+        - containerPort: 80
+---
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: dualstack-clusterip-pod
+#   labels:
+#     k8s-app: dualstack-app-clusterip
+# spec:
+#   initContainers:
+#   - name: init-myservice
+#     image: busybox:1.28
+#     command: ['sh', '-c', "sleep 5"]
+#   containers:
+#   - name: nginx-container
+#     image: nginx
+# ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clusterip-svc
+  labels:
+    k8s-app: nginx-app-ds-clusterip
+spec:
+  ipFamilyPolicy: PreferDualStack
+  type: ClusterIP
+  ports:
+    - targetPort: 80
+      port: 80
+      protocol: TCP
+  selector:
+    k8s-app: nginx-app-ds-clusterip
