@@ -208,16 +208,16 @@ func RunCommand(cmd string) (string, error) {
 }
 
 func UpgradeCluster(serverNodenames []string, agentNodenames []string) error {
+	const provision = "RELEASE_CHANNEL=commit vagrant provision "
 	for _, nodeName := range serverNodenames {
-		cmd := "RELEASE_CHANNEL=commit vagrant provision " + nodeName
-		fmt.Println(cmd)
+		cmd := provision + nodeName
 		if out, err := RunCommand(cmd); err != nil {
 			fmt.Println("Error Upgrading Cluster", out)
 			return err
 		}
 	}
 	for _, nodeName := range agentNodenames {
-		cmd := "RELEASE_CHANNEL=commit vagrant provision " + nodeName
+		cmd := provision + nodeName
 		if _, err := RunCommand(cmd); err != nil {
 			fmt.Println("Error Upgrading Cluster", err)
 			return err
