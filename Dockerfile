@@ -106,7 +106,7 @@ RUN CHART_VERSION="v3.19.2-205"               CHART_FILE=/charts/rke2-calico.yam
 RUN CHART_VERSION="v1.0.101"                  CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.16.401-build2021111901"  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="4.0.306"                   CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
-RUN CHART_VERSION="v1.21.9-rke2r1-build2022011901" \
+RUN CHART_VERSION="v1.21.10-rke2r1-build2022021701" \
     CHART_PACKAGE="rke2-kube-proxy-1.21"      CHART_FILE=/charts/rke2-kube-proxy.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="2.11.100-build2021111904"  CHART_FILE=/charts/rke2-metrics-server.yaml CHART_BOOTSTRAP=false  /charts/build-chart.sh
 RUN CHART_VERSION="v3.7.1-build2021111906"    CHART_FILE=/charts/rke2-multus.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
