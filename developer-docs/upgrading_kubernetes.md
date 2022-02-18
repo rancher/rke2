@@ -54,10 +54,10 @@ Once these changes are made, submit a PR for review and let CI complete. When CI
 
 Next, we need to create a release candidate (RC). The Drone (CI) process that builds the release itself can be monitored [here](https://drone-publish.rancher.io/rancher/rke2/).
 
-1. Click "Releases"
-1. Click "Draft new release"
-1. Select the target branch
-1. Enter the desired version into the "Tag version" box. 
+* Click "Releases"
+* Click "Draft new release"
+* Select the target branch
+* Enter the desired version into the "Tag version" box. 
     * Example tag: `v1.21.4+rke2r2`
     * **NOTE** Make sure to create the tag against the correct release branch. In the example above, that would map to release branch `release-1.21`.
 
@@ -71,10 +71,10 @@ _**Note: Once an RC is released for QA, the release branch associated with the R
 
 Along with creating a new RKE2 release, we need to trigger a new build of the associated RPM. These are found in the [rke2-packaging](https://github.com/rancher/rke2-packaging) repository. We need to create a new release here and the process is nearly identical to the above steps. The Drone (CI) process that builds the release itself can be monitored [here](https://drone-publish.rancher.io/rancher/rke2-packaging/).
 
-1. Click "Releases"
-1. Click "Draft new release"
-1. Select the target branch
-1. Enter the desired version into the "Tag version" box. 
+* Click "Releases"
+* Click "Draft new release"
+* Select the target branch
+* Enter the desired version into the "Tag version" box. 
     * Example tag: `v1.21.4-rc1+rke2r1.testing.0`
     * The first part of the tag here must match the tag created in the RKE2 repo.
 
