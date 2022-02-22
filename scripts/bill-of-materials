@@ -1,92 +1,133 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
 set -ex
 
-VERSION_REGEX="/(v?([0-9]+(\.[0-9]+)*?)(-([0-9]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)|(-?([A-Za-z\-~]+[0-9A-Za-z\-~]*(\.[0-9A-Za-z\-~]+)*)))?)$/"
-TMP_OUT_FILE="./bill-of-materials-tmp.txt"
-BILL_OF_MATERIALS_OUT_FILE=${BILL_OF_MATERIALS_OUT_FILE:-"./bill-of-materials.txt"}
-IMAGES_ARRAY=("")
 
-# {1} is the filename
-lookupLibrariesInFile(){
-    awk "${VERSION_REGEX}" "${1}" >> $TMP_OUT_FILE
-    echo "awk ${VERSION_REGEX} ${1} >> $TMP_OUT_FILE"
+cd "$(dirname $0)/.."
+
+downloadSbomSpdxForModules(){
+    SBOM_URL="https://github.com/spdx/spdx-sbom-generator/releases/download/v0.0.10/spdx-sbom-generator-v0.0.10-linux-amd64.tar.gz"
+    wget -c "${SBOM_URL}" -O - | tar -xz  -C "bin/"
+    # downloaded file: bin/spdx-sbom-generator
 }
 
-# {1} value to find
-appendUniqueValueImagesArr(){
-    if [[ ! " ${IMAGES_ARRAY[*]} " =~ " ${1} " ]]; then
-        IMAGES_ARRAY+=("$1")
-        # IMAGES_ARRAY="${IMAGES_ARRAY}$1"
-        echo "$1" >> $TMP_OUT_FILE
-    fi
+getFilesToSetHeaderOnly(){
+    find . -type f \( \
+    -name 'Makefile'  \
+    -o -name '*.yaml' \
+    -o -name '*.yml' \
+    -o -name '*.py' \
+    -o -name '*.go' \
+    -o -name '*.rb' \
+    -o -name '*.md' \
+    -o -name '*.json' \
+    -o -name '.drone.json' \
+    -o -name 'Dockerfile' \) >> files_to_header
+
+    # Done this was as find command does not include hidden directories
+    find .github -type f \( -name '*.yml' -o -name '*.yaml' -o -name '*.md' \) >> files_to_header
+
+    tr '\n' ' '< files_to_header >> files_to_header_tmp 
+    mv files_to_header_tmp files_to_header
 }
 
-# {1} fileName Destination
-fillEnvVarsToFile(){
-    if [ "${ETCD_VERSION}" = "" ]; then
-        . ./version.sh
-    fi
-    envsubst < $TMP_OUT_FILE > "$BILL_OF_MATERIALS_OUT_FILE"
-    rm $TMP_OUT_FILE
-    awk "!/#/" "${BILL_OF_MATERIALS_OUT_FILE}" > tmpfile && mv tmpfile "${BILL_OF_MATERIALS_OUT_FILE}"
+getFilesForExplicitLicense(){
+    # files with explicit license
+    find . -type f \( \
+    -name '*.txt'  \
+    -o -name '*.tmpl' \
+    -o -name '*.ps*' \
+    -o -name '*.exe' \
+    -o -name '*.tar*' \
+    -o -name '*.gz' \
+    -o -name '*.env' \
+    -o -name '*.sh' \
+    -o -name '*.conf*' \
+    -o -name '*.service' \
+    -o -name '*.png' \
+    -o -name '*.pdf' \
+    -o -name '*.svg' \
+    -o -name '*binary*' \
+    -o -name '*bundle*' \
+    -o -name '*manifest*' \
+    -o -name '*-image*' \
+    -o -name '*test-*' \
+    -o -name '*Vagrantfile' \
+    -o -name '*dev-*' \
+    -o -name '*.flake8' \
+    -o -name 'rke2' \
+    -o -name 'CNAME' \
+    -o -name '.codespellignore' \
+    -o -name '.dapper' \
+    -o -name '.dockerignore' \
+    -o -name '.gitignore' \
+    -o -name 'LICENSE' \
+    -o -name 'CODEOWNERS' \
+    -o -name 'MAINTAINERS' \
+    -o -name 'Dockerfile.*' \
+    -o -name 'go.*' \) >> files_explicit_license
+
+    {
+        find .vagrant -name '*.*'
+        find scripts -not -name 'airgap'
+        find bin -name '*.*'
+        find tests/vagrant/install/ubuntu-focal/.vagrant -name '*.*'
+    } >> files_explicit_license
+
+
+    tr '\n' ' ' < files_explicit_license >> files_explicit_license_tmp
+    mv files_explicit_license_tmp files_explicit_license
+
+    FILES_TO_ADD_HEADER="$(cat files_to_header)"
+    FILES_EXPLICIT_LICENSE="$(cat files_explicit_license)"
+
+    rm files_explicit_license files_to_header
 }
 
-prettyOutfile(){
-    sed -e 's/^[ \t]*//;s/[ \t]*$//' -e 's/-X //g' < ./bill-of-materials.txt > tmpfile && mv tmpfile bill-of-materials.txt
-}
+downloadSbomSpdxForModules
 
-# {1} title
-addTitle(){
-    echo "" >> $TMP_OUT_FILE && echo "" >> $TMP_OUT_FILE
-    echo "${1}" >>$TMP_OUT_FILE && echo "" >> $TMP_OUT_FILE
-}
+# generate go.mod spdx from current project
+ ./bin/spdx-sbom-generator --include-license-text  2> err-spdx-gomod.txt
 
-cleanVariables(){
-    unset IMAGES_ARRAY VERSION_REGEX TMP_OUT_FILE row_arr img_arr
-}
+HAS_ERR=$(grep "Command has completed with errors" "err-spdx-gomod.txt")
+if [ "${HAS_ERR}" -eq "" ]
+then
+    mv bom-go-mod.spdx "dist/artifacts/SBOM_SPDX_${PROJECT_NAME}_GOMOD_$(date '+%Y%m%d').spdx" 
+else
+    echo "ERROR: SBOM-SPDX-TOOL error while generating SPDX for go.mod" 
+    exit 1
+fi
 
-addTitle "BUILD IMAGES"
+PROJECT_SPDX_LICENSE_ID="Apache-2.0"
+PROJECT_COPYRIGHT="SUSE <suse-team@suse.com>"
+PROJECT_NAME="rke2"
 
-# loop over script files in build folder to map all libraries and versions from build process
-while read -r line; do
-    if [ -f "../$line" ]; then
-        lookupLibrariesInFile "../$line"
-    fi
-done < "./build"
+rm files_to_header files_explicit_license err-spdx-gomod.txt && touch files_to_header files_explicit_license
 
-addTitle "GO MOD"
-cat ../go.mod >>  $TMP_OUT_FILE
-addTitle "IMAGE SOURCES"
+getFilesToSetHeaderOnly
 
-# Get from developer-tools/image_resources.md file
-while read -r line; do
+getFilesForExplicitLicense
 
-    #Read table only
-    if echo "$line" | grep -q "[a-zA-Z]*\/"; then
+# starts the SPDX tool for the current project
+docker pull fsfe/reuse
+
+docker run --rm --volume "$(pwd)":/data fsfe/reuse addheader \
+--copyright="${PROJECT_COPYRIGHT}" --license="${PROJECT_SPDX_LICENSE_ID}" \
+${FILES_TO_ADD_HEADER}
+
+docker run --rm --volume "$(pwd)":/data fsfe/reuse addheader \
+--copyright="${PROJECT_COPYRIGHT}" --license="${PROJECT_SPDX_LICENSE_ID}" --explicit-license \
+${FILES_EXPLICIT_LICENSE}
+
+echo "${PROJECT_SPDX_LICENSE_ID} successfully added to the project"
+
+if docker run --rm --volume "$(pwd)":/data fsfe/reuse lint | grep -q 'Congratulations! Your project is compliant'; then
     
-        # Split table into array
-        IFS='|' read -r -a row_arr <<<"$line"
-
-        # Validate row Items  
-        # chart | image | buildRepo | SourceImages | Hardened
-
-        appendUniqueValueImagesArr "${row_arr[2]}"
-
-        if echo "${row_arr[3]}" | grep -q "[a-zA-Z]*\/"; then
-            appendUniqueValueImagesArr "${row_arr[3]}"
-        fi
-
-        if [ "${row_arr[4]}" != "" ]; then
-            new=$(echo "${row_arr[4]}" | sed "s|<br>|;|g" | sed "s|‣||g")
-
-            IFS=';' read -r -a img_arr <<<"$new"
-
-            for si in "${img_arr[@]}"; do
-                appendUniqueValueImagesArr "${si}"
-            done
-        fi 
+    echo "Downloading licences"
+    docker run --rm --volume "$(pwd)":/data fsfe/reuse download --all
+    if [ "$(ls LICENSES | wc -l)" -gt "0" ];then
+        docker run --rm --volume "$(pwd)":/data fsfe/reuse --include-submodules spdx -o "dist/artifacts/SBOM_SPDX_${PROJECT_NAME}_$(date '+%Y%m%d').spdx"
+        exit 0
     fi
+fi 
 
-done < "../developer-docs/image_sources.md"
-
-fillEnvVarsToFile && prettyOutfile
+exit 1

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2022 SUSE <suse-team@suse.com>
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Building RKE2
 
 ## Prerequisites
