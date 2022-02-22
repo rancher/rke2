@@ -48,7 +48,6 @@ nav:
   - Security:
     - security/about_hardened_images.md
     - security/hardening_guide.md
-    - security/cis_self_assessment15.md
     - security/cis_self_assessment16.md
     - security/fips_support.md
     - security/policies.md
