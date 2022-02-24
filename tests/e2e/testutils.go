@@ -204,7 +204,7 @@ func ParsePods(kubeconfig string, print bool) ([]Pod, error) {
 
 // RunCmdOnNode executes a command from within the given node
 func RunCmdOnNode(cmd string, nodename string) (string, error) {
-	runcmd := "vagrant ssh -c " + cmd + " " + nodename
+	runcmd := "vagrant ssh -c \"" + cmd + "\" " + nodename
 	return RunCommand(runcmd)
 }
 

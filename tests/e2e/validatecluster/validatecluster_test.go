@@ -83,7 +83,7 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 		}, "240s", "5s").Should(ContainSubstring("test-clusterip"))
 
 		clusterip, _ := e2e.FetchClusterIP(kubeConfigFile, "nginx-clusterip-svc")
-		cmd := "\"curl -L --insecure http://" + clusterip + "/name.html\""
+		cmd := "curl -L --insecure http://" + clusterip + "/name.html"
 		for _, nodeName := range serverNodeNames {
 			Expect(e2e.RunCmdOnNode(cmd, nodeName)).Should(ContainSubstring("test-clusterip"), "failed cmd: "+cmd)
 		}
