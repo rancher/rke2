@@ -43,7 +43,7 @@ This will take a few minutes for [CI](https://drone-pr.rancher.io) to run but up
 
 The following files have references that will need to be updated in the respective locations. Replace the found version with the desired version. There are also references in documentation that should be updated and kept in sync. 
 
-* Dockerfile: `FROM rancher/k3s:v1.22.4-k3s1 AS k3s`
+* Dockerfile: `FROM rancher/hardened-kubernetes:v1.23.4-rke2r1-build20220217 AS kubernetes`
 * version.sh: `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.22.4}`
 * In v1.19 and older, pkg/images/image.go: `KubernetesVersion== "v1.19.15-rke2r1-build20210916"`
 * go.mod: ensure that the associated k3s version is used.
@@ -208,7 +208,53 @@ After promoting the release to stable, we need to update the channel server. Thi
 
 ## Release Process Overview
 
-![Upgrading Kubernetes](upgrading_kubernetes.svg)
+```mermaid
+flowchart TB;
+ prerelease([Create cut release ticket])
+
+ subgraph rc[RKE2 Release Candidate Flow]
+   direction LR;
+   cut_k8s([Cut hardened<br/>Kubernetes release])-->|For Kubernetes<br/>1.20 and 1.21|update_kubeproxy([Update kubeproxy<br/>in RKE2-charts]);
+   update_kubeproxy-->|Once RKE2-charts<br/>index refreshes|update_rke_refs;
+   cut_k8s-->|From Kubernetes<br/>1.22 onwards|update_rke_refs([Update RKE2 components<br/>version references]);
+   update_rke_refs-->|Once RKE2 PR's<br/>are approved|cut_rke2_rc([Cut RKE2<br/>release candidate]);
+   cut_rke2_rc-->cut_rke2_rc_rpm([Cut RKE2<br/>testing rpm's]);
+ end
+
+ subgraph kdm_rc[Rancher KDM RC Release Flow]
+   direction LR;
+   kdm_channel_rc([Update RKE RC release references])-->kdm_generated_data_rc([Update KDM generated data]);
+ end
+
+ subgraph primary_release[RKE2 Primary Release Flow]
+   direction LR;
+   cut_rke([Cut RKE2 primary release])-->cut_rke2_latest_rpm([Cut RKE2 latest rpm's]);
+   cut_rke2_latest_rpm-->update_release_notes([Update release notes]);
+   update_release_notes-->|At least 24hrs<br/>have passed|GA([Set RKE2 releases as generally available]);
+ end
+
+ subgraph kdm_stable[Rancher KDM Stable Release Flow]
+   direction LR;
+   kdm_channel_stable([Update RKE release references])-->kdm_generated_data_stable([Update KDM generated data]);
+ end
+
+ subgraph stable_release[RKE2 Stable Release Flow]
+   direction LR;
+   cut_rke_stable_rpm([Cut RKE2 stable rpm])-->rke_stable([Update RKE2 channel server configurations]);
+ end
+
+ prerelease-.->|Once Kubernetes release<br/>is generally available|rc;
+ rc-->kdm_rc;
+ kdm_rc-->|Once QA approves RKE2 release candidates|primary_release;
+ primary_release-->kdm_stable;
+ kdm_stable-->|Once QA approves RKE2 releases|stable_release;
+
+ classDef edgeLabel fill:#e8e8e8,color:#333,background-color:#e8e8e8;
+ classDef default fill:#fff,stroke:#35b9ab,stroke-width:5px,color:#333;
+ classDef section fill:#fff,stroke:#bbb,stroke-width:1px,color:#173f4f;
+
+ class rc,primary_release,kdm_rc,kdm_stable,stable_release section;
+```
 
 Be sure to reference the sections above for further detail on each step.
 
