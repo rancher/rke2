@@ -56,9 +56,12 @@ Next, we need to create a release candidate (RC). The Drone (CI) process that bu
 
 * Click "Releases"
 * Click "Draft new release"
+* Select the target branch
 * Enter the desired version into the "Tag version" box. 
     * Example tag: `v1.21.4+rke2r2`
     * **NOTE** Make sure to create the tag against the correct release branch. In the example above, that would map to release branch `release-1.21`.
+
+Ensure "prerelease" checkbox is selected.
 
 CI will run and build the release assets as well as kick off an image build for [RKE2 Upgrade images](https://hub.docker.com/r/rancher/rke2-upgrade/tags?page=1&ordering=last_updated).
 
@@ -70,6 +73,7 @@ Along with creating a new RKE2 release, we need to trigger a new build of the as
 
 * Click "Releases"
 * Click "Draft new release"
+* Select the target branch
 * Enter the desired version into the "Tag version" box. 
     * Example tag: `v1.21.4-rc1+rke2r1.testing.0`
     * The first part of the tag here must match the tag created in the RKE2 repo.
