@@ -1,12 +1,12 @@
 ENV['VAGRANT_NO_PARALLEL'] = 'no'
 NODE_ROLES = (ENV['NODE_ROLES'] ||
-  ["server-0", "server-1", "server-2", "agent-0" ])
+  ["server-0", "server-1", "server-2", "agent-0"])
 NODE_BOXES = (ENV['NODE_BOXES'] ||
   ['generic/ubuntu2004', 'generic/ubuntu2004', 'generic/ubuntu2004', 'generic/ubuntu2004'])
-GITHUB_BRANCH = (ENV['GITHUB_BRANCH'] || "master")
+RELEASE_CHANNEL = (ENV['RELEASE_CHANNEL'] || "latest")
 RELEASE_VERSION = (ENV['RELEASE_VERSION'] || "")
 NODE_CPUS = (ENV['NODE_CPUS'] || 2).to_i
-NODE_MEMORY = (ENV['NODE_MEMORY'] || 2048).to_i
+NODE_MEMORY = (ENV['NODE_MEMORY'] || 1024).to_i
 # Virtualbox >= 6.1.28 require `/etc/vbox/network.conf` for expanded private networks 
 NETWORK_PREFIX = "10.10.10"
 install_type = ""
@@ -25,13 +25,17 @@ def provision(vm, roles, role_num, node_num)
   
   if !RELEASE_VERSION.empty?
     install_type = "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"
-  else
-    # Grabs the last 5 commit SHA's from the given branch, then purges any commits that do not have a passing CI build
-    vm.provision "shell", path: "../scripts/latest_commit.sh", args: [GITHUB_BRANCH, "/tmp/rke2_commits"]
+  elsif RELEASE_CHANNEL == "commit"
+    vm.provision "shell", path: "../scripts/latest_commit.sh", args: ["master", "/tmp/rke2_commits"]
     install_type = "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
+  else
+    vm.provision "latest version", type: "shell",
+      inline: "curl -w '%{url_effective}' -L -s -S https://update.rke2.io/v1-release/channels/#{RELEASE_CHANNEL} -o /dev/null | sed -e 's|.*/||'  &> /tmp/rke2_version"
+    install_type = "INSTALL_RKE2_VERSION=$(cat\ /tmp/rke2_version)"
   end
+
   vm.provision "shell", inline: "ping -c 2 rke2.io"
-  
+
   if roles.include?("server") && role_num == 0
     vm.provision :rke2, run: 'once' do |rke2|
       rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
@@ -68,6 +72,8 @@ def provision(vm, roles, role_num, node_num)
     end
   end
 end
+
+
 
 Vagrant.configure("2") do |config|
   config.vagrant.plugins = ["vagrant-rke2", "vagrant-reload", "vagrant-libvirt"]
