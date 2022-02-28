@@ -1,7 +1,6 @@
 package e2e
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -49,6 +48,7 @@ func CreateCluster(nodeOS string, serverCount int, agentCount int, installType s
 		agentNodeNames = append(agentNodeNames, "agent-"+strconv.Itoa(i))
 	}
 	nodeRoles := strings.Join(serverNodeNames, " ") + " " + strings.Join(agentNodeNames, " ")
+	nodeRoles = strings.TrimSpace(nodeRoles)
 	nodeBoxes := strings.Repeat(nodeOS+" ", serverCount+agentCount)
 	nodeBoxes = strings.TrimSpace(nodeBoxes)
 	cmd := fmt.Sprintf("NODE_ROLES=\"%s\" NODE_BOXES=\"%s\" %s vagrant up &> vagrant.log", nodeRoles, nodeBoxes, installType)
@@ -84,7 +84,16 @@ func DestroyCluster() error {
 	return os.Remove("vagrant.log")
 }
 
-func FetchClusterIP(kubeconfig string, servicename string) (string, error) {
+func FetchClusterIP(kubeconfig string, servicename string, dualStack bool) (string, error) {
+	if dualStack {
+		cmd := "kubectl get svc " + servicename + " -o jsonpath='{.spec.clusterIPs}' --kubeconfig=" + kubeconfig
+		res, err := RunCommand(cmd)
+		if err != nil {
+			return res, err
+		}
+		res = strings.ReplaceAll(res, "\"", "")
+		return strings.Trim(res, "[]"), nil
+	}
 	cmd := "kubectl get svc " + servicename + " -o jsonpath='{.spec.clusterIP}' --kubeconfig=" + kubeconfig
 	return RunCommand(cmd)
 }
@@ -211,12 +220,8 @@ func RunCmdOnNode(cmd string, nodename string) (string, error) {
 // RunCommand execute a command on the host
 func RunCommand(cmd string) (string, error) {
 	c := exec.Command("bash", "-c", cmd)
-	var out bytes.Buffer
-	c.Stdout = &out
-	if err := c.Run(); err != nil {
-		return "", err
-	}
-	return out.String(), nil
+	out, err := c.CombinedOutput()
+	return string(out), err
 }
 
 func UpgradeCluster(serverNodenames []string, agentNodenames []string) error {

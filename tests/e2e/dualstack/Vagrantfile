@@ -52,6 +52,7 @@ def provision(vm, roles, role_num, node_num)
       rke2.config = <<~YAML
         write-kubeconfig-mode: 0644
         node-external-ip: #{node_ip4},#{node_ip6}
+        node-ip: #{node_ip4},#{node_ip6}
         token: vagrant-rke2
         cluster-cidr: 10.42.0.0/16,2001:cafe:42:0::/56
         service-cidr: 10.43.0.0/16,2001:cafe:42:1::/112
@@ -66,6 +67,7 @@ def provision(vm, roles, role_num, node_num)
       rke2.config = <<~YAML
         write-kubeconfig-mode: 0644
         node-external-ip: #{node_ip4},#{node_ip6}
+        node-ip: #{node_ip4},#{node_ip6}
         server: https://#{NETWORK4_PREFIX}.100:9345
         token: vagrant-rke2
         cluster-cidr: 10.42.0.0/16,2001:cafe:42:0::/56

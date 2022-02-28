@@ -15,10 +15,45 @@ import (
 // Valid nodeOS: generic/ubuntu2004, opensuse/Leap-15.3.x86_64
 var nodeOS = flag.String("nodeOS", "generic/ubuntu2004", "VM operating system")
 var serverCount = flag.Int("serverCount", 3, "number of server nodes")
-var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
+var agentCount = flag.Int("agentCount", 0, "number of agent nodes")
 
 // Valid format: RELEASE_VERSION=v1.22.6+rke2r1 or nil for latest commit from master
 var installType = flag.String("installType", "", "a string")
+
+type objIP struct {
+	name string
+	ipv4 string
+	ipv6 string
+}
+
+func getPodIPs(kubeConfigFile string) ([]objIP, error) {
+	cmd := `kubectl get pods -A -o=jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.podIPs[*].ip}{"\n"}{end}' --kubeconfig=` + kubeConfigFile
+	return getObjIPs(cmd)
+}
+func getNodeIPs(kubeConfigFile string) ([]objIP, error) {
+	cmd := `kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.addresses[?(@.type == "ExternalIP")].address}{"\n"}{end}' --kubeconfig=` + kubeConfigFile
+	return getObjIPs(cmd)
+}
+
+func getObjIPs(cmd string) ([]objIP, error) {
+	var objIPs []objIP
+	res, err := e2e.RunCommand(cmd)
+	if err != nil {
+		return nil, err
+	}
+	objs := strings.Split(res, "\n")
+	objs = objs[:len(objs)-1]
+
+	for _, obj := range objs {
+		fields := strings.Fields(obj)
+		if len(fields) > 2 {
+			objIPs = append(objIPs, objIP{name: fields[0], ipv4: fields[1], ipv6: fields[2]})
+		} else {
+			return nil, fmt.Errorf("%s does not have IPv4 and Ipv6 assigned", obj)
+		}
+	}
+	return objIPs, nil
+}
 
 func Test_E2EDualStack(t *testing.T) {
 	flag.Parse()
@@ -74,19 +109,69 @@ var _ = Describe("Verify DualStack Configuration", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
+	It("Verifies that each node has IPv4 and IPv6", func() {
+		for _, node := range serverNodeNames {
+			cmd := fmt.Sprintf("kubectl get node %s -o jsonpath='{.status.addresses}' --kubeconfig=%s | jq '.[] | select(.type == \"ExternalIP\") | .address'",
+				node, kubeConfigFile)
+			res, err := e2e.RunCommand(cmd)
+			Expect(err).NotTo(HaveOccurred(), res)
+			Expect(res).Should(ContainSubstring("10.10.10"))
+			Expect(res).Should(ContainSubstring("a11:decf:c0ff"))
+		}
+	})
+	It("Verifies that each pod has IPv4 and IPv6", func() {
+		podIPs, err := getPodIPs(kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+		for _, pod := range podIPs {
+			Expect(pod.ipv4).Should(Or(ContainSubstring("10.10.10"), ContainSubstring("10.42.")), pod.name)
+			Expect(pod.ipv6).Should(Or(ContainSubstring("a11:decf:c0ff"), ContainSubstring("2001:cafe:42")), pod.name)
+		}
+	})
+
 	It("Verifies ClusterIP Service", func() {
-		_, err := e2e.DeployWorkload("dualstack-clusterip.yaml", kubeConfigFile)
+		_, err := e2e.DeployWorkload("dualstack_clusterip.yaml", kubeConfigFile)
 		Expect(err).NotTo(HaveOccurred())
 		Eventually(func() (string, error) {
-			cmd := "kubectl get pods -o=name -l app=clusterip-demo --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
+			cmd := "kubectl get pods -o=name -l k8s-app=nginx-app-clusterip --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
 			return e2e.RunCommand(cmd)
-		}, "240s", "5s").Should(ContainSubstring("test-clusterip"))
+		}, "240s", "5s").Should(ContainSubstring("ds-clusterip-pod"))
 
-		clusterips, _ := e2e.FetchClusterIP(kubeConfigFile, "nginx-clusterip-svc")
-
-		cmd := "\"curl -L --insecure http://" + clusterips + "/name.html\""
-		for _, nodeName := range serverNodeNames {
-			Expect(e2e.RunCmdOnNode(cmd, nodeName)).Should(ContainSubstring("test-clusterip"), "failed cmd: "+cmd)
+		// Checks both IPv4 and IPv6
+		clusterips, err := e2e.FetchClusterIP(kubeConfigFile, "ds-clusterip-svc", true)
+		Expect(err).NotTo(HaveOccurred())
+		for _, ip := range strings.Split(clusterips, ",") {
+			if strings.Contains(ip, "::") {
+				ip = "[" + ip + "]"
+			}
+			pods, err := e2e.ParsePods(kubeConfigFile, false)
+			Expect(err).NotTo(HaveOccurred())
+			for _, pod := range pods {
+				if !strings.HasPrefix(pod.Name, "ds-clusterip-pod") {
+					continue
+				}
+				cmd := fmt.Sprintf("kubectl exec %s --kubeconfig=%s -- /bin/bash -c ' curl -L --insecure http://%s'",
+					pod.Name, kubeConfigFile, ip)
+				Expect(e2e.RunCommand(cmd)).Should(ContainSubstring("Welcome to nginx!"), "failed cmd: "+cmd)
+			}
+		}
+	})
+	It("Verifies NodePort Service", func() {
+		_, err := e2e.DeployWorkload("dualstack_nodeport.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+		nodeIPs, err := getNodeIPs(kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+		cmd := "kubectl get service ds-nodeport-svc --kubeconfig=" + kubeConfigFile + " --output jsonpath=\"{.spec.ports[0].nodePort}\""
+		nodeport, err := e2e.RunCommand(cmd)
+		Expect(err).NotTo(HaveOccurred(), "failed cmd: "+cmd)
+		for _, node := range nodeIPs {
+			cmd = "curl -L --insecure http://" + node.ipv4 + ":" + nodeport + "/name.html"
+			Eventually(func() (string, error) {
+				return e2e.RunCommand(cmd)
+			}, "5s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
+			cmd = "curl -L --insecure http://[" + node.ipv6 + "]:" + nodeport + "/name.html"
+			Eventually(func() (string, error) {
+				return e2e.RunCommand(cmd)
+			}, "5s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
 		}
 	})
 
