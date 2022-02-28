@@ -14,7 +14,9 @@ RUN set -x \
     gcc \
     bsd-compat-headers \
     py-pip \
-    pigz
+    pigz \
+    tar \
+    yq
 
 # Dapper/Drone/CI environment
 FROM build AS dapper
@@ -93,11 +95,12 @@ VOLUME /var/lib/rancher/k3s
 
 FROM build AS charts
 ARG CHART_REPO="https://rke2-charts.rancher.io"
+ARG KUBERNETES_VERSION=""
 ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
 RUN CHART_VERSION="1.11.101"                  CHART_FILE=/charts/rke2-cilium.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="v3.21.2-build2022020409"   CHART_FILE=/charts/rke2-canal.yaml          CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="v3.21.4-build2022020801"   CHART_FILE=/charts/rke2-canal.yaml          CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="v3.22.001"                 CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="v1.0.202"                  CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.16.401-build2021111901"  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
@@ -114,7 +117,7 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
-FROM rancher/hardened-kubernetes:v1.23.3-rke2r1-build20220126 AS kubernetes
+FROM rancher/hardened-kubernetes:v1.23.4-rke2r1-build20220217 AS kubernetes
 FROM rancher/hardened-containerd:v1.5.9-k3s1-build20220112 AS containerd
 FROM rancher/hardened-crictl:v1.22.0-build20211118 AS crictl
 FROM rancher/hardened-runc:v1.0.3-build20211210 AS runc

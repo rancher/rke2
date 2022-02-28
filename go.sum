@@ -1024,8 +1024,8 @@ github.com/rancher/wharfie v0.5.2 h1:2XwUZWEj06XVb7kJBvPI/Dg8rBd5c1jJ0TfjexQgSAQ
 github.com/rancher/wharfie v0.5.2/go.mod h1:Ebpai7digxegLroBseeC54XRBt5we3DgFS6kAE2ho+o=
 github.com/rancher/wins v0.1.1 h1:WyqxkAyCstwuv+04tdJiGODXv0De/lOyRHV6MJVfrUo=
 github.com/rancher/wins v0.1.1/go.mod h1:SdPsn8b5PoVj1ozvjRc8VNyjNvOGSoQy4HkN5Q6yTqo=
-github.com/rancher/wrangler v0.8.10 h1:GfM3dZyw3TconwqknRm6YO/wiKEbUIGl0/HWVqBy658=
-github.com/rancher/wrangler v0.8.10/go.mod h1:Lte9WjPtGYxYacIWeiS9qawvu2R4NujFU9xuXWJvc/0=
+github.com/rancher/wrangler v0.8.11-0.20220211163748-d5a8ee98be5f h1:0Z+sioLE7Ai0PLiwG81Lmh2kMFnT78cKUApArXQECzY=
+github.com/rancher/wrangler v0.8.11-0.20220211163748-d5a8ee98be5f/go.mod h1:Lte9WjPtGYxYacIWeiS9qawvu2R4NujFU9xuXWJvc/0=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=
 github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446/go.mod h1:uYEyJGbgTkfkS4+E/PavXkNJcbFIpEtjt2B0KDQ5+9M=
 github.com/robfig/cron/v3 v3.0.1 h1:WdRxkvbJztn8LMz/QEvLN5sBU+xKpSqwwUO1Pjr4qDs=
