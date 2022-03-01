@@ -155,14 +155,34 @@ var _ = Describe("Verify DualStack Configuration", func() {
 			}
 		}
 	})
+	It("Verifies Ingress", func() {
+		_, err := e2e.DeployWorkload("dualstack_ingress.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred(), "Ingress manifest not deployed")
+		cmd := "kubectl get ingress ds-ingress --kubeconfig=" + kubeConfigFile + " -o jsonpath=\"{.spec.rules[*].host}\""
+		hostName, err := e2e.RunCommand(cmd)
+		Expect(err).NotTo(HaveOccurred(), "failed cmd: "+cmd)
+		nodeIPs, err := getNodeIPs(kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred(), "failed cmd: "+cmd)
+		for _, node := range nodeIPs {
+			cmd := fmt.Sprintf("curl  --header host:%s http://%s/name.html", hostName, node.ipv4)
+			Eventually(func() (string, error) {
+				return e2e.RunCommand(cmd)
+			}, "10s", "2s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
+			cmd = fmt.Sprintf("curl  --header host:%s http://[%s]/name.html", hostName, node.ipv6)
+			Eventually(func() (string, error) {
+				return e2e.RunCommand(cmd)
+			}, "5s", "1s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
+		}
+	})
+
 	It("Verifies NodePort Service", func() {
 		_, err := e2e.DeployWorkload("dualstack_nodeport.yaml", kubeConfigFile)
-		Expect(err).NotTo(HaveOccurred())
-		nodeIPs, err := getNodeIPs(kubeConfigFile)
 		Expect(err).NotTo(HaveOccurred())
 		cmd := "kubectl get service ds-nodeport-svc --kubeconfig=" + kubeConfigFile + " --output jsonpath=\"{.spec.ports[0].nodePort}\""
 		nodeport, err := e2e.RunCommand(cmd)
 		Expect(err).NotTo(HaveOccurred(), "failed cmd: "+cmd)
+		nodeIPs, err := getNodeIPs(kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
 		for _, node := range nodeIPs {
 			cmd = "curl -L --insecure http://" + node.ipv4 + ":" + nodeport + "/name.html"
 			Eventually(func() (string, error) {

@@ -7,7 +7,6 @@ GITHUB_BRANCH = (ENV['GITHUB_BRANCH'] || "master")
 RELEASE_VERSION = (ENV['RELEASE_VERSION'] || "")
 NODE_CPUS = (ENV['NODE_CPUS'] || 2).to_i
 NODE_MEMORY = (ENV['NODE_MEMORY'] || 2048).to_i
-# Virtualbox >= 6.1.28 require `/etc/vbox/network.conf` for expanded private networks 
 NETWORK4_PREFIX = "10.10.10"
 NETWORK6_PREFIX = "a11:decf:c0ff:ee"
 install_type = ""
@@ -15,10 +14,9 @@ install_type = ""
 def provision(vm, roles, role_num, node_num)
   vm.box = NODE_BOXES[node_num]
   vm.hostname = "#{roles[0]}-#{role_num}"
-  # An expanded netmask is required to allow VM<-->VM communication, virtualbox defaults to /32
   node_ip4 = "#{NETWORK4_PREFIX}.#{100+node_num}"
   node_ip6 = "#{NETWORK6_PREFIX}::#{10+node_num}"
-  # IPv6 will be auto assigned within the /64 subnet
+  # Only works with libvirt, which allows IPv4 + IPv6 on a single network/interface
   vm.network "private_network", 
     :ip => node_ip4,
     :netmask => "255.255.255.0",
