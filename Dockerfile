@@ -1,6 +1,6 @@
 ARG KUBERNETES_VERSION=dev
 # Build environment
-FROM rancher/hardened-build-base:v1.16.10b7 AS build
+FROM rancher/hardened-build-base:v1.16.14b7 AS build
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
 RUN set -x \
@@ -15,16 +15,11 @@ RUN set -x \
     bsd-compat-headers \
     py-pip \
     pigz \
-    tar
+    tar \
+    yq
     
 RUN if [ "${ARCH}" != "s390x" ]; then \
-    	apk --no-cache add mingw-w64-gcc yq; \
-    fi
-
-RUN if [ "${ARCH}" = "s390x" ]; then \
-        curl -LJO https://github.com/mikefarah/yq/releases/download/v4.6.1/yq_linux_s390x && \
-        mv yq_linux_s390x /usr/bin/yq && \
-        chmod +x /usr/bin/yq; \
+    	apk --no-cache add mingw-w64-gcc; \
     fi
 
 # Dapper/Drone/CI environment
