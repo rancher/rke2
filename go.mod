@@ -25,7 +25,7 @@ replace (
 	go.etcd.io/etcd/client/v3 => github.com/k3s-io/etcd/client/v3 v3.5.1-k3s1
 	go.etcd.io/etcd/etcdutl/v3 => github.com/k3s-io/etcd/etcdutl/v3 v3.5.1-k3s1
 	go.etcd.io/etcd/server/v3 => github.com/k3s-io/etcd/server/v3 v3.5.1-k3s1
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20210616094352-59db8d763f22
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200224152610-e50cd9704f63
 	google.golang.org/grpc => google.golang.org/grpc v1.38.0
 	gopkg.in/square/go-jose.v2 => gopkg.in/square/go-jose.v2 v2.2.2
