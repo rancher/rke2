@@ -41,13 +41,13 @@ Once enabled any created secret will be encrypted with this key. Note that if yo
 ## Secrets Encryption Tool
 _Available as of v1.21.8+rke2r1_
 
-RKE2 contains a utility tool `secrets-encrypt`, which enables automatic control over the following:
+RKE2 contains a utility subcommand `secrets-encrypt`, which allows administrators to perform the following tasks:
 
 - Adding new encryption keys
 - Rotating and deleting encryption keys
 - Reencrypting secrets
 
->**Warning:** Failure to follow proper procedure for rotating encryption keys can leave your cluster permanently corrupted. Proceed with caution.
+>**Warning:** Failure to follow proper procedure when rotating secrets encryption keys can cause permanent data loss. Proceed with caution.
 
 ### Single-Server Encryption Key Rotation
 
@@ -117,7 +117,7 @@ To rotate secrets encryption keys on HA setups:
 6. Sequentially Restart S1, S2, S3
 
 ### Secrets Encryption Status
-The secrets-encrypt tool includes a `status` command that displays information about the current status of secrets encryption on the node.
+The `secrets-encrypt status` subcommand displays information about the current status of secrets encryption on the node.
 
 An example of the command on a single-server node:  
 ```
@@ -154,5 +154,5 @@ Details on each section are as follows:
 - __Server Encryption Hashes__: Useful for HA clusters, this indicates whether all servers are on the same stage with their local files. This can be used to identify whether a restart of servers is required before proceeding to the next stage. In the HA example above, node-1 and node-2 have different hashes, indicating that they currently do not have the same encryption configuration. Restarting the servers will sync up their configuration.
 - __Key Table__: Summarizes information about the secrets encryption keys found on the node.  
   * __Active__: The "*" indicates which, if any, of the keys are currently used for secrets encryption. An active key is used by Kubernetes to encrypt any new secrets.
-  * __Key Type__: All keys using this tool are `AES-CBC` type. See more info [here.](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/#providers)
+  * __Key Type__: RKE2 only supports the `AES-CBC` key type. Find more info [here.](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/#providers)
   * __Name__: Name of the encryption key.  
