@@ -21,7 +21,7 @@ replace (
 	github.com/rancher/remotedialer => github.com/rancher/remotedialer v0.2.0
 	github.com/rancher/wrangler => github.com/rancher/wrangler v0.8.11-0.20220211163748-d5a8ee98be5f
 	go.etcd.io/etcd => github.com/k3s-io/etcd v0.5.0-alpha.5.0.20220113195313-6c2233a709e8
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20210225134936-a50acf3fe073
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200513103714-09dca8ec2884
 	google.golang.org/grpc => google.golang.org/grpc v1.27.1
 	gopkg.in/square/go-jose.v2 => gopkg.in/square/go-jose.v2 v2.2.2
@@ -64,7 +64,7 @@ require (
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.11.9
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.9-engine0.0.20220125211000-d3189ad239a5 // engine-1.21
+	github.com/rancher/k3s v1.21.10-engine0.0.20220228170551-b2222d0f0e6c // engine-1.21
 	github.com/rancher/wharfie v0.5.2
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
@@ -72,12 +72,12 @@ require (
 	github.com/urfave/cli v1.22.5
 	golang.org/x/sys v0.0.0-20211110154304-99a53858aa08
 	google.golang.org/grpc v1.42.0
-	k8s.io/api v0.21.9
-	k8s.io/apimachinery v0.21.9
-	k8s.io/apiserver v0.21.9
+	k8s.io/api v0.21.10
+	k8s.io/apimachinery v0.21.10
+	k8s.io/apiserver v0.21.10
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/cri-api v0.21.9
-	k8s.io/kubernetes v1.21.9
+	k8s.io/cri-api v0.21.10
+	k8s.io/kubernetes v1.21.10
 	k8s.io/utils v0.0.0-20210521133846-da695404a2bc
 	sigs.k8s.io/yaml v1.2.0
 )
