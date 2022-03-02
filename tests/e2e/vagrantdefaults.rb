@@ -7,5 +7,7 @@ def defaultOSConfigure(vm)
   if vm.box.include?("Leap")
     vm.provision "shell", inline: "zypper install -y jq", run: 'once'
   end
-  
+  if vm.box.include?("windows_2019")
+    vm.communicator = "winrm"
+  end
 end
