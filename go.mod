@@ -69,7 +69,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.1.1
 	github.com/onsi/gomega v1.17.0
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.23.5-0.20220228175623-0a56b29dec94 // master
+	github.com/k3s-io/k3s 9a849b1bb7c5cc20032a77aafa9db083a6f0443e // master
 	github.com/rancher/wharfie v0.5.2
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
