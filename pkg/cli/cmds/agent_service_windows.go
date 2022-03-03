@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package cmds
@@ -10,8 +11,8 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/rancher/k3s/pkg/cli/cmds"
-	"github.com/rancher/k3s/pkg/version"
+	"github.com/k3s-io/k3s/pkg/cli/cmds"
+	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/urfave/cli"
 	syswin "golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/svc/mgr"

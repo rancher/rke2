@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package windows
@@ -21,10 +22,10 @@ import (
 	"github.com/google/gopacket/routing"
 	wapi "github.com/iamacarpet/go-win64api"
 	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
-	util2 "github.com/rancher/k3s/pkg/agent/util"
-	"github.com/rancher/k3s/pkg/daemons/agent"
-	"github.com/rancher/k3s/pkg/daemons/config"
-	daemonconfig "github.com/rancher/k3s/pkg/daemons/config"
+	util2 "github.com/k3s-io/k3s/pkg/agent/util"
+	"github.com/k3s-io/k3s/pkg/daemons/agent"
+	"github.com/k3s-io/k3s/pkg/daemons/config"
+	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"

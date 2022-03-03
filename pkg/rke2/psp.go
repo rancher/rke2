@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rancher/k3s/pkg/cli/cmds"
+	"github.com/k3s-io/k3s/pkg/cli/cmds"
 
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"

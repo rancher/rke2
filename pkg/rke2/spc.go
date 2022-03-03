@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/pkg/errors"
-	"github.com/rancher/k3s/pkg/cli/cmds"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
