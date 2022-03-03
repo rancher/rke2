@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -ex
+
+[ -n "${GCLOUD_AUTH}" ] || {
+  exit 0
+}
+
+cd $(dirname $0)/..
+
+COMMIT="${DRONE_COMMIT:-$(git rev-parse HEAD)}"
+
+RPM_LIST=$(mktemp -t)
+RPM_DIR='./dist/rpms'
+
+find "${RPM_DIR}" -mindepth 2 -type f \( -name '*.rpm' -not -name '*.src.rpm' \) -print >"${RPM_LIST}"
+while IFS= read -r FILE; do
+  KIND=$(echo "${FILE}" | grep -oE 'rke2-\w+')
+  DISTRO=$(basename "${FILE%%x86_64*}")
+  cp "${FILE}" "${RPM_DIR}/${KIND}-${COMMIT}.${DISTRO}.rpm"
+done <"${RPM_LIST}"
+
+umask 077
+
+TMPDIR=$(mktemp -d)
+cleanup() {
+  exit_code=$?
+  trap - EXIT INT
+  rm -rf "${TMPDIR}"
+  exit ${exit_code}
+}
+trap cleanup EXIT INT
+
+GCLOUD_JSON=${TMPDIR}/.gcloud.json
+[ -z "${GCLOUD_AUTH}" ] || echo "${GCLOUD_AUTH}" >${GCLOUD_JSON}
+[ -s "${GCLOUD_JSON}" ] || {
+  echo "gcloud auth not defined" >&2
+  exit 1
+}
+
+BOTO_CONF=${TMPDIR}/.boto
+[ -s "${BOTO_CONF}" ] || cat >${BOTO_CONF} <<END
+[Credentials]
+gs_service_key_file = ${GCLOUD_JSON}
+[Boto]
+https_validate_certificates = True
+[GSUtil]
+content_language = en
+default_api_version = 2
+default_project_id = rancher-dev
+END
+
+[ -d "${TMPDIR}/gsutil" ] || curl -sfL https://storage.googleapis.com/pub/gsutil.tar.gz | tar xz -C ${TMPDIR}
+
+HOME=${TMPDIR}
+PATH=${PATH}:${HOME}/gsutil
+
+gsutil cp ${RPM_DIR}/*.rpm "gs://rke2-ci-builds/" || exit 1
+
+echo "Build uploaded" >&2
+echo "https://storage.googleapis.com/rke2-ci-builds/${BUNDLE_NAME}"
