@@ -1,5 +1,6 @@
-$CommitFile = "./commits.txt"
-(Invoke-RestMethod https://api.github.com/repos/rancher/rke2/commits?per_page=5).sha | `
+# Grabs the last 5 commit SHA's from the given branch, then purges any commits that do not have a passing CI build
+param ($Branch, $CommitFile)
+(Invoke-RestMethod "https://api.github.com/repos/rancher/rke2/commits?per_page=5&sha=$Branch").sha | `
 Out-File -FilePath $CommitFile
 
 $StorageUrl = "https://storage.googleapis.com/rke2-ci-builds/rke2-images.windows-amd64-"

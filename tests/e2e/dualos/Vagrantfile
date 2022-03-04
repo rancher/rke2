@@ -27,7 +27,8 @@ def provision(vm, roles, role_num, node_num)
     if !RELEASE_VERSION.empty?
       install_type = "Version=#{RELEASE_VERSION}"
     else 
-      install_type = "Commit=#"
+      vm.provision "shell", path: "../scripts/latest_commit.ps1", args: [GITHUB_BRANCH, "./rke2_commits.txt"]
+      install_type = "Commit=(Get-Content -TotalCount 1 ./rke2_commits.txt)"
     end
   else
     if !RELEASE_VERSION.empty?
@@ -83,7 +84,7 @@ def provision(vm, roles, role_num, node_num)
       vm.communicator = "winrm"
     }
     vm.provision :rke2, run: 'once' do |rke2|
-      rke2.env = %W[INSTALL_RKE2_TYPE=agent #{install_type}]
+      rke2.env = ["INSTALL_RKE2_TYPE=agent", install_type]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
       rke2.install_path = false
       rke2.config = <<~YAML
