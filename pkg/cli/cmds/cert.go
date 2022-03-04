@@ -3,9 +3,9 @@ package cmds
 import (
 	"io/ioutil"
 
-	"github.com/rancher/k3s/pkg/cli/cert"
-	"github.com/rancher/k3s/pkg/cli/cmds"
-	"github.com/rancher/k3s/pkg/configfilearg"
+	"github.com/k3s-io/k3s/pkg/cli/cert"
+	"github.com/k3s-io/k3s/pkg/cli/cmds"
+	"github.com/k3s-io/k3s/pkg/configfilearg"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/urfave/cli"
 )

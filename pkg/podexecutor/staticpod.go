@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package podexecutor
@@ -16,9 +17,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rancher/k3s/pkg/cli/cmds"
-	daemonconfig "github.com/rancher/k3s/pkg/daemons/config"
-	"github.com/rancher/k3s/pkg/daemons/executor"
+	"github.com/k3s-io/k3s/pkg/cli/cmds"
+	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
+	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/rancher/rke2/pkg/auth"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
