@@ -15,12 +15,16 @@ var (
 	hide = &K3SFlagOption{
 		Hide: true,
 	}
+	ignore = &K3SFlagOption{
+		Ignore: true,
+	}
 )
 var copy *K3SFlagOption
 
 type K3SFlagOption struct {
 	Hide    bool
 	Drop    bool
+	Ignore  bool
 	Usage   string
 	Default string
 }
@@ -141,8 +145,11 @@ func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Co
 		newFlags = append(newFlags, flag)
 	}
 
-	for k := range flagOpts {
+	for k, v := range flagOpts {
 		if !seen[k] {
+			if v != nil && v.Ignore {
+				continue
+			}
 			errs = append(errs, fmt.Errorf("missing k3s option %s", k))
 			continue
 		}
