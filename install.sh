@@ -132,8 +132,14 @@ setup_env() {
 # check_method_conflict will exit with an error if the user attempts to install
 # via tar method on a host with existing RPMs.
 check_method_conflict() {
+     . /etc/os-release
     case ${INSTALL_RKE2_METHOD} in
     yum | rpm | dnf)
+        if [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
+            if [ -f ${INSTALL_RKE2_TAR_PREFIX}/bin/rke2 ]; then
+                fatal "Cannot perform ${INSTALL_RKE2_METHOD:-rpm} install on host with existing tarball installation - please run rke2-uninstall.sh first"
+            fi
+        fi
         return
         ;;
     *)
