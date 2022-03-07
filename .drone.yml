@@ -196,12 +196,6 @@ steps:
     volumes:
       - name: docker
         path: /var/run/docker.sock
-    when:
-      event:
-        - tag
-      ref:
-        - refs/head/master
-        - refs/tags/*
 
   - name: package-images
     image: rancher/dapper:v0.5.8
