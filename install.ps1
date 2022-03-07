@@ -643,10 +643,10 @@ function Install-AirgapTarball() {
     $suffix = $archInfo.Suffix    
     $arch = $archInfo.Arch
 
-    if (Test-Path $InstallAgentImageDir) {
-        Remove-Item -Path $InstallAgentImageDir -Force -Recurse
+    
+    if ( -Not (Test-Path $InstallAgentImageDir)) {
+        New-Item -Path $InstallAgentImageDir -ItemType Directory | Out-null
     }
-    New-Item -Path $InstallAgentImageDir -ItemType Directory | Out-null
     if ($CommitHash) {
         Write-InfoLog "installing airgap tarball with commit $CommitHash to $InstallAgentImageDir"
         Move-Item -Path $TempAirgapTarball -Destination "$InstallAgentImageDir/rke2-images.$suffix-$CommitHash.tar.zst" -Force
