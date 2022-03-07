@@ -11,9 +11,9 @@ NODE_MEMORY = (ENV['NODE_MEMORY'] || 2048).to_i
 NETWORK_PREFIX = "10.10.10"
 install_type = ""
 
-def provision(vm, roles, role_num, node_num)
+def provision(vm, role, role_num, node_num)
   vm.box = NODE_BOXES[node_num]
-  vm.hostname = "#{roles[0]}-#{role_num}"
+  vm.hostname = role
   # An expanded netmask is required to allow VM<-->VM communication, virtualbox defaults to /32
   node_ip = "#{NETWORK_PREFIX}.#{100+node_num}"
   vm.network "private_network", ip: node_ip, netmask: "255.255.255.0"
@@ -23,7 +23,7 @@ def provision(vm, roles, role_num, node_num)
 
   defaultOSConfigure(vm)
 
-  if roles.include?("windows")
+  if role.include?("windows")
     if !RELEASE_VERSION.empty?
       install_type = "Version=#{RELEASE_VERSION}"
     else 
@@ -41,7 +41,7 @@ def provision(vm, roles, role_num, node_num)
     vm.provision "shell", inline: "ping -c 2 rke2.io"
   end
 
-  if roles.include?("server") && role_num == 0
+  if role.include?("server") && role_num == 0
     vm.provision :rke2, run: 'once' do |rke2|
       rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
@@ -52,7 +52,7 @@ def provision(vm, roles, role_num, node_num)
           cni: calico
       YAML
     end
-  elsif roles.include?("server") && role_num != 0
+  elsif role.include?("server") && role_num != 0
     vm.provision :rke2, run: 'once' do |rke2|
       rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
@@ -65,7 +65,7 @@ def provision(vm, roles, role_num, node_num)
       YAML
     end
   end
-  if roles.include?("linux-agent")
+  if role.include?("linux-agent")
     vm.provision :rke2, run: 'once' do |rke2|
       rke2.env = %W[INSTALL_RKE2_TYPE=agent #{install_type}]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
@@ -78,15 +78,24 @@ def provision(vm, roles, role_num, node_num)
       YAML
     end
   end
-  if roles.include?("windows-agent")
-    if !vm.box.include?("windows_2019") {
+  if role.include?("windows-agent")
+    if !vm.box.include?("windows_2019")
       vm.box = "StefanScherer/windows_2019"
       vm.communicator = "winrm"
-    }
+    end
+    vm.provider "virtualbox" do |v|
+      # FOR WINDOWS GUI
+      v.gui = true
+      v.customize ["modifyvm", :id, "--vram", 128]
+      v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
+      v.customize ["modifyvm", :id, "--accelerate3d", "on"]
+      v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
+    end
     vm.provision :rke2, run: 'once' do |rke2|
-      rke2.env = ["INSTALL_RKE2_TYPE=agent", install_type]
+      rke2.env = [install_type]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
       rke2.install_path = false
+      rke2.installer_url = "https://raw.githubusercontent.com/dereknola/rke2/install_commit_fix/install.ps1"
       rke2.config = <<~YAML
         kube-proxy-arg: "feature-gates=IPv6DualStack=false"
         write-kubeconfig-mode: 0644
@@ -100,11 +109,7 @@ end
 
 Vagrant.configure("2") do |config|
   config.vagrant.plugins = ["vagrant-rke2", "vagrant-reload", "vagrant-libvirt"]
-  # Default provider is libvirt, virtualbox is only provided as a backup
-  config.vm.provider "libvirt" do |v|
-    v.cpus = NODE_CPUS
-    v.memory = NODE_MEMORY
-  end
+  # Default provider is vritaulbox, windows boxes don't support libvirt
   config.vm.provider "virtualbox" do |v|
     v.cpus = NODE_CPUS
     v.memory = NODE_MEMORY
@@ -122,9 +127,8 @@ Vagrant.configure("2") do |config|
   NODE_ROLES.length.times do |i|
     name = NODE_ROLES[i]
     config.vm.define name do |node|
-      roles = name.split("-", -1)
-      role_num = roles.pop.to_i
-      provision(node.vm, roles, role_num, i)
+      role_num = name.split("-", -1).pop.to_i
+      provision(node.vm, name, role_num, i)
     end
   end
 end
