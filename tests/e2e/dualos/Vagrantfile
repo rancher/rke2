@@ -2,7 +2,7 @@ ENV['VAGRANT_NO_PARALLEL'] = 'no'
 NODE_ROLES = (ENV['NODE_ROLES'] ||
 ["server-0", "linux-agent-0", "windows-agent-0" ])
 NODE_BOXES = (ENV['NODE_BOXES'] ||
-['generic/ubuntu2004', 'generic/ubuntu2004', 'StefanScherer/windows_2019'])
+['generic/ubuntu2004', 'generic/ubuntu2004', 'peru/windows-server-2019-standard-x64-eval'])
 GITHUB_BRANCH = (ENV['GITHUB_BRANCH'] || "master")
 RELEASE_VERSION = (ENV['RELEASE_VERSION'] || "")
 NODE_CPUS = (ENV['NODE_CPUS'] || 2).to_i
@@ -79,18 +79,19 @@ def provision(vm, role, role_num, node_num)
     end
   end
   if role.include?("windows-agent")
-    if !vm.box.include?("windows_2019")
-      vm.box = "StefanScherer/windows_2019"
-      vm.communicator = "winrm"
+    if !vm.box.match?(/windows.*2019/)
+      puts "invalid box: " + vm.box + " found for windows agent"
+      abort
     end
-    vm.provider "virtualbox" do |v|
-      # FOR WINDOWS GUI
-      v.gui = true
-      v.customize ["modifyvm", :id, "--vram", 128]
-      v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
-      v.customize ["modifyvm", :id, "--accelerate3d", "on"]
-      v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
-    end
+    # For Windows GUI on virtualbox
+    # If using libvirt, use virt-viewer after bring up the node
+    # vm.provider "virtualbox" do |v|
+      # v.gui = true
+      # v.customize ["modifyvm", :id, "--vram", 128]
+      # v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
+      # v.customize ["modifyvm", :id, "--accelerate3d", "on"]
+      # v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
+    # end
     vm.provision :rke2, run: 'once' do |rke2|
       rke2.env = [install_type]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
@@ -109,7 +110,11 @@ end
 
 Vagrant.configure("2") do |config|
   config.vagrant.plugins = ["vagrant-rke2", "vagrant-reload", "vagrant-libvirt"]
-  # Default provider is vritaulbox, windows boxes don't support libvirt
+  # Default provider is libvirt, virtualbox is only provided as a backup
+  config.vm.provider "libvirt" do |v|
+    v.cpus = NODE_CPUS
+    v.memory = NODE_MEMORY
+  end
   config.vm.provider "virtualbox" do |v|
     v.cpus = NODE_CPUS
     v.memory = NODE_MEMORY
