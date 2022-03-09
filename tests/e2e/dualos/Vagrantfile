@@ -95,10 +95,10 @@ def provision(vm, role, role_num, node_num)
       rke2.env = [install_type]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
       rke2.install_path = false
+      # rke2.skip_start = true
       rke2.installer_url = "https://raw.githubusercontent.com/dereknola/rke2/install_commit_fix/install.ps1"
       rke2.config = <<~YAML
         kube-proxy-arg: "feature-gates=IPv6DualStack=false"
-        write-kubeconfig-mode: 0644
         node-external-ip: #{node_ip}
         server: https://#{NETWORK_PREFIX}.100:9345
         token: vagrant-rke2
