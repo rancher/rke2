@@ -71,7 +71,7 @@ require (
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.17.0
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.22.8-0.20220308184223-b3b44aec2f92 // release-1.22
+	github.com/rancher/k3s v1.22.8-0.20220309150001-d00666d50d54 // release-1.22
 	github.com/rancher/wharfie v0.5.2
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
