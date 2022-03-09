@@ -64,7 +64,7 @@ require (
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.11.9
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.10-engine0.0.20220309150006-749d157d8756 // engine-1.21
+	github.com/rancher/k3s v1.21.10-engine0.0.20220309212604-d0be109e7c5a // engine-1.21
 	github.com/rancher/wharfie v0.5.2
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
