@@ -726,7 +726,9 @@ switch ($Method) {
         Install-AirgapTarball -CommitHash $Commit -InstallAgentImageDir $AgentImagesDir -TempAirgapTarball $TMP_AIRGAP_TARBALL -ExpectedImageAirgapChecksum $AIRGAP_CHECKSUM_EXPECTED -TempImageChecksums $TMP_AIRGAP_CHECKSUMS
         Test-TarballChecksum -Tarball $TMP_BINARY_TARBALL -ExpectedChecksum $BINARY_CHECKSUM_EXPECTED
         Expand-Tarball -InstallPath $TarPrefix -Tarball $TMP_BINARY_TARBALL
-        Expand-Tarball -InstallPath $AgentImagesDir -Tarball $TMP_AIRGAP_TARBALL
+        if ($Commit) {
+            Expand-Tarball -InstallPath $AgentImagesDir -Tarball $TMP_AIRGAP_TARBALL
+        }
         Write-InfoLog "install complete; you may want to run:  `$env:PATH+=`";$TarPrefix\bin;C:\var\lib\rancher\rke2\bin`""
     }
     "choco" {  
