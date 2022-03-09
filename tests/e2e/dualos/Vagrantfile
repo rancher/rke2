@@ -28,7 +28,8 @@ def provision(vm, role, role_num, node_num)
       install_type = "Version=#{RELEASE_VERSION}"
     else 
       vm.provision "shell", path: "../scripts/latest_commit.ps1", args: [GITHUB_BRANCH, "./rke2_commits.txt"]
-      install_type = "Commit=(Get-Content -TotalCount 1 ./rke2_commits.txt)"
+      # install_type = "Commit=(Get-Content -TotalCount 1 ./rke2_commits.txt)"
+      install_type = "Commit=2dcedaf55c49ef9b24849c92702bdc12ea589d7a"
     end
   else
     if !RELEASE_VERSION.empty?
@@ -36,7 +37,8 @@ def provision(vm, role, role_num, node_num)
     else 
       # Grabs the last 5 commit SHA's from the given branch, then purges any commits that do not have a passing CI build
       vm.provision "shell", path: "../scripts/latest_commit.sh", args: [GITHUB_BRANCH, "/tmp/rke2_commits"]
-      install_type = "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
+      # install_type = "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
+      install_type = "INSTALL_RKE2_COMMIT=2dcedaf55c49ef9b24849c92702bdc12ea589d7a"
     end
     vm.provision "shell", inline: "ping -c 2 rke2.io"
   end
