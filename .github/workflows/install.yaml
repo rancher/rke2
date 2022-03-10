@@ -52,7 +52,12 @@ jobs:
       - name: "Vagrant Plugin(s)"
         run: vagrant plugin install vagrant-reload
       - name: "Vagrant Up ⏩ Install RKE2"
-        run: vagrant up
+        uses: nick-fields/retry@v2
+        with:
+          timeout_seconds: 15
+          max_attempts: 2
+          retry_on: error
+          command: vagrant up
       - name: "⏳ Node"
         if: ${{ !contains(matrix.vm, 'windows') }}
         run: vagrant provision --provision-with=rke2-wait-for-node
