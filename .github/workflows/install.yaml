@@ -54,7 +54,7 @@ jobs:
       - name: "Vagrant Up ⏩ Install RKE2"
         uses: nick-fields/retry@v2
         with:
-          timeout_seconds: 15
+          timeout_minutes: 15
           max_attempts: 2
           retry_on: error
           command: vagrant up
