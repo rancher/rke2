@@ -50,14 +50,14 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-cpi-release-manager:v1.21.0
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v2.3.0
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v2.3.0
-    ${REGISTRY}/rancher/mirrored-k8scsi-csi-node-driver-registrar:v2.1.0
-    ${REGISTRY}/rancher/mirrored-k8scsi-csi-resizer:v1.1.0
-    ${REGISTRY}/rancher/mirrored-k8scsi-livenessprobe:v2.2.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v3.2.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v2.2.0
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-cpi-release-manager:v1.22.5
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v2.4.1
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v2.4.1
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-node-driver-registrar:v2.3.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-resizer:v1.3.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.4.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v3.3.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v3.0.0
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
