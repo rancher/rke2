@@ -57,7 +57,7 @@ jobs:
           timeout_minutes: 15
           max_attempts: 2
           retry_on: error
-          command: vagrant up
+          command: VAGRANT_DEFAULT_PROVIDER=virtualbox vagrant up
       - name: "⏳ Node"
         if: ${{ !contains(matrix.vm, 'windows') }}
         run: vagrant provision --provision-with=rke2-wait-for-node
