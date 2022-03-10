@@ -83,3 +83,12 @@ The issue is described in the [calico project](https://github.com/projectcalico/
 offloading by default by applying the value `ChecksumOffloadBroken=true` in the [calico helm chart](https://github.com/rancher/rke2-charts/blob/main/charts/rke2-calico/rke2-calico/v3.19.2-203/values.yaml#L51-L53).
 
 This issue has been observed in Ubuntu 18.04, Ubuntu 20.04 and openSUSE Leap 15.3
+
+## Wicked
+
+Wicked configures the networking settings of the host based on the sysctl configuration files (e.g. under /etc/sysctl.d/ directory). Even though rke2 is setting parameters such as `/net/ipv4/conf/all/forwarding` to 1, that configuration could be reverted by Wicked whenever it reapplies the network configuration (there are several events that result in reapplying the network configuration as well as rcwicked restart during updates). Consequently, it is very important to enable ipv4 (and ipv6 in case of dual-stack) forwarding in sysctl configuration files. For example, it is recommended to create a file with the name `/etc/sysctl.d/90-rke2.conf` containing these paratemers (ipv6 only needed in case of dual-stack):
+
+```bash
+net.ipv4.conf.all.forwarding=1
+net.ipv6.conf.all.forwarding=1
+```

@@ -54,7 +54,7 @@ RKE2 performance depends on the performance of the database, and since RKE2 runs
 
 ## Networking
 
-**Important:** If your node has NetworkManager installed and enabled, [ensure that it is configured to ignore CNI-managed interfaces.](https://docs.rke2.io/known_issues/#networkmanager)
+**Important:** If your node has NetworkManager installed and enabled, [ensure that it is configured to ignore CNI-managed interfaces.](https://docs.rke2.io/known_issues/#networkmanager). If your node has Wicked installed and enabled, [ensure that the forwarding sysctl config is enabled](https://docs.rke2.io/known_issues/#wicked)
 
 The RKE2 server needs port 6443 and 9345 to be accessible by other nodes in the cluster.
 
@@ -80,6 +80,9 @@ If you wish to utilize the metrics server, you will need to open port 10250 on e
 | ICMP | 8/0 | RKE2 server and agent nodes | Cilium CNI health checks
 | TCP | 179 | RKE2 server and agent nodes | Calico CNI with BGP
 | UDP | 4789 | RKE2 server and agent nodes | Calico CNI with VXLAN
+| TCP | 5473 | RKE2 server and agent nodes | Calico CNI with Typha
+| TCP | 9098 | RKE2 server and agent nodes | Calico Typha health checks
+| TCP | 9099 | RKE2 server and agent nodes | Calico health checks
 | TCP | 5473 | RKE2 server and agent nodes | Calico CNI with Typha
 | UDP | 8472 | RKE2 server and agent nodes | Canal CNI with VXLAN
 | TCP | 9099 | RKE2 server and agent nodes | Canal CNI health checks
