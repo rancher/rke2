@@ -36,6 +36,23 @@ steps:
       - name: docker
         path: /var/run/docker.sock
 
+  - name: fossa
+    image: rancher/drone-fossa:latest
+    failure: ignore
+    settings:
+      api_key:
+        from_secret: FOSSA_API_KEY
+    when:
+      instance:
+        - drone-publish.rancher.io
+      ref:
+        include:
+          - "refs/heads/master"
+          - "refs/heads/release-*"
+      event:
+        - push
+        - tag
+
   - name: package-images
     image: rancher/dapper:v0.5.8
     commands:
