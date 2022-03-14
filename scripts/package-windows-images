@@ -9,7 +9,7 @@ mkdir -p dist/artifacts
 
 # We retag the the runtime image and remove the platform specific suffix, matching what
 # the rke2 exe expects for the defaultRuntimeImage name
-docker tag ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-${ARCH} \
+docker tag ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
   ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
 
 # 1809/LTSC
