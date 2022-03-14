@@ -3,17 +3,8 @@ package cmds
 import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/cli/secretsencrypt"
-	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/urfave/cli"
 )
-
-var encryptFlags = append(cmds.EncryptFlags, cli.StringFlag{
-	Name:        "server,s",
-	Usage:       "(cluster) Server to request from",
-	EnvVar:      version.ProgramUpper + "_URL",
-	Value:       "https://127.0.0.1:9345",
-	Destination: &cmds.ServerConfig.ServerURL,
-})
 
 var secretsEncryptSubcommands = []cli.Command{
 	{
@@ -22,7 +13,7 @@ var secretsEncryptSubcommands = []cli.Command{
 		SkipFlagParsing: false,
 		SkipArgReorder:  true,
 		Action:          secretsencrypt.Status,
-		Flags:           encryptFlags,
+		Flags:           cmds.EncryptFlags,
 	},
 	{
 		Name:            "enable",
@@ -30,7 +21,7 @@ var secretsEncryptSubcommands = []cli.Command{
 		SkipFlagParsing: false,
 		SkipArgReorder:  true,
 		Action:          secretsencrypt.Enable,
-		Flags:           encryptFlags,
+		Flags:           cmds.EncryptFlags,
 	},
 	{
 		Name:            "disable",
@@ -38,7 +29,7 @@ var secretsEncryptSubcommands = []cli.Command{
 		SkipFlagParsing: false,
 		SkipArgReorder:  true,
 		Action:          secretsencrypt.Disable,
-		Flags:           encryptFlags,
+		Flags:           cmds.EncryptFlags,
 	},
 	{
 		Name:            "prepare",
@@ -46,7 +37,7 @@ var secretsEncryptSubcommands = []cli.Command{
 		SkipFlagParsing: false,
 		SkipArgReorder:  true,
 		Action:          secretsencrypt.Prepare,
-		Flags: append(encryptFlags, &cli.BoolFlag{
+		Flags: append(cmds.EncryptFlags, &cli.BoolFlag{
 			Name:        "f,force",
 			Usage:       "Force preparation.",
 			Destination: &cmds.ServerConfig.EncryptForce,
@@ -58,7 +49,7 @@ var secretsEncryptSubcommands = []cli.Command{
 		SkipFlagParsing: false,
 		SkipArgReorder:  true,
 		Action:          secretsencrypt.Rotate,
-		Flags: append(encryptFlags, &cli.BoolFlag{
+		Flags: append(cmds.EncryptFlags, &cli.BoolFlag{
 			Name:        "f,force",
 			Usage:       "Force key rotation.",
 			Destination: &cmds.ServerConfig.EncryptForce,
@@ -70,9 +61,9 @@ var secretsEncryptSubcommands = []cli.Command{
 		SkipFlagParsing: false,
 		SkipArgReorder:  true,
 		Action:          secretsencrypt.Reencrypt,
-		Flags: append(encryptFlags,
+		Flags: append(cmds.EncryptFlags,
 			&cli.BoolFlag{
-				Name:        "f,force",
+				Name:        "f, force",
 				Usage:       "Force secrets reencryption.",
 				Destination: &cmds.ServerConfig.EncryptForce,
 			},
@@ -84,10 +75,19 @@ var secretsEncryptSubcommands = []cli.Command{
 	},
 }
 
-var (
-	k3sSecretsEncryptBase = mustCmdFromK3S(cmds.NewSecretsEncryptCommand(cli.ShowAppHelp, secretsEncryptSubcommands), nil)
-)
-
 func NewSecretsEncryptCommand() cli.Command {
-	return k3sSecretsEncryptBase
+
+	var modifiedSubcommands []cli.Command
+	for _, subcommand := range secretsEncryptSubcommands {
+		modifiedSubcommands = append(modifiedSubcommands, mustCmdFromK3S(subcommand, map[string]*K3SFlagOption{
+			"data-dir": copy,
+			"token":    copy,
+			"server": {
+				Default: "https://127.0.0.1:9345",
+			},
+			"f":    ignore,
+			"skip": ignore,
+		}))
+	}
+	return cmds.NewSecretsEncryptCommand(cli.ShowAppHelp, modifiedSubcommands)
 }
