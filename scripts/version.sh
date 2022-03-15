@@ -4,7 +4,7 @@ set -x
 PROG=rke2
 REGISTRY=docker.io
 REPO=${REPO:-rancher}
-K3S_PKG=github.com/rancher/k3s
+K3S_PKG=github.com/k3s-io/k3s
 RKE2_PKG=github.com/rancher/rke2
 GO=${GO-go}
 GOARCH=${GOARCH:-$("${GO}" env GOARCH)}
@@ -32,7 +32,7 @@ PLATFORM=${GOOS}-${GOARCH}
 RELEASE=${PROG}.${PLATFORM}
 # hardcode versions unless set specifically
 KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.23.4}
-KUBERNETES_IMAGE_TAG=${KUBERNETES_IMAGE_TAG:-v1.23.4-rke2r1-build20220217}
+KUBERNETES_IMAGE_TAG=${KUBERNETES_IMAGE_TAG:-v1.23.4-rke2r2-build20220304}
 ETCD_VERSION=${ETCD_VERSION:-v3.5.1-k3s1}
 PAUSE_VERSION=${PAUSE_VERSION:-3.6}
 CCM_VERSION=${CCM_VERSION:-v0.0.3-build20211118}

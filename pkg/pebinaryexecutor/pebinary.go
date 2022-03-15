@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package pebinaryexecutor
@@ -17,9 +18,9 @@ import (
 	"github.com/Microsoft/hcsshim"
 	"github.com/Microsoft/hcsshim/hcn"
 	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
-	"github.com/rancher/k3s/pkg/cli/cmds"
-	daemonconfig "github.com/rancher/k3s/pkg/daemons/config"
-	"github.com/rancher/k3s/pkg/daemons/executor"
+	"github.com/k3s-io/k3s/pkg/cli/cmds"
+	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
+	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
 	win "github.com/rancher/rke2/pkg/windows"

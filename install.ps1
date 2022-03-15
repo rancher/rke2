@@ -600,7 +600,7 @@ function Test-AirgapTarballChecksum() {
         return
     }
 
-    if ($ExpectedImageAirGapChecksum) {
+    if (-Not $ExpectedImageAirGapChecksum) {
         return
     }
     Write-InfoLog "verifying airgap tarball $TempAirGapTarball"
@@ -635,7 +635,7 @@ function Install-AirgapTarball() {
         return
     }
 
-    if ($ExpectedImageAirGapChecksum) {
+    if (-Not $ExpectedImageAirGapChecksum) {
         return
     }
 
@@ -643,14 +643,16 @@ function Install-AirgapTarball() {
     $suffix = $archInfo.Suffix    
     $arch = $archInfo.Arch
 
-    New-Item -Path $InstallAgentImageDir -ItemType Directory | Out-null
+    
+    if ( -Not (Test-Path $InstallAgentImageDir)) {
+        New-Item -Path $InstallAgentImageDir -ItemType Directory | Out-null
+    }
     if ($CommitHash) {
         Write-InfoLog "installing airgap tarball with commit $CommitHash to $InstallAgentImageDir"
         Move-Item -Path $TempAirgapTarball -Destination "$InstallAgentImageDir/rke2-images.$suffix-$CommitHash.tar.zst" -Force
     }
     # prepare for windows airgap image bug fix
     else {
-        New-Item -Path $InstallAgentImageDir -ItemType Directory | Out-null
         Write-InfoLog "installing airgap tarball to $InstallAgentImageDir"
         if ([IO.Path]::GetExtension($TempAirgapTarball) -eq ".zst") {
             Move-Item -Path $TempAirgapTarball -Destination "$InstallAgentImageDir/rke2-windows-$BuildVersion-$arch-images.tar.zst" -Force

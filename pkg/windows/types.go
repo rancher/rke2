@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package windows
@@ -5,8 +6,8 @@ package windows
 import (
 	"context"
 
-	"github.com/rancher/k3s/pkg/daemons/config"
-	daemonconfig "github.com/rancher/k3s/pkg/daemons/config"
+	"github.com/k3s-io/k3s/pkg/daemons/config"
+	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"k8s.io/client-go/rest"
 )
 
