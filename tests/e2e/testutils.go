@@ -1,7 +1,6 @@
 package e2e
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -49,6 +48,7 @@ func CreateCluster(nodeOS string, serverCount int, agentCount int, installType s
 		agentNodeNames = append(agentNodeNames, "agent-"+strconv.Itoa(i))
 	}
 	nodeRoles := strings.Join(serverNodeNames, " ") + " " + strings.Join(agentNodeNames, " ")
+	nodeRoles = strings.TrimSpace(nodeRoles)
 	nodeBoxes := strings.Repeat(nodeOS+" ", serverCount+agentCount)
 	nodeBoxes = strings.TrimSpace(nodeBoxes)
 	cmd := fmt.Sprintf("NODE_ROLES=\"%s\" NODE_BOXES=\"%s\" %s vagrant up &> vagrant.log", nodeRoles, nodeBoxes, installType)
@@ -84,7 +84,16 @@ func DestroyCluster() error {
 	return os.Remove("vagrant.log")
 }
 
-func FetchClusterIP(kubeconfig string, servicename string) (string, error) {
+func FetchClusterIP(kubeconfig string, servicename string, dualStack bool) (string, error) {
+	if dualStack {
+		cmd := "kubectl get svc " + servicename + " -o jsonpath='{.spec.clusterIPs}' --kubeconfig=" + kubeconfig
+		res, err := RunCommand(cmd)
+		if err != nil {
+			return res, err
+		}
+		res = strings.ReplaceAll(res, "\"", "")
+		return strings.Trim(res, "[]"), nil
+	}
 	cmd := "kubectl get svc " + servicename + " -o jsonpath='{.spec.clusterIP}' --kubeconfig=" + kubeconfig
 	return RunCommand(cmd)
 }
@@ -110,6 +119,18 @@ func FetchNodeExternalIP(nodename string) (string, error) {
 	ip := strings.Split(ips, "inet")
 	nodeip := strings.TrimSpace(ip[1])
 	return nodeip, nil
+}
+
+func GetVagrantLog() string {
+	log, err := os.Open("vagrant.log")
+	if err != nil {
+		return err.Error()
+	}
+	bytes, err := ioutil.ReadAll(log)
+	if err != nil {
+		return err.Error()
+	}
+	return string(bytes)
 }
 
 func GenKubeConfigFile(serverName string) (string, error) {
@@ -192,32 +213,28 @@ func ParsePods(kubeconfig string, print bool) ([]Pod, error) {
 
 // RunCmdOnNode executes a command from within the given node
 func RunCmdOnNode(cmd string, nodename string) (string, error) {
-	runcmd := "vagrant ssh -c " + cmd + " " + nodename
+	runcmd := "vagrant ssh -c \"" + cmd + "\" " + nodename
 	return RunCommand(runcmd)
 }
 
 // RunCommand execute a command on the host
 func RunCommand(cmd string) (string, error) {
 	c := exec.Command("bash", "-c", cmd)
-	var out bytes.Buffer
-	c.Stdout = &out
-	if err := c.Run(); err != nil {
-		return "", err
-	}
-	return out.String(), nil
+	out, err := c.CombinedOutput()
+	return string(out), err
 }
 
 func UpgradeCluster(serverNodenames []string, agentNodenames []string) error {
-	const provision = "RELEASE_CHANNEL=commit vagrant provision "
 	for _, nodeName := range serverNodenames {
-		cmd := provision + nodeName
+		cmd := "RELEASE_CHANNEL=commit vagrant provision " + nodeName
+		fmt.Println(cmd)
 		if out, err := RunCommand(cmd); err != nil {
 			fmt.Println("Error Upgrading Cluster", out)
 			return err
 		}
 	}
 	for _, nodeName := range agentNodenames {
-		cmd := provision + nodeName
+		cmd := "RELEASE_CHANNEL=commit vagrant provision " + nodeName
 		if _, err := RunCommand(cmd); err != nil {
 			fmt.Println("Error Upgrading Cluster", err)
 			return err

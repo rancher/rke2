@@ -37,7 +37,7 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 	It("Starts up with no issues", func() {
 		var err error
 		serverNodeNames, agentNodeNames, err = e2e.CreateCluster(*nodeOS, *serverCount, *agentCount, *installType)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog())
 		fmt.Println("CLUSTER CONFIG")
 		fmt.Println("OS:", *nodeOS)
 		fmt.Println("Server Nodes:", serverNodeNames)
@@ -82,8 +82,8 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 			return e2e.RunCommand(cmd)
 		}, "240s", "5s").Should(ContainSubstring("test-clusterip"))
 
-		clusterip, _ := e2e.FetchClusterIP(kubeConfigFile, "nginx-clusterip-svc")
-		cmd := "\"curl -L --insecure http://" + clusterip + "/name.html\""
+		clusterip, _ := e2e.FetchClusterIP(kubeConfigFile, "nginx-clusterip-svc", false)
+		cmd := "curl -L --insecure http://" + clusterip + "/name.html"
 		for _, nodeName := range serverNodeNames {
 			Expect(e2e.RunCmdOnNode(cmd, nodeName)).Should(ContainSubstring("test-clusterip"), "failed cmd: "+cmd)
 		}
