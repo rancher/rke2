@@ -84,7 +84,6 @@ def provision(vm, roles, role_num, node_num)
         node-external-ip: #{node_ip4},#{node_ip6}
         server: https://#{NETWORK4_PREFIX}.100:9345
         token: vagrant-rke2
-        cni: calico
       YAML
     end
   end
