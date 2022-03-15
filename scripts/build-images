@@ -32,10 +32,10 @@ EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
-    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.10.4
-    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.10.4
-    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.10.4
-    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.10.4
+    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.11.2
+    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.11.2
+    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.11.2
+    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.11.2
     ${REGISTRY}/rancher/mirrored-cilium-startup-script:62bfbe88c17778aad7bef9fa57ff9e2d4a9ba0d8
 EOF
 
