@@ -2,7 +2,7 @@ ENV['VAGRANT_NO_PARALLEL'] = 'no'
 NODE_ROLES = (ENV['E2E_NODE_ROLES'] ||
 ["server-0", "linux-agent-0", "windows-agent-0" ])
 NODE_BOXES = (ENV['E2E_NODE_BOXES'] ||
-['generic/ubuntu2004', 'generic/ubuntu2004', 'peru/windows-server-2019-standard-x64-eval'])
+['generic/ubuntu2004', 'generic/ubuntu2004', 'peru/windows-server-2022-standard-x64-eval'])
 GITHUB_BRANCH = (ENV['E2E_GITHUB_BRANCH'] || "master")
 RELEASE_VERSION = (ENV['E2E_RELEASE_VERSION'] || "")
 NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
@@ -79,12 +79,14 @@ def provision(vm, role, role_num, node_num)
     end
   end
   if role.include?("windows-agent")
-    if !vm.box.match?(/windows.*2019/)
+    if !vm.box.match?(/windows.*2022/)
       puts "invalid box: " + vm.box + " found for windows agent"
       abort
     end
+
+    # Shared folders don't work with libvirt and windows guests, use 'file' to sync the local folder
+    vm.provision "file", source: ".", destination: "/vagrant"
     # For Windows GUI on virtualbox
-    # If using libvirt, use virt-viewer after bring up the node
     # vm.provider "virtualbox" do |v|
       # v.gui = true
       # v.customize ["modifyvm", :id, "--vram", 128]
@@ -92,12 +94,11 @@ def provision(vm, role, role_num, node_num)
       # v.customize ["modifyvm", :id, "--accelerate3d", "on"]
       # v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
     # end
+    # If using libvirt, use virt-viewer for GUI after bring up the node
     vm.provision :rke2, run: 'once' do |rke2|
       rke2.env = [install_type]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
-      rke2.install_path = false
       # rke2.skip_start = true
-      rke2.installer_url = "https://raw.githubusercontent.com/dereknola/rke2/install_commit_fix/install.ps1"
       rke2.config = <<~YAML
         kube-proxy-arg: "feature-gates=IPv6DualStack=false"
         node-external-ip: #{node_ip}
