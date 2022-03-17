@@ -24,11 +24,11 @@ jobs:
       fail-fast: false
       matrix:
         channel: [stable]
-        vm: [centos-7, centos-8, opensuse-microos, ubuntu-focal, windows-2019, windows-2022]
+        vm: [centos-7, rocky-8, opensuse-microos, ubuntu-focal, windows-2019, windows-2022]
         include:
-          - {channel: latest, vm: centos-8}
+          - {channel: latest, vm: rocky-8}
           - {channel: latest, vm: ubuntu-focal}
-          - {channel: testing, vm: centos-8}
+          - {channel: testing, vm: rocky-8}
           - {channel: testing, vm: ubuntu-focal}
       max-parallel: 2
     defaults:
