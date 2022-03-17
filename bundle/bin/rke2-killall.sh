@@ -84,4 +84,4 @@ if [ -d /sys/class/net/nodelocaldns ]; then
 fi
 
 rm -rf /var/lib/cni/
-iptables-save | grep -v KUBE- | grep -v CNI- | grep -v cali- | grep -v cali: | grep -v CILIUM_ | iptables-restore
+iptables-save | grep -v KUBE- | grep -v CNI- | grep -v cali- | grep -v cali: | grep -v CILIUM_ | grep -v flannel | iptables-restore
