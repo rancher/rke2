@@ -58,12 +58,28 @@ The next tabs inform how to deploy each CNI plugin and override the default opti
       namespace: kube-system
     spec:
       valuesContent: |-
-        cilium:
-          eni:
-            enabled: true
+        eni:
+          enabled: true
     ```
 
-    For more information about values available for the Cilium chart, please refer to the [rke2-charts repository](https://github.com/rancher/rke2-charts/blob/main-source/packages/rke2-cilium/charts/values.yaml)
+    For more information about values available in the Cilium chart, please refer to the [rke2-charts repository](https://github.com/rancher/rke2-charts/blob/main/charts/rke2-cilium/rke2-cilium/1.11.201/values.yaml)
+
+    Cilium includes advanced features to fully replace kube-proxy and implement the routing of services using eBPF instead of iptables. It is not recommended to replace kube-proxy by Cilium if your kernel is not v5.8 or newer, as important bug fixes and features will be missing. To activate this mode, deploy rke2 with the flag `--disable-kube-proxy` and the following cilium configuration:
+
+    ```yaml
+    apiVersion: helm.cattle.io/v1
+    kind: HelmChartConfig
+    metadata:
+      name: rke2-cilium
+      namespace: kube-system
+    spec:
+      valuesContent: |-
+        kubeProxyReplacement: strict
+        k8sServiceHost: REPLACE_WITH_API_SERVER_IP
+        k8sServicePort: REPLACE_WITH_API_SERVER_PORT  
+    ```
+
+    For more information, please check the [upstream docs](https://docs.cilium.io/en/v1.11/gettingstarted/kubeproxy-free/)
 
     Cilium is currently not supported in the Windows installation of RKE2
 
@@ -113,9 +129,8 @@ Each CNI plugin requires a different configuration for dual-stack:
       namespace: kube-system
     spec:
       valuesContent: |-
-        cilium:
-          ipv6:
-            enabled: true
+        ipv6:
+          enabled: true
     ```
 
 === "Calico CNI plugin"
