@@ -109,9 +109,9 @@ setup_env() {
         INSTALL_RKE2_TYPE="${INSTALL_RKE2_EXEC:-server}"
     fi
 
-    # --- use yum install method if available by default
+    # --- use rpm install method if available by default
     if [ -z "${INSTALL_RKE2_ARTIFACT_PATH}" ] && [ -z "${INSTALL_RKE2_COMMIT}" ] && [ -z "${INSTALL_RKE2_METHOD}" ] && command -v yum >/dev/null 2>&1; then
-        INSTALL_RKE2_METHOD="yum"
+        INSTALL_RKE2_METHOD="rpm"
     fi
 
     # --- install tarball to /usr/local by default, except if /usr/local is on a separate partition or is read-only
@@ -132,8 +132,14 @@ setup_env() {
 # check_method_conflict will exit with an error if the user attempts to install
 # via tar method on a host with existing RPMs.
 check_method_conflict() {
+     . /etc/os-release
     case ${INSTALL_RKE2_METHOD} in
     yum | rpm | dnf)
+        if [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
+            if [ -f ${INSTALL_RKE2_TAR_PREFIX}/bin/rke2 ]; then
+                fatal "Cannot perform ${INSTALL_RKE2_METHOD:-rpm} install on host with existing tarball installation - please run rke2-uninstall.sh first"
+            fi
+        fi
         return
         ;;
     *)
@@ -404,18 +410,32 @@ install_airgap_tarball() {
 # do_install_rpm builds a yum repo config from the channel and version to be installed,
 # and calls yum to install the required packates.
 do_install_rpm() {
-    maj_ver="7"
-    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
-        dist_version="$(. /etc/os-release && echo "$VERSION_ID")"
-        maj_ver=$(echo "$dist_version" | sed -E -e "s/^([0-9]+)\.?[0-9]*$/\1/")
-        case ${maj_ver} in
-            7|8)
-                :
-                ;;
-            *) # In certain cases, like installing on Fedora, maj_ver will end up being something that is not 7 or 8
-                maj_ver="7"
-                ;;
-        esac
+    . /etc/os-release
+    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ "${ID_LIKE%%[ ]*}" = "suse"  ]; then
+        repodir=/etc/yum.repos.d
+        if [ -d /etc/zypp/repos.d ]; then
+            repodir=/etc/zypp/repos.d
+        fi
+        if [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
+            rpm_site_infix=microos
+            rpm_installer="zypper --gpg-auto-import-keys"
+            if [ "${TRANSACTIONAL_UPDATE=false}" != "true" ] && [ -x /usr/sbin/transactional-update ]; then
+                rpm_installer="transactional-update --no-selfupdate -d run ${rpm_installer}"
+            fi
+        else
+            maj_ver=$(echo "$VERSION_ID" | sed -E -e "s/^([0-9]+)\.?[0-9]*$/\1/")
+            case ${maj_ver} in
+                7|8)
+                    :
+                    ;;
+                *) # In certain cases, like installing on Fedora, maj_ver will end up being something that is not 7 or 8
+                    maj_ver="7"
+                    ;;
+            esac
+            rpm_site_infix=centos/${maj_ver}
+            rpm_installer="yum"
+        fi
+        
     fi
     case "${INSTALL_RKE2_CHANNEL}" in
         v*.*)
@@ -439,29 +459,31 @@ do_install_rpm() {
     if [ "${rke2_rpm_channel}" = "testing" ]; then
         rpm_site="rpm-${rke2_rpm_channel}.rancher.io"
     fi
-    rm -f /etc/yum.repos.d/rancher-rke2*.repo
-    cat <<-EOF >"/etc/yum.repos.d/rancher-rke2.repo"
+    rm -f ${repodir}/rancher-rke2*.repo
+    cat <<-EOF >"${repodir}/rancher-rke2.repo"
 [rancher-rke2-common-${rke2_rpm_channel}]
 name=Rancher RKE2 Common (${1})
-baseurl=https://${rpm_site}/rke2/${rke2_rpm_channel}/common/centos/${maj_ver}/noarch
+baseurl=https://${rpm_site}/rke2/${rke2_rpm_channel}/common/${rpm_site_infix}/noarch
 enabled=1
 gpgcheck=1
+repo_gpgcheck=0
 gpgkey=https://${rpm_site}/public.key
 [rancher-rke2-${rke2_majmin}-${rke2_rpm_channel}]
 name=Rancher RKE2 ${rke2_majmin} (${1})
-baseurl=https://${rpm_site}/rke2/${rke2_rpm_channel}/${rke2_majmin}/centos/${maj_ver}/x86_64
+baseurl=https://${rpm_site}/rke2/${rke2_rpm_channel}/${rke2_majmin}/${rpm_site_infix}/x86_64
 enabled=1
 gpgcheck=1
+repo_gpgcheck=0
 gpgkey=https://${rpm_site}/public.key
 EOF
     if [ -z "${INSTALL_RKE2_VERSION}" ]; then
-        yum -y install "rke2-${INSTALL_RKE2_TYPE}"
+        ${rpm_installer} install -y "rke2-${INSTALL_RKE2_TYPE}"
     else
         rke2_rpm_version=$(echo "${INSTALL_RKE2_VERSION}" | sed -E -e "s/[\+-]/~/g" | sed -E -e "s/v(.*)/\1/")
         if [ -n "${INSTALL_RKE2_RPM_RELEASE_VERSION}" ]; then
-            yum -y install "rke2-${INSTALL_RKE2_TYPE}-${rke2_rpm_version}-${INSTALL_RKE2_RPM_RELEASE_VERSION}"
+            ${rpm_installer} install -y "rke2-${INSTALL_RKE2_TYPE}-${rke2_rpm_version}-${INSTALL_RKE2_RPM_RELEASE_VERSION}"
         else
-            yum -y install "rke2-${INSTALL_RKE2_TYPE}-${rke2_rpm_version}"
+            ${rpm_installer} install -y "rke2-${INSTALL_RKE2_TYPE}-${rke2_rpm_version}"
         fi
     fi
 }

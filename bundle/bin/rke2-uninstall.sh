@@ -7,8 +7,18 @@ if [ ! $(id -u) -eq 0 ]; then
     exit 1
 fi
 
+. /etc/os-release
 if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
     : "${INSTALL_RKE2_ROOT:="/usr"}"
+elif [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
+    if rpm -q rke2-common >/dev/null 2>&1; then
+        : "${INSTALL_RKE2_ROOT:="/usr"}"
+        if [ -x /usr/sbin/transactional-update ]; then
+            transactional_update="transactional-update -c --no-selfupdate -d run"
+        fi
+    else
+        : "${INSTALL_RKE2_ROOT:="/opt/rke2"}"
+    fi
 else
     : "${INSTALL_RKE2_ROOT:="/usr/local"}"
 fi
@@ -33,18 +43,32 @@ uninstall_disable_services()
 }
 
 uninstall_remove_files()
-{
+{   
+    
     if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
         yum remove -y "rke2-*"
 
         rm -f /etc/yum.repos.d/rancher-rke2*.repo
     fi
 
-    find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.service -type f -delete
+    if [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
+         if rpm -q rke2-common >/dev/null 2>&1; then
+            # rke2 rpm detected
+            uninstall_cmd="zypper remove -y rke2-server rke2-agent rke2-common rke2-selinux"
+            if [ "${TRANSACTIONAL_UPDATE=false}" != "true" ] && [ -x /usr/sbin/transactional-update ]; then
+                uninstall_cmd="transactional-update -c --no-selfupdate -d run $uninstall_cmd"
+            fi
+            $uninstall_cmd
+            rm -f /etc/zypp/repos.d/rancher-rke2*.repo
+         fi
+    fi
+
+    $transactional_update find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.service -type f -delete
+    $transactional_update find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.env -type f -delete
     find /etc/systemd/system -name rke2-*.service -type f -delete
-    rm -f "${INSTALL_RKE2_ROOT}/bin/rke2"
-    rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
-    rm -rf "${INSTALL_RKE2_ROOT}/share/rke2"
+    $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2"
+    $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
+    $transactional_update rm -rf "${INSTALL_RKE2_ROOT}/share/rke2"
     rm -rf /etc/rancher/rke2
     rm -rf /etc/rancher/node
     rm -d /etc/rancher || true
@@ -56,7 +80,7 @@ uninstall_remove_files()
 
 uninstall_remove_self()
 {
-    rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-uninstall.sh"
+    $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-uninstall.sh"
 }
 
 uninstall_killall
