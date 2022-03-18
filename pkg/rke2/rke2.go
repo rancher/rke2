@@ -3,6 +3,7 @@ package rke2
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -133,6 +134,7 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	disableControllerManager := clx.Bool("disable-controller-manager")
 	disableCloudControllerManager := clx.Bool("disable-cloud-controller")
 	clusterReset := clx.Bool("cluster-reset")
+	clusterResetRestorePath := clx.String("cluster-reset-restore-path")
 
 	ex, err := initExecutor(clx, cfg, dataDir, disableETCD, isServer)
 	if err != nil {
@@ -156,6 +158,16 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 		"kube-controller-manager":  disableControllerManager || forceRestart,
 		"cloud-controller-manager": disableCloudControllerManager || forceRestart,
 		"etcd":                     disableETCD || forceRestart,
+	}
+	// adding force restart file when cluster reset restore path is passed
+	if clusterResetRestorePath != "" {
+		forceRestartFile := ForceRestartFile(dataDir)
+		if err := os.MkdirAll(filepath.Base(forceRestartFile), 0755); err != nil {
+			return err
+		}
+		if err := ioutil.WriteFile(forceRestartFile, []byte(""), 0600); err != nil {
+			return err
+		}
 	}
 	return removeOldPodManifests(dataDir, disabledItems, clusterReset)
 }
