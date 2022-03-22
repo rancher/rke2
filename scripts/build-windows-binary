@@ -18,7 +18,9 @@ else
 fi
 
 REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
-RELEASE=${PROG}-windows.amd64
+GOOS=windows
+RELEASE=${PROG}.${GOOS}-${GOARCH}
+
 
 BUILDTAGS="netgo osusergo no_stage static_build sqlite_omit_load_extension"
 GO_BUILDTAGS="${GO_BUILDTAGS} ${BUILDTAGS} ${DEBUG_TAGS}"
@@ -31,7 +33,7 @@ VERSION_FLAGS="
         -X ${RKE2_PKG}/pkg/images.DefaultEtcdImage=rancher/hardened-etcd:${ETCD_VERSION}-build20220118
         -X ${RKE2_PKG}/pkg/images.DefaultKubernetesImage=${REPO}/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
         -X ${RKE2_PKG}/pkg/images.DefaultPauseImage=rancher/pause:${PAUSE_VERSION}
-        -X ${RKE2_PKG}/pkg/images.DefaultRuntimeImage=${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
+        -X ${RKE2_PKG}/pkg/images.DefaultRuntimeImage=${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH}
 "
 
 GO_LDFLAGS="${STATIC_FLAGS} ${EXTRA_LDFLAGS}"
