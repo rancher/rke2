@@ -53,6 +53,7 @@ nav:
     - security/fips_support.md
     - security/policies.md
     - security/selinux.md
+    - security/secrets_encryption.md
   - Architecture:
     - architecture/architecture.md
   - cluster_access.md
