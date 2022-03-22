@@ -54,7 +54,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-cpi-release-manager:v1.22.5
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v2.5.0
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v2.5.0
-    ${REGISTRY}/rancher/mirrored-k8scsi-csi-node-driver-registrar:v2.5.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-node-driver-registrar:v2.5.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-resizer:v1.4.0
     ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.6.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v3.4.0
