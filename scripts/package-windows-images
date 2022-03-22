@@ -7,20 +7,15 @@ source ./scripts/version.sh
 
 mkdir -p dist/artifacts
 
-# We retag the the runtime image and remove the platform specific suffix, matching what
-# the rke2 exe expects for the defaultRuntimeImage name
-docker tag ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
-  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
-
 # 1809/LTSC
 crane --platform windows/amd64 pull \
-  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
+  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
   rancher/pause:${PAUSE_VERSION}-windows-1809-amd64 \
   rke2-windows-1809-amd64-images.tar
 
 # 2022/LTSC
 crane --platform windows/amd64 pull \
-  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
+  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
   rancher/pause:${PAUSE_VERSION}-windows-ltsc2022-amd64 \
   rke2-windows-ltsc2022-amd64-images.tar
 
