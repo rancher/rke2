@@ -13,7 +13,11 @@ var secretsEncryptSubcommands = []cli.Command{
 		SkipFlagParsing: false,
 		SkipArgReorder:  true,
 		Action:          secretsencrypt.Status,
-		Flags:           cmds.EncryptFlags,
+		Flags: append(cmds.EncryptFlags, &cli.StringFlag{
+			Name:        "output,o",
+			Usage:       "Status format. Default: text. Optional: json",
+			Destination: &cmds.ServerConfig.EncryptOutput,
+		}),
 	},
 	{
 		Name:            "enable",
@@ -85,8 +89,9 @@ func NewSecretsEncryptCommand() cli.Command {
 			"server": {
 				Default: "https://127.0.0.1:9345",
 			},
-			"f":    ignore,
-			"skip": ignore,
+			"f":      ignore,
+			"skip":   ignore,
+			"output": ignore,
 		}))
 	}
 	return cmds.NewSecretsEncryptCommand(cli.ShowAppHelp, modifiedSubcommands)
