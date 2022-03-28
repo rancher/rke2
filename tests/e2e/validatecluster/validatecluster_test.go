@@ -18,6 +18,7 @@ var serverCount = flag.Int("serverCount", 3, "number of server nodes")
 var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 
 // Environment Variables Info:
+// E2E_CNI=(canal|cilium|calico)
 // E2E_RELEASE_VERSION=v1.23.1+rke2r1 or nil for latest commit from master
 
 func Test_E2EClusterValidation(t *testing.T) {

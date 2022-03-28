@@ -7,9 +7,24 @@ GITHUB_BRANCH = (ENV['E2E_GITHUB_BRANCH'] || "master")
 RELEASE_VERSION = (ENV['E2E_RELEASE_VERSION'] || "")
 NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
 NODE_MEMORY = (ENV['E2E_NODE_MEMORY'] || 2048).to_i
+CNI = (ENV['E2E_CNI'] || "")
 # Virtualbox >= 6.1.28 require `/etc/vbox/network.conf` for expanded private networks 
 NETWORK_PREFIX = "10.10.10"
-install_type = ""
+
+def installType(vm)
+  if !RELEASE_VERSION.empty?
+    return "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"
+  end
+  # Grabs the last 5 commit SHA's from the given branch, then purges any commits that do not have a passing CI build
+  vm.provision "shell", path: "../scripts/latest_commit.sh", args: [GITHUB_BRANCH, "/tmp/rke2_commits"]
+  return "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
+end
+
+def cniType(vm)
+  if CNI.empty?
+    return ""
+  end
+end
 
 def provision(vm, roles, role_num, node_num)
   vm.box = NODE_BOXES[node_num]
@@ -22,14 +37,8 @@ def provision(vm, roles, role_num, node_num)
   load vagrant_defaults if File.exists?(vagrant_defaults)
   
   defaultOSConfigure(vm)
+  install_type = installType(vm)
   
-  if !RELEASE_VERSION.empty?
-    install_type = "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"
-  else
-    # Grabs the last 5 commit SHA's from the given branch, then purges any commits that do not have a passing CI build
-    vm.provision "shell", path: "../scripts/latest_commit.sh", args: [GITHUB_BRANCH, "/tmp/rke2_commits"]
-    install_type = "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
-  end
   vm.provision "shell", inline: "ping -c 2 rke2.io"
   
   if roles.include?("server") && role_num == 0
