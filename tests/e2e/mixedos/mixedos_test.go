@@ -1,4 +1,4 @@
-package dualos
+package mixedos
 
 import (
 	"flag"
