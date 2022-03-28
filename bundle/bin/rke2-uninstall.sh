@@ -7,6 +7,17 @@ if [ ! $(id -u) -eq 0 ]; then
     exit 1
 fi
 
+# check_target_mountpoint return success if the target directory is on a dedicated mount point
+check_target_mountpoint() {
+    mountpoint -q "$1"
+}
+
+# check_target_ro returns success if the target directory is read-only
+check_target_ro() {
+    touch "$1"/.rke2-ro-test && rm -rf "$1"/.rke2-ro-test
+    test $? -ne 0
+}
+
 . /etc/os-release
 if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
     : "${INSTALL_RKE2_ROOT:="/usr"}"
@@ -16,8 +27,12 @@ elif [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
         if [ -x /usr/sbin/transactional-update ]; then
             transactional_update="transactional-update -c --no-selfupdate -d run"
         fi
-    else
+    elif check_target_mountpoint "/usr/local" || check_target_ro "/usr/local"; then
+        # if /usr/local is mounted on a specific mount point or read-only then
+        # install we assume that installation happened in /opt/rke2
         : "${INSTALL_RKE2_ROOT:="/opt/rke2"}"
+    else
+        : "${INSTALL_RKE2_ROOT:="/usr/local"}"
     fi
 else
     : "${INSTALL_RKE2_ROOT:="/usr/local"}"
