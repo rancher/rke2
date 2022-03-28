@@ -63,8 +63,6 @@ Note: Prior to RKE2 v1.20.2 servers stored passwords on disk at `/var/lib/ranche
 
 If the `/etc/rancher/node` directory of an agent is removed, the password file should be recreated for the agent prior to startup, or the entry removed from the server or Kubernetes cluster (depending on the RKE2 version).
 
-A unique node ID can be appended to the hostname by launching RKE2 servers or agents using the `--with-node-id` flag.
-
 ## Starting the Server with the Installation Script
 
 The installation script provides units for systemd, but does not enable or start the service by default.
