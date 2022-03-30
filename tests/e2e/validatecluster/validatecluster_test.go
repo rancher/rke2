@@ -147,10 +147,10 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 		Expect(err).NotTo(HaveOccurred())
 		nodes, err := e2e.ParseNodes(kubeConfigFile, false)
 		Expect(err).NotTo(HaveOccurred())
-		pods, err := e2e.ParsePods(kubeConfigFile, false)
-		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(func(g Gomega) {
+			pods, err := e2e.ParsePods(kubeConfigFile, false)
+			g.Expect(err).NotTo(HaveOccurred())
 			count := e2e.CountOfStringInSlice("test-daemonset", pods)
 			g.Expect(len(nodes)).Should((Equal(count)), "Daemonset pod count does not match node count")
 		}, "240s", "10s").Should(Succeed())

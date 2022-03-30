@@ -167,7 +167,7 @@ func ParseNodes(kubeConfig string, print bool) ([]Node, error) {
 	res, err := RunCommand(cmd)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed cmd: %s, %w", cmd, err)
 	}
 	nodeList = strings.TrimSpace(res)
 	split := strings.Split(nodeList, "\n")

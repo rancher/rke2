@@ -7,7 +7,7 @@ GITHUB_BRANCH = (ENV['E2E_GITHUB_BRANCH'] || "master")
 RELEASE_VERSION = (ENV['E2E_RELEASE_VERSION'] || "")
 NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
 NODE_MEMORY = (ENV['E2E_NODE_MEMORY'] || 2048).to_i
-CNI = (ENV['E2E_CNI'] || "canal")
+CNI = (ENV['E2E_CNI'] || "canal") # canal, cilium and calico supported
 # Virtualbox >= 6.1.28 require `/etc/vbox/network.conf` for expanded private networks 
 NETWORK_PREFIX = "10.10.10"
 
@@ -42,6 +42,7 @@ def provision(vm, roles, role_num, node_num)
       rke2.config = <<~YAML
         write-kubeconfig-mode: 0644
         node-external-ip: #{NETWORK_PREFIX}.100
+        node-ip: #{NETWORK_PREFIX}.100
         token: vagrant-rke2
         cni: #{CNI}
       YAML
@@ -53,6 +54,7 @@ def provision(vm, roles, role_num, node_num)
       rke2.config = <<~YAML
         write-kubeconfig-mode: 0644
         node-external-ip: #{node_ip}
+        node-ip: #{node_ip}
         server: https://#{NETWORK_PREFIX}.100:9345
         token: vagrant-rke2
         cni: #{CNI}
@@ -67,6 +69,7 @@ def provision(vm, roles, role_num, node_num)
       rke2.config = <<~YAML
         write-kubeconfig-mode: 0644
         node-external-ip: #{node_ip}
+        node-ip: #{node_ip}
         server: https://#{NETWORK_PREFIX}.100:9345
         token: vagrant-rke2
       YAML
