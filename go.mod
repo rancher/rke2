@@ -68,13 +68,13 @@ require (
 	github.com/Microsoft/hcsshim v0.9.2
 	github.com/containerd/continuity v0.2.2
 	github.com/google/go-containerregistry v0.7.0
-	github.com/google/gopacket v1.1.19
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.12.0
+	github.com/libp2p/go-netroute v0.2.0
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.17.0
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.22.8-rc3.0.20220328162813-4cc9a48c1bf2 // release-1.22
+	github.com/rancher/k3s v1.22.8-rc4.0.20220330143608-21fed356e6a1 // release-1.22
 	github.com/rancher/wharfie v0.5.2
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
