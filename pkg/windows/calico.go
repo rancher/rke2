@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package windows
@@ -18,9 +19,9 @@ import (
 	"time"
 
 	"github.com/Microsoft/hcsshim"
-	"github.com/google/gopacket/routing"
 	wapi "github.com/iamacarpet/go-win64api"
 	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
+	netroute "github.com/libp2p/go-netroute"
 	util2 "github.com/rancher/k3s/pkg/agent/util"
 	"github.com/rancher/k3s/pkg/daemons/agent"
 	"github.com/rancher/k3s/pkg/daemons/config"
@@ -284,6 +285,11 @@ func checkForCorrectInterface() (bool, error) {
 }
 
 func generateCalicoNetworks(backend string) error {
+	platform, err := getPlatformType()
+	if err != nil {
+		return err
+	}
+
 	if err := deleteAllNetworksOnNodeRestart(backend); err != nil {
 		return err
 	}
@@ -302,13 +308,9 @@ func generateCalicoNetworks(backend string) error {
 
 	logrus.Debug("Waiting for management ip..")
 	mgmt := waitForManagementIP(CalicoHnsNetworkName)
-	platform, err := getPlatformType()
-	if err != nil {
-		return err
-	}
 	if platform == "ec2" || platform == "gce" {
-		err := setMetaDataServerRoute(mgmt)
-		if err != nil {
+		logrus.Debugf("recreating metadata route because platform is: %s", platform)
+		if err := setMetaDataServerRoute(mgmt); err != nil {
 			return err
 		}
 	}
@@ -474,17 +476,17 @@ func setMetaDataServerRoute(mgmt string) error {
 	}
 
 	metaIp := net.ParseIP("169.254.169.254/32")
-
-	router, err := routing.New()
+	router, err := netroute.New()
 	if err != nil {
 		return err
 	}
 
-	route, _, preferredSrc, err := router.Route(ip)
+	_, _, preferredSrc, err := router.Route(ip)
 	if err != nil {
 		return err
 	}
-	_, _, _, err = router.RouteWithSrc(route.HardwareAddr, preferredSrc, metaIp)
+
+	_, _, _, err = router.RouteWithSrc(nil, preferredSrc, metaIp) // input not used on windows
 	return err
 }
 
