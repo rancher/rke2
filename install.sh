@@ -298,9 +298,9 @@ download_dev_rpm() {
         fatal 'Development rpm requires a commit hash'
     fi
 
-    DEST=${1}
+    DEST="${1}"
     RPM_FILE=$(basename "${DEST}")
-    RPM_URL=${STORAGE_URL}/${RPM_FILE}
+    RPM_URL="${STORAGE_URL}/${RPM_FILE}"
 
     info "downloading rpm at ${RPM_URL}"
     download "${DEST}" "${RPM_URL}"
@@ -426,10 +426,19 @@ install_dev_rpm() {
     distro="${2:-centos7}"
 
     [ -z "${TMP_DIR}" ] && setup_tmp
-    download_dev_rpm "${TMP_DIR}/rke2-common-${INSTALL_RKE2_COMMIT}.${distro}.rpm"
-    download_dev_rpm "${TMP_DIR}/rke2-${INSTALL_RKE2_TYPE}-${INSTALL_RKE2_COMMIT}.${distro}.rpm"
 
-    ${rpm_installer} install -y "${TMP_DIR}"/*.rpm
+    case "${rpm_installer}" in
+        *zypper*)
+            ${rpm_installer} install --allow-unsigned-rpm -y \
+                "${STORAGE_URL}/rke2-common-${INSTALL_RKE2_COMMIT}.${distro}.rpm" \
+                "${STORAGE_URL}/rke2-${INSTALL_RKE2_TYPE}-${INSTALL_RKE2_COMMIT}.${distro}.rpm"
+            ;;
+        *)
+            download_dev_rpm "${TMP_DIR}/rke2-common-${INSTALL_RKE2_COMMIT}.${distro}.rpm"
+            download_dev_rpm "${TMP_DIR}/rke2-${INSTALL_RKE2_TYPE}-${INSTALL_RKE2_COMMIT}.${distro}.rpm"
+            ${rpm_installer} install -y  "${TMP_DIR}"/*.rpm
+            ;;
+    esac
 
     if [ -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images.${SUFFIX}.tar.zst" ]; then
         return
