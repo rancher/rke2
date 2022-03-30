@@ -2,11 +2,9 @@
 kind: pipeline
 type: docker
 name: build-amd64
-
 platform:
   os: linux
   arch: amd64
-
 steps:
   - name: validate-release
     image: rancher/dapper:v0.5.5
@@ -21,7 +19,6 @@ steps:
         - tag
       instance:
         - drone-publish.rancher.io
-
   - name: build
     image: rancher/dapper:v0.5.5
     environment:
@@ -35,7 +32,6 @@ steps:
     volumes:
       - name: docker
         path: /var/run/docker.sock
-
   - name: fossa
     image: rancher/drone-fossa:latest
     failure: ignore
@@ -54,7 +50,6 @@ steps:
       event:
         - push
         - tag
-
   - name: package-images
     image: rancher/dapper:v0.5.5
     commands:
@@ -68,7 +63,6 @@ steps:
         - tag
       instance:
         - drone-publish.rancher.io
-
   - name: scan
     image: rancher/dapper:v0.5.5
     failure: ignore
@@ -80,10 +74,9 @@ steps:
     when:
       instance:
         - drone-publish.rancher.io
-
   - name: test
     image: rancher/dapper:v0.5.5
-    secrets: [ gcloud_auth ]
+    secrets: [gcloud_auth]
     environment:
       ENABLE_REGISTRY: 'true'
       GCLOUD_AUTH:
@@ -93,7 +86,6 @@ steps:
     volumes:
       - name: docker
         path: /var/run/docker.sock
-
   - name: publish-image-runtime
     image: rancher/hardened-build-base:v1.17.5b7
     commands:
@@ -115,7 +107,6 @@ steps:
       ref:
         - refs/head/master
         - refs/tags/*
-
   - name: package-windows-images
     image: rancher/dapper:v0.5.5
     commands:
@@ -129,7 +120,6 @@ steps:
     volumes:
       - name: docker
         path: /var/run/docker.sock
-
   - name: publish-dist-artifacts
     image: plugins/github-release
     settings:
@@ -150,21 +140,17 @@ steps:
       ref:
         - refs/head/master
         - refs/tags/*
-
 volumes:
   - name: docker
     host:
       path: /var/run/docker.sock
-
 ---
 kind: pipeline
 type: docker
 name: dispatch
-
 platform:
   os: linux
   arch: amd64
-
 steps:
   - name: dispatch
     image: rancher/dapper:v0.5.5
@@ -186,39 +172,31 @@ steps:
       ref:
         - refs/head/master
         - refs/tags/*
-
 volumes:
   - name: docker
     host:
       path: /var/run/docker.sock
-
 depends_on:
   - build-amd64
 ---
 kind: pipeline
 type: docker
 name: build-s390x
-
 platform:
   os: linux
   arch: amd64
-
 node:
   arch: s390x
-
 steps:
   - name: build
     image: rancher/dapper:v0.5.8
-    failure: ignore
     commands:
       - dapper -f Dockerfile --target dapper make dapper-ci
     volumes:
       - name: docker
         path: /var/run/docker.sock
-
   - name: package-images
     image: rancher/dapper:v0.5.8
-    failure: ignore
     commands:
       - dapper -f Dockerfile --target dapper make package-images
     volumes:
@@ -229,10 +207,8 @@ steps:
         - tag
       instance:
         - drone-publish.rancher.io
-
   - name: publish-image-runtime
     image: rancher/hardened-build-base:v1.16.10b7
-    failure: ignore
     commands:
       - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
@@ -252,10 +228,8 @@ steps:
       ref:
         - refs/head/master
         - refs/tags/*
-
   - name: publish-dist-artifacts
     image: rancher/drone-images:github-release-s390x
-    failure: ignore
     settings:
       api_key:
         from_secret: github_token
@@ -278,7 +252,6 @@ volumes:
   - name: docker
     host:
       path: /var/run/docker.sock
-
 ---
 kind: pipeline
 type: docker
@@ -307,4 +280,3 @@ steps:
 depends_on:
   - build-amd64
   - build-s390x
-...
