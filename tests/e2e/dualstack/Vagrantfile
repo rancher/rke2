@@ -26,15 +26,13 @@ def provision(vm, roles, role_num, node_num)
     :libvirt__guest_ipv6 => "yes",
     :libvirt__ipv6_address => "#{NETWORK6_PREFIX}::1",
     :libvirt__ipv6_prefix => "64"
-  
-  
-  
+    
   vagrant_defaults = '../vagrantdefaults.rb'
   load vagrant_defaults if File.exists?(vagrant_defaults)
   
   defaultOSConfigure(vm)
   
-  vm.provision "IPv6 Setup", type: "shell", path: "../scripts/ipv6.sh", args: [node_ip6, CNI]
+  vm.provision "IPv6 Setup", type: "shell", path: "../scripts/ipv6.sh", args: [node_ip6, CNI, vm.box]
   
   if !RELEASE_VERSION.empty?
     install_type = "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"

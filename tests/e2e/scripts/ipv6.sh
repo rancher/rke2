@@ -1,9 +1,12 @@
 #!/bin/bash
 ip6_addr=$1
 cni=$2
+os=$3
 
-netplan set ethernets.eth1.accept-ra=false
-netplan apply
+if [ -z "${os##*ubuntu2004*}" ]; then
+  netplan set ethernets.eth1.accept-ra=false
+  netplan apply
+fi
 
 sysctl -w net.ipv6.conf.all.disable_ipv6=0
 sysctl -w net.ipv6.conf.eth1.accept_dad=0
