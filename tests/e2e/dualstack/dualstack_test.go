@@ -151,7 +151,9 @@ var _ = Describe("Verify DualStack Configuration", func() {
 				}
 				cmd := fmt.Sprintf("kubectl exec %s --kubeconfig=%s -- /bin/bash -c ' curl -L --insecure http://%s'",
 					pod.Name, kubeConfigFile, ip)
-				Expect(e2e.RunCommand(cmd)).Should(ContainSubstring("Welcome to nginx!"), "failed cmd: "+cmd)
+				Eventually(func() (string, error) {
+					return e2e.RunCommand(cmd)
+				}, "30s", "5s").Should(ContainSubstring("Welcome to nginx!"), "failed cmd: "+cmd)
 			}
 		}
 	})
