@@ -32,7 +32,7 @@ def provision(vm, roles, role_num, node_num)
   
   defaultOSConfigure(vm)
   
-  vm.provision "IPv6 Setup", type: "shell", path: "../scripts/ipv6.sh", args: [node_ip6, CNI, vm.box]
+  vm.provision "IPv6 Setup", type: "shell", path: "../scripts/ipv6.sh", args: [node_ip4, node_ip6, CNI, vm.box]
   
   if !RELEASE_VERSION.empty?
     install_type = "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"

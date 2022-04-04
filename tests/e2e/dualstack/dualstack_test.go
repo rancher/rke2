@@ -48,8 +48,10 @@ func getObjIPs(cmd string) ([]objIP, error) {
 		fields := strings.Fields(obj)
 		if len(fields) > 2 {
 			objIPs = append(objIPs, objIP{name: fields[0], ipv4: fields[1], ipv6: fields[2]})
+		} else if len(fields) > 1 {
+			objIPs = append(objIPs, objIP{name: fields[0], ipv4: fields[1]})
 		} else {
-			return nil, fmt.Errorf("%s does not have IPv4 and Ipv6 assigned", obj)
+			objIPs = append(objIPs, objIP{name: fields[0]})
 		}
 	}
 	return objIPs, nil
@@ -134,7 +136,7 @@ var _ = Describe("Verify DualStack Configuration", func() {
 		Eventually(func() (string, error) {
 			cmd := "kubectl get pods -o=name -l k8s-app=nginx-app-clusterip --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
 			return e2e.RunCommand(cmd)
-		}, "240s", "5s").Should(ContainSubstring("ds-clusterip-pod"))
+		}, "120s", "5s").Should(ContainSubstring("ds-clusterip-pod"))
 
 		// Checks both IPv4 and IPv6
 		clusterips, err := e2e.FetchClusterIP(kubeConfigFile, "ds-clusterip-svc", true)
@@ -149,11 +151,10 @@ var _ = Describe("Verify DualStack Configuration", func() {
 				if !strings.HasPrefix(pod.Name, "ds-clusterip-pod") {
 					continue
 				}
-				cmd := fmt.Sprintf("kubectl exec %s --kubeconfig=%s -- /bin/bash -c ' curl -L --insecure http://%s'",
-					pod.Name, kubeConfigFile, ip)
+				cmd := fmt.Sprintf("curl -L --insecure http://%s", ip)
 				Eventually(func() (string, error) {
-					return e2e.RunCommand(cmd)
-				}, "30s", "5s").Should(ContainSubstring("Welcome to nginx!"), "failed cmd: "+cmd)
+					return e2e.RunCmdOnNode(cmd, serverNodeNames[0])
+				}, "60s", "5s").Should(ContainSubstring("Welcome to nginx!"), "failed cmd: "+cmd)
 			}
 		}
 	})
@@ -189,11 +190,11 @@ var _ = Describe("Verify DualStack Configuration", func() {
 			cmd = "curl -L --insecure http://" + node.ipv4 + ":" + nodeport + "/name.html"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "5s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
+			}, "10s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
 			cmd = "curl -L --insecure http://[" + node.ipv6 + "]:" + nodeport + "/name.html"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "5s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
+			}, "10s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
 		}
 	})
 
