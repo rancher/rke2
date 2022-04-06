@@ -7,6 +7,7 @@ GITHUB_BRANCH = (ENV['E2E_GITHUB_BRANCH'] || "master")
 RELEASE_VERSION = (ENV['E2E_RELEASE_VERSION'] || "")
 NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
 NODE_MEMORY = (ENV['E2E_NODE_MEMORY'] || 2048).to_i
+CNI = (ENV['E2E_CNI'] || "canal") # canal, cilium and calico supported
 NETWORK4_PREFIX = "10.10.10"
 NETWORK6_PREFIX = "a11:decf:c0ff:ee"
 install_type = ""
@@ -25,23 +26,22 @@ def provision(vm, roles, role_num, node_num)
     :libvirt__guest_ipv6 => "yes",
     :libvirt__ipv6_address => "#{NETWORK6_PREFIX}::1",
     :libvirt__ipv6_prefix => "64"
-  
-  vm.provision "shell", path: "../scripts/ipv6.sh", args: [node_ip6]
-  
-  
+    
   vagrant_defaults = '../vagrantdefaults.rb'
   load vagrant_defaults if File.exists?(vagrant_defaults)
   
   defaultOSConfigure(vm)
   
+  vm.provision "IPv6 Setup", type: "shell", path: "../scripts/ipv6.sh", args: [node_ip4, node_ip6, CNI, vm.box]
+  
   if !RELEASE_VERSION.empty?
     install_type = "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"
   else
     # Grabs the last 5 commit SHA's from the given branch, then purges any commits that do not have a passing CI build
-    vm.provision "shell", path: "../scripts/latest_commit.sh", args: [GITHUB_BRANCH, "/tmp/rke2_commits"]
+    vm.provision "Find Latest Commit", type: "shell", path: "../scripts/latest_commit.sh", args: [GITHUB_BRANCH, "/tmp/rke2_commits"]
     install_type = "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
   end
-  vm.provision "shell", inline: "ping -c 2 rke2.io"
+  vm.provision "Ping Check", type: "shell", inline: "ping -c 2 rke2.io"
   
   if roles.include?("server") && role_num == 0
     vm.provision :rke2, run: 'once' do |rke2|
@@ -55,7 +55,7 @@ def provision(vm, roles, role_num, node_num)
         cluster-cidr: 10.42.0.0/16,2001:cafe:42:0::/56
         service-cidr: 10.43.0.0/16,2001:cafe:42:1::/112
         bind-address: #{NETWORK4_PREFIX}.100
-        cni: calico
+        cni: #{CNI}
       YAML
     end
   elsif roles.include?("server") && role_num != 0
@@ -70,7 +70,7 @@ def provision(vm, roles, role_num, node_num)
         token: vagrant-rke2
         cluster-cidr: 10.42.0.0/16,2001:cafe:42:0::/56
         service-cidr: 10.43.0.0/16,2001:cafe:42:1::/112
-        cni: calico
+        cni: #{CNI}
       YAML
     end
   end
@@ -82,6 +82,7 @@ def provision(vm, roles, role_num, node_num)
       rke2.config = <<~YAML
         write-kubeconfig-mode: '0644'
         node-external-ip: #{node_ip4},#{node_ip6}
+        node-ip: #{node_ip4},#{node_ip6}
         server: https://#{NETWORK4_PREFIX}.100:9345
         token: vagrant-rke2
       YAML
@@ -91,12 +92,7 @@ end
 
 Vagrant.configure("2") do |config|
   config.vagrant.plugins = ["vagrant-rke2", "vagrant-reload", "vagrant-libvirt"]
-  # Default provider is libvirt, virtualbox is only provided as a backup
   config.vm.provider "libvirt" do |v|
-    v.cpus = NODE_CPUS
-    v.memory = NODE_MEMORY
-  end
-  config.vm.provider "virtualbox" do |v|
     v.cpus = NODE_CPUS
     v.memory = NODE_MEMORY
   end
