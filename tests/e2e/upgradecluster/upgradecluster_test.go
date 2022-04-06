@@ -17,8 +17,10 @@ var nodeOS = flag.String("nodeOS", "generic/ubuntu2004", "VM operating system")
 var serverCount = flag.Int("serverCount", 3, "number of server nodes")
 var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 
-//valid format: RELEASE_VERSION=v1.23.1+rke2r1 or nil for latest commit from master
-var installType = flag.String("installType", "", "version or nil to use latest commit")
+// Environment Variables Info:
+// E2E_RELEASE_VERSION=v1.23.3+rke2r1
+// OR
+// E2E_RELEASE_CHANNEL=(commit|latest|stable), commit pulls latest commit from master
 
 func Test_E2EUpgradeValidation(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -36,7 +38,7 @@ var _ = Describe("Verify Upgrade", func() {
 	Context("Cluster :", func() {
 		It("Starts up with no issues", func() {
 			var err error
-			serverNodeNames, agentNodeNames, err = e2e.CreateCluster(*nodeOS, *serverCount, *agentCount, *installType)
+			serverNodeNames, agentNodeNames, err = e2e.CreateCluster(*nodeOS, *serverCount, *agentCount)
 			Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog())
 			fmt.Println("CLUSTER CONFIG")
 			fmt.Println("OS:", *nodeOS)
