@@ -128,15 +128,10 @@ func EtcdSnapshot(clx *cli.Context, cfg Config) error {
 
 func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	dataDir := clx.String("data-dir")
-	disableETCD := clx.Bool("disable-etcd")
-	disableScheduler := clx.Bool("disable-scheduler")
-	disableAPIServer := clx.Bool("disable-apiserver")
-	disableControllerManager := clx.Bool("disable-controller-manager")
-	disableCloudControllerManager := clx.Bool("disable-cloud-controller")
 	clusterReset := clx.Bool("cluster-reset")
 	clusterResetRestorePath := clx.String("cluster-reset-restore-path")
 
-	ex, err := initExecutor(clx, cfg, dataDir, disableETCD, isServer)
+	ex, err := initExecutor(clx, cfg, isServer)
 	if err != nil {
 		return err
 	}
@@ -153,11 +148,12 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 		os.Remove(ForceRestartFile(dataDir))
 	}
 	disabledItems := map[string]bool{
-		"kube-apiserver":           disableAPIServer || forceRestart,
-		"kube-scheduler":           disableScheduler || forceRestart,
-		"kube-controller-manager":  disableControllerManager || forceRestart,
-		"cloud-controller-manager": disableCloudControllerManager || forceRestart,
-		"etcd":                     disableETCD || forceRestart,
+		"cloud-controller-manager": forceRestart || clx.Bool("disable-cloud-controller"),
+		"etcd":                     forceRestart || clx.Bool("disable-etcd"),
+		"kube-apiserver":           forceRestart || clx.Bool("disable-apiserver"),
+		"kube-controller-manager":  forceRestart || clx.Bool("disable-controller-manager"),
+		"kube-proxy":               forceRestart || clx.Bool("disable-kube-proxy"),
+		"kube-scheduler":           forceRestart || clx.Bool("disable-scheduler"),
 	}
 	// adding force restart file when cluster reset restore path is passed
 	if clusterResetRestorePath != "" {
