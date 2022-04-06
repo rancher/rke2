@@ -17,7 +17,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool, isServer bool) (*pebinaryexecutor.PEBinaryConfig, error) {
+func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*pebinaryexecutor.PEBinaryConfig, error) {
 	// This flag will only be set on servers, on agents this is a no-op and the
 	// resolver's default registry will get updated later when bootstrapping
 	cfg.Images.SystemDefaultRegistry = clx.String("system-default-registry")
@@ -26,6 +26,7 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 		return nil, err
 	}
 
+	dataDir := clx.String("data-dir")
 	if err := defaults.Set(clx, dataDir); err != nil {
 		return nil, err
 	}
@@ -65,7 +66,7 @@ func initExecutor(clx *cli.Context, cfg Config, dataDir string, disableETCD bool
 		DataDir:         dataDir,
 		AuditPolicyFile: clx.String("audit-policy-file"),
 		KubeletPath:     cfg.KubeletPath,
-		DisableETCD:     disableETCD,
+		DisableETCD:     clx.Bool("disable-etcd"),
 		IsServer:        isServer,
 	}, nil
 }
