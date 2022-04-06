@@ -66,6 +66,3 @@ spec:
           interface: eth1.* " >> /var/lib/rancher/rke2/server/manifests/e2e-calico.yaml
   ;;
 esac
-
-
-
