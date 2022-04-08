@@ -3,25 +3,30 @@ set -ex
 
 cd $(dirname $0)/..
 
+source ./scripts/version.sh
+
+export COMMIT
+export DAPPER_SOURCE=${DAPPER_SOURCE:-$(realpath -q .)}
+export COMBARCH='x86_64-amd64'
+
+RPM_VERSION="${DOCKERIZED_VERSION//-dev/}+rke2r0.testing.0"
+
 TMPDIR=$(mktemp -d -t)
 SCRIPT_LIST=$(mktemp "${TMPDIR}/XXXXXX")
 cleanup() {
   exit_code=$?
   trap - EXIT INT
   rm -rf "${TMPDIR}"
+  git tag -d "${RPM_VERSION}" || true
   exit ${exit_code}
 }
 trap cleanup EXIT INT
 
-export DAPPER_SOURCE=${DAPPER_SOURCE:-$(realpath -q .)}
-export COMMIT="${DRONE_COMMIT:-$(git rev-parse HEAD)}"
-export COMBARCH='x86_64-amd64'
+curl -L https://github.com/rancher/rke2-packaging/archive/master.tar.gz | tar --strip-components=1 -xzC "${TMPDIR}"
 
 export SRC_PATH="${TMPDIR}/source"
-export DIST_PATH=$(realpath -mq ./dist/rpms)
+DIST_PATH=$(realpath -mq ./dist/rpms)
 USER=$(whoami)
-
-curl -L https://github.com/rancher/rke2-packaging/archive/master.tar.gz | tar --strip-components=1 -xzC "${TMPDIR}"
 
 [ -d "${DIST_PATH}" ] || mkdir "${DIST_PATH}"
 [ -d "${SRC_PATH}" ] || mkdir "${SRC_PATH}"
@@ -39,6 +44,9 @@ echo "%_topdir ${HOME}/rpmbuild" > ~/.rpmmacros
 echo "%_sharedstatedir /var/lib" >> ~/.rpmmacros
 echo "%_localstatedir /var" >> ~/.rpmmacros
 
+# Set rpm version as lightweight tag
+git tag "${RPM_VERSION}"
+
 find -L "${TMPDIR}" -name 'build-*' -print >"${SCRIPT_LIST}"
 while IFS= read -r script; do
   if [ "${USER}" != 'root' ]; then
@@ -46,20 +54,17 @@ while IFS= read -r script; do
     sed -i -e "s%/root%${HOME}%g" "${script}"
   fi
 
-  # Remove inline rpmmacros
-  sed -i -e '/rpmmacros/d' "${script}"
-
   # Modify rpmbuild flags
   #   --nodeps  do not check for build dependencies, systemd-rpm-macros should suffice
   #   -bb       do not build src packages, not needed for commit rpms
-  sed -i -e 's/^rpmbuild/rpmbuild --nodeps/' "${script}"
-  sed -i -e '/^rpmbuild/,/.spec$/{s/-ba/-bb/}' -e '/rpmbuild\/SRPMS\/\*/d' "${script}"
+  sed -i  -e 's/^rpmbuild/rpmbuild --nodeps/' \
+          -e '/^rpmbuild/,/.spec$/{s/-ba/-bb/}' -e '/rpmbuild\/SRPMS\/\*/d' \
+          "${script}"
 
-  # Replace source and dist paths
-  sed -i -e "s%/source%${TMPDIR}%g" -e "s%${TMPDIR}/dist%$DIST_PATH%g" -e '/SRC_PATH=/d' "${script}"
-
-  # Force build script to use commit hash as part of the rpm version
-  sed -i -e "s/TREE_STATE=clean/TREE_STATE=dirty/" "$(dirname ${script})/version"
+  # Replace hardcoded paths and remove inline rpm macros
+  sed -i  -e "s%/source%${TMPDIR}%g" -e "s%${TMPDIR}/dist%$DIST_PATH%g" -e '/SRC_PATH=/d' \
+          -e '/rpmmacros/d' \
+          "${script}"
 
   # Build rpm
   bash "${script}"

@@ -23,8 +23,8 @@ RUN if [ "${ARCH}" != "s390x" ]; then \
     	apk --no-cache add mingw-w64-gcc; \
     fi
 
-FROM opensuse/tumbleweed AS rpm-macros
-RUN zypper -n install --force systemd-rpm-macros
+FROM registry.suse.com/bci/bci-base AS rpm-macros
+RUN zypper install -y systemd-rpm-macros
 
 # Dapper/Drone/CI environment
 FROM build AS dapper

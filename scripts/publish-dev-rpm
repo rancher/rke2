@@ -7,9 +7,18 @@ set -ex
 
 cd $(dirname $0)/..
 
-COMMIT="${DRONE_COMMIT:-$(git rev-parse HEAD)}"
+source ./scripts/version.sh
 
 RPM_LIST=$(mktemp -t)
+TMPDIR=$(mktemp -d)
+cleanup() {
+  exit_code=$?
+  trap - EXIT INT
+  rm -rf "${TMPDIR}" "${RPM_LIST}"
+  exit ${exit_code}
+}
+trap cleanup EXIT INT
+
 RPM_DIR='./dist/rpms'
 
 find "${RPM_DIR}" -mindepth 2 -type f \( -name '*.rpm' -not -name '*.src.rpm' \) -print >"${RPM_LIST}"
@@ -21,24 +30,15 @@ done <"${RPM_LIST}"
 
 umask 077
 
-TMPDIR=$(mktemp -d)
-cleanup() {
-  exit_code=$?
-  trap - EXIT INT
-  rm -rf "${TMPDIR}"
-  exit ${exit_code}
-}
-trap cleanup EXIT INT
-
 GCLOUD_JSON=${TMPDIR}/.gcloud.json
-[ -z "${GCLOUD_AUTH}" ] || echo "${GCLOUD_AUTH}" >${GCLOUD_JSON}
+[ -z "${GCLOUD_AUTH}" ] || echo "${GCLOUD_AUTH}" >"${GCLOUD_JSON}"
 [ -s "${GCLOUD_JSON}" ] || {
   echo "gcloud auth not defined" >&2
   exit 1
 }
 
 BOTO_CONF=${TMPDIR}/.boto
-[ -s "${BOTO_CONF}" ] || cat >${BOTO_CONF} <<END
+[ -s "${BOTO_CONF}" ] || cat >"${BOTO_CONF}" <<END
 [Credentials]
 gs_service_key_file = ${GCLOUD_JSON}
 [Boto]
@@ -49,7 +49,7 @@ default_api_version = 2
 default_project_id = rancher-dev
 END
 
-[ -d "${TMPDIR}/gsutil" ] || curl -sfL https://storage.googleapis.com/pub/gsutil.tar.gz | tar xz -C ${TMPDIR}
+[ -d "${TMPDIR}/gsutil" ] || curl -sfL https://storage.googleapis.com/pub/gsutil.tar.gz | tar xz -C "${TMPDIR}"
 
 HOME=${TMPDIR}
 PATH=${PATH}:${HOME}/gsutil
