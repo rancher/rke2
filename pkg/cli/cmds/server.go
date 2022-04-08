@@ -109,7 +109,7 @@ var (
 		"agent-token":                       copy,
 		"agent-token-file":                  copy,
 		"server":                            copy,
-		"secrets-encryption":                copy,
+		"secrets-encryption":                hide,
 		"no-flannel":                        drop,
 		"no-deploy":                         drop,
 		"cluster-secret":                    drop,
