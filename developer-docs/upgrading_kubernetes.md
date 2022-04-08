@@ -36,7 +36,6 @@ Create a new release tag at the [image-build-kubernetes](https://github.com/ranc
 
 This will take a few minutes for CI to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kubernetes).
 
-
 ## Update RKE2
 
 The following files have references that will need to be updated in the respective locations. Replace the found version with the desired version. There are also references in documentation that should be updated and kept in sync. 
@@ -99,7 +98,7 @@ Once complete, the process is repeated in the [rke2-packaging](https://github.co
 
 Make sure that CI passes. This is for RPM availability in the testing channel.
 
-Once complete, perform the steps below for the "latest" RPMs.
+Once complete, perform the steps below for the "**latest**" RPMs.
 
 * Click "Releases"
 * Click "Draft new release"
@@ -109,14 +108,13 @@ Once complete, perform the steps below for the "latest" RPMs.
 
 We will wait at least 24 hours in case the community finds an issue. Patches will need at least 24 hours. 
 
-We then create the "stable" RPMs. Follow the steps below.
+We then create the "**stable**" RPMs. Follow the steps below.
 
 * Click "Releases"
 * Click "Draft new release"
 * Enter the desired version into the "Tag version" box. 
     * Example tag: `v1.23.5+rke2r1.stable.0`
     * The first part of the tag here must match the tag created in the RKE2 repo.
-
 
 ### Release Notes
 
@@ -127,11 +125,10 @@ The 2 primary sections of the release notes are the "Changes since ..." and the 
 #### Packaged Components
 It can be confusing to track where each number for a component is getting pulled from. Below provides
 some locations to check component versions:
+
 - Etcd: Look in `scripts/version` for `ETCD_VERSION`.
 - Containerd: Look in `Dockerfile` for `rancher/hardened-containerd`.
 - Runc: Look in `Dockerfile` for `rancher/hardened-runc`.
-- CNI Plugins: Look in `scripts/build-images` for what version of `rancher/hardened-calico` is used,
- then look at the [image-build-calico](https://github.com/rancher/image-build-calico/) repo and in the `Dockerfile` the `CNI_PLUGINS_VERSION` (old version) or `CNI_IMAGE` (new version) should be listed.
 - Flannel: Look in `scripts/build-images` for `rancher/hardened-flannel`.
 - Calico: Look in `scripts/build-images` for `rancher/hardened-calico`.
 - Metrics-server: Look in `scripts/build-images` for `rancher/hardened-k8s-metrics-server`.
@@ -223,6 +220,17 @@ After promoting the release to stable, we need to update the channel server. Thi
 * Update the line: `latest: <release>` to be the recent release. e.g. `v1.21.5+rke2r1`.
 * Verify updated in the JSON output from a call [here](https://update.rke2.io/v1-release/channels).
 
+### Checking downstream components
+
+Every RKE2 release, from RC to primary, triggers the release process of the downstream components listed in the `scripts/dispatch` script. It is worth ensuring each of them successfully finishes.
+
+- system-agent-installer-rke2
+  - [Repository](https://github.com/rancher/system-agent-installer-rke2)
+  - [Drone publish job](https://drone-publish.rancher.io/rancher/system-agent-installer-rke2)
+- rke2-upgrade
+  - [Repository](https://github.com/rancher/rke2-upgrade)
+  - [Drone publish job](https://drone-publish.rancher.io/rancher/rke2-upgrade)
+
 ## Release Process Overview
 
 ```mermaid
@@ -235,7 +243,7 @@ flowchart TB;
    update_kubeproxy-->|Once RKE2-charts<br/>index refreshes|update_rke_refs;
    cut_k8s-->|From Kubernetes<br/>1.22 onwards|update_rke_refs([Update RKE2 components<br/>version references]);
    update_rke_refs-->|Once RKE2 PR's<br/>are approved|cut_rke2_rc([Cut RKE2<br/>release candidate]);
-   cut_rke2_rc-->cut_rke2_rc_rpm([Cut RKE2<br/>testing rpm's]);
+   cut_rke2_rc-->cut_rke2_rc_rpm([Cut RKE2<br/>testing rpms]);
  end
 
  subgraph kdm_rc[Rancher KDM RC Release Flow]
@@ -245,9 +253,9 @@ flowchart TB;
 
  subgraph primary_release[RKE2 Primary Release Flow]
    direction LR;
-   cut_rke([Cut RKE2 primary release])-->cut_rke2_latest_rpm([Cut RKE2 latest rpm's]);
+   cut_rke([Cut RKE2 primary pre-release])-->cut_rke2_testing_rpm([Cut RKE2 testing rpms]);
+   cut_rke2_testing_rpm-->|Once QA approves<br/>testing rpms|cut_rke2_latest_rpm([Cut RKE2 latest rpms]);
    cut_rke2_latest_rpm-->update_release_notes([Update release notes]);
-   update_release_notes-->|At least 24hrs<br/>have passed|GA([Set RKE2 releases as generally available]);
  end
 
  subgraph kdm_stable[Rancher KDM Stable Release Flow]
@@ -257,7 +265,8 @@ flowchart TB;
 
  subgraph stable_release[RKE2 Stable Release Flow]
    direction LR;
-   cut_rke_stable_rpm([Cut RKE2 stable rpm])-->rke_stable([Update RKE2 channel server configurations]);
+   cut_rke_stable_rpm([Cut RKE2 stable rpm])-->GA([Set RKE2 releases as generally available])
+   GA-->rke_stable([Update RKE2 channel server configurations]);
  end
 
  prerelease-.->|Once Kubernetes release<br/>is generally available|rc;
@@ -265,6 +274,7 @@ flowchart TB;
  kdm_rc-->|Once QA approves RKE2 release candidates|primary_release;
  primary_release-->kdm_stable;
  kdm_stable-->|Once QA approves RKE2 releases|stable_release;
+ stable_release-->postrelease([Close cut release ticket])
 
  classDef edgeLabel fill:#e8e8e8,color:#333,background-color:#e8e8e8;
  classDef default fill:#fff,stroke:#35b9ab,stroke-width:5px,color:#333;
