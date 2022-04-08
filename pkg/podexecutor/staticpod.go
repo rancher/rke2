@@ -12,7 +12,6 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -20,7 +19,6 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
-	"github.com/rancher/rke2/pkg/auth"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/staticpod"
@@ -110,7 +108,6 @@ type StaticPodConfig struct {
 	CISMode               bool
 	DisableETCD           bool
 	IsServer              bool
-	Authenticator         authenticator.Request
 }
 
 type CloudProviderConfig struct {
@@ -211,10 +208,7 @@ func (s *StaticPodConfig) KubeProxy(ctx context.Context, args []string) error {
 
 // APIServerHandlers returning the authenticator and request handler for requests to the apiserver endpoint.
 func (s *StaticPodConfig) APIServerHandlers(ctx context.Context) (authenticator.Request, http.Handler, error) {
-	for s.Authenticator == nil {
-		runtime.Gosched()
-	}
-	return s.Authenticator, http.NotFoundHandler(), nil
+	return nil, http.NotFoundHandler(), nil
 }
 
 // APIServer sets up the apiserver static pod once etcd is available.
@@ -251,25 +245,11 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 			return err
 		}
 	}
-	s.Authenticator, err = auth.FromArgs(args)
-	if err != nil {
-		return err
-	}
-	kubeletPreferredAddressTypesFound := false
 	for i, arg := range args {
 		// This is an option k3s adds that does not exist upstream
 		if strings.HasPrefix(arg, "--advertise-port=") {
 			args = append(args[:i], args[i+1:]...)
 		}
-		if strings.HasPrefix(arg, "--basic-auth-file=") {
-			args = append(args[:i], args[i+1:]...)
-		}
-		if strings.HasPrefix(arg, "--kubelet-preferred-address-types=") {
-			kubeletPreferredAddressTypesFound = true
-		}
-	}
-	if !kubeletPreferredAddressTypesFound {
-		args = append([]string{"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}, args...)
 	}
 	files := []string{}
 	if !s.DisableETCD {
