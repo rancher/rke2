@@ -46,18 +46,19 @@ def provision(vm, role, role_num, node_num)
       rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
       rke2.config = <<~YAML
-          write-kubeconfig-mode: 0644
-          node-external-ip: #{NETWORK_PREFIX}.100
-          token: vagrant-rke2
-          cni: calico
+        write-kubeconfig-mode: '0644'
+        node-external-ip: #{NETWORK_PREFIX}.100
+        token: vagrant-rke2
+        cni: calico
       YAML
     end
+    vm.provision "Install sonobuoy", type: "shell", path: "../scripts/install_sonobuoy.sh"
   elsif role.include?("server") && role_num != 0
     vm.provision :rke2, run: 'once' do |rke2|
       rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
       rke2.config = <<~YAML
-        write-kubeconfig-mode: 0644
+        write-kubeconfig-mode: '0644'
         node-external-ip: #{node_ip}
         server: https://#{NETWORK_PREFIX}.100:9345
         token: vagrant-rke2
@@ -71,7 +72,7 @@ def provision(vm, role, role_num, node_num)
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
       rke2.install_path = false
       rke2.config = <<~YAML
-        write-kubeconfig-mode: 0644
+        write-kubeconfig-mode: '0644'
         node-external-ip: #{node_ip}
         server: https://#{NETWORK_PREFIX}.100:9345
         token: vagrant-rke2
@@ -79,7 +80,7 @@ def provision(vm, role, role_num, node_num)
     end
   end
   if role.include?("windows-agent")
-    if !vm.box.match?(/windows.*2022/)
+    if !vm.box.match?(/windows.*2022/) && !vm.box.match?(/windows.*2019/)
       puts "invalid box: " + vm.box + " found for windows agent"
       abort
     end

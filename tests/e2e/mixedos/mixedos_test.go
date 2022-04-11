@@ -110,6 +110,18 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 		_, err := e2e.ParsePods(kubeConfigFile, true)
 		Expect(err).NotTo(HaveOccurred())
 	})
+	It("Runs the mixed os sonobuoy plugin", func() {
+		cmd := "sonobuoy run --kubeconfig=/etc/rancher/rke2/rke2.yaml --plugin my-sonobuoy-plugins/mixed-workload-e2e/mixed-workload-e2e.yaml --aggregator-node-selector kubernetes.io/os:linux --wait"
+		res, err := e2e.RunCmdOnNode(cmd, serverNodeNames[0])
+		Expect(err).NotTo(HaveOccurred(), "failed output:"+res)
+		cmd = "sonobuoy retrieve --kubeconfig=/etc/rancher/rke2/rke2.yaml"
+		testResultTar, err := e2e.RunCmdOnNode(cmd, serverNodeNames[0])
+		Expect(err).NotTo(HaveOccurred(), "failed cmd: "+cmd)
+		cmd = "sonobuoy results " + testResultTar
+		res, err = e2e.RunCmdOnNode(cmd, serverNodeNames[0])
+		Expect(err).NotTo(HaveOccurred(), "failed cmd: "+cmd)
+		Expect(res).Should(ContainSubstring("Plugin: mixed-workload-e2e\nStatus: passed\n"))
+	})
 
 })
 
