@@ -21,13 +21,13 @@ var windowsAgentCount = flag.Int("windowsAgentCount", 1, "number of windows agen
 
 const defaultWindowsOS = "peru/windows-server-2019-standard-x64-eval"
 
-func Test_E2EClusterValidation(t *testing.T) {
+func Test_E2EMixedOSValidation(t *testing.T) {
 	flag.Parse()
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Validate Cluster Suite")
 }
 
-func createDualCluster(nodeOS string, serverCount, linuxAgentCount, windowsAgentCount int) ([]string, []string, []string, error) {
+func createMixedCluster(nodeOS string, serverCount, linuxAgentCount, windowsAgentCount int) ([]string, []string, []string, error) {
 	serverNodeNames := []string{}
 	for i := 0; i < serverCount; i++ {
 		serverNodeNames = append(serverNodeNames, "server-"+strconv.Itoa(i))
@@ -73,7 +73,7 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 
 	It("Starts up with no issues", func() {
 		var err error
-		serverNodeNames, linuxAgentNames, windowsAgentNames, err = createDualCluster(*nodeOS, *serverCount, *linuxAgentCount, *windowsAgentCount)
+		serverNodeNames, linuxAgentNames, windowsAgentNames, err = createMixedCluster(*nodeOS, *serverCount, *linuxAgentCount, *windowsAgentCount)
 		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog())
 		fmt.Println("CLUSTER CONFIG")
 		fmt.Println("OS:", *nodeOS)
