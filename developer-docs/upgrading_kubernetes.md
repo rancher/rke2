@@ -4,25 +4,23 @@ From time to time, we need to update the version of Kubernetes used by RKE2. Thi
 
 **NOTE:** This process will be needed whenever a new release is required, even when no new Kubernetes release is available. A handy checklist can be found [here](#release-process-overview).
 
-- [QA Releases](#qa-releases)
-- [Hardened Kubernetes](#hardened-kubernetes)
-- [Update RKE2](#update-rke2)
-- [RKE2 Release RC](#rke2-release-rc)
-  - [RKE2 Packaging](#rke2-packaging)
-  - [Primary Release](#primary-release)
-  - [Release Notes](#release-notes)
-    - [Packaged Components](#packaged-components)
-- [Update Rancher KDM](#update-rancher-kdm)
-  - [Promoting to Stable](#promoting-to-stable)
-  - [Updating Channel Server](#updating-channel-server)
-- [Release Process Overview](#release-process-overview)
+- [Upgrade Kubernetes Process](#upgrade-kubernetes-process)
+  - [QA Releases](#qa-releases)
+  - [Hardened Kubernetes](#hardened-kubernetes)
+  - [Update RKE2](#update-rke2)
+  - [RKE2 Release RC](#rke2-release-rc)
+    - [RKE2 Packaging](#rke2-packaging)
+    - [Primary Release](#primary-release)
+    - [Release Notes](#release-notes)
+      - [Packaged Components](#packaged-components)
+  - [Update Rancher KDM](#update-rancher-kdm)
+    - [Promoting to Stable](#promoting-to-stable)
+    - [Updating Channel Server](#updating-channel-server)
+  - [Release Process Overview](#release-process-overview)
 
 ## QA Releases
 
-If QA requires a release candidate (RC) for testing efforts before a Kubernetes patch is available, a new RC should be created with the most current
-Kubernetes release. For example, if QA wants a release for v1.20.11 before the Kubernetes patch, and the most recent release is v1.20.10+rke2r1, 
-a tag should be cut for v1.20.10-rc1+rke2r2 release. Note that doing so will also require tagging v1.20.10+rke2r2
-in image-build-kubernetes and bumping versions across rke2-charts and rke2, as if preparing for a full release.
+If QA requires a release candidate (RC) for testing efforts before a Kubernetes patch is available, a new RC should be created with the most current Kubernetes release. For example, if QA wants a release for v1.23.5 before the Kubernetes patch, and the most recent release is v1.23.5+rke2r1, a tag should be cut for v1.23.5-rc1+rke2r1 release. Note that doing so will also require tagging v1.23.5+rke2r1 in image-build-kubernetes and bumping versions across rke2-charts and rke2, as if preparing for a full release.
 
 ## Hardened Kubernetes
 
@@ -33,7 +31,7 @@ Create a new release tag at the [image-build-kubernetes](https://github.com/ranc
 * Click "Releases"
 * Click "Draft a new release"
 * Enter the new release version (the RKE2 Kubernetes version), appended with `-buildYYYYMMdd`, into the "Tag version" box.  **NOTE** The build system is in UTC. The command `TZ=utc date '+-build%Y%m%d'` can be used to get the correct format.
-* When converting the RKE2 version to the Kubernetes version, use dash instead of plus, and do not include any alpha/beta/rc components. For example, if preparing for RKE2 `v1.21.4+rke2r2` before 5 PM Pacific on Friday, August 27th 2021 you would tag `v1.21.4-rke2r2-build20210829`
+* When converting the RKE2 version to the Kubernetes version, use dash instead of plus, and do not include any alpha/beta/rc components. For example, if preparing for RKE2 `v1.23.5+rke2r1` before 5 PM Pacific on Friday, August 27th 2021 you would tag `v1.23.5-rke2r1-build20210829`
 * Click the "Publish release" button. 
 
 This will take a few minutes for CI to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kubernetes).
@@ -43,9 +41,9 @@ This will take a few minutes for CI to run but upon completion, a new image will
 
 The following files have references that will need to be updated in the respective locations. Replace the found version with the desired version. There are also references in documentation that should be updated and kept in sync. 
 
-* Dockerfile: `FROM rancher/hardened-kubernetes:v1.23.4-rke2r1-build20220217 AS kubernetes`
-* version.sh: `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.22.4}`
-* In v1.21, kube-proxy is still in use an needs to be updated in the Dockerfile. Update the line: `RUN CHART_VERSION="v1.21.7-build2021041301"     CHART_FILE=/charts/rke2-kube-proxy.yaml` to the relevant RKE2 Kubernetes build version.
+* Dockerfile: `FROM rancher/hardened-kubernetes:v1.23.5-rke2r1-build20220217 AS kubernetes`
+* version.sh: `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.23.5}`
+* In v1.21, kube-proxy is still in use an needs to be updated in the Dockerfile. Update the line: `RUN CHART_VERSION="v1.21.10-build2021041301"     CHART_FILE=/charts/rke2-kube-proxy.yaml` to the relevant RKE2 Kubernetes build version.
 * go.mod: ensure that the associated k3s version is used.
 
 Once these changes are made, submit a PR for review and let CI complete. When CI is finished and upon getting 1 approval, merge the PR. CI will run for the master merge. 
@@ -58,8 +56,8 @@ Next, we need to create a release candidate (RC). The Drone (CI) process that bu
 * Click "Draft new release"
 * Select the target branch
 * Enter the desired version into the "Tag version" box. 
-    * Example tag: `v1.21.4+rke2r2`
-    * **NOTE** Make sure to create the tag against the correct release branch. In the example above, that would map to release branch `release-1.21`.
+    * Example tag: `v1.23.5-rc1+rke2r1`
+    * **NOTE** Make sure to create the tag against the correct release branch. In the example above, that would map to release branch `release-1.23`.
 
 Ensure "prerelease" checkbox is selected.
 
@@ -75,7 +73,7 @@ Along with creating a new RKE2 release, we need to trigger a new build of the as
 * Click "Draft new release"
 * Select the target branch
 * Enter the desired version into the "Tag version" box. 
-    * Example tag: `v1.21.4-rc1+rke2r1.testing.0`
+    * Example tag: `v1.23.5-rc1+rke2r1.testing.0`
     * The first part of the tag here must match the tag created in the RKE2 repo.
 
 When CI completes, let QA know so they can perform testing.
@@ -87,7 +85,7 @@ Once QA signs off on the RC, it's time to cut the primary release. Go to the [rk
 * Click "Releases"
 * Click "Draft new release"
 * Enter the desired version into the "Tag version" box. 
-    * Example tag: `v1.21.4+rke2r1`
+    * Example tag: `v1.23.5+rke2r1`
 
 Ensure "prerelease" checkbox is selected.
 
@@ -96,14 +94,29 @@ Once complete, the process is repeated in the [rke2-packaging](https://github.co
 * Click "Releases"
 * Click "Draft new release"
 * Enter the desired version into the "Tag version" box. 
-    * Example tag: `v1.21.4+rke2r1.testing.0`
+    * Example tag: `v1.23.5+rke2r1.testing.0`
     * The first part of the tag here must match the tag created in the RKE2 repo.
 
 Make sure that CI passes. This is for RPM availability in the testing channel.
 
-Once complete, perform the steps above again however this time, use the tag "latest" tag. E.g. `v1.21.4+rke2r1.latest.0`.
+Once complete, perform the steps below for the "latest" RPMs.
 
-We choose "latest" here since we want to wait at least 24 hours in case the community finds an issue. Patches will need at least 24 hours. We'll then wait up to 7 days until marking the release as "stable".
+* Click "Releases"
+* Click "Draft new release"
+* Enter the desired version into the "Tag version" box. 
+    * Example tag: `v1.23.5+rke2r1.latest.0`
+    * The first part of the tag here must match the tag created in the RKE2 repo.
+
+We will wait at least 24 hours in case the community finds an issue. Patches will need at least 24 hours. 
+
+We then create the "stable" RPMs. Follow the steps below.
+
+* Click "Releases"
+* Click "Draft new release"
+* Enter the desired version into the "Tag version" box. 
+    * Example tag: `v1.23.5+rke2r1.stable.0`
+    * The first part of the tag here must match the tag created in the RKE2 repo.
+
 
 ### Release Notes
 
@@ -140,9 +153,9 @@ Create PRs in the [KDM](https://github.com/rancher/kontainer-driver-metadata/) `
     2. Run `go generate` and commit the changes this caused to data/data.json. Title this second commit "go generate".
 * Please note if this is a new minor release of Kubernetes, then a new entry will need to be created in `channels-rke2.yaml`. Ensure to set the min/max versions accordingly. If you are not certain what they should be, reach out to the team for input on this as it will depend on what Rancher will be supporting.
 
-Entries that include `charts`, `serverArgs`, and/or `agentArgs` fields may not be altered or removed once they have been published to a release branch. Once a version has been released, a new entry must be added following it. It is possible to build off the `charts`, `serverArgs`, and `agentArgs` values defined in other entries using [yaml anchors](https://github.com/yaml/libyaml/blob/0.2.5/examples/anchors.yaml). For example, v1.21.4 has its charts defined as follows:
+Entries that include `charts`, `serverArgs`, and/or `agentArgs` fields may not be altered or removed once they have been published to a release branch. Once a version has been released, a new entry must be added following it. It is possible to build off the `charts`, `serverArgs`, and `agentArgs` values defined in other entries using [yaml anchors](https://github.com/yaml/libyaml/blob/0.2.5/examples/anchors.yaml). For example, v1.23.5 has its charts defined as follows:
 ```
-- version: v1.21.4+rke2r2
+- version: v1.23.5+rke2r1
 minChannelServerVersion: v2.6.0-alpha1
 maxChannelServerVersion: v2.6.99
 ...
@@ -174,11 +187,11 @@ harvester-cloud-provider:
 * To easily find chart differences, use the following:
     ```
     git fetch upstream --tags
-    git diff v1.21.4+rke2r2..v1.21.5+rke2r1 -- Dockerfile
+    git diff v1.23.5+rke2r2..v1.21.5+rke2r1 -- Dockerfile
     ```
 * To easily compare server and agent arguments, use the following:
     ```
-    curl https://github.com/rancher/rke2/releases/download/v1.21.4+rke2r2/rke2.linux-amd64 -L -o rke2-r1
+    curl https://github.com/rancher/rke2/releases/download/v1.23.5+rke2r2/rke2.linux-amd64 -L -o rke2-r1
     curl https://github.com/rancher/rke2/releases/download/v1.21.5+rke2r1/rke2.linux-amd64 -L -o rke2-r2
     chmod u+x rke2-r*
 

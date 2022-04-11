@@ -17,8 +17,9 @@ var nodeOS = flag.String("nodeOS", "generic/ubuntu2004", "VM operating system")
 var serverCount = flag.Int("serverCount", 3, "number of server nodes")
 var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 
-// Valid format: RELEASE_VERSION=v1.22.6+rke2r1 or nil for latest commit from master
-var installType = flag.String("installType", "", "a string")
+// Environment Variables Info:
+// E2E_CNI=(canal|cilium|calico)
+// E2E_RELEASE_VERSION=v1.23.1+rke2r1 or nil for latest commit from master
 
 func Test_E2EClusterValidation(t *testing.T) {
 	flag.Parse()
@@ -36,7 +37,7 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 
 	It("Starts up with no issues", func() {
 		var err error
-		serverNodeNames, agentNodeNames, err = e2e.CreateCluster(*nodeOS, *serverCount, *agentCount, *installType)
+		serverNodeNames, agentNodeNames, err = e2e.CreateCluster(*nodeOS, *serverCount, *agentCount)
 		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog())
 		fmt.Println("CLUSTER CONFIG")
 		fmt.Println("OS:", *nodeOS)
@@ -146,10 +147,10 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 		Expect(err).NotTo(HaveOccurred())
 		nodes, err := e2e.ParseNodes(kubeConfigFile, false)
 		Expect(err).NotTo(HaveOccurred())
-		pods, err := e2e.ParsePods(kubeConfigFile, false)
-		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(func(g Gomega) {
+			pods, err := e2e.ParsePods(kubeConfigFile, false)
+			g.Expect(err).NotTo(HaveOccurred())
 			count := e2e.CountOfStringInSlice("test-daemonset", pods)
 			g.Expect(len(nodes)).Should((Equal(count)), "Daemonset pod count does not match node count")
 		}, "240s", "10s").Should(Succeed())

@@ -37,6 +37,21 @@ Each mirror must have a name and set of endpoints. When pulling an image from a 
 
 **Note:** If no endpoint is configured, containerd assumes that the registry can be accessed anonymously via HTTPS on port 443, and is using a certificate trusted by the host operating system. For more information, you may [consult the containerd documentation](https://github.com/containerd/containerd/blob/master/docs/cri/registry.md#configure-registry-endpoint).
 
+#### Rewrites
+
+Each mirror can have a set of rewrites. Rewrites can change the tag of an image based on a regular expression. This is useful if the organization/project structure in the mirror registry is different to the upstream one.
+
+For example, the following configuration would transparently pull the image `rancher/rke2-runtime:v1.23.5-rke2r1` from `registry.example.com:5000/mirrorproject/rancher-images/rke2-runtime:v1.23.5-rke2r1`:
+
+```yaml
+mirrors:
+  docker.io:
+    endpoint:
+      - "https://registry.example.com:5000"
+    rewrite:
+      "^rancher/(.*)": "mirrorproject/rancher-images/$1"
+```
+
 ### Configs
 
 The configs section defines the TLS and credential configuration for each mirror. For each mirror you can define `auth` and/or `tls`. The TLS part consists of:

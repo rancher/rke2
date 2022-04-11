@@ -1,3 +1,7 @@
+---
+title: Secrets Encryption
+---
+
 ## Secrets Encryption Config
 
 RKE2 supports encrypting Secrets at rest, and will do the following automatically:
