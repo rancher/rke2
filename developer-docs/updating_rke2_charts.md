@@ -77,7 +77,7 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-coredns:v1.8.3-build20210720
     ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.8.3-build20210729
     ${REGISTRY}/rancher/hardened-dns-node-cache:1.20.0-build20210803
-    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20210915
+    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20220413
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.5.0-build20210915
     ${REGISTRY}/rancher/klipper-helm:v0.6.1-build20210616
     ${REGISTRY}/rancher/pause:${PAUSE_VERSION}
