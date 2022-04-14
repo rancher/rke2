@@ -5,7 +5,7 @@ go 1.16
 replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.8.20
 	github.com/benmoss/go-powershell => github.com/k3s-io/go-powershell v0.0.0-20201118222746-51f4c451fbd7
-	github.com/containerd/containerd => github.com/k3s-io/containerd v1.5.10-k3s1
+	github.com/containerd/containerd => github.com/k3s-io/containerd v1.5.11-k3s1
 	github.com/containerd/continuity => github.com/k3s-io/continuity v0.0.0-20210309170710-f93269e0d5c1
 	github.com/containerd/cri => github.com/k3s-io/cri v1.4.0-k3s.7 // k3s-release/1.4
 	github.com/docker/distribution => github.com/docker/distribution v2.7.1+incompatible
@@ -81,12 +81,12 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.5
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
-	google.golang.org/grpc v1.44.0
-	k8s.io/api v0.23.3
-	k8s.io/apimachinery v0.23.3
+	google.golang.org/grpc v1.45.0
+	k8s.io/api v0.23.4
+	k8s.io/apimachinery v0.23.4
 	k8s.io/apiserver v0.22.8
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/cri-api v0.24.0-alpha.1
+	k8s.io/cri-api v0.24.0-alpha.3
 	k8s.io/kubernetes v1.22.8
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed
 	sigs.k8s.io/yaml v1.2.0
