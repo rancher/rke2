@@ -5,7 +5,7 @@ go 1.16
 replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.8.22
 	github.com/benmoss/go-powershell => github.com/k3s-io/go-powershell v0.0.0-20201118222746-51f4c451fbd7
-	github.com/containerd/containerd => github.com/k3s-io/containerd v1.5.10-k3s1
+	github.com/containerd/containerd => github.com/k3s-io/containerd v1.5.11-k3s1
 	github.com/docker/distribution => github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker => github.com/docker/docker v20.10.7+incompatible
 	github.com/docker/libnetwork => github.com/docker/libnetwork v0.8.0-dev.2.0.20190624125649-f0e46a78ea34
@@ -13,7 +13,7 @@ replace (
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.2
 	github.com/googleapis/gax-go/v2 => github.com/googleapis/gax-go/v2 v2.0.5
 	github.com/juju/errors => github.com/k3s-io/nocode v0.0.0-20200630202308-cb097102c09f
-	github.com/kubernetes-sigs/cri-tools => github.com/k3s-io/cri-tools v1.22.0-k3s1
+	github.com/kubernetes-sigs/cri-tools => github.com/k3s-io/cri-tools v1.23.0-k3s1
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.3
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
@@ -78,13 +78,13 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.5
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
-	google.golang.org/grpc v1.44.0
+	google.golang.org/grpc v1.45.0
 	k8s.io/api v0.23.5
 	k8s.io/apimachinery v0.23.5
 	k8s.io/apiserver v0.23.5
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/cri-api v0.24.0-alpha.1
+	k8s.io/cri-api v0.24.0-alpha.3
 	k8s.io/kubernetes v1.23.5
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed
-	sigs.k8s.io/yaml v1.2.0
+	sigs.k8s.io/yaml v1.3.0
 )
