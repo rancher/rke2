@@ -1,0 +1,141 @@
+ENV['VAGRANT_NO_PARALLEL'] = 'no'
+NODE_ROLES = (ENV['E2E_NODE_ROLES'] ||
+["server-0", "linux-agent-0", "windows-agent-0" ])
+NODE_BOXES = (ENV['E2E_NODE_BOXES'] ||
+['generic/ubuntu2004', 'generic/ubuntu2004', 'peru/windows-server-2022-standard-x64-eval'])
+GITHUB_BRANCH = (ENV['E2E_GITHUB_BRANCH'] || "master")
+RELEASE_VERSION = (ENV['E2E_RELEASE_VERSION'] || "")
+NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
+NODE_MEMORY = (ENV['E2E_NODE_MEMORY'] || 2048).to_i
+# Virtualbox >= 6.1.28 require `/etc/vbox/network.conf` for expanded private networks 
+NETWORK_PREFIX = "10.10.10"
+install_type = ""
+
+def provision(vm, role, role_num, node_num)
+  vm.box = NODE_BOXES[node_num]
+  vm.hostname = role
+  # An expanded netmask is required to allow VM<-->VM communication, virtualbox defaults to /32
+  node_ip = "#{NETWORK_PREFIX}.#{100+node_num}"
+  vm.network "private_network", ip: node_ip, netmask: "255.255.255.0"
+
+  vagrant_defaults = '../vagrantdefaults.rb'
+  load vagrant_defaults if File.exists?(vagrant_defaults)
+
+  defaultOSConfigure(vm)
+
+  if role.include?("windows")
+    if !RELEASE_VERSION.empty?
+      install_type = "Version=#{RELEASE_VERSION}"
+    else 
+      vm.provision "shell", path: "../scripts/latest_commit.ps1", args: [GITHUB_BRANCH, "./rke2_commits.txt"]
+      install_type = "Commit=(Get-Content -TotalCount 1 ./rke2_commits.txt)"
+    end
+  else
+    if !RELEASE_VERSION.empty?
+      install_type = "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"
+    else 
+      # Grabs the last 5 commit SHA's from the given branch, then purges any commits that do not have a passing CI build
+      vm.provision "shell", path: "../scripts/latest_commit.sh", args: [GITHUB_BRANCH, "/tmp/rke2_commits"]
+      install_type = "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
+    end
+    vm.provision "shell", inline: "ping -c 2 rke2.io"
+  end
+
+  if role.include?("server") && role_num == 0
+    vm.provision :rke2, run: 'once' do |rke2|
+      rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
+      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
+      rke2.config = <<~YAML
+        write-kubeconfig-mode: '0644'
+        node-external-ip: #{NETWORK_PREFIX}.100
+        token: vagrant-rke2
+        cni: calico
+      YAML
+    end
+    vm.provision "Install sonobuoy", type: "shell", path: "../scripts/install_sonobuoy.sh"
+  elsif role.include?("server") && role_num != 0
+    vm.provision :rke2, run: 'once' do |rke2|
+      rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
+      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
+      rke2.config = <<~YAML
+        write-kubeconfig-mode: '0644'
+        node-external-ip: #{node_ip}
+        server: https://#{NETWORK_PREFIX}.100:9345
+        token: vagrant-rke2
+        cni: calico
+      YAML
+    end
+  end
+  if role.include?("linux-agent")
+    vm.provision :rke2, run: 'once' do |rke2|
+      rke2.env = %W[INSTALL_RKE2_TYPE=agent #{install_type}]
+      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
+      rke2.install_path = false
+      rke2.config = <<~YAML
+        write-kubeconfig-mode: '0644'
+        node-external-ip: #{node_ip}
+        server: https://#{NETWORK_PREFIX}.100:9345
+        token: vagrant-rke2
+      YAML
+    end
+  end
+  if role.include?("windows-agent")
+    if !vm.box.match?(/windows.*2022/) && !vm.box.match?(/windows.*2019/)
+      puts "invalid box: " + vm.box + " found for windows agent"
+      abort
+    end
+
+    # Shared folders don't work with libvirt and windows guests, use 'file' to sync the local folder
+    vm.provision "file", source: ".", destination: "/vagrant"
+    # For Windows GUI on virtualbox
+    # vm.provider "virtualbox" do |v|
+      # v.gui = true
+      # v.customize ["modifyvm", :id, "--vram", 128]
+      # v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
+      # v.customize ["modifyvm", :id, "--accelerate3d", "on"]
+      # v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
+    # end
+    # If using libvirt, use virt-viewer for GUI after bring up the node
+    vm.provision :rke2, run: 'once' do |rke2|
+      rke2.env = [install_type]
+      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
+      # rke2.skip_start = true
+      rke2.config = <<~YAML
+        kube-proxy-arg: "feature-gates=IPv6DualStack=false"
+        node-external-ip: #{node_ip}
+        server: https://#{NETWORK_PREFIX}.100:9345
+        token: vagrant-rke2
+      YAML
+    end
+  end
+end
+
+Vagrant.configure("2") do |config|
+  config.vagrant.plugins = ["vagrant-rke2", "vagrant-reload", "vagrant-libvirt"]
+  # Default provider is libvirt, virtualbox is only provided as a backup
+  config.vm.provider "libvirt" do |v|
+    v.cpus = NODE_CPUS
+    v.memory = NODE_MEMORY
+  end
+  config.vm.provider "virtualbox" do |v|
+    v.cpus = NODE_CPUS
+    v.memory = NODE_MEMORY
+  end
+
+  if NODE_ROLES.kind_of?(String)
+    NODE_ROLES = NODE_ROLES.split(" ", -1)
+  end
+  if NODE_BOXES.kind_of?(String)
+    NODE_BOXES = NODE_BOXES.split(" ", -1)
+  end
+
+  # Must iterate on the index, vagrant does not understand iterating 
+  # over the node roles themselves
+  NODE_ROLES.length.times do |i|
+    name = NODE_ROLES[i]
+    config.vm.define name do |node|
+      role_num = name.split("-", -1).pop.to_i
+      provision(node.vm, name, role_num, i)
+    end
+  end
+end

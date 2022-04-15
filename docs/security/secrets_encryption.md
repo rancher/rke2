@@ -118,6 +118,7 @@ To rotate secrets encryption keys on HA setups:
     rke2 secrets-encrypt reencrypt
     ```
     Wait until reencryption is finished, either via server logs `journalctl -u rke2-server` or via `rke2 secrets-encrypt status`. The status will return `reencrypt_finished` when done.
+
 6. Sequentially Restart S1, S2, S3
 
 ### Secrets Encryption Status
