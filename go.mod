@@ -75,7 +75,7 @@ require (
 	github.com/onsi/gomega v1.17.0
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/k3s v1.22.9-0.20220415181500-c33aa2083116 // release-1.22
-	github.com/rancher/wharfie v0.5.2
+	github.com/rancher/wharfie v0.5.3
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
 	github.com/sirupsen/logrus v1.8.1
