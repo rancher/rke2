@@ -15,6 +15,7 @@ replace (
 	github.com/go-logr/logr => github.com/go-logr/logr v0.4.0
 	github.com/golang/protobuf => github.com/k3s-io/protobuf v1.4.3-k3s1
 	github.com/juju/errors => github.com/k3s-io/nocode v0.0.0-20200630202308-cb097102c09f
+	github.com/k3s-io/helm-controller => github.com/k3s-io/helm-controller v0.12.1
 	github.com/kubernetes-sigs/cri-tools => github.com/k3s-io/cri-tools v1.21.0-k3s1
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.3
@@ -67,7 +68,7 @@ require (
 	github.com/k3s-io/helm-controller v0.12.0
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.11-engine0.0.20220330143557-edc77fe05f22 // engine-1.21
+	github.com/rancher/k3s v1.21.11-engine0.0.20220415181528-3b1ae9cd5fe1 // engine-1.21
 	github.com/rancher/wharfie v0.5.2
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
