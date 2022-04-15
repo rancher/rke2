@@ -26,7 +26,7 @@ replace (
 	go.etcd.io/etcd/client/v3 => github.com/k3s-io/etcd/client/v3 v3.5.3-k3s1
 	go.etcd.io/etcd/etcdutl/v3 => github.com/k3s-io/etcd/etcdutl/v3 v3.5.3-k3s1
 	go.etcd.io/etcd/server/v3 => github.com/k3s-io/etcd/server/v3 v3.5.3-k3s1
-	golang.org/x/sys => golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34
+	golang.org/x/sys => golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20200224152610-e50cd9704f63
 	google.golang.org/grpc => google.golang.org/grpc v1.38.0
 	gopkg.in/square/go-jose.v2 => gopkg.in/square/go-jose.v2 v2.2.2
@@ -69,12 +69,12 @@ require (
 	github.com/containerd/continuity v0.2.2
 	github.com/google/go-containerregistry v0.7.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
-	github.com/k3s-io/helm-controller v0.12.0
+	github.com/k3s-io/helm-controller v0.12.1
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.17.0
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.22.8-rc4.0.20220330143608-21fed356e6a1 // release-1.22
+	github.com/rancher/k3s v1.22.9-0.20220415181500-c33aa2083116 // release-1.22
 	github.com/rancher/wharfie v0.5.2
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
