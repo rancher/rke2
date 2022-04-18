@@ -34,7 +34,7 @@ Create a new release tag at the [image-build-kubernetes](https://github.com/ranc
 * When converting the RKE2 version to the Kubernetes version, use dash instead of plus, and do not include any alpha/beta/rc components. For example, if preparing for RKE2 `v1.23.5+rke2r1` before 5 PM Pacific on Friday, August 27th 2021 you would tag `v1.23.5-rke2r1-build20210829`
 * Click the "Publish release" button. 
 
-This will take a few minutes for CI to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kubernetes).
+This will take a few minutes for [CI](https://drone-pr.rancher.io/rancher/image-build-kubernetes) to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kubernetes).
 
 ## Update RKE2
 
@@ -64,7 +64,7 @@ CI will run and build the release assets as well as kick off an image build for 
 
 _**Note: Once an RC is released for QA, the release branch associated with the RC is now considered frozen until the final release is complete. If additional PRs need to get merged in after an RC, but before the final release, you should notify the RKE2 team of this immediately. After merging, an additional RC will need to be released for QA.**_
 
-### RKE2 Packaging
+### RKE2 RC RPM Packaging
 
 Along with creating a new RKE2 release, we need to trigger a new build of the associated RPM. These are found in the [rke2-packaging](https://github.com/rancher/rke2-packaging) repository. We need to create a new release here and the process is nearly identical to the above steps. The Drone (CI) process that builds the release itself can be monitored [here](https://drone-publish.rancher.io/rancher/rke2-packaging/).
 
