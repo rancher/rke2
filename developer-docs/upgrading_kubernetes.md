@@ -36,7 +36,7 @@ Create a new release tag at the [image-build-kubernetes](https://github.com/ranc
 * When converting the RKE2 version to the Kubernetes version, use dash instead of plus, and do not include any alpha/beta/rc components. For example, if preparing for RKE2 `v1.21.4+rke2r2` before 5 PM Pacific on Friday, August 27th 2021 you would tag `v1.21.4-rke2r2-build20210829`
 * Click the "Publish release" button. 
 
-This will take a few minutes for [CI](https://drone-pr.rancher.io) to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kubernetes).
+This will take a few minutes for [CI](https://drone-pr.rancher.io/rancher/image-build-kubernetes) to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kubernetes).
 
 
 ## Update RKE2
