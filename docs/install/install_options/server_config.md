@@ -73,7 +73,6 @@ OPTIONS:
    --server value, -s value                      (experimental/cluster) Server to connect to, used to join a cluster [$RKE2_URL]
    --cluster-reset                               (experimental/cluster) Forget all peers and become sole member of a new cluster [$RKE2_CLUSTER_RESET]
    --cluster-reset-restore-path value            (db) Path to snapshot file to be restored
-   --secrets-encryption                          (experimental) Enable Secret encryption at rest
    --system-default-registry value               (image) Private registry to be used for all system images [$RKE2_SYSTEM_DEFAULT_REGISTRY]
    --selinux                                     (agent/node) Enable SELinux in containerd [$RKE2_SELINUX]
    --lb-server-port value                        (agent/node) Local port for supervisor client load-balancer. If the supervisor and apiserver are not colocated an additional port 1 less than this port will also be used for the apiserver client load-balancer. (default: 6444) [$RKE2_LB_SERVER_PORT]
