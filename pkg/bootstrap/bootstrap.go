@@ -255,14 +255,15 @@ func preloadBootstrapFromRuntime(imagesDir string, resolver *images.Resolver) (v
 func setChartValues(manifestsDir string, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
 	serializer := json.NewSerializerWithOptions(json.DefaultMetaFactory, schemes.All, schemes.All, json.SerializerOptions{Yaml: true, Pretty: true, Strict: true})
 	chartValues := map[string]string{
-		"global.clusterCIDR":           util.JoinIPNets(nodeConfig.AgentConfig.ClusterCIDRs),
-		"global.clusterCIDRv4":         util.JoinIP4Nets(nodeConfig.AgentConfig.ClusterCIDRs),
-		"global.clusterCIDRv6":         util.JoinIP6Nets(nodeConfig.AgentConfig.ClusterCIDRs),
-		"global.clusterDNS":            util.JoinIPs(nodeConfig.AgentConfig.ClusterDNSs),
-		"global.clusterDomain":         nodeConfig.AgentConfig.ClusterDomain,
-		"global.rke2DataDir":           cfg.DataDir,
-		"global.serviceCIDR":           util.JoinIPNets(nodeConfig.AgentConfig.ServiceCIDRs),
-		"global.systemDefaultRegistry": nodeConfig.AgentConfig.SystemDefaultRegistry,
+		"global.clusterCIDR":                  util.JoinIPNets(nodeConfig.AgentConfig.ClusterCIDRs),
+		"global.clusterCIDRv4":                util.JoinIP4Nets(nodeConfig.AgentConfig.ClusterCIDRs),
+		"global.clusterCIDRv6":                util.JoinIP6Nets(nodeConfig.AgentConfig.ClusterCIDRs),
+		"global.clusterDNS":                   util.JoinIPs(nodeConfig.AgentConfig.ClusterDNSs),
+		"global.clusterDomain":                nodeConfig.AgentConfig.ClusterDomain,
+		"global.rke2DataDir":                  cfg.DataDir,
+		"global.serviceCIDR":                  util.JoinIPNets(nodeConfig.AgentConfig.ServiceCIDRs),
+		"global.systemDefaultRegistry":        nodeConfig.AgentConfig.SystemDefaultRegistry,
+		"global.cattle.systemDefaultRegistry": nodeConfig.AgentConfig.SystemDefaultRegistry,
 	}
 
 	files := map[string]os.FileInfo{}
