@@ -68,7 +68,7 @@ require (
 	github.com/google/go-containerregistry v0.7.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.12.1
-	github.com/k3s-io/k3s v1.23.6-0.20220415164140-3e3549e45cb9 // master
+	github.com/k3s-io/k3s v1.23.6-rc2.0.20220422233210-3d425e5d2030 // master
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/onsi/ginkgo/v2 v2.1.1
 	github.com/onsi/gomega v1.17.0
@@ -80,12 +80,12 @@ require (
 	github.com/urfave/cli v1.22.5
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 	google.golang.org/grpc v1.45.0
-	k8s.io/api v0.23.5
-	k8s.io/apimachinery v0.23.5
-	k8s.io/apiserver v0.23.5
+	k8s.io/api v0.23.6
+	k8s.io/apimachinery v0.23.6
+	k8s.io/apiserver v0.23.6
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/cri-api v0.24.0-alpha.3
-	k8s.io/kubernetes v1.23.5
+	k8s.io/kubernetes v1.23.6
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed
 	sigs.k8s.io/yaml v1.3.0
 )
