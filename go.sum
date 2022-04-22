@@ -1059,8 +1059,8 @@ github.com/qri-io/starlib v0.4.2-0.20200213133954-ff2e8cd5ef8d/go.mod h1:7DPO4do
 github.com/quobyte/api v0.1.8/go.mod h1:jL7lIHrmqQ7yh05OJ+eEEdHr0u/kmT1Ff9iHd+4H6VI=
 github.com/rancher/dynamiclistener v0.3.1 h1:dx4r+K7uZm5jsOvkD0I+fSMAQdGUcQCGjRiR0ZJYjm8=
 github.com/rancher/dynamiclistener v0.3.1/go.mod h1:k+C1+rfUr5SlIyEQnDxSpu0NaBlmTLKc1s3KmyS8gXA=
-github.com/rancher/k3s v1.22.9-0.20220415181500-c33aa2083116 h1:61f9Q0BAUPNKsyJWdGjvh3ohX7t56BJTBArEjcehZYA=
-github.com/rancher/k3s v1.22.9-0.20220415181500-c33aa2083116/go.mod h1:ns156d6Vv6YpUNKBsb3NFqr2hKwKVyiW80TvWhbIYPA=
+github.com/rancher/k3s v1.22.9-rc3.0.20220422220207-aac491c8bd5b h1:eFW8mlHR68sEBF9xck7QCl8TK721PDtNnFDFPQKpo9U=
+github.com/rancher/k3s v1.22.9-rc3.0.20220422220207-aac491c8bd5b/go.mod h1:B5/fxFyiFYmAG7/J8UfRJrO6Fk8kry45kIA0utSpl3s=
 github.com/rancher/lasso v0.0.0-20210616224652-fc3ebd901c08 h1:NxR8Fh0eE7/5/5Zvlog9B5NVjWKqBSb1WYMUF7/IE5c=
 github.com/rancher/lasso v0.0.0-20210616224652-fc3ebd901c08/go.mod h1:9qZd/S8DqWzfKtjKGgSoHqGEByYmUE3qRaBaaAHwfEM=
 github.com/rancher/remotedialer v0.2.0 h1:xD7t3K6JYwTdAsxmGtTHQMkEkFgKouQ1foLxVW424Dc=

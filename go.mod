@@ -74,7 +74,7 @@ require (
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.17.0
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.22.9-0.20220415181500-c33aa2083116 // release-1.22
+	github.com/rancher/k3s v1.22.9-rc3.0.20220422220207-aac491c8bd5b // release-1.22
 	github.com/rancher/wharfie v0.5.3
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
@@ -84,10 +84,10 @@ require (
 	google.golang.org/grpc v1.45.0
 	k8s.io/api v0.23.4
 	k8s.io/apimachinery v0.23.4
-	k8s.io/apiserver v0.22.8
+	k8s.io/apiserver v0.22.9
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/cri-api v0.24.0-alpha.3
-	k8s.io/kubernetes v1.22.8
+	k8s.io/kubernetes v1.22.9
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed
 	sigs.k8s.io/yaml v1.2.0
 )
