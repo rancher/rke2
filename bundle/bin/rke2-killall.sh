@@ -88,6 +88,7 @@ rm -rf /var/lib/cni/
 
 # Delete iptables created by CNI plugins or Kubernetes (kube-proxy)
 iptables-save | grep -v KUBE- | grep -v CNI- | grep -v cali- | grep -v cali: | grep -v CILIUM_ | grep -v flannel | iptables-restore
+ip6tables-save | grep -v KUBE- | grep -v CNI- | grep -v cali- | grep -v cali: | grep -v CILIUM_ | grep -v flannel | ip6tables-restore
 echo 'If this cluster was upgraded from an older release of the Canal CNI, you may need to manually remove some flannel iptables rules:'
 echo -e '\texport cluster_cidr=YOUR-CLUSTER-CIDR'
 echo -e '\tiptables -D POSTROUTING -s $cluster_cidr -j MASQUERADE --random-fully'
