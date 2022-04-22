@@ -68,7 +68,7 @@ require (
 	github.com/k3s-io/helm-controller v0.12.0
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.11-engine0.0.20220415181528-3b1ae9cd5fe1 // engine-1.21
+	github.com/rancher/k3s v1.21.11-engine0.0.20220422204531-51a7692e33f4 // engine-1.21
 	github.com/rancher/wharfie v0.5.3
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
