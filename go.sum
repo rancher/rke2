@@ -670,8 +670,8 @@ github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7V
 github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8IZAc4RVcycCCAKdM=
 github.com/jung-kurt/gofpdf v1.0.3-0.20190309125859-24315acbbda5/go.mod h1:7Id9E/uU8ce6rXgefFLlgrJj/GYY22cpxn+r32jIOes=
 github.com/k-sone/critbitgo v1.3.1-0.20191024122315-48c9e1530131/go.mod h1:7E6pyoyADnFxlUBEKcnfS49b7SUAQGMK+OAp/UQvo0s=
-github.com/k3s-io/containerd v1.5.11-k3s1 h1:EFicpN+THm7J6QxbGlgbE473woiwjONpPiP7rZuWtEU=
-github.com/k3s-io/containerd v1.5.11-k3s1/go.mod h1:sszavMftShmuYnMI79P+PJb16LXQL5oUzB43FKUYzu0=
+github.com/k3s-io/containerd v1.5.11-k3s2 h1:9v+xY6pHzpMwECuQYd1P/Z6KiUsTvOj+adZ7dxNcQlo=
+github.com/k3s-io/containerd v1.5.11-k3s2/go.mod h1:OiGmBp1wc/meLzuMvhogZdKaSWUQ0un+mwqkNxth/mY=
 github.com/k3s-io/continuity v0.0.0-20210309170710-f93269e0d5c1 h1:KEz2rd9IDbrQT8w6RibEYlwfTXiu0P6hQDE+6O4IJdI=
 github.com/k3s-io/continuity v0.0.0-20210309170710-f93269e0d5c1/go.mod h1:EXlVlkqNba9rJe3j7w3Xa924itAMLgZH4UD/Q4PExuQ=
 github.com/k3s-io/cri-tools v1.22.0-k3s1/go.mod h1:06cMrzcMIFKwDJziI2YyLdA0NVzN054GMRRWsL+NRPk=
@@ -960,10 +960,8 @@ github.com/opencontainers/runc v1.0.3 h1:1hbqejyQWCJBvtKAfdO0b1FmaEf2z/bxnjqbARa
 github.com/opencontainers/runc v1.0.3/go.mod h1:aTaHFFwQXuA71CiyxOdFFIorAoemI04suvGRQFzWTD0=
 github.com/opencontainers/runtime-spec v1.0.3-0.20210316141917-a8c4a9ee0f6b h1:ZDY8P/luqXqGJSNCux8+9GeKmBDS+JVgVuIwKTauiwM=
 github.com/opencontainers/runtime-spec v1.0.3-0.20210316141917-a8c4a9ee0f6b/go.mod h1:jwyrGlmzljRJv/Fgzds9SsS/C5hL+LL3ko9hs6T5lQ0=
-github.com/opencontainers/selinux v1.8.2/go.mod h1:MUIHuUEvKB1wtJjQdOyYRgOnLD2xAPP8dBsCoU0KuF8=
-github.com/opencontainers/selinux v1.8.3/go.mod h1:HTvjPFoGMbpQsG886e3lQwnsRWtE4TC1OF3OUvG9FAo=
-github.com/opencontainers/selinux v1.10.0 h1:rAiKF8hTcgLI3w0DHm6i0ylVVcOrlgR1kK99DRLDhyU=
-github.com/opencontainers/selinux v1.10.0/go.mod h1:2i0OySw99QjzBBQByd1Gr9gSjvuho1lHsJxIJ3gGbJI=
+github.com/opencontainers/selinux v1.10.1 h1:09LIPVRP3uuZGQvgR+SgMSNBd1Eb3vlRbGqQpoHsF8w=
+github.com/opencontainers/selinux v1.10.1/go.mod h1:2i0OySw99QjzBBQByd1Gr9gSjvuho1lHsJxIJ3gGbJI=
 github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492/go.mod h1:Ngi6UdF0k5OKD5t5wlmGhe/EDKPoUM3BXZSSfIuJbis=
 github.com/opentracing/basictracer-go v1.0.0/go.mod h1:QfBfYuafItcjQuMwinw9GhYKwFXS9KnPs5lxoYwgW74=
 github.com/opentracing/opentracing-go v1.0.2/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
