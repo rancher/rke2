@@ -19,6 +19,7 @@ replace (
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.3
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 	github.com/opencontainers/selinux => github.com/opencontainers/selinux v1.10.1
+	github.com/rancher/dynamiclistener => github.com/rancher/dynamiclistener v0.3.2
 	github.com/rancher/remotedialer => github.com/rancher/remotedialer v0.2.0
 	github.com/rancher/wrangler => github.com/rancher/wrangler v0.8.11-0.20220211163748-d5a8ee98be5f
 	go.etcd.io/etcd/api/v3 => github.com/k3s-io/etcd/api/v3 v3.5.3-k3s1
