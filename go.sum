@@ -1055,8 +1055,8 @@ github.com/prometheus/procfs v0.7.3/go.mod h1:cz+aTbrPOrUb4q7XlbU9ygM+/jj0fzG6c1
 github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
 github.com/qri-io/starlib v0.4.2-0.20200213133954-ff2e8cd5ef8d/go.mod h1:7DPO4domFU579Ga6E61sB9VFNaniPVwJP5C4bBCu3wA=
 github.com/quobyte/api v0.1.8/go.mod h1:jL7lIHrmqQ7yh05OJ+eEEdHr0u/kmT1Ff9iHd+4H6VI=
-github.com/rancher/dynamiclistener v0.3.1 h1:dx4r+K7uZm5jsOvkD0I+fSMAQdGUcQCGjRiR0ZJYjm8=
-github.com/rancher/dynamiclistener v0.3.1/go.mod h1:k+C1+rfUr5SlIyEQnDxSpu0NaBlmTLKc1s3KmyS8gXA=
+github.com/rancher/dynamiclistener v0.3.2 h1:gX1U7V1ifLsmRM86DkvrZQfPq9WBT8EatKieyIbQYSY=
+github.com/rancher/dynamiclistener v0.3.2/go.mod h1:QwTpy+drx4gvPMefrrUUKpVaWiy74O7vNvkwBXJ+s3E=
 github.com/rancher/k3s v1.22.9-rc3.0.20220422220207-aac491c8bd5b h1:eFW8mlHR68sEBF9xck7QCl8TK721PDtNnFDFPQKpo9U=
 github.com/rancher/k3s v1.22.9-rc3.0.20220422220207-aac491c8bd5b/go.mod h1:B5/fxFyiFYmAG7/J8UfRJrO6Fk8kry45kIA0utSpl3s=
 github.com/rancher/lasso v0.0.0-20210616224652-fc3ebd901c08 h1:NxR8Fh0eE7/5/5Zvlog9B5NVjWKqBSb1WYMUF7/IE5c=
