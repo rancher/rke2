@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package windows
@@ -8,8 +9,8 @@ import (
 
 	"golang.org/x/sys/windows"
 
+	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/pkg/errors"
-	"github.com/rancher/k3s/pkg/version"
 	"github.com/rancher/wins/pkg/logs"
 	"github.com/rancher/wins/pkg/profilings"
 	"github.com/rancher/wrangler/pkg/signals"
