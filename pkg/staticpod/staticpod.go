@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
-	"github.com/rancher/k3s/pkg/cli/cmds"
+	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/rancher/wrangler/pkg/yaml"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"

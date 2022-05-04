@@ -3,23 +3,23 @@ package rke2
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/k3s-io/k3s/pkg/agent/config"
+	containerdk3s "github.com/k3s-io/k3s/pkg/agent/containerd"
+	agentutil "github.com/k3s-io/k3s/pkg/agent/util"
+	"github.com/k3s-io/k3s/pkg/cli/agent"
+	"github.com/k3s-io/k3s/pkg/cli/cmds"
+	"github.com/k3s-io/k3s/pkg/cli/etcdsnapshot"
+	"github.com/k3s-io/k3s/pkg/cli/server"
+	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
+	"github.com/k3s-io/k3s/pkg/daemons/executor"
+	rawServer "github.com/k3s-io/k3s/pkg/server"
 	"github.com/pkg/errors"
-	"github.com/rancher/k3s/pkg/agent/config"
-	containerdk3s "github.com/rancher/k3s/pkg/agent/containerd"
-	"github.com/rancher/k3s/pkg/cli/agent"
-	"github.com/rancher/k3s/pkg/cli/cmds"
-	"github.com/rancher/k3s/pkg/cli/etcdsnapshot"
-	"github.com/rancher/k3s/pkg/cli/server"
-	daemonconfig "github.com/rancher/k3s/pkg/daemons/config"
-	"github.com/rancher/k3s/pkg/daemons/executor"
-	rawServer "github.com/rancher/k3s/pkg/server"
 	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/sirupsen/logrus"
@@ -129,7 +129,6 @@ func EtcdSnapshot(clx *cli.Context, cfg Config) error {
 func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	dataDir := clx.String("data-dir")
 	clusterReset := clx.Bool("cluster-reset")
-	clusterResetRestorePath := clx.String("cluster-reset-restore-path")
 
 	ex, err := initExecutor(clx, cfg, isServer)
 	if err != nil {
@@ -137,15 +136,16 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	}
 	executor.Set(ex)
 
-	// check for force restart file
-	var forceRestart bool
-	if _, err := os.Stat(ForceRestartFile(dataDir)); err != nil {
+	// Force stop and restart of static pods when doing reset/restore, or if reset on the previous startup
+	forceRestart := clusterReset
+	forceRestartFile := ForceRestartFile(dataDir)
+	if _, err := os.Stat(forceRestartFile); err != nil {
 		if !os.IsNotExist(err) {
 			return err
 		}
 	} else {
 		forceRestart = true
-		os.Remove(ForceRestartFile(dataDir))
+		os.Remove(forceRestartFile)
 	}
 	disabledItems := map[string]bool{
 		"cloud-controller-manager": forceRestart || clx.Bool("disable-cloud-controller"),
@@ -155,17 +155,14 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 		"kube-proxy":               forceRestart || clx.Bool("disable-kube-proxy"),
 		"kube-scheduler":           forceRestart || clx.Bool("disable-scheduler"),
 	}
-	// adding force restart file when cluster reset restore path is passed
-	if clusterResetRestorePath != "" {
-		forceRestartFile := ForceRestartFile(dataDir)
-		if err := os.MkdirAll(filepath.Base(forceRestartFile), 0755); err != nil {
-			return err
-		}
-		if err := ioutil.WriteFile(forceRestartFile, []byte(""), 0600); err != nil {
+	// adding force restart file so that static pods will be restarted again on the next startup,
+	// once the reset/restore is complete.
+	if clusterReset {
+		if err := agentutil.WriteFile(forceRestartFile, ""); err != nil {
 			return err
 		}
 	}
-	return removeOldPodManifests(dataDir, disabledItems, clusterReset)
+	return removeStaticPodManifests(dataDir, disabledItems)
 }
 
 func ForceRestartFile(dataDir string) string {
@@ -180,7 +177,7 @@ func binDir(dataDir string) string {
 	return filepath.Join(dataDir, "bin")
 }
 
-func removeOldPodManifests(dataDir string, disabledItems map[string]bool, clusterReset bool) error {
+func removeStaticPodManifests(dataDir string, disabledItems map[string]bool) error {
 	kubeletStandAlone := false
 	execPath := binDir(dataDir)
 	manifestDir := podManifestsDir(dataDir)
@@ -190,13 +187,6 @@ func removeOldPodManifests(dataDir string, disabledItems map[string]bool, cluste
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			return nil
 		}
-	}
-
-	// ensure etcd manifest is removed if cluster-reset is passed, and force
-	// standalone startup to ensure static pods are terminated
-	if clusterReset {
-		disabledItems["etcd"] = true
-		kubeletStandAlone = true
 	}
 
 	// check to see if there are manifests for any disabled components

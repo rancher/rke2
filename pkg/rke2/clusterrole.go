@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/rancher/k3s/pkg/cli/cmds"
+	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/sirupsen/logrus"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	"k8s.io/client-go/tools/clientcmd"

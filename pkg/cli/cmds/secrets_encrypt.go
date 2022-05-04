@@ -1,8 +1,8 @@
 package cmds
 
 import (
-	"github.com/rancher/k3s/pkg/cli/cmds"
-	"github.com/rancher/k3s/pkg/cli/secretsencrypt"
+	"github.com/k3s-io/k3s/pkg/cli/cmds"
+	"github.com/k3s-io/k3s/pkg/cli/secretsencrypt"
 	"github.com/urfave/cli"
 )
 

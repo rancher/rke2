@@ -3,8 +3,8 @@ package cmds
 import (
 	"strings"
 
-	"github.com/rancher/k3s/pkg/cli/cmds"
-	"github.com/rancher/k3s/pkg/configfilearg"
+	"github.com/k3s-io/k3s/pkg/cli/cmds"
+	"github.com/k3s-io/k3s/pkg/configfilearg"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/rancher/wrangler/pkg/slice"
 	"github.com/sirupsen/logrus"
@@ -104,6 +104,7 @@ var (
 		"flannel-iface":                     drop,
 		"flannel-conf":                      drop,
 		"flannel-ipv6-masq":                 drop,
+		"egress-selector-mode":              copy,
 		"kubelet-arg":                       copy,
 		"kube-proxy-arg":                    copy,
 		"rootless":                          drop,
@@ -152,6 +153,7 @@ func ServerRun(clx *cli.Context) error {
 }
 
 func validateCNI(clx *cli.Context) {
+	egressMode := clx.String("egress-selector-mode")
 	cnis := []string{}
 	for _, cni := range clx.StringSlice("cni") {
 		for _, v := range strings.Split(cni, ",") {
@@ -168,11 +170,19 @@ func validateCNI(clx *cli.Context) {
 			logrus.Fatal("invalid value provided for --cni flag: multus must be used alongside another primary cni selection")
 		}
 		clx.Set("disable", "rke2-multus")
+		// use cluster mode with calico, as it does not use the Kubernetes IPAM to assign PodCIDRs
+		if egressMode == "pod" && cnis[0] == "calico" {
+			clx.Set("egress-selector-mode", "cluster")
+		}
 	case 2:
 		if cnis[0] == "multus" {
 			cnis = cnis[1:]
 		} else {
 			logrus.Fatal("invalid values provided for --cni flag: may only provide multiple values if multus is the first value")
+		}
+		// Use cluster mode with multus, as multus secondary CNIs may assign pod addresses outside the PodCIDR
+		if egressMode == "pod" {
+			clx.Set("egress-selector-mode", "cluster")
 		}
 	default:
 		logrus.Fatal("invalid values provided for --cni flag: may not provide more than two values")
