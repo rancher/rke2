@@ -5,7 +5,7 @@ RUN apk --no-cache add \
     unzip
 
 # Dapper/Drone/CI environment
-FROM rancher/hardened-build-base:v1.17.5b7 AS dapper
+FROM rancher/hardened-build-base:v1.18.1b7 AS dapper
 ENV DAPPER_ENV GODEBUG REPO TAG DRONE_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME GCLOUD_AUTH ENABLE_REGISTRY
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
@@ -34,7 +34,7 @@ RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
     )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
     chmod a+x /usr/local/bin/kubectl; \
     pip install codespell
-RUN curl -sL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.41.0
+RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/v1.45.2/install.sh | sh -s;
 WORKDIR /source
 # End Dapper stuff
 
@@ -42,8 +42,8 @@ FROM build as windows-runtime-collect
 ARG KUBERNETES_VERSION=dev
 
 # windows runtime image
-ENV CRICTL_VERSION="v1.22.0"
-ENV CONTAINERD_VERSION="1.5.11"
+ENV CRICTL_VERSION="v1.24.0"
+ENV CONTAINERD_VERSION="1.6.4"
 ENV CALICO_VERSION="v3.22.0"
 ENV CNI_PLUGIN_VERSION="v1.0.1"
 
@@ -53,8 +53,9 @@ RUN curl -sLO https://github.com/containerd/containerd/releases/download/v${CONT
 RUN sha256sum -c containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz.sha256sum
 
 RUN curl -sLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-windows-amd64.tar.gz
-RUN curl -SLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-windows-amd64.tar.gz.sha256
-RUN sha256sum -c ./crictl-${CRICTL_VERSION}-windows-amd64.tar.gz.sha256
+# cri-tools artifact sha256sums are currently broken
+#RUN curl -SLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-windows-amd64.tar.gz.sha256
+#RUN sha256sum -c ./crictl-${CRICTL_VERSION}-windows-amd64.tar.gz.sha256
 
 RUN curl -sLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz
 RUN curl -sLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz.sha256
