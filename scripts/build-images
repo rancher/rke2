@@ -40,14 +40,14 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
-    ${REGISTRY}/rancher/mirrored-calico-operator:v1.25.3
-    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.22.1
-    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.22.1
-    ${REGISTRY}/rancher/mirrored-calico-typha:v3.22.1
-    ${REGISTRY}/rancher/mirrored-calico-node:v3.22.1
-    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.22.1
-    ${REGISTRY}/rancher/mirrored-calico-cni:v3.22.1
-    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.22.1
+    ${REGISTRY}/rancher/mirrored-calico-operator:v1.25.8
+    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.22.2
+    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.22.2
+    ${REGISTRY}/rancher/mirrored-calico-typha:v3.22.2
+    ${REGISTRY}/rancher/mirrored-calico-node:v3.22.2
+    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.22.2
+    ${REGISTRY}/rancher/mirrored-calico-cni:v3.22.2
+    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.22.2
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
