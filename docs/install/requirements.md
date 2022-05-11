@@ -11,11 +11,10 @@ If all your nodes have the same hostname, set the `node-name` parameter in the R
 ### Linux
 RKE2 has been tested and validated on the following operating systems, and their subsequent non-major releases:
 
-*    Ubuntu 18.04 (amd64)
-*    Ubuntu 20.04 (amd64)
+*    Ubuntu 18.04 and 20.04 (amd64)
 *    CentOS/RHEL 7.8 (amd64)
-*    CentOS/RHEL 8.2 (amd64)
-*    SLES 15 SP2 (amd64) (v1.18.16+rke2r1 and newer)
+*    Rocky/RHEL 8.5 (amd64)
+*    SLES 15 SP3, OpenSUSE, SLE Micro 5.1 (amd64)
 
 ### Windows
 **Windows Support is currently Experimental as of v1.21.3+rke2r1**

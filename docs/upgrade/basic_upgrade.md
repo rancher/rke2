@@ -11,7 +11,7 @@ Upgrades performed via the installation script or using our [automated upgrades]
 
 Currently, the `latest` channel is the only available channel. Once we have more releases and need to distinguish between the most recent release and the most stable release, we will add a stable channel and set it as the default.
 
-For an exhaustive and up-to-date list of channels, you can visit the [rke2 channel service API](https://update.rke2.io/v1-release/channels). For more technical details on how channels work, you see the [channelserver project](https://github.com/rancher/channelserver).
+For an exhaustive and up-to-date list of channels, you can visit the [rke2 channel service API](https://update.rke2.io/v1-release/channels). For more technical details on how channels work, you can see the [channelserver project](https://github.com/rancher/channelserver).
 
 ### Upgrade rke2 Using the Installation Script
 
@@ -20,9 +20,9 @@ To upgrade rke2 from an older version you can re-run the installation script usi
 ```sh
 curl -sfL https://get.rke2.io | sh -
 ```
-This will upgrade to a newer version in the stable channel by default.
+This will upgrade to the most recent version in the stable channel by default.
 
-If you want to upgrade to a newer version in a specific channel (such as latest) you can specify the channel:
+If you want to upgrade to the most recent version in a specific channel (such as latest) you can specify the channel:
 ```sh
 curl -sfL https://get.rke2.io | INSTALL_RKE2_CHANNEL=latest sh -
 ```
@@ -30,7 +30,17 @@ curl -sfL https://get.rke2.io | INSTALL_RKE2_CHANNEL=latest sh -
 If you want to upgrade to a specific version you can run the following command:
 
 ```sh
-curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION=vX.Y.Z-rc1 sh -
+curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION=vX.Y.Z+rke2rN sh -
+```
+
+Remember to restart the rke2 process after installing:
+
+```sh
+# Server nodes:
+systemctl restart rke2-server
+
+# Agent nodes:
+systemctl restart rke2-agent
 ```
 
 ### Manually Upgrade rke2 Using the Binary
