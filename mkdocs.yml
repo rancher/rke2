@@ -61,4 +61,5 @@ nav:
   - networking.md
   - helm.md
   - advanced.md
+  - subcommands.md
   - known_issues.md
