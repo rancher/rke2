@@ -8,6 +8,14 @@ By default, certificates in RKE2 expire in 12 months.
 
 If the certificates are expired or have fewer than 90 days remaining before they expire, the certificates are rotated when RKE2 is restarted.
 
+As of v1.21.8+rke2r1, certificates can also be rotated manually. To do this, it is best to stop the rke2-server process, rotate the certificates, then start the process up again: 
+```sh
+systemctl stop rke2-server
+rke2 certificate rotate
+systemctl start rke2-server
+```
+It is also possible to rotate an individual service by passing the `--service` flag, for example: `rke2 certificate rotate --service api-server`. See the [certificate subcommand](https://docs.rke2.io/subcommands/#certificate) for more details.
+
 ## Auto-Deploying Manifests
 
 Any file found in `/var/lib/rancher/rke2/server/manifests` will automatically be deployed to Kubernetes in a manner similar to `kubectl apply`.
