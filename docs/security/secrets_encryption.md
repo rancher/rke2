@@ -45,7 +45,7 @@ Once enabled any created secret will be encrypted with this key. Note that if yo
 ## Secrets Encryption Tool
 _Available as of v1.21.8+rke2r1_
 
-RKE2 contains a utility subcommand `secrets-encrypt`, which allows administrators to perform the following tasks:
+RKE2 contains a utility [subcommand](https://docs.rke2.io/subcommands/#secrets-encrypt) `secrets-encrypt`, which allows administrators to perform the following tasks:
 
 - Adding new encryption keys
 - Rotating and deleting encryption keys

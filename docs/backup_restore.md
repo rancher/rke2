@@ -14,6 +14,8 @@ To configure the snapshot interval or the number of retained snapshots, refer to
 
 In RKE2, snapshots are stored on each etcd node. If you have multiple etcd or etcd + control-plane nodes, you will have multiple copies of local etcd snapshots.
 
+You can take a snapshot manually while RKE2 is running with the `etcd-snapshot` subcommand. For example: `rke2 etcd-snapshot save --name pre-upgrade-snapshot`. See the full list of etcd-snapshot subcommands at the [subcommands page](https://docs.rke2.io/subcommands/#etcd-snapshot)
+
 ## Cluster Reset
 
 RKE2 enables a feature to reset the cluster to one member cluster by passing `--cluster-reset` flag, when passing this flag to rke2 server it will reset the cluster with the same data dir in place, the data directory for etcd exists in `/var/lib/rancher/rke2/server/db/etcd`, this flag can be passed in the events of quorum loss in the cluster.

@@ -22,7 +22,7 @@ For more details on the design and architecture of the system-upgrade-controller
 To automate upgrades in this manner you must:
 
 1. Install the system-upgrade-controller into your cluster
-1. Configure plans
+2. Configure plans
 
 
 ### Install the system-upgrade-controller
@@ -58,7 +58,7 @@ spec:
 #    force: true
   upgrade:
     image: rancher/rke2-upgrade
-  version: v1.23.1+rke2r2
+  version: v1.23.1-rke2r2
 ---
 # Agent plan
 apiVersion: upgrade.cattle.io/v1
@@ -87,7 +87,7 @@ spec:
     force: true
   upgrade:
     image: rancher/rke2-upgrade
-  version: v1.23.1+rke2r2
+  version: v1.23.1-rke2r2
 
 ```
 
