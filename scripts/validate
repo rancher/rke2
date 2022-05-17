@@ -6,6 +6,30 @@ if [ -n "${SKIP_VALIDATE}" ]; then
     exit 0
 fi
 
+fatal() {
+    echo '[ERROR] ' "$@" >&2
+    exit 1
+}
+
+function check_win_binaries() {
+    CRICTL_WINDOWS_VERSION=$(grep 'CRICTL_VERSION=' Dockerfile.windows | cut -d '=' -f 2- | grep -oE "v([0-9]+)\.([0-9]+)")
+    if [ ! "$CRICTL_WINDOWS_VERSION" = "v$VERSION_MAJOR.$VERSION_MINOR" ]; then
+       fatal "crictl windows binary version [$CRICTL_WINDOWS_VERSION] does not match kubernetes version"
+    fi
+
+    CALICO_WINDOWS_VERSION=$(grep 'CALICO_VERSION=' Dockerfile.windows | cut -d '=' -f 2- | grep -oE "v([0-9]+)\.([0-9]+)")
+    CALICO_LINUX_VERSION=$(grep "rke2-calico.yaml" Dockerfile | grep 'CHART_VERSION=' | cut -d '=' -f 2- | grep -oE "v([0-9]+)\.([0-9]+)")
+    if [ ! "$CALICO_WINDOWS_VERSION" = "$CALICO_LINUX_VERSION" ]; then
+        fatal "Calico windows binary version [$CALICO_WINDOWS_VERSION] does not match Calico chart version [$CALICO_LINUX_VERSION]"
+    fi
+
+    CONTAINERD_WINDOWS_VERSION=$(grep 'CONTAINERD_VERSION=' Dockerfile.windows | cut -d '=' -f 2- | grep -oE "([0-9]+)\.([0-9]+)\.([0-9]+)")
+    CONTAINERD_LINUX_VERSION=$(grep "rancher/hardened-containerd" Dockerfile | grep ':v' | cut -d '=' -f 2- | grep -oE "([0-9]+)\.([0-9]+)\.([0-9]+)")
+    if [ ! "$CONTAINERD_LINUX_VERSION" \< "$CONTAINERD_WINDOWS_VERSION" ] && [ "$CONTAINERD_LINUX_VERSION" != "$CONTAINERD_WINDOWS_VERSION" ]; then
+        fatal "Containerd windows binary version [$CONTAINERD_WINDOWS_VERSION] does not match Containerd linux version [$CONTAINERD_LINUX_VERSION]"
+    fi
+}
+
 if ! command -v golangci-lint; then
     echo Skipping validation: no golangci-lint available
     exit
@@ -32,3 +56,5 @@ if [ -n "$DIRTY" ]; then
     git status --porcelain --untracked-files=no
     exit 1
 fi
+
+check_win_binaries
