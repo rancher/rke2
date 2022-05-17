@@ -42,7 +42,7 @@ FROM build as windows-runtime-collect
 ARG KUBERNETES_VERSION=dev
 
 # windows runtime image
-ENV CRICTL_VERSION="v1.22.0"
+ENV CRICTL_VERSION="v1.23.0"
 ENV CONTAINERD_VERSION="1.5.11"
 ENV CALICO_VERSION="v3.23.0"
 ENV CNI_PLUGIN_VERSION="v1.0.1"
@@ -54,7 +54,8 @@ RUN sha256sum -c containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz.sha256sum
 
 RUN curl -sLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-windows-amd64.tar.gz
 RUN curl -SLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-windows-amd64.tar.gz.sha256
-RUN sha256sum -c ./crictl-${CRICTL_VERSION}-windows-amd64.tar.gz.sha256
+RUN sed -i -e "s/\$/  crictl-${CRICTL_VERSION}-windows-amd64.tar.gz/" crictl-${CRICTL_VERSION}-windows-amd64.tar.gz.sha256 && \
+    sha256sum -c ./crictl-${CRICTL_VERSION}-windows-amd64.tar.gz.sha256
 
 RUN curl -sLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz
 RUN curl -sLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz.sha256
