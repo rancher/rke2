@@ -72,6 +72,7 @@ ip link delete cni0
 ip link delete flannel.1
 ip link delete flannel-v6.1
 ip link delete vxlan.calico
+ip link delete vxlan-v6.calico
 ip link delete cilium_vxlan
 ip link delete cilium_net
 

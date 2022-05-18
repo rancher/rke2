@@ -216,7 +216,7 @@ func pod(args Args) (*v1.Pod, error) {
 					Port: intstr.IntOrString{
 						IntVal: args.HealthPort,
 					},
-					Host:   "127.0.0.1",
+					Host:   "localhost",
 					Scheme: v1.URIScheme(scheme),
 				},
 			},
