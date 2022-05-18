@@ -23,6 +23,9 @@ RUN if [ "${ARCH}" != "s390x" ]; then \
     	apk --no-cache add mingw-w64-gcc; \
     fi
 
+FROM registry.suse.com/bci/bci-base AS rpm-macros
+RUN zypper install -y systemd-rpm-macros
+
 # Dapper/Drone/CI environment
 FROM build AS dapper
 ENV DAPPER_ENV GODEBUG REPO TAG DRONE_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME GCLOUD_AUTH ENABLE_REGISTRY
@@ -49,7 +52,12 @@ RUN set -x \
     libarchive-tools \
     zstd \
     jq \
-    python2
+    python2 \
+    \
+    && if [ "${ARCH}" != "s390x" ]; then \
+    	apk add --no-cache rpm-dev; \
+    fi
+
 RUN GOCR_VERSION="v0.5.1" && \
         if [ "${ARCH}" = "arm64" ]; then \
         wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_arm64.tar.gz && \
@@ -74,6 +82,8 @@ RUN VERSION=0.16.0 && \
     mv trivy /usr/local/bin; \
     fi
 WORKDIR /source
+
+COPY --from=rpm-macros /usr/lib/rpm/macros.d/macros.systemd /usr/lib/rpm/macros.d
 # End Dapper stuff
 
 # Shell used for debugging

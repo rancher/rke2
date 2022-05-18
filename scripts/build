@@ -12,4 +12,5 @@ mkdir -p build/images
 ./scripts/package-bundle
 ./scripts/package-windows-bundle
 ./scripts/dev-runtime-image
+./scripts/dev-rpm
 ./scripts/build-image-test
