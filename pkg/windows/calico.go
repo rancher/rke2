@@ -6,7 +6,6 @@ package windows
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -25,13 +24,16 @@ import (
 	"github.com/k3s-io/k3s/pkg/daemons/agent"
 	"github.com/k3s-io/k3s/pkg/daemons/config"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
-	netroute "github.com/libp2p/go-netroute"
+	"github.com/k3s-io/k3s/pkg/version"
+	"github.com/libp2p/go-netroute"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	v1 "k8s.io/api/core/v1"
+	authv1 "k8s.io/api/authentication/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/utils/pointer"
 )
 
 type Calico struct{}
@@ -59,25 +61,30 @@ func (c *Calico) Setup(ctx context.Context, dataDir string, nodeConfig *daemonco
 	if err != nil {
 		return nil, err
 	}
-
-	secrets, err := client.CoreV1().Secrets(CalicoSystemNamespace).List(ctx, metav1.ListOptions{})
+	serviceAccounts := client.CoreV1().ServiceAccounts(CalicoSystemNamespace)
+	calicoSA, err := serviceAccounts.Get(ctx, calicoNode, metav1.GetOptions{})
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get service account %s/%s", calicoSA.Namespace, calicoSA.Name)
 	}
 
-	for _, secret := range secrets.Items {
-		if !isCalicoNodeToken(&secret) {
-			continue
-		}
-		value, ok := secret.Data["token"]
-		if !ok {
-			continue
-		}
-		calicoKubeConfig.Token = string(value)
+	req := authv1.TokenRequest{
+		Spec: authv1.TokenRequestSpec{
+			BoundObjectRef: &authv1.BoundObjectReference{
+				Kind:       calicoSA.Kind,
+				APIVersion: calicoSA.APIVersion,
+				Name:       calicoSA.Name,
+			},
+			Audiences:         []string{version.Program},
+			ExpirationSeconds: pointer.Int64(60 * 60 * 24 * 365),
+		},
 	}
-	if calicoKubeConfig.Token == "" {
-		return nil, errors.New("could not retrieve calico node token from the cluster")
+
+	token, err := serviceAccounts.CreateToken(ctx, calicoSA.Name, &req, metav1.CreateOptions{})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create token (%s) for service account (%s/%s)", token.Name, calicoSA.Namespace, calicoSA.Name)
 	}
+
+	calicoKubeConfig.Token = token.Status.Token
 
 	cfg := &CNIConfig{NodeConfig: nodeConfig, NetworkName: "Calico", BindAddress: nodeConfig.AgentConfig.NodeIP}
 
@@ -203,7 +210,7 @@ func startFelix(ctx context.Context, config *CalicoConfig) {
 		"-felix",
 	}
 
-	logrus.Infof("Felix Envs: ", append(generateGeneralCalicoEnvs(config), specificEnvs...))
+	logrus.Infof("Felix Envs: %s", append(generateGeneralCalicoEnvs(config), specificEnvs...))
 	cmd := exec.CommandContext(ctx, "calico-node.exe", args...)
 	cmd.Env = append(generateGeneralCalicoEnvs(config), specificEnvs...)
 	cmd.Stdout = os.Stdout
@@ -221,7 +228,7 @@ func startCalico(ctx context.Context, config *CalicoConfig) error {
 	args := []string{
 		"-startup",
 	}
-	logrus.Infof("Calico Envs: ", append(generateGeneralCalicoEnvs(config), specificEnvs...))
+	logrus.Infof("Calico Envs: %s", append(generateGeneralCalicoEnvs(config), specificEnvs...))
 	cmd := exec.CommandContext(ctx, "calico-node.exe", args...)
 	cmd.Env = append(generateGeneralCalicoEnvs(config), specificEnvs...)
 	cmd.Stdout = os.Stdout
@@ -540,11 +547,4 @@ func getCNIConfigOverrides(cniConfig *CNIConfig, hc *helm.Factory) error {
 
 func coreClient(restConfig *rest.Config) (kubernetes.Interface, error) {
 	return kubernetes.NewForConfig(restConfig)
-}
-
-func isCalicoNodeToken(s *v1.Secret) bool {
-	if v, ok := s.Annotations["kubernetes.io/service-account.name"]; ok && v == calicoNode {
-		return true
-	}
-	return false
 }

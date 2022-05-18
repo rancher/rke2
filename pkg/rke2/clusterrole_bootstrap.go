@@ -37,10 +37,10 @@ func clusterRoles() []rbacv1.ClusterRole {
 			ObjectMeta: metav1.ObjectMeta{Name: tunnelControllerName},
 			Rules: []rbacv1.PolicyRule{
 				rbacv1helpers.NewRule("get").Groups(legacyGroup).Resources("nodes").RuleOrDie(),
-				rbacv1helpers.NewRule("list", "watch").Groups(legacyGroup).Resources("namespaces").RuleOrDie(),
+				rbacv1helpers.NewRule("list", "watch", "get").Groups(legacyGroup).Resources("namespaces").RuleOrDie(),
 				rbacv1helpers.NewRule("list", "watch").Groups(networkingGroup).Resources("networkpolicies").RuleOrDie(),
 				rbacv1helpers.NewRule("list", "watch", "get").Groups(legacyGroup).Resources("endpoints", "pods").RuleOrDie(),
-				rbacv1helpers.NewRule("list", "get").Groups(legacyGroup).Resources("secrets").RuleOrDie(),
+				rbacv1helpers.NewRule("list", "get").Groups(legacyGroup).Resources("secrets, serviceaccounts").RuleOrDie(),
 				rbacv1helpers.NewRule("list", "get").Groups(helmGroup).Resources("helmcharts", "helmchartconfigs").RuleOrDie(),
 			},
 		},
