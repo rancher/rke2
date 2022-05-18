@@ -44,8 +44,7 @@ fi
 #
 #   - INSTALL_RKE2_COMMIT
 #     Commit of RKE2 to download from temporary cloud storage.
-#     If set, this forces INSTALL_RKE2_METHOD=tar.
-#     * (for developer & QA use)
+#     For developer & QA use only
 #
 #   - INSTALL_RKE2_AGENT_IMAGES_DIR
 #     Installation path for airgap images when installing from CI commit
@@ -287,6 +286,20 @@ download_tarball() {
     download "${TMP_TARBALL}" "${TARBALL_URL}"
 }
 
+# download_dev_rpm downloads dev rpm from remote repository
+download_dev_rpm() {
+    if [ -z "${INSTALL_RKE2_COMMIT}" ]; then
+        fatal 'Development rpm requires a commit hash'
+    fi
+
+    DEST="${1}"
+    RPM_FILE=$(basename "${DEST}")
+    RPM_URL="${STORAGE_URL}/${RPM_FILE}"
+
+    info "downloading rpm at ${RPM_URL}"
+    download "${DEST}" "${RPM_URL}"
+}
+
 # stage_local_checksums stages the local checksum hash for validation.
 stage_local_checksums() {
     info "staging local checksums from ${INSTALL_RKE2_ARTIFACT_PATH}/sha256sum-${ARCH}.txt"
@@ -401,21 +414,65 @@ install_airgap_tarball() {
     fi
 }
 
+# install_dev_rpm orchestates the installation of RKE2 unsigned development rpms
+install_dev_rpm() {
+    rpm_installer="${1:-yum}"
+    distro="${2:-centos7}"
+
+    [ -z "${TMP_DIR}" ] && setup_tmp
+
+    case "${rpm_installer}" in
+        *zypper*)
+            ${rpm_installer} install --allow-unsigned-rpm -y \
+                "${STORAGE_URL}/rke2-common-${INSTALL_RKE2_COMMIT}.${distro}.rpm" \
+                "${STORAGE_URL}/rke2-${INSTALL_RKE2_TYPE}-${INSTALL_RKE2_COMMIT}.${distro}.rpm"
+            ;;
+        *)
+            download_dev_rpm "${TMP_DIR}/rke2-common-${INSTALL_RKE2_COMMIT}.${distro}.rpm"
+            download_dev_rpm "${TMP_DIR}/rke2-${INSTALL_RKE2_TYPE}-${INSTALL_RKE2_COMMIT}.${distro}.rpm"
+            ${rpm_installer} install -y  "${TMP_DIR}"/*.rpm
+            ;;
+    esac
+
+    if [ -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images.${SUFFIX}.tar.zst" ]; then
+        return
+    fi
+
+    download_airgap_checksums
+    download_airgap_tarball
+    verify_airgap_tarball
+    install_airgap_tarball
+}
+
 # do_install_rpm builds a yum repo config from the channel and version to be installed,
 # and calls yum to install the required packates.
 do_install_rpm() {
-    maj_ver="7"
-    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
-        dist_version="$(. /etc/os-release && echo "$VERSION_ID")"
-        maj_ver=$(echo "$dist_version" | sed -E -e "s/^([0-9]+)\.?[0-9]*$/\1/")
-        case ${maj_ver} in
-            7|8)
-                :
-                ;;
-            *) # In certain cases, like installing on Fedora, maj_ver will end up being something that is not 7 or 8
-                maj_ver="7"
-                ;;
-        esac
+    . /etc/os-release
+    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ "${ID_LIKE%%[ ]*}" = "suse"  ]; then
+        repodir=/etc/yum.repos.d
+        if [ -d /etc/zypp/repos.d ]; then
+            repodir=/etc/zypp/repos.d
+        fi
+        if [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
+            rpm_site_infix=microos
+            rpm_installer="zypper --gpg-auto-import-keys"
+            if [ "${TRANSACTIONAL_UPDATE=false}" != "true" ] && [ -x /usr/sbin/transactional-update ]; then
+                rpm_installer="transactional-update --no-selfupdate -d run ${rpm_installer}"
+            fi
+        else
+            maj_ver=$(echo "$VERSION_ID" | sed -E -e "s/^([0-9]+)\.?[0-9]*$/\1/")
+            case ${maj_ver} in
+                7|8)
+                    :
+                    ;;
+                *) # In certain cases, like installing on Fedora, maj_ver will end up being something that is not 7 or 8
+                    maj_ver="7"
+                    ;;
+            esac
+            rpm_site_infix=centos/${maj_ver}
+            rpm_installer="yum"
+        fi
+
     fi
     case "${INSTALL_RKE2_CHANNEL}" in
         v*.*)
@@ -439,14 +496,19 @@ do_install_rpm() {
     if [ "${rke2_rpm_channel}" = "testing" ]; then
         rpm_site="rpm-${rke2_rpm_channel}.rancher.io"
     fi
-    rm -f /etc/yum.repos.d/rancher-rke2*.repo
-    cat <<-EOF >"/etc/yum.repos.d/rancher-rke2.repo"
+
+    rm -f ${repodir}/rancher-rke2*.repo
+    cat <<-EOF >"${repodir}/rancher-rke2.repo"
 [rancher-rke2-common-${rke2_rpm_channel}]
 name=Rancher RKE2 Common (${1})
 baseurl=https://${rpm_site}/rke2/${rke2_rpm_channel}/common/centos/${maj_ver}/noarch
 enabled=1
 gpgcheck=1
 gpgkey=https://${rpm_site}/public.key
+EOF
+
+    if [ -z "${INSTALL_RKE2_COMMIT}" ]; then
+    cat <<-EOF >>"${repodir}/rancher-rke2.repo"
 [rancher-rke2-${rke2_majmin}-${rke2_rpm_channel}]
 name=Rancher RKE2 ${rke2_majmin} (${1})
 baseurl=https://${rpm_site}/rke2/${rke2_rpm_channel}/${rke2_majmin}/centos/${maj_ver}/x86_64
@@ -454,8 +516,13 @@ enabled=1
 gpgcheck=1
 gpgkey=https://${rpm_site}/public.key
 EOF
-    if [ -z "${INSTALL_RKE2_VERSION}" ]; then
-        yum -y install "rke2-${INSTALL_RKE2_TYPE}"
+    fi
+
+    if [ -z "${INSTALL_RKE2_VERSION}" ] && [ -z "${INSTALL_RKE2_COMMIT}" ]; then
+        ${rpm_installer} install -y "rke2-${INSTALL_RKE2_TYPE}"
+    elif [ -n "${INSTALL_RKE2_COMMIT}" ]; then
+        rel_distro="$(echo "${rpm_site_infix}" | tr -d /)"
+        install_dev_rpm "${rpm_installer}" "${rel_distro}"
     else
         rke2_rpm_version=$(echo "${INSTALL_RKE2_VERSION}" | sed -E -e "s/[\+-]/~/g" | sed -E -e "s/v(.*)/\1/")
         if [ -n "${INSTALL_RKE2_RPM_RELEASE_VERSION}" ]; then
