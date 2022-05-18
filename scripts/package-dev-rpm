@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -ex
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+
+export COMMIT
+export DAPPER_SOURCE=${DAPPER_SOURCE:-$(realpath -q .)}
+export COMBARCH='x86_64-amd64'
+
+RPM_VERSION="${DOCKERIZED_VERSION//-dev/}+rke2r0.testing.0"
+
+TMPDIR=$(mktemp -d -t)
+SCRIPT_LIST=$(mktemp "${TMPDIR}/XXXXXX")
+cleanup() {
+  exit_code=$?
+  trap - EXIT INT
+  rm -rf "${TMPDIR}"
+  git tag -d "${RPM_VERSION}" || true
+  exit ${exit_code}
+}
+trap cleanup EXIT INT
+
+curl -L https://github.com/rancher/rke2-packaging/archive/master.tar.gz | tar --strip-components=1 -xzC "${TMPDIR}"
+
+export SRC_PATH="${TMPDIR}/source"
+DIST_PATH=$(realpath -mq ./dist/rpms)
+USER=$(whoami)
+
+[ -d "${DIST_PATH}" ] || mkdir "${DIST_PATH}"
+[ -d "${SRC_PATH}" ] || mkdir "${SRC_PATH}"
+cp ./dist/artifacts/* "${SRC_PATH}"
+
+# Mock spectool, not needed for local builds
+mkdir "${TMPDIR}/bin"
+echo 'exit 0' > "${TMPDIR}/bin/spectool"
+chmod +x "${TMPDIR}/bin/spectool"
+cp "${TMPDIR}/bin/spectool" "${TMPDIR}/bin/rpmdev-spectool"
+export PATH="${TMPDIR}/bin:${PATH}"
+
+# Set rpmmacros that differ in Alpine from RHEL distributions
+echo "%_topdir ${HOME}/rpmbuild" > ~/.rpmmacros
+echo "%_sharedstatedir /var/lib" >> ~/.rpmmacros
+echo "%_localstatedir /var" >> ~/.rpmmacros
+
+# Set rpm version as lightweight tag
+git tag "${RPM_VERSION}"
+
+find -L "${TMPDIR}" -name 'build-*' -print >"${SCRIPT_LIST}"
+while IFS= read -r script; do
+  if [ "${USER}" != 'root' ]; then
+    # Use /home/$USER instead of /root when running outside of dapper
+    sed -i -e "s%/root%${HOME}%g" "${script}"
+  fi
+
+  # Modify rpmbuild flags
+  #   --nodeps  do not check for build dependencies, systemd-rpm-macros should suffice
+  #   -bb       do not build src packages, not needed for commit rpms
+  sed -i  -e 's/^rpmbuild/rpmbuild --nodeps/' \
+          -e '/^rpmbuild/,/.spec$/{s/-ba/-bb/}' -e '/rpmbuild\/SRPMS\/\*/d' \
+          "${script}"
+
+  # Replace hardcoded paths and remove inline rpm macros
+  sed -i  -e "s%/source%${TMPDIR}%g" -e "s%${TMPDIR}/dist%$DIST_PATH%g" -e '/SRC_PATH=/d' \
+          -e '/rpmmacros/d' \
+          "${script}"
+
+  # Build rpm
+  bash "${script}"
+done <"${SCRIPT_LIST}"
+
+if [ "${DAPPER_UID:--1}" -ne "-1" ]; then
+  chown -R "$DAPPER_UID:$DAPPER_GID" "${DIST_PATH}"
+fi
