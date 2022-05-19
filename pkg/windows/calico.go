@@ -64,7 +64,7 @@ func (c *Calico) Setup(ctx context.Context, dataDir string, nodeConfig *daemonco
 	serviceAccounts := client.CoreV1().ServiceAccounts(CalicoSystemNamespace)
 	calicoSA, err := serviceAccounts.Get(ctx, calicoNode, metav1.GetOptions{})
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get service account %s/%s", calicoSA.Namespace, calicoSA.Name)
+		return nil, errors.Wrapf(err, "failed to get service account %s/%s", CalicoSystemNamespace, calicoNode)
 	}
 
 	req := authv1.TokenRequest{
