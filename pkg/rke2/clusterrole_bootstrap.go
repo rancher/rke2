@@ -41,6 +41,7 @@ func clusterRoles() []rbacv1.ClusterRole {
 				rbacv1helpers.NewRule("list", "watch").Groups(networkingGroup).Resources("networkpolicies").RuleOrDie(),
 				rbacv1helpers.NewRule("list", "watch", "get").Groups(legacyGroup).Resources("endpoints", "pods").RuleOrDie(),
 				rbacv1helpers.NewRule("list", "get").Groups(legacyGroup).Resources("secrets", "serviceaccounts").RuleOrDie(),
+				rbacv1helpers.NewRule("create").Groups(legacyGroup).Resources("serviceaccounts/token").RuleOrDie(),
 				rbacv1helpers.NewRule("list", "get").Groups(helmGroup).Resources("helmcharts", "helmchartconfigs").RuleOrDie(),
 			},
 		},
