@@ -62,28 +62,18 @@ func (c *Calico) Setup(ctx context.Context, dataDir string, nodeConfig *daemonco
 		return nil, err
 	}
 	serviceAccounts := client.CoreV1().ServiceAccounts(CalicoSystemNamespace)
-	calicoSA, err := serviceAccounts.Get(ctx, calicoNode, metav1.GetOptions{})
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get service account %s/%s", CalicoSystemNamespace, calicoNode)
-	}
 
 	req := authv1.TokenRequest{
 		Spec: authv1.TokenRequestSpec{
-			BoundObjectRef: &authv1.BoundObjectReference{
-				Kind:       calicoSA.Kind,
-				APIVersion: calicoSA.APIVersion,
-				Name:       calicoSA.Name,
-			},
 			Audiences:         []string{version.Program},
 			ExpirationSeconds: pointer.Int64(60 * 60 * 24 * 365),
 		},
 	}
 
-	token, err := serviceAccounts.CreateToken(ctx, calicoSA.Name, &req, metav1.CreateOptions{})
+	token, err := serviceAccounts.CreateToken(ctx, calicoNode, &req, metav1.CreateOptions{})
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create token (%s) for service account (%s/%s)", token.Name, calicoSA.Namespace, calicoSA.Name)
+		return nil, errors.Wrapf(err, "failed to create token for service account (%s/%s)", CalicoSystemNamespace, calicoNode)
 	}
-
 	calicoKubeConfig.Token = token.Status.Token
 
 	cfg := &CNIConfig{NodeConfig: nodeConfig, NetworkName: "Calico", BindAddress: nodeConfig.AgentConfig.NodeIP}
