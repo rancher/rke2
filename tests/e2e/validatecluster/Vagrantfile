@@ -19,7 +19,8 @@ def installType(vm)
     return "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"
   end
   # Grabs the last 5 commit SHA's from the given branch, then purges any commits that do not have a passing CI build
-  vm.provision "shell", path: "../scripts/latest_commit.sh", args: [GITHUB_BRANCH, "/tmp/rke2_commits"]
+  scripts_location = Dir.exists?("./scripts") ? "./scripts" : "../scripts" 
+  vm.provision "shell", path:  scripts_location + "/latest_commit.sh", args: [GITHUB_BRANCH, "/tmp/rke2_commits"]
   return "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
 end
 
@@ -30,8 +31,8 @@ def provision(vm, roles, role_num, node_num)
   node_ip = "#{NETWORK_PREFIX}.#{100+node_num}"
   vm.network "private_network", ip: node_ip, netmask: "255.255.255.0"
 
-  vagrant_defaults = '../vagrantdefaults.rb'
-  load vagrant_defaults if File.exists?(vagrant_defaults)
+  vagrant_defaults = File.exists?("./vagrantdefaults.rb") ? "./vagrantdefaults.rb" : "../vagrantdefaults.rb"
+  load vagrant_defaults
   
   defaultOSConfigure(vm)
   install_type = installType(vm)
