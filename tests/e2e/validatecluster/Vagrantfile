@@ -14,7 +14,7 @@ NETWORK_PREFIX = "10.10.10"
 
 def installType(vm)
   if RELEASE_VERSION == "skip"
-    return "INSTALL_RKE2_ARTIFACT_PATH=/tmp/" 
+    return "INSTALL_RKE2_ARTIFACT_PATH=/tmp" 
   elsif !RELEASE_VERSION.empty?
     return "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"
   end
