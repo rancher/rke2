@@ -41,14 +41,6 @@ var (
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
 )
 
-const (
-	defaultKubeAPIServerCPURequest          = "250m"
-	defaultKubeSchedulerCPURequest          = "100m"
-	defaultKubeControllerManagerCPURequest  = "200m"
-	defaultKubeProxyCPURequest              = "250m"
-	defaultCloudControllerManagerCPURequest = "200m"
-)
-
 type ControlPlaneResources struct {
 	KubeAPIServerCPURequest             string
 	KubeAPIServerCPULimit               string
@@ -189,9 +181,6 @@ func (s *StaticPodConfig) KubeProxy(ctx context.Context, args []string) error {
 		return err
 	}
 
-	if s.ControlPlaneResources.KubeProxyCPURequest == "" {
-		s.ControlPlaneResources.KubeProxyCPURequest = defaultKubeProxyCPURequest
-	}
 	return staticpod.Run(s.ManifestsDir, staticpod.Args{
 		Command:       "kube-proxy",
 		Args:          args,
@@ -265,9 +254,6 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
-	if s.ControlPlaneResources.KubeAPIServerCPURequest == "" {
-		s.ControlPlaneResources.KubeAPIServerCPURequest = defaultKubeAPIServerCPURequest
-	}
 	return after(etcdReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:       "kube-apiserver",
@@ -299,9 +285,6 @@ func (s *StaticPodConfig) Scheduler(ctx context.Context, apiReady <-chan struct{
 	files := []string{}
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
-	}
-	if s.ControlPlaneResources.KubeSchedulerCPURequest == "" {
-		s.ControlPlaneResources.KubeSchedulerCPURequest = defaultKubeSchedulerCPURequest
 	}
 	args = append(permitPortSharingFlag, args...)
 	return after(apiReady, func() error {
@@ -366,9 +349,6 @@ func (s *StaticPodConfig) ControllerManager(ctx context.Context, apiReady <-chan
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
-	if s.ControlPlaneResources.KubeControllerManagerCPURequest == "" {
-		s.ControlPlaneResources.KubeControllerManagerCPURequest = defaultKubeControllerManagerCPURequest
-	}
 	return after(apiReady, func() error {
 		extraArgs := []string{
 			"--flex-volume-plugin-dir=/var/lib/kubelet/volumeplugins",
@@ -402,9 +382,6 @@ func (s *StaticPodConfig) CloudControllerManager(ctx context.Context, ccmRBACRea
 	}
 	if err := images.Pull(s.ImagesDir, images.CloudControllerManager, image); err != nil {
 		return err
-	}
-	if s.ControlPlaneResources.CloudControllerManagerCPURequest == "" {
-		s.ControlPlaneResources.CloudControllerManagerCPURequest = defaultCloudControllerManagerCPURequest
 	}
 	return after(ccmRBACReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{

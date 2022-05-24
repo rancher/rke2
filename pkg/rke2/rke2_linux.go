@@ -129,6 +129,34 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		},
 	}
 
+	// defaultResources contains a map of default resources for each component, used if not explicitly configured.
+	var defaultResources = map[string]map[string]string{
+		KubeAPIServer: {
+			CPURequest:    "250m",
+			MemoryRequest: "1024Mi",
+		},
+		KubeScheduler: {
+			CPURequest:    "100m",
+			MemoryRequest: "128Mi",
+		},
+		KubeControllerManager: {
+			CPURequest:    "200m",
+			MemoryRequest: "256Mi",
+		},
+		KubeProxy: {
+			CPURequest:    "250m",
+			MemoryRequest: "128Mi",
+		},
+		Etcd: {
+			CPURequest:    "200m",
+			MemoryRequest: "512Mi",
+		},
+		CloudControllerManager: {
+			CPURequest:    "100m",
+			MemoryRequest: "128Mi",
+		},
+	}
+
 	var parsedRequestsLimits = make(map[string]string)
 
 	if cfg.ControlPlaneResourceRequests != "" {
@@ -145,16 +173,18 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		for _, rawLimit := range strings.Split(cfg.ControlPlaneResourceLimits, ",") {
 			v := strings.SplitN(rawLimit, "=", 2)
 			if len(v) != 2 {
-				logrus.Fatalf("incorrectly formatted control plane resource request specified: %s", rawLimit)
+				logrus.Fatalf("incorrectly formatted control plane resource limit specified: %s", rawLimit)
 			}
 			parsedRequestsLimits[v[0]+"-limit"] = v[1]
 		}
 	}
 
 	for component, request := range resources {
-		for com, target := range request {
-			k := component + "-" + com
+		for resource, target := range request {
+			k := component + "-" + resource
 			if val, ok := parsedRequestsLimits[k]; ok {
+				*target = val
+			} else if val, ok := defaultResources[component][resource]; ok {
 				*target = val
 			}
 		}
