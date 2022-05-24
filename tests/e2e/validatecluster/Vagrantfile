@@ -13,7 +13,9 @@ CNI = (ENV['E2E_CNI'] || "canal") # canal, cilium and calico supported
 NETWORK_PREFIX = "10.10.10"
 
 def installType(vm)
-  if !RELEASE_VERSION.empty?
+  if RELEASE_VERSION == "skip"
+    return "INSTALL_RKE2_ARTIFACT_PATH=/tmp/" 
+  elsif !RELEASE_VERSION.empty?
     return "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"
   end
   # Grabs the last 5 commit SHA's from the given branch, then purges any commits that do not have a passing CI build
