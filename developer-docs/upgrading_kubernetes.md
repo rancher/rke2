@@ -41,7 +41,9 @@ This will take a few minutes for [CI](https://drone-pr.rancher.io/rancher/image-
 The following files have references that will need to be updated in the respective locations. Replace the found version with the desired version. There are also references in documentation that should be updated and kept in sync. 
 
 * Dockerfile: `FROM rancher/hardened-kubernetes:v1.23.5-rke2r1-build20220217 AS kubernetes`
-* version.sh: `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.23.5}`
+* version.sh:
+  * `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.23.5}`
+  * `KUBERNETES_IMAGE_TAG=${KUBERNETES_IMAGE_TAG:-v1.21.13-rke2r1-build20220525}`
 * In v1.21, kube-proxy is still in use an needs to be updated in the Dockerfile. Update the line: `RUN CHART_VERSION="v1.21.10-build2021041301"     CHART_FILE=/charts/rke2-kube-proxy.yaml` to the relevant RKE2 Kubernetes build version.
 * go.mod: ensure that the associated k3s version is used.
 
