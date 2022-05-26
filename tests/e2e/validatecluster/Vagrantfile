@@ -23,7 +23,7 @@ def provision(vm, roles, role_num, node_num)
   load vagrant_defaults
   
   defaultOSConfigure(vm)
-  install_type = installType(vm, RELEASE_VERSION, GITHUB_BRANCH)
+  install_type = getInstallType(vm, RELEASE_VERSION, GITHUB_BRANCH)
   
   vm.provision "shell", inline: "ping -c 2 rke2.io"
   

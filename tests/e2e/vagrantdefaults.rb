@@ -12,7 +12,7 @@ def defaultOSConfigure(vm)
   end
 end
 
-def installType(vm, version, branch)
+def getInstallType(vm, version, branch)
   if version == "skip"
     return "INSTALL_RKE2_ARTIFACT_PATH=/tmp" 
   elsif !version.empty?

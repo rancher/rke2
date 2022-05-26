@@ -114,23 +114,17 @@ var _ = Describe("Verify Create", func() {
 			_, err := e2e.DeployWorkload("clusterip.yaml", kubeConfigFile)
 			Expect(err).NotTo(HaveOccurred(), "Cluster IP manifest not deployed")
 
-			Eventually(func(g Gomega) {
-				cmd := "kubectl get pods -o=name -l k8s-app=nginx-app-clusterip --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
-				res, err := e2e.RunCommand(cmd)
-				Expect(err).NotTo(HaveOccurred())
-				g.Expect(res).Should((ContainSubstring("test-clusterip")))
-			}, "240s", "5s").Should(Succeed())
+			cmd := "kubectl get pods -o=name -l k8s-app=nginx-app-clusterip --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
+			Eventually(func() (string, error) {
+				return e2e.RunCommand(cmd)
+			}, "240s", "5s").Should(ContainSubstring("test-clusterip"), "failed cmd: "+cmd)
 
 			clusterip, _ := e2e.FetchClusterIP(kubeConfigFile, "nginx-clusterip-svc", false)
-			cmd := "curl -L --insecure http://" + clusterip + "/name.html"
-			fmt.Println(cmd)
+			cmd = "curl -L --insecure http://" + clusterip + "/name.html"
 			for _, nodeName := range cpNodeNames {
-				Eventually(func(g Gomega) {
-					res, err := e2e.RunCmdOnNode(cmd, nodeName)
-					g.Expect(err).NotTo(HaveOccurred())
-					fmt.Println(res)
-					Expect(res).Should(ContainSubstring("test-clusterip"))
-				}, "120s", "10s").Should(Succeed())
+				Eventually(func() (string, error) {
+					return e2e.RunCmdOnNode(cmd, nodeName)
+				}, "120s", "10s").Should(ContainSubstring("test-clusterip"), "failed cmd: "+cmd)
 			}
 		})
 
@@ -144,21 +138,15 @@ var _ = Describe("Verify Create", func() {
 				nodeport, err := e2e.RunCommand(cmd)
 				Expect(err).NotTo(HaveOccurred())
 
-				Eventually(func(g Gomega) {
-					cmd := "kubectl get pods -o=name -l k8s-app=nginx-app-nodeport --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
-					res, err := e2e.RunCommand(cmd)
-					Expect(err).NotTo(HaveOccurred())
-					g.Expect(res).Should(ContainSubstring("test-nodeport"), "nodeport pod was not created")
-				}, "240s", "5s").Should(Succeed())
+				cmd = "kubectl get pods -o=name -l k8s-app=nginx-app-nodeport --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
+				Eventually(func() (string, error) {
+					return e2e.RunCommand(cmd)
+				}, "240s", "5s").Should(ContainSubstring("test-nodeport"), "nodeport pod was not created")
 
 				cmd = "curl -L --insecure http://" + nodeExternalIP + ":" + nodeport + "/name.html"
-				fmt.Println(cmd)
-				Eventually(func(g Gomega) {
-					res, err := e2e.RunCommand(cmd)
-					Expect(err).NotTo(HaveOccurred())
-					fmt.Println(res)
-					g.Expect(res).Should(ContainSubstring("test-nodeport"))
-				}, "240s", "5s").Should(Succeed())
+				Eventually(func() (string, error) {
+					return e2e.RunCommand(cmd)
+				}, "240s", "5s").Should(ContainSubstring("test-nodeport"), "failed cmd: "+cmd)
 			}
 		})
 
@@ -166,84 +154,49 @@ var _ = Describe("Verify Create", func() {
 			_, err := e2e.DeployWorkload("loadbalancer.yaml", kubeConfigFile)
 			Expect(err).NotTo(HaveOccurred(), "Loadbalancer manifest not deployed")
 
-			for _, nodeName := range cpNodeNames {
-				ip, _ := e2e.FetchNodeExternalIP(nodeName)
+			cmd := "kubectl get service nginx-loadbalancer-svc --kubeconfig=" + kubeConfigFile + " --output jsonpath=\"{.spec.externalIPs[0]}:{.spec.ports[0].port}\""
+			ip_port, err := e2e.RunCommand(cmd)
+			Expect(err).NotTo(HaveOccurred())
 
-				cmd := "kubectl get service nginx-loadbalancer-svc --kubeconfig=" + kubeConfigFile + " --output jsonpath=\"{.spec.ports[0].port}\""
-				port, err := e2e.RunCommand(cmd)
-				Expect(err).NotTo(HaveOccurred())
+			cmd = "kubectl get pods -o=name -l k8s-app=nginx-app-loadbalancer --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
+			Eventually(func() (string, error) {
+				return e2e.RunCommand(cmd)
+			}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"))
 
-				Eventually(func(g Gomega) {
-					cmd := "kubectl get pods -o=name -l k8s-app=nginx-app-loadbalancer --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
-					res, err := e2e.RunCommand(cmd)
-					Expect(err).NotTo(HaveOccurred())
-					g.Expect(res).Should(ContainSubstring("test-loadbalancer"))
-				}, "240s", "5s").Should(Succeed())
-
-				Eventually(func(g Gomega) {
-					cmd = "curl -L --insecure http://" + ip + ":" + port + "/name.html"
-					fmt.Println(cmd)
-					res, err := e2e.RunCommand(cmd)
-					Expect(err).NotTo(HaveOccurred())
-					fmt.Println(res)
-					g.Expect(res).Should(ContainSubstring("test-loadbalancer"))
-				}, "240s", "5s").Should(Succeed())
-			}
-		})
-
-		It("Verifies Ingress", func() {
-			_, err := e2e.DeployWorkload("ingress.yaml", kubeConfigFile)
-			Expect(err).NotTo(HaveOccurred(), "Ingress manifest not deployed")
-
-			for _, nodeName := range cpNodeNames {
-				ip, _ := e2e.FetchNodeExternalIP(nodeName)
-				cmd := "curl  --header host:foo1.bar.com" + " http://" + ip + "/name.html"
-				fmt.Println(cmd)
-
-				Eventually(func(g Gomega) {
-					res, err := e2e.RunCommand(cmd)
-					g.Expect(err).NotTo(HaveOccurred())
-					fmt.Println(res)
-					g.Expect(res).Should(ContainSubstring("test-ingress"))
-				}, "240s", "5s").Should(Succeed())
-			}
+			cmd = "curl -L --insecure http://" + ip_port + "/name.html"
+			Eventually(func() (string, error) {
+				return e2e.RunCommand(cmd)
+			}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"), "failed cmd: "+cmd)
 		})
 
 		It("Verifies Daemonset", func() {
 			_, err := e2e.DeployWorkload("daemonset.yaml", kubeConfigFile)
 			Expect(err).NotTo(HaveOccurred(), "Daemonset manifest not deployed")
 
-			nodes, _ := e2e.ParseNodes(kubeConfigFile, false)
-			pods, _ := e2e.ParsePods(kubeConfigFile, false)
-
 			Eventually(func(g Gomega) {
+				pods, _ := e2e.ParsePods(kubeConfigFile, false)
 				count := e2e.CountOfStringInSlice("test-daemonset", pods)
 				fmt.Println("POD COUNT")
 				fmt.Println(count)
-				fmt.Println("NODE COUNT")
-				fmt.Println(len(nodes))
-				g.Expect(len(nodes)).Should((Equal(count)), "Daemonset pod count does not match node count")
-			}, "420s", "10s").Should(Succeed())
+				fmt.Println("CP COUNT")
+				fmt.Println(len(cpNodeNames))
+				g.Expect(len(cpNodeNames)).Should((Equal(count)), "Daemonset pod count does not match cp node count")
+			}, "240s", "10s").Should(Succeed())
 		})
 
 		It("Verifies dns access", func() {
 			_, err := e2e.DeployWorkload("dnsutils.yaml", kubeConfigFile)
 			Expect(err).NotTo(HaveOccurred(), "dnsutils manifest not deployed")
 
-			Eventually(func(g Gomega) {
-				cmd := "kubectl get pods dnsutils --kubeconfig=" + kubeConfigFile
-				res, _ := e2e.RunCommand(cmd)
-				fmt.Println(res)
-				g.Expect(res).Should(ContainSubstring("dnsutils"))
-			}, "420s", "2s").Should(Succeed())
+			cmd := "kubectl get pods dnsutils --kubeconfig=" + kubeConfigFile
+			Eventually(func() (string, error) {
+				return e2e.RunCommand(cmd)
+			}, "420s", "2s").Should(ContainSubstring("dnsutils"), "failed cmd: "+cmd)
 
-			Eventually(func(g Gomega) {
-				cmd := "kubectl --kubeconfig=" + kubeConfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default"
-				fmt.Println(cmd)
-				res, _ := e2e.RunCommand(cmd)
-				fmt.Println(res)
-				g.Expect(res).Should(ContainSubstring("kubernetes.default.svc.cluster.local"))
-			}, "420s", "2s").Should(Succeed())
+			cmd = "kubectl --kubeconfig=" + kubeConfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default"
+			Eventually(func() (string, error) {
+				return e2e.RunCommand(cmd)
+			}, "420s", "2s").Should(ContainSubstring("kubernetes.default.svc.cluster.local"), "failed cmd: "+cmd)
 		})
 	})
 })
