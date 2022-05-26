@@ -12,18 +12,6 @@ CNI = (ENV['E2E_CNI'] || "canal") # canal, cilium and calico supported
 # see https://www.virtualbox.org/manual/ch06.html#network_hostonly
 NETWORK_PREFIX = "10.10.10"
 
-def installType(vm)
-  if RELEASE_VERSION == "skip"
-    return "INSTALL_RKE2_ARTIFACT_PATH=/tmp" 
-  elsif !RELEASE_VERSION.empty?
-    return "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"
-  end
-  # Grabs the last 5 commit SHA's from the given branch, then purges any commits that do not have a passing CI build
-  scripts_location = Dir.exists?("./scripts") ? "./scripts" : "../scripts" 
-  vm.provision "shell", path:  scripts_location + "/latest_commit.sh", args: [GITHUB_BRANCH, "/tmp/rke2_commits"]
-  return "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
-end
-
 def provision(vm, roles, role_num, node_num)
   vm.box = NODE_BOXES[node_num]
   vm.hostname = "#{roles[0]}-#{role_num}"
@@ -35,7 +23,7 @@ def provision(vm, roles, role_num, node_num)
   load vagrant_defaults
   
   defaultOSConfigure(vm)
-  install_type = installType(vm)
+  install_type = installType(vm, RELEASE_VERSION, GITHUB_BRANCH)
   
   vm.provision "shell", inline: "ping -c 2 rke2.io"
   
@@ -82,7 +70,7 @@ def provision(vm, roles, role_num, node_num)
 end
 
 Vagrant.configure("2") do |config|
-  config.vagrant.plugins = ["vagrant-rke2", "vagrant-reload", "vagrant-libvirt"]
+  config.vagrant.plugins = ["vagrant-rke2", "vagrant-reload"]
   # Default provider is libvirt, virtualbox is only provided as a backup
   config.vm.provider "libvirt" do |v|
     v.cpus = NODE_CPUS
