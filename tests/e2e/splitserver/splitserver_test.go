@@ -155,7 +155,7 @@ var _ = Describe("Verify Create", func() {
 			Expect(err).NotTo(HaveOccurred(), "Loadbalancer manifest not deployed")
 
 			cmd := "kubectl get service nginx-loadbalancer-svc --kubeconfig=" + kubeConfigFile + " --output jsonpath=\"{.spec.externalIPs[0]}:{.spec.ports[0].port}\""
-			ip_port, err := e2e.RunCommand(cmd)
+			ipPort, err := e2e.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred())
 
 			cmd = "kubectl get pods -o=name -l k8s-app=nginx-app-loadbalancer --field-selector=status.phase=Running --kubeconfig=" + kubeConfigFile
@@ -163,7 +163,7 @@ var _ = Describe("Verify Create", func() {
 				return e2e.RunCommand(cmd)
 			}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"))
 
-			cmd = "curl -L --insecure http://" + ip_port + "/name.html"
+			cmd = "curl -L --insecure http://" + ipPort + "/name.html"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
 			}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"), "failed cmd: "+cmd)
