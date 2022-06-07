@@ -6,7 +6,7 @@ replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.8.22
 	github.com/benmoss/go-powershell => github.com/k3s-io/go-powershell v0.0.0-20201118222746-51f4c451fbd7
 	github.com/cloudnativelabs/kube-router => github.com/k3s-io/kube-router v1.3.3-0.20220405142336-8ea9a06dc0e3
-	github.com/containerd/containerd => github.com/k3s-io/containerd v1.5.11-k3s2
+	github.com/containerd/containerd => github.com/k3s-io/containerd v1.5.13-k3s1
 	github.com/docker/distribution => github.com/docker/distribution v2.8.1+incompatible
 	github.com/docker/docker => github.com/docker/docker v20.10.12+incompatible
 	github.com/docker/libnetwork => github.com/docker/libnetwork v0.8.0-dev.2.0.20190624125649-f0e46a78ea34
@@ -16,7 +16,7 @@ replace (
 	github.com/juju/errors => github.com/k3s-io/nocode v0.0.0-20200630202308-cb097102c09f
 	github.com/kubernetes-sigs/cri-tools => github.com/k3s-io/cri-tools v1.24.0-k3s1
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
-	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.1
+	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.2
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 	github.com/opencontainers/selinux => github.com/opencontainers/selinux v1.10.1
 	github.com/rancher/dynamiclistener => github.com/rancher/dynamiclistener v0.3.3
@@ -68,11 +68,11 @@ replace (
 
 require (
 	github.com/Microsoft/hcsshim v0.9.2
-	github.com/containerd/continuity v0.2.2
+	github.com/containerd/continuity v0.3.0
 	github.com/google/go-containerregistry v0.7.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.12.1
-	github.com/k3s-io/k3s v1.24.1-rc3.0.20220603003655-491aa11e1068 // master
+	github.com/k3s-io/k3s v1.24.1-rc3.0.20220607201107-c00f953ef953 // master
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/onsi/ginkgo/v2 v2.1.3
 	github.com/onsi/gomega v1.19.0
@@ -82,7 +82,7 @@ require (
 	github.com/rancher/wrangler v1.0.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/urfave/cli v1.22.5
-	golang.org/x/sys v0.0.0-20220209214540-3681064d5158
+	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad
 	google.golang.org/grpc v1.45.0
 	k8s.io/api v0.24.1
 	k8s.io/apimachinery v0.24.1
