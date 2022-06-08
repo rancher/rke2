@@ -153,7 +153,6 @@ func ServerRun(clx *cli.Context) error {
 }
 
 func validateCNI(clx *cli.Context) {
-	egressMode := clx.String("egress-selector-mode")
 	cnis := []string{}
 	for _, cni := range clx.StringSlice("cni") {
 		for _, v := range strings.Split(cni, ",") {
@@ -170,20 +169,11 @@ func validateCNI(clx *cli.Context) {
 			logrus.Fatal("invalid value provided for --cni flag: multus must be used alongside another primary cni selection")
 		}
 		clx.Set("disable", "rke2-multus")
-		// Disable egress-selector support with calico, as it does not use the Kubernetes IPAM to assign PodCIDRs
-		// We can't count on user-provided CNIs using the IPAM either, so also disable it when the CNI is none.
-		if egressMode == "pod" && (cnis[0] == "calico" || cnis[0] == "none") {
-			clx.Set("egress-selector-mode", "disabled")
-		}
 	case 2:
 		if cnis[0] == "multus" {
 			cnis = cnis[1:]
 		} else {
 			logrus.Fatal("invalid values provided for --cni flag: may only provide multiple values if multus is the first value")
-		}
-		// Disable egress-selector support with multus, as multus secondary CNIs may assign pod addresses outside the PodCIDR
-		if egressMode == "pod" {
-			clx.Set("egress-selector-mode", "disabled")
 		}
 	default:
 		logrus.Fatal("invalid values provided for --cni flag: may not provide more than two values")
