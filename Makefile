@@ -132,11 +132,11 @@ package-windows-images: build-windows-images		## Package Windows crane images fo
 	./scripts/package-windows-images
 
 .PHONY: package-bundle
-package-bundle: build				## Package the tarball bundle
+package-bundle: build-binary					## Package the tarball bundle
 	./scripts/package-bundle
 
 .PHONY: package-windows-bundle
-package-windows-bundle: build				## Package the Windows tarball bundle
+package-windows-bundle: build-windows-binary	## Package the Windows tarball bundle
 	./scripts/package-windows-bundle
 
 .PHONY: test
