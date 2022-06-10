@@ -222,9 +222,6 @@ func ParsePods(kubeconfig string, print bool) ([]Pod, error) {
 // RunCmdOnNode executes a command from within the given node
 func RunCmdOnNode(cmd string, nodename string) (string, error) {
 	communicator := "ssh"
-	if strings.Contains(nodename, "windows") {
-		communicator = "winrm"
-	}
 	runcmd := "vagrant " + communicator + " -c \"" + cmd + "\" " + nodename
 	return RunCommand(runcmd)
 }

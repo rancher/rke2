@@ -5,10 +5,8 @@ def defaultOSConfigure(vm)
     vm.provision "Install jq", type: "shell", inline: "apt-get install -y jq", run: 'once'
   elsif box.include?("Leap") || box.include?("Tumbleweed")
     vm.provision "Install jq", type: "shell", inline: "zypper install -y jq", run: 'once'
-  elsif box.match?(/windows.*2019/)
-    vm.communicator = "winrm"
-  elsif box.match?(/windows.*2022/)
-    vm.communicator = "winrm"
+  elsif box.match?(/Windows.*2019/) || box.match?(/Windows.*2022/)
+    vm.communicator = "winssh"
   end
 end
 
