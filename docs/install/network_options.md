@@ -45,7 +45,9 @@ The next tabs inform how to deploy each CNI plugin and override the default opti
     
     For more information about the full options of the Canal config please refer to the [rke2-charts](https://github.com/rancher/rke2-charts/blob/main-source/packages/rke2-canal/charts/values.yaml).
 
-    Canal is currently no supported in the windows installation of RKE2
+    Canal is currently not supported in the windows installation of RKE2
+
+    Please check [Known issues and Limitations](https://docs.rke2.io/known_issues/) if you experience IP allocation problems 
 
 === "Cilium CNI plugin"
     Starting with RKE2 v1.21, Cilium can be deployed as the CNI plugin. To do so, pass `cilium` as the value of the `--cni` flag. To override the default options, please use a HelmChartConfig resource. The HelmChartConfig resource must match the name and namespace of its corresponding HelmChart. For example, to enable eni:

@@ -92,3 +92,13 @@ Wicked configures the networking settings of the host based on the sysctl config
 net.ipv4.conf.all.forwarding=1
 net.ipv6.conf.all.forwarding=1
 ```
+
+## Canal and IP exhaustion
+
+By default Canal keeps track of pod IPs by creating a lock file for each IP in `/var/lib/cni/networks/k8s-pod-network`. Each IP belongs to a single pod and will be deleted as soon as the pod is removed. However, in the unlikely event that containerd loses track of the running pods, lock files may be leaked and Canal will not be able to reuse those IPs anymore. If this occurs, you may experience IP exhaustion errors, for example:
+
+```console
+failed to allocate for range 0: no IP addresses available in range set
+```
+
+To resolve this, you can manually remove unused IPs from that directory. If you need to do this, please report the problem via GitHub, making sure to specify how it was triggered.
