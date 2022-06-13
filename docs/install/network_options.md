@@ -29,7 +29,7 @@ The next tabs inform how to deploy each CNI plugin and override the default opti
           iface: "eth1"
     ```
 
-    Starting with RKE2 v1.23 it is possible to use flannels [wireguard backend](https://github.com/flannel-io/flannel/blob/master/Documentation/backends.md#wireguard) for in-kernel WireGuard encapsulation and encryption ([Users of kernels < 5.6 need to install a module](https://www.wireguard.com/install/)). This can be achieved using the following config:
+    Starting with RKE2 v1.23 it is possible to use flannel's [wireguard backend](https://github.com/flannel-io/flannel/blob/master/Documentation/backends.md#wireguard) for in-kernel WireGuard encapsulation and encryption ([Users of kernels < 5.6 need to install a module](https://www.wireguard.com/install/)). This can be achieved using the following config:
     
     ```yaml
     apiVersion: helm.cattle.io/v1
@@ -42,7 +42,9 @@ The next tabs inform how to deploy each CNI plugin and override the default opti
         flannel:
           backend: "wireguard"
     ```
-    
+
+    After that, please restart the canal daemonset to use the newer config by executing: `kubectl rollout restart ds rke2-canal -n kube-system`    
+
     For more information about the full options of the Canal config please refer to the [rke2-charts](https://github.com/rancher/rke2-charts/blob/main-source/packages/rke2-canal/charts/values.yaml).
 
     Canal is currently no supported in the windows installation of RKE2
