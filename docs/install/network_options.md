@@ -106,11 +106,12 @@ The next tabs inform how to deploy each CNI plugin and override the default opti
 
 ## Dual-stack configuration
 
-IPv4/IPv6 dual-stack networking enables the allocation of both IPv4 and IPv6 addresses to Pods and Services. It is supported in RKE2 since v1.21 but not activated by default. To activate it correctly, both RKE2 and the chosen CNI plugin must be configured accordingly. To configure RKE2 in dual-stack mode, it is enough to set a valid IPv4/IPv6 dual-stack cidr for pods and services. To do so, use the flags `--cluster-cidr` and `--service-cidr`, for example:
+IPv4/IPv6 dual-stack networking enables the allocation of both IPv4 and IPv6 addresses to Pods and Services. It is supported in RKE2 since v1.21, stable since v1.23 but not activated by default. To activate it correctly, both RKE2 and the chosen CNI plugin must be configured accordingly. To configure RKE2 in dual-stack mode, in the control-plane nodes, you must set a valid IPv4/IPv6 dual-stack cidr for pods and services. Moreover, in both control-plane and worker nodes, you must set a dual-stack node-ip, which includes the IPv4 and IPv6 address of the node. To do so, use the flags `--cluster-cidr`, `--service-cidr` and `--node-ip` for example:
 
     ```bash
     --cluster-cidr 10.42.0.0/16,2001:cafe:42:0::/56
     --service-cidr 10.43.0.0/16,2001:cafe:42:1::/112
+    --node-ip 10.0.10.40,2a02:d091:a6f:4691:58c6:8609:a6d5:d1c3
     ```
 
 Each CNI plugin requires a different configuration for dual-stack:
@@ -121,19 +122,7 @@ Each CNI plugin requires a different configuration for dual-stack:
 
 === "Cilium CNI plugin"
 
-    Enable the ipv6 parameter using a HelmChartConfig:
-
-    ```yaml
-    apiVersion: helm.cattle.io/v1
-    kind: HelmChartConfig
-    metadata:
-      name: rke2-cilium
-      namespace: kube-system
-    spec:
-      valuesContent: |-
-        ipv6:
-          enabled: true
-    ```
+    Cilium automatically detects the RKE2 configuration for dual-stack and does not need any extra configuration
 
 === "Calico CNI plugin"
 
