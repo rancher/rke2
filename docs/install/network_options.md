@@ -167,6 +167,44 @@ macvlan, etc) as secondary CNI plugins for Multus. These containernetworking plu
 
 To use any of these plugins, a proper NetworkAttachmentDefinition object will need to be created to define the configuration of the secondary network. The definition is then referenced by pod annotations, which Multus will use to provide extra interfaces to that pod. An example using the macvlan cni plugin with Mu is available [in the multus-cni repo](https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/docs/quickstart.md#storing-a-configuration-as-a-custom-resource).
 
+## Using Multus with the Whereabouts CNI
+[Whereabouts](https://github.com/k8snetworkplumbingwg/whereabouts) is an IP Address Management (IPAM) CNI plugin that assigns IP addresses cluster-wide.
+Starting with RKE2 1.22, RKE2 includes the option to use Whereabouts with Multus to manage the IP addresses of the additional interfaces created through Multus.
+In order to do this, you need to use [HelmChartConfig](../helm.md#customizing-packaged-components-with-helmchartconfig) to configure the Multus CNI to use Whereabouts.
+
+You can do this by creating a file named `/var/lib/rancher/rke2/server/manifests/rke2-multus-config.yml` with the following content:
+```yaml
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-multus
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    rke2-whereabouts:
+      enabled: true
+```
+
+This will configure the chart for Multus to use `rke2-whereabouts` as a dependency.
+
+If you want to customize the Whereabouts image, this is possible like this:
+```yaml
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-multus
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    rke2-whereabouts:
+      enabled: true
+      image:
+        repository: ghcr.io/k8snetworkplumbingwg/whereabouts
+        tag: latest-amd64
+```
+
+NOTE: You should write this file before starting rke2.
+
 ## Using Multus with SR-IOV (experimental)
 
 **Please note this is an experimental feature introduced with v1.21.2+rke2r1.**
