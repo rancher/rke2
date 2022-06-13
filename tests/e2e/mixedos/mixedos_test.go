@@ -19,7 +19,7 @@ var serverCount = flag.Int("serverCount", 3, "number of server nodes")
 var linuxAgentCount = flag.Int("linuxAgentCount", 0, "number of linux agent nodes")
 var windowsAgentCount = flag.Int("windowsAgentCount", 1, "number of windows agent nodes")
 
-const defaultWindowsOS = "peru/windows-server-2019-standard-x64-eval"
+const defaultWindowsOS = "jborean93/WindowsServer2022"
 
 func Test_E2EMixedOSValidation(t *testing.T) {
 	flag.Parse()

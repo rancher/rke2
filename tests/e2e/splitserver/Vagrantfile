@@ -1,34 +1,37 @@
 ENV['VAGRANT_NO_PARALLEL'] = 'no'
 NODE_ROLES = (ENV['E2E_NODE_ROLES'] ||
-  ["server-0", "server-1", "server-2", "agent-0" ])
+  ["server-etcd-0", "server-cp-0", "server-cp-1", "agent-0"])
 NODE_BOXES = (ENV['E2E_NODE_BOXES'] ||
-  ['generic/ubuntu2004', 'generic/ubuntu2004', 'generic/ubuntu2004', 'generic/ubuntu2004'])
+  ['generic/ubuntu2004', 'generic/ubuntu2004', 'generic/ubuntu2004', 'generic/ubuntu2004', 'generic/ubuntu2004'])
 GITHUB_BRANCH = (ENV['E2E_GITHUB_BRANCH'] || "master")
 RELEASE_VERSION = (ENV['E2E_RELEASE_VERSION'] || "")
 NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
 NODE_MEMORY = (ENV['E2E_NODE_MEMORY'] || 2048).to_i
-CNI = (ENV['E2E_CNI'] || "canal") # canal, cilium and calico supported
-# Virtualbox >= 6.1.28 require `/etc/vbox/network.conf` for expanded private networks,
-# see https://www.virtualbox.org/manual/ch06.html#network_hostonly
+# Virtualbox >= 6.1.28 require `/etc/vbox/network.conf` for expanded private networks 
 NETWORK_PREFIX = "10.10.10"
+install_type = ""
 
-def provision(vm, roles, role_num, node_num)
+def provision(vm, role, role_num, node_num)
   vm.box = NODE_BOXES[node_num]
-  vm.hostname = "#{roles[0]}-#{role_num}"
+  vm.hostname = role
   # An expanded netmask is required to allow VM<-->VM communication, virtualbox defaults to /32
   node_ip = "#{NETWORK_PREFIX}.#{100+node_num}"
   vm.network "private_network", ip: node_ip, netmask: "255.255.255.0"
 
+  scripts_location = Dir.exists?("./scripts") ? "./scripts" : "../scripts" 
   vagrant_defaults = File.exists?("./vagrantdefaults.rb") ? "./vagrantdefaults.rb" : "../vagrantdefaults.rb"
   load vagrant_defaults
-  
+
   defaultOSConfigure(vm)
-  install_type = getInstallType(vm, RELEASE_VERSION, GITHUB_BRANCH)
+  install_type = getInstallType(vm, RELEASE_VERSION, GITHUB_BRANCH)  
+
+  vm.provision "ping rke2.io", type: "shell", inline: "ping -c 2 rke2.io"
   
-  vm.provision "shell", inline: "ping -c 2 rke2.io"
-  
-  if roles.include?("server") && role_num == 0
-    vm.provision :rke2, run: 'once' do |rke2|
+  if node_num == 0 && !role.include?("server") && !role.include?("etcd")
+    puts "first node must be a etcd server"
+    abort
+  elsif role.include?("server") && role.include?("etcd") && role_num == 0
+    vm.provision 'rke2-install', type: 'rke2', run: 'once' do |rke2|
       rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
       rke2.config = <<~YAML
@@ -36,11 +39,15 @@ def provision(vm, roles, role_num, node_num)
         node-external-ip: #{NETWORK_PREFIX}.100
         node-ip: #{NETWORK_PREFIX}.100
         token: vagrant-rke2
-        cni: #{CNI}
+        disable-apiserver: true
+        disable-controller-manager: true
+        disable-scheduler: true
+        node-taint:
+        - node-role.kubernetes.io/etcd:NoExecute
       YAML
     end
-  elsif roles.include?("server") && role_num != 0
-    vm.provision :rke2, run: 'once' do |rke2|
+  elsif role.include?("server") && role.include?("etcd") && role_num != 0
+    vm.provision 'rke2-install', type: 'rke2', run: 'once' do |rke2|
       rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
       rke2.config = <<~YAML
@@ -49,18 +56,36 @@ def provision(vm, roles, role_num, node_num)
         node-ip: #{node_ip}
         server: https://#{NETWORK_PREFIX}.100:9345
         token: vagrant-rke2
-        cni: #{CNI}
+        disable-apiserver: true
+        disable-controller-manager: true
+        disable-scheduler: true
+        node-taint:
+        - node-role.kubernetes.io/etcd:NoExecute
+      YAML
+    end
+  elsif role.include?("server") && role.include?("cp")
+    vm.provision 'rke2-install', type: 'rke2', run: 'once' do |rke2|
+      rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
+      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
+      rke2.config = <<~YAML
+        write-kubeconfig-mode: '0644'
+        node-ip: #{node_ip}
+        node-external-ip: #{node_ip}
+        server: https://#{NETWORK_PREFIX}.100:9345
+        token: vagrant-rke2
+        disable-etcd: true
+        node-taint:
+        - node-role.kubernetes.io/control-plane:NoSchedule
       YAML
     end
   end
-  if roles.include?("agent")
-    vm.provision :rke2, run: 'once' do |rke2|
+  if role.include?("agent")
+    vm.provision 'rke2-install', type: 'rke2', run: 'once' do |rke2|
       rke2.env = %W[INSTALL_RKE2_TYPE=agent #{install_type}]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
       rke2.install_path = false
       rke2.config = <<~YAML
         write-kubeconfig-mode: '0644'
-        node-external-ip: #{node_ip}
         node-ip: #{node_ip}
         server: https://#{NETWORK_PREFIX}.100:9345
         token: vagrant-rke2
@@ -70,7 +95,7 @@ def provision(vm, roles, role_num, node_num)
 end
 
 Vagrant.configure("2") do |config|
-  config.vagrant.plugins = ["vagrant-rke2", "vagrant-reload"]
+  config.vagrant.plugins = ["vagrant-rke2"]
   # Default provider is libvirt, virtualbox is only provided as a backup
   config.vm.provider "libvirt" do |v|
     v.cpus = NODE_CPUS
@@ -92,10 +117,9 @@ Vagrant.configure("2") do |config|
   # over the node roles themselves
   NODE_ROLES.length.times do |i|
     name = NODE_ROLES[i]
+    role_num = name.split("-", -1).pop.to_i
     config.vm.define name do |node|
-      roles = name.split("-", -1)
-      role_num = roles.pop.to_i
-      provision(node.vm, roles, role_num, i)
+      provision(node.vm, name, role_num, i)
     end
   end
 end

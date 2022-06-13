@@ -27,20 +27,15 @@ def provision(vm, roles, role_num, node_num)
     :libvirt__ipv6_address => "#{NETWORK6_PREFIX}::1",
     :libvirt__ipv6_prefix => "64"
     
-  vagrant_defaults = '../vagrantdefaults.rb'
-  load vagrant_defaults if File.exists?(vagrant_defaults)
+  vagrant_defaults = File.exists?("./vagrantdefaults.rb") ? "./vagrantdefaults.rb" : "../vagrantdefaults.rb"
+  load vagrant_defaults
   
   defaultOSConfigure(vm)
   
-  vm.provision "IPv6 Setup", type: "shell", path: "../scripts/ipv6.sh", args: [node_ip4, node_ip6, CNI, vm.box]
+  scripts_location = Dir.exists?("./scripts") ? "./scripts" : "../scripts" 
+  vm.provision "IPv6 Setup", type: "shell", path: scripts_location + "/ipv6.sh", args: [node_ip4, node_ip6, CNI, vm.box]
   
-  if !RELEASE_VERSION.empty?
-    install_type = "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"
-  else
-    # Grabs the last 5 commit SHA's from the given branch, then purges any commits that do not have a passing CI build
-    vm.provision "Find Latest Commit", type: "shell", path: "../scripts/latest_commit.sh", args: [GITHUB_BRANCH, "/tmp/rke2_commits"]
-    install_type = "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
-  end
+  install_type = getInstallType(vm, RELEASE_VERSION, GITHUB_BRANCH)
   vm.provision "Ping Check", type: "shell", inline: "ping -c 2 rke2.io"
   
   if roles.include?("server") && role_num == 0
