@@ -1,16 +1,16 @@
 ---
-title: CIS 1.6 Self-Assessment Guide
+title: CIS v1.6 Self-Assessment Guide
 ---
 
-### CIS Kubernetes Benchmark v1.6 - RKE2 v1.20
+### CIS Kubernetes Benchmark v1.6 - RKE2
 
 #### Overview
 
 This document is a companion to the RKE2 security hardening guide. The hardening guide provides prescriptive guidance for hardening a production installation of RKE2, and this benchmark guide is meant to help you evaluate the level of security of the hardened cluster against each control in the CIS Kubernetes benchmark. It is to be used by RKE2 operators, security teams, auditors, and decision makers.
 
-This guide is specific to the **v1.20** release line of RKE2 and the **v1.6.1** release of the CIS Kubernetes Benchmark.
+This guide is specific to the **v1.21** and **v1.22** release line of RKE2 and the **v1.6.1** release of the CIS Kubernetes Benchmark.
 
-For more detail about each control, including more detailed descriptions and remediations for failing tests, you can refer to the corresponding section of the CIS Kubernetes Benchmark v1.5. You can download the benchmark after logging in to [CISecurity.org]( https://www.cisecurity.org/benchmark/kubernetes/).
+For more details about each control, including detailed descriptions and remediations for failing tests, you can refer to the corresponding section of the CIS Kubernetes Benchmark v1.6.1. You can download the benchmark after logging in to [CISecurity.org](https://www.cisecurity.org/benchmark/kubernetes/).
 
 #### Testing controls methodology
 
@@ -2571,7 +2571,7 @@ Follow the Kubernetes documentation and setup image provenance.
 
 
 ### 5.6 Omitted
-The v1.5.1 guide skips 5.6 and goes from 5.5 to 5.7. We are including it here merely for explanation.
+The v1.6.1 guide skips 5.6 and goes from 5.5 to 5.7. We are including it here merely for explanation.
 
 
 ### 5.7 General Policies
