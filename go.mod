@@ -69,10 +69,11 @@ replace (
 require (
 	github.com/Microsoft/hcsshim v0.9.2
 	github.com/containerd/continuity v0.3.0
+	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/google/go-containerregistry v0.7.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.12.1
-	github.com/k3s-io/k3s v1.24.1-rc3.0.20220608163453-d3242bea3ca0 // master
+	github.com/k3s-io/k3s v1.24.2-0.20220615160052-a9b5a1933fbd // master
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/onsi/ginkgo/v2 v2.1.3
 	github.com/onsi/gomega v1.19.0
