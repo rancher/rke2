@@ -42,7 +42,6 @@ func checkStaticManifests(dataDir string) cmds.StartupHook {
 	return func(ctx context.Context, wg *sync.WaitGroup, args cmds.StartupHookArgs) error {
 		go func() {
 			defer wg.Done()
-			<-args.APIServerReady
 
 			var conn *grpc.ClientConn
 			if err := wait.ExponentialBackoff(criBackoff, func() (done bool, err error) {
@@ -63,14 +62,11 @@ func checkStaticManifests(dataDir string) cmds.StartupHook {
 			for _, pod := range []string{"etcd", "kube-apiserver"} {
 				manifestFile := filepath.Join(manifestDir, pod+".yaml")
 				if f, err := os.Open(manifestFile); err == nil {
-					if err != nil {
-						logrus.Fatal(err)
-					}
 					podManifest := v1.Pod{}
 					decoder := yaml.NewYAMLToJSONDecoder(f)
 					err = decoder.Decode(&podManifest)
 					if err != nil {
-						logrus.Fatal(err)
+						logrus.Fatalf("Failed to decode %s manifest: %v", pod, err)
 					}
 					podFilter := &runtimeapi.ContainerFilter{
 						LabelSelector: map[string]string{
@@ -91,11 +87,11 @@ func checkStaticManifests(dataDir string) cmds.StartupHook {
 						logrus.Infof("Waiting for %s manifest", pod)
 						return false, nil
 					}); err != nil {
-						logrus.Fatal(err)
+						logrus.Fatalf("Failed to wait for latest %s manifest to be deployed", pod, err)
 					}
 				} else if !errors.Is(err, os.ErrNotExist) {
 					// Since split-role servers exist, we don't care if no manifest is found
-					logrus.Fatal(err)
+					logrus.Fatalf("Failed to open %s manifest: %v", pod, err)
 				}
 			}
 		}()
