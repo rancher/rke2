@@ -87,7 +87,7 @@ func checkStaticManifests(dataDir string) cmds.StartupHook {
 						logrus.Infof("Waiting for %s manifest", pod)
 						return false, nil
 					}); err != nil {
-						logrus.Fatalf("Failed to wait for latest %s manifest to be deployed", pod, err)
+						logrus.Fatalf("Failed to wait for latest %s manifest to be deployed: %v", pod, err)
 					}
 				} else if !errors.Is(err, os.ErrNotExist) {
 					// Since split-role servers exist, we don't care if no manifest is found
