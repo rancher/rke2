@@ -751,8 +751,8 @@ github.com/k3s-io/etcd/server/v3 v3.5.4-k3s1 h1:swbvfSDpl7QsYO6Vh+EBgxZCMyG4N1tU
 github.com/k3s-io/etcd/server/v3 v3.5.4-k3s1/go.mod h1:S5/YTU15KxymM5l3T6b09sNOHPXqGYIZStpuuGbb65c=
 github.com/k3s-io/helm-controller v0.12.1 h1:cZgXAreTvz+Aq3DzxL6RB6P1lEAlfDXxOKtwOzrvo+Y=
 github.com/k3s-io/helm-controller v0.12.1/go.mod h1:yBS3F5emwVjyzUUi3VWAuj9+Ogoq84Mf7CBXbAnKI1U=
-github.com/k3s-io/k3s v1.23.7-rc1.0.20220608163525-15b8fb962a3c h1:wfc6tx6+K1SvML1X0d2zZhpFGfN3GC9suvqdvhOeBk0=
-github.com/k3s-io/k3s v1.23.7-rc1.0.20220608163525-15b8fb962a3c/go.mod h1:YizbTpPVtIDO/NaZ/gEv1BRinE2QOjM+HMsZam+58eE=
+github.com/k3s-io/k3s v1.23.8-0.20220615201122-330993e1eb75 h1:zX4MY0Ht8cz1eDqRD7GwVGozPBNaLC1A+fn3jZS/Zic=
+github.com/k3s-io/k3s v1.23.8-0.20220615201122-330993e1eb75/go.mod h1:5kvC+o6WwspAB2fQnO4fIVHz4C225LdYEHVvm+aAzPU=
 github.com/k3s-io/kine v0.9.1 h1:HDT89cI7+xVYYFVC/LWK6mcA5dFwu1BUGffRvt/SXeU=
 github.com/k3s-io/kine v0.9.1/go.mod h1:Yqg5cVgu11yV16JzAS9gnjM+Ny5kiey9surO/AaF//U=
 github.com/k3s-io/klog v1.0.0-k3s2 h1:yyvD2bQbxG7m85/pvNctLX2bUDmva5kOBvuZ77tTGBA=
@@ -1297,8 +1297,9 @@ github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijb
 github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/urfave/cli v1.22.2/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/urfave/cli v1.22.4/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
-github.com/urfave/cli v1.22.5 h1:lNq9sAHXK2qfdI8W+GRItjCEkI+2oR4d+MEHy1CKXoU=
 github.com/urfave/cli v1.22.5/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
+github.com/urfave/cli v1.22.9 h1:cv3/KhXGBGjEXLC4bH0sLuJ9BewaAbpk5oyMOveu4pw=
+github.com/urfave/cli v1.22.9/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/urfave/cli/v2 v2.3.0/go.mod h1:LJmUH05zAU44vOAcrfzZQKsZbVcdbOG8rtL3/XcUArI=
 github.com/urfave/negroni v1.0.0/go.mod h1:Meg73S6kFm/4PpbYdq35yYWoCZ9mS/YSx+lKnmiohz4=
 github.com/vbatts/tar-split v0.11.2 h1:Via6XqJr0hceW4wff3QRzD5gAk/tatMw/4ZA7cTlIME=
