@@ -103,6 +103,7 @@ var (
 		"resolv-conf":                       copy,
 		"flannel-iface":                     drop,
 		"flannel-conf":                      drop,
+		"flannel-cni-conf":                  drop,
 		"flannel-ipv6-masq":                 drop,
 		"egress-selector-mode":              copy,
 		"kubelet-arg":                       copy,
@@ -134,6 +135,8 @@ var (
 		"etcd-s3-insecure":                  copy,
 		"etcd-s3-timeout":                   copy,
 		"disable-helm-controller":           drop,
+		"enable-pprof":                      copy,
+		"servicelb-namespace":               drop,
 	})
 )
 
