@@ -59,80 +59,44 @@ func checkStaticManifests(dataDir string) cmds.StartupHook {
 			defer conn.Close()
 
 			manifestDir := podManifestsDir(dataDir)
-			etcdManifest := filepath.Join(manifestDir, "etcd.yaml")
-			kubeAPIManifest := filepath.Join(manifestDir, "kube-apiserver.yaml")
 
-			// Extract UID from manifest and compare it to the running pod
-			if f, err := os.Open(etcdManifest); err == nil {
-				if err != nil {
-					logrus.Fatal(err)
-				}
-				podManifest := v1.Pod{}
-				decoder := yaml.NewYAMLToJSONDecoder(f)
-				err = decoder.Decode(&podManifest)
-				if err != nil {
-					logrus.Fatal(err)
-				}
-				etcdFilter := &runtimeapi.ContainerFilter{
-					LabelSelector: map[string]string{
-						"io.kubernetes.container.name": "etcd",
-					},
-				}
-				if err := wait.ExponentialBackoff(podCheckBackoff, func() (done bool, err error) {
-					resp, err := cRuntime.ListContainers(ctx, &runtimeapi.ListContainersRequest{Filter: etcdFilter})
+			for _, pod := range []string{"etcd", "kube-apiserver"} {
+				manifestFile := filepath.Join(manifestDir, pod+".yaml")
+				if f, err := os.Open(manifestFile); err == nil {
 					if err != nil {
-						return false, err
+						logrus.Fatal(err)
 					}
-					for _, c := range resp.Containers {
-						if c.Labels["io.kubernetes.pod.uid"] == string(podManifest.UID) {
-							logrus.Info("Latest etcd manifest deployed")
-							return true, nil
-						}
-					}
-					logrus.Info("Waiting for etcd manifest")
-					return false, nil
-				}); err != nil {
-					logrus.Fatal(err)
-				}
-
-			} else if !errors.Is(err, os.ErrNotExist) {
-				// Since split-role servers exist, we don't care if no etcd manifest is found
-				logrus.Fatal(err)
-			}
-
-			if f, err := os.Open(kubeAPIManifest); err == nil {
-				podManifest := v1.Pod{}
-				decoder := yaml.NewYAMLToJSONDecoder(f)
-				err = decoder.Decode(&podManifest)
-				if err != nil {
-					logrus.Fatal(err)
-				}
-
-				kubeAPIFilter := &runtimeapi.ContainerFilter{
-					LabelSelector: map[string]string{
-						"io.kubernetes.container.name": "kube-apiserver",
-					},
-				}
-
-				if err := wait.ExponentialBackoff(podCheckBackoff, func() (done bool, err error) {
-					resp, err := cRuntime.ListContainers(ctx, &runtimeapi.ListContainersRequest{Filter: kubeAPIFilter})
+					podManifest := v1.Pod{}
+					decoder := yaml.NewYAMLToJSONDecoder(f)
+					err = decoder.Decode(&podManifest)
 					if err != nil {
-						return false, err
+						logrus.Fatal(err)
 					}
-					for _, c := range resp.Containers {
-						if c.Labels["io.kubernetes.pod.uid"] == string(podManifest.UID) {
-							logrus.Info("Latest kube-apiserver manifest deployed")
-							return true, nil
+					podFilter := &runtimeapi.ContainerFilter{
+						LabelSelector: map[string]string{
+							"io.kubernetes.container.name": pod,
+						},
+					}
+					if err := wait.ExponentialBackoff(podCheckBackoff, func() (done bool, err error) {
+						resp, err := cRuntime.ListContainers(ctx, &runtimeapi.ListContainersRequest{Filter: podFilter})
+						if err != nil {
+							return false, err
 						}
+						for _, c := range resp.Containers {
+							if c.Labels["io.kubernetes.pod.uid"] == string(podManifest.UID) {
+								logrus.Infof("Latest %s manifest deployed", pod)
+								return true, nil
+							}
+						}
+						logrus.Infof("Waiting for %s manifest", pod)
+						return false, nil
+					}); err != nil {
+						logrus.Fatal(err)
 					}
-					logrus.Info("Waiting for kube-apiserver manifest")
-					return false, nil
-				}); err != nil {
+				} else if !errors.Is(err, os.ErrNotExist) {
+					// Since split-role servers exist, we don't care if no manifest is found
 					logrus.Fatal(err)
 				}
-			} else if !errors.Is(err, os.ErrNotExist) {
-				// Since split-role servers exist, we don't care if no kube-apiserver manifest is found
-				logrus.Fatal(err)
 			}
 		}()
 		return nil
