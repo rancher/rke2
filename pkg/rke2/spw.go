@@ -60,7 +60,7 @@ func checkStaticManifests(dataDir string) cmds.StartupHook {
 
 			manifestDir := podManifestsDir(dataDir)
 			etcdManifest := filepath.Join(manifestDir, "etcd.yaml")
-			kubeApiManifest := filepath.Join(manifestDir, "kube-apiserver.yaml")
+			kubeAPIManifest := filepath.Join(manifestDir, "kube-apiserver.yaml")
 
 			// Extract UID from manifest and compare it to the running pod
 			if f, err := os.Open(etcdManifest); err == nil {
@@ -100,7 +100,7 @@ func checkStaticManifests(dataDir string) cmds.StartupHook {
 				logrus.Fatal(err)
 			}
 
-			if f, err := os.Open(kubeApiManifest); err == nil {
+			if f, err := os.Open(kubeAPIManifest); err == nil {
 				podManifest := v1.Pod{}
 				decoder := yaml.NewYAMLToJSONDecoder(f)
 				err = decoder.Decode(&podManifest)
@@ -108,14 +108,14 @@ func checkStaticManifests(dataDir string) cmds.StartupHook {
 					logrus.Fatal(err)
 				}
 
-				kubeApiFilter := &runtimeapi.ContainerFilter{
+				kubeAPIFilter := &runtimeapi.ContainerFilter{
 					LabelSelector: map[string]string{
 						"io.kubernetes.container.name": "kube-apiserver",
 					},
 				}
 
 				if err := wait.ExponentialBackoff(podCheckBackoff, func() (done bool, err error) {
-					resp, err := cRuntime.ListContainers(ctx, &runtimeapi.ListContainersRequest{Filter: kubeApiFilter})
+					resp, err := cRuntime.ListContainers(ctx, &runtimeapi.ListContainersRequest{Filter: kubeAPIFilter})
 					if err != nil {
 						return false, err
 					}
