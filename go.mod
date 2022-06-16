@@ -77,8 +77,8 @@ require (
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/google/go-containerregistry v0.7.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
-	github.com/k3s-io/helm-controller v0.12.1
-	github.com/k3s-io/k3s v1.22.11-0.20220615212801-be4b14e5011c // release-1.22
+	github.com/k3s-io/helm-controller v0.12.3
+	github.com/k3s-io/k3s v1.22.11-0.20220616214029-8e35299b41e3 // release-1.22
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.17.0
