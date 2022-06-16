@@ -64,12 +64,13 @@ replace (
 require (
 	github.com/Microsoft/hcsshim v0.8.20
 	github.com/containerd/continuity v0.1.0
+	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/google/go-containerregistry v0.7.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.12.0
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/k3s v1.21.11-engine0.0.20220422204531-51a7692e33f4 // engine-1.21
+	github.com/rancher/k3s v1.21.12-engine0.0.20220616152242-ccb09f627a05 // engine-1.21
 	github.com/rancher/wharfie v0.5.3
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
@@ -77,12 +78,12 @@ require (
 	github.com/urfave/cli v1.22.5
 	golang.org/x/sys v0.0.0-20211110154304-99a53858aa08
 	google.golang.org/grpc v1.42.0
-	k8s.io/api v0.21.11
-	k8s.io/apimachinery v0.21.11
-	k8s.io/apiserver v0.21.11
+	k8s.io/api v0.21.12
+	k8s.io/apimachinery v0.21.12
+	k8s.io/apiserver v0.21.12
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/cri-api v0.21.11
-	k8s.io/kubernetes v1.21.11
+	k8s.io/cri-api v0.21.12
+	k8s.io/kubernetes v1.21.12
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed
 	sigs.k8s.io/yaml v1.2.0
 )
