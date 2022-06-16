@@ -2,6 +2,7 @@ package staticpod
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -12,15 +13,18 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/ghodss/yaml"
+
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/rancher/k3s/pkg/cli/cmds"
-	"github.com/rancher/wrangler/pkg/yaml"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/kubernetes/pkg/util/hash"
 )
 
 const (
@@ -68,13 +72,11 @@ func Run(dir string, args Args) error {
 	if err != nil {
 		return err
 	}
-
-	bytes, err := yaml.Export(pod)
+	b, err := yaml.Marshal(pod)
 	if err != nil {
 		return err
 	}
-
-	return writeFile(dir, args.Command, bytes)
+	return writeFile(dir, args.Command, b)
 }
 
 func writeFile(dir, name string, content []byte) error {
@@ -130,6 +132,10 @@ func pod(args Args) (*v1.Pod, error) {
 	}
 
 	p := &v1.Pod{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "Pod",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      args.Command,
 			Namespace: "kube-system",
@@ -248,6 +254,14 @@ func pod(args Args) (*v1.Pod, error) {
 
 	addExtraMounts(p, args.ExtraMounts)
 	addExtraEnv(p, args.ExtraEnv)
+
+	// We hash the pod manifest at the end and use that as the UID
+	// this mimics what upstream does
+	// https://github.com/kubernetes/kubernetes/blob/master/pkg/kubelet/config/common.go#L58
+	hasher := md5.New()
+	hash.DeepHashObject(hasher, p)
+	p.ObjectMeta.UID = types.UID(hex.EncodeToString(hasher.Sum(nil)[0:]))
+
 	return p, nil
 }
 
