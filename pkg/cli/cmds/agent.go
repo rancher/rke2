@@ -38,6 +38,7 @@ var (
 		"resolv-conf":                       copy,
 		"flannel-iface":                     drop,
 		"flannel-conf":                      drop,
+		"flannel-cni-conf":                  drop,
 		"kubelet-arg":                       copy,
 		"kube-proxy-arg":                    copy,
 		"rootless":                          drop,
