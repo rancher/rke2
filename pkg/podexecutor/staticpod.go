@@ -462,7 +462,7 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, args executor.ETCDConfig, ex
 			args.PeerTrust.TrustedCAFile,
 		},
 		HealthPort:    2381,
-		HealthPath:    "/health",
+		HealthPath:    "/health?serializable=true",
 		HealthProto:   "HTTP",
 		CPURequest:    s.ControlPlaneResources.EtcdCPURequest,
 		CPULimit:      s.ControlPlaneResources.EtcdCPULimit,
