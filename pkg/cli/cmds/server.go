@@ -132,7 +132,6 @@ var (
 		"etcd-s3-insecure":                  copy,
 		"etcd-s3-timeout":                   copy,
 		"disable-helm-controller":           drop,
-		"enable-pprof":                      copy,
 	})
 )
 
