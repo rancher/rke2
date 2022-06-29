@@ -26,9 +26,9 @@ var podCheckBackoff = wait.Backoff{
 	Jitter:   0.1,
 }
 
-// total of 31 seconds
+// total of 511 seconds
 var criBackoff = wait.Backoff{
-	Steps:    5,
+	Steps:    10,
 	Duration: 1 * time.Second,
 	Factor:   2,
 	Jitter:   0.1,
