@@ -185,6 +185,8 @@ func (s *StaticPodConfig) KubeProxy(ctx context.Context, args []string) error {
 		Command:       "kube-proxy",
 		Args:          args,
 		Image:         image,
+		HealthPort:    10256,
+		HealthProto:   "HTTP",
 		CPURequest:    s.ControlPlaneResources.KubeProxyCPURequest,
 		CPULimit:      s.ControlPlaneResources.KubeProxyCPULimit,
 		MemoryRequest: s.ControlPlaneResources.KubeProxyMemoryRequest,
@@ -267,6 +269,15 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 			ExtraEnv:      s.ControlPlaneEnv.KubeAPIServer,
 			ExtraMounts:   s.ControlPlaneMounts.KubeAPIServer,
 			Files:         files,
+			HealthExec: []string{
+				"kubectl",
+				"get",
+				"--server=https://localhost:6443/",
+				"--client-certificate=" + s.DataDir + "/server/tls/client-kube-apiserver.crt",
+				"--client-key=" + s.DataDir + "/server/tls/client-kube-apiserver.key",
+				"--certificate-authority=" + s.DataDir + "/server/tls/server-ca.crt",
+				"--raw=/livez",
+			},
 		})
 	})
 }
