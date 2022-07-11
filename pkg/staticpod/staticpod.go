@@ -36,6 +36,7 @@ type Args struct {
 	Image           name.Reference
 	Dirs            []string
 	Files           []string
+	HealthExec      []string
 	HealthPort      int32
 	HealthProto     string
 	HealthPath      string
@@ -223,6 +224,17 @@ func pod(args Args) (*v1.Pod, error) {
 					},
 					Host:   "localhost",
 					Scheme: v1.URIScheme(scheme),
+				},
+			},
+			InitialDelaySeconds: 15,
+			TimeoutSeconds:      15,
+			FailureThreshold:    8,
+		}
+	} else if len(args.HealthExec) != 0 {
+		p.Spec.Containers[0].LivenessProbe = &v1.Probe{
+			ProbeHandler: v1.ProbeHandler{
+				Exec: &v1.ExecAction{
+					Command: args.HealthExec,
 				},
 			},
 			InitialDelaySeconds: 15,
