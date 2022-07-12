@@ -1,5 +1,7 @@
 # Migration from RKE1 to RKE2
 
+*Experimental* / *Unsupported*
+
 In order to migrate from Rancher Kubernetes Engine (RKE1) to RKE2, you need two things:
 
 - ETCD data directory
