@@ -18,7 +18,7 @@ import (
 	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1alpha2"
 )
 
-// total of 4 minutes
+// total timeout of 4 minutes
 var podCheckBackoff = wait.Backoff{
 	Steps:    12,
 	Duration: 15 * time.Second,
@@ -26,9 +26,9 @@ var podCheckBackoff = wait.Backoff{
 	Jitter:   0.1,
 }
 
-// total of 511 seconds
+// total timeout of 2047 seconds (34 minutes)
 var criBackoff = wait.Backoff{
-	Steps:    10,
+	Steps:    12,
 	Duration: 1 * time.Second,
 	Factor:   2,
 	Jitter:   0.1,
