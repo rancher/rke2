@@ -41,6 +41,7 @@ func checkStaticManifests(dataDir string) cmds.StartupHook {
 				for _, pod := range []string{"etcd", "kube-apiserver"} {
 					manifestFile := filepath.Join(manifestDir, pod+".yaml")
 					if f, err := os.Open(manifestFile); err == nil {
+						defer f.Close()
 						podManifest := v1.Pod{}
 						decoder := yaml.NewYAMLToJSONDecoder(f)
 						err = decoder.Decode(&podManifest)
@@ -49,24 +50,18 @@ func checkStaticManifests(dataDir string) cmds.StartupHook {
 						}
 						podFilter := &runtimeapi.ContainerFilter{
 							LabelSelector: map[string]string{
-								"io.kubernetes.container.name": pod,
+								"io.kubernetes.pod.uid": string(podManifest.UID),
 							},
 						}
 						resp, err := cRuntime.ListContainers(ctx, &runtimeapi.ListContainersRequest{Filter: podFilter})
 						if err != nil {
 							return false, err
 						}
-						found := false
-						for _, c := range resp.Containers {
-							if c.Labels["io.kubernetes.pod.uid"] == string(podManifest.UID) {
-								logrus.Infof("Latest %s manifest deployed", pod)
-								found = true
-							}
-						}
-						if !found {
+						if len(resp.Containers) < 1 {
 							logrus.Infof("%s pod not found, retrying", pod)
 							return false, nil
 						}
+						logrus.Infof("Latest %s manifest deployed", pod)
 					} else if !errors.Is(err, os.ErrNotExist) {
 						// Since split-role servers exist, we don't care if no manifest is found
 						return false, fmt.Errorf("failed to open %s manifest: %v", pod, err)
