@@ -18,14 +18,6 @@ import (
 	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1alpha2"
 )
 
-// Check every 20 seconds for a total timeout of 30 minutes
-var podCheckBackoff = wait.Backoff{
-	Steps:    90,
-	Duration: 20 * time.Second,
-	Factor:   1.0,
-	Jitter:   0.1,
-}
-
 // checkStaticManifests validates that the pods started with rke2 match the static manifests
 // provided in /var/lib/rancher/rke2/agent/pod-manifests. When restarting rke2, it takes time
 // for any changes to static manifests to be pulled by kubelet. Additionally this prevents errors
@@ -34,7 +26,7 @@ func checkStaticManifests(dataDir string) cmds.StartupHook {
 	return func(ctx context.Context, wg *sync.WaitGroup, args cmds.StartupHookArgs) error {
 		go func() {
 			defer wg.Done()
-			if err := wait.ExponentialBackoff(podCheckBackoff, func() (done bool, err error) {
+			if err := wait.PollImmediate(20*time.Second, 30*time.Minute, func() (bool, error) {
 
 				conn, err := containerdk3s.CriConnection(ctx, containerdSock)
 				if err != nil {
