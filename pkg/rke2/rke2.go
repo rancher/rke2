@@ -163,7 +163,7 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	// adding force restart file when cluster reset restore path is passed
 	if clusterResetRestorePath != "" {
 		forceRestartFile := ForceRestartFile(dataDir)
-		if err := os.MkdirAll(filepath.Base(forceRestartFile), 0755); err != nil {
+		if err := os.MkdirAll(dataDir, 0755); err != nil {
 			return err
 		}
 		if err := ioutil.WriteFile(forceRestartFile, []byte(""), 0600); err != nil {
