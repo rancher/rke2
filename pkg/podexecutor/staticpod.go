@@ -86,20 +86,30 @@ type ControlPlaneMounts struct {
 	CloudControllerManager []string
 }
 
+type ControlPlaneProbeConfs struct {
+	KubeAPIServer          staticpod.ProbeConfs
+	KubeScheduler          staticpod.ProbeConfs
+	KubeControllerManager  staticpod.ProbeConfs
+	KubeProxy              staticpod.ProbeConfs
+	Etcd                   staticpod.ProbeConfs
+	CloudControllerManager staticpod.ProbeConfs
+}
+
 type StaticPodConfig struct {
-	ManifestsDir          string
-	ImagesDir             string
-	Resolver              *images.Resolver
-	CloudProvider         *CloudProviderConfig
-	DataDir               string
-	AuditPolicyFile       string
-	KubeletPath           string
-	ControlPlaneResources ControlPlaneResources
-	ControlPlaneMounts    ControlPlaneMounts
-	ControlPlaneEnv       ControlPlaneEnv
-	CISMode               bool
-	DisableETCD           bool
-	IsServer              bool
+	ControlPlaneResources
+	ControlPlaneProbeConfs
+	ControlPlaneEnv
+	ControlPlaneMounts
+	ManifestsDir    string
+	ImagesDir       string
+	Resolver        *images.Resolver
+	CloudProvider   *CloudProviderConfig
+	DataDir         string
+	AuditPolicyFile string
+	KubeletPath     string
+	CISMode         bool
+	DisableETCD     bool
+	IsServer        bool
 }
 
 type CloudProviderConfig struct {
@@ -193,6 +203,7 @@ func (s *StaticPodConfig) KubeProxy(ctx context.Context, args []string) error {
 		MemoryLimit:   s.ControlPlaneResources.KubeProxyMemoryLimit,
 		ExtraEnv:      s.ControlPlaneEnv.KubeProxy,
 		ExtraMounts:   s.ControlPlaneMounts.KubeProxy,
+		ProbeConfs:    s.ControlPlaneProbeConfs.KubeProxy,
 		Privileged:    true,
 	})
 }
@@ -268,6 +279,7 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 			MemoryLimit:   s.ControlPlaneResources.KubeAPIServerMemoryLimit,
 			ExtraEnv:      s.ControlPlaneEnv.KubeAPIServer,
 			ExtraMounts:   s.ControlPlaneMounts.KubeAPIServer,
+			ProbeConfs:    s.ControlPlaneProbeConfs.KubeAPIServer,
 			Files:         files,
 			HealthExec: []string{
 				"kubectl",
@@ -277,6 +289,15 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 				"--client-key=" + s.DataDir + "/server/tls/client-kube-apiserver.key",
 				"--certificate-authority=" + s.DataDir + "/server/tls/server-ca.crt",
 				"--raw=/livez",
+			},
+			ReadyExec: []string{
+				"kubectl",
+				"get",
+				"--server=https://localhost:6443/",
+				"--client-certificate=" + s.DataDir + "/server/tls/client-kube-apiserver.crt",
+				"--client-key=" + s.DataDir + "/server/tls/client-kube-apiserver.key",
+				"--certificate-authority=" + s.DataDir + "/server/tls/server-ca.crt",
+				"--raw=/readyz",
 			},
 		})
 	})
@@ -311,6 +332,7 @@ func (s *StaticPodConfig) Scheduler(ctx context.Context, apiReady <-chan struct{
 			MemoryLimit:   s.ControlPlaneResources.KubeSchedulerMemoryLimit,
 			ExtraEnv:      s.ControlPlaneEnv.KubeScheduler,
 			ExtraMounts:   s.ControlPlaneMounts.KubeScheduler,
+			ProbeConfs:    s.ControlPlaneProbeConfs.KubeScheduler,
 			Files:         files,
 		})
 	})
@@ -379,6 +401,7 @@ func (s *StaticPodConfig) ControllerManager(ctx context.Context, apiReady <-chan
 			MemoryLimit:   s.ControlPlaneResources.KubeControllerManagerMemoryLimit,
 			ExtraEnv:      s.ControlPlaneEnv.KubeControllerManager,
 			ExtraMounts:   s.ControlPlaneMounts.KubeControllerManager,
+			ProbeConfs:    s.ControlPlaneProbeConfs.KubeControllerManager,
 			Files:         files,
 		})
 	})
@@ -408,6 +431,7 @@ func (s *StaticPodConfig) CloudControllerManager(ctx context.Context, ccmRBACRea
 			MemoryLimit:   s.ControlPlaneResources.CloudControllerManagerMemoryLimit,
 			ExtraEnv:      s.ControlPlaneEnv.CloudControllerManager,
 			ExtraMounts:   s.ControlPlaneMounts.CloudControllerManager,
+			ProbeConfs:    s.ControlPlaneProbeConfs.CloudControllerManager,
 			Files:         []string{},
 		})
 	})
@@ -481,6 +505,7 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, args executor.ETCDConfig, ex
 		MemoryLimit:   s.ControlPlaneResources.EtcdMemoryLimit,
 		ExtraEnv:      s.ControlPlaneEnv.Etcd,
 		ExtraMounts:   s.ControlPlaneMounts.Etcd,
+		ProbeConfs:    s.ControlPlaneProbeConfs.Etcd,
 	}
 
 	if s.CISMode {
