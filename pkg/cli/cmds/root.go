@@ -105,6 +105,12 @@ var (
 			EnvVar:      "RKE2_CONTROL_PLANE_RESOURCE_LIMITS",
 			Destination: &config.ControlPlaneResourceLimits,
 		},
+		&cli.StringFlag{
+			Name:        "control-plane-probe-configuration",
+			Usage:       "(components) Control Plane Probe configuration",
+			EnvVar:      "RKE2_CONTROL_PLANE_PROBE_CONFIGURATION",
+			Destination: &config.ControlPlaneProbeConf,
+		},
 		&cli.StringSliceFlag{
 			Name:   rke2.KubeAPIServer + "-extra-mount",
 			Usage:  "(components) " + rke2.KubeAPIServer + " extra volume mounts",

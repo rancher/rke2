@@ -36,6 +36,7 @@ type Config struct {
 	KubeletPath                  string
 	ControlPlaneResourceRequests string
 	ControlPlaneResourceLimits   string
+	ControlPlaneProbeConf        string
 	ExtraMounts                  ExtraMounts
 	ExtraEnv                     ExtraEnv
 }
