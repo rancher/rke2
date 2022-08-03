@@ -8,7 +8,7 @@ as a stand-in for [SUSE Linux Enterprise Micro](https://www.suse.com/products/mi
 
 The [Vagrant box](https://app.vagrantup.com/dweomer/boxes/microos.amd64) used for this test supports these providers:
 - `libvirt`
-- `virtualbox` (the default for most installations, including `macos-10.15` github actions runners)
+- `virtualbox` (the default for most installations, including `macos-12` github actions runners)
 - `vmware_desktop`
 
 To spin up a VM to test a locally modified `install.sh`:
