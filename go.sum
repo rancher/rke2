@@ -531,8 +531,9 @@ github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c/go.mod h1:lNA+9X1NB3Z
 github.com/google/btree v1.0.0/go.mod h1:lNA+9X1NB3Zf8V7Ke586lFgjr2dZNuvo3lPJSGZ5JPQ=
 github.com/google/btree v1.0.1 h1:gK4Kx5IaGY9CD5sPJ36FHiBJ6ZXl0kilRiiCj+jdYp4=
 github.com/google/btree v1.0.1/go.mod h1:xXMiIv4Fb/0kKde4SpL7qlzvu5cMJDRkFDxJfI9uaxA=
-github.com/google/cadvisor v0.43.0 h1:z0ULgYPKZ7L/c7Zjq+ZD6ltklWwYdCSvBMgSjNC/hGo=
 github.com/google/cadvisor v0.43.0/go.mod h1:+RdMSbc3FVr5NYCD2dOEJy/LI0jYJ/0xJXkzWXEyiFQ=
+github.com/google/cadvisor v0.43.1 h1:VB4/hybCQlUZJWNhZJC9yQIapz9N6E29R8bKCu99pZM=
+github.com/google/cadvisor v0.43.1/go.mod h1:+RdMSbc3FVr5NYCD2dOEJy/LI0jYJ/0xJXkzWXEyiFQ=
 github.com/google/cel-go v0.9.0 h1:u1hg7lcZ/XWw2d3aV1jFS30ijQQ6q0/h1C2ZBeBD1gY=
 github.com/google/cel-go v0.9.0/go.mod h1:U7ayypeSkw23szu4GaQTPJGx66c20mx8JklMSxrmI1w=
 github.com/google/cel-spec v0.6.0/go.mod h1:Nwjgxy5CbjlPrtCWjeDjUyKMl8w41YBYGjsyDdqk0xA=
@@ -752,10 +753,10 @@ github.com/k3s-io/etcd/server/v3 v3.5.4-k3s1 h1:swbvfSDpl7QsYO6Vh+EBgxZCMyG4N1tU
 github.com/k3s-io/etcd/server/v3 v3.5.4-k3s1/go.mod h1:S5/YTU15KxymM5l3T6b09sNOHPXqGYIZStpuuGbb65c=
 github.com/k3s-io/helm-controller v0.12.3 h1:jXEl/QBMrdGuZof//brZfb7CDep9H77iNIevAe2Hzbs=
 github.com/k3s-io/helm-controller v0.12.3/go.mod h1:yBS3F5emwVjyzUUi3VWAuj9+Ogoq84Mf7CBXbAnKI1U=
-github.com/k3s-io/k3s v1.23.9-0.20220630221104-fc9ffe6c17fe h1:dgwJjNJjTL3AUzChNUXIJwwnM1YU+RPnO4aPTlnBNHg=
-github.com/k3s-io/k3s v1.23.9-0.20220630221104-fc9ffe6c17fe/go.mod h1:8GM9z/aLoMA3g2vZfoK8mwFl3QhKWwLOpZ9Lsg0R9gY=
-github.com/k3s-io/kine v0.9.1 h1:HDT89cI7+xVYYFVC/LWK6mcA5dFwu1BUGffRvt/SXeU=
-github.com/k3s-io/kine v0.9.1/go.mod h1:Yqg5cVgu11yV16JzAS9gnjM+Ny5kiey9surO/AaF//U=
+github.com/k3s-io/k3s v1.23.10-0.20220803161004-313dd6e5972b h1:g1dDZkYj6nJ7S6IvALZ5jIN/tHOKiBIRed9PPZCeBl0=
+github.com/k3s-io/k3s v1.23.10-0.20220803161004-313dd6e5972b/go.mod h1:Vlvw9e7qQD6PEGd2Bn6JtVV7OGXZYhmoP3Bd0iMcsKc=
+github.com/k3s-io/kine v0.9.3 h1:VAjsljVuD2l20oByCsy7+LafAgwY9Y7hrksUTiuLq3E=
+github.com/k3s-io/kine v0.9.3/go.mod h1:IiaUJx32GOhR4N5zUevjz3cpU9JT0q9cQzXSZmznHKE=
 github.com/k3s-io/klog v1.0.0-k3s2 h1:yyvD2bQbxG7m85/pvNctLX2bUDmva5kOBvuZ77tTGBA=
 github.com/k3s-io/klog v1.0.0-k3s2/go.mod h1:4Bi6QPql/J/LkTDqv7R/cd3hPo4k2DG6Ptcz060Ez5I=
 github.com/k3s-io/klog/v2 v2.30.0-k3s1 h1:ia3JK7rveULJj3VtxhYEW80g4h2YncRzsZeAWP8DbpA=
@@ -1161,8 +1162,8 @@ github.com/rancher/dynamiclistener v0.3.3 h1:pNwVc3vzuEHsbqAh1e76asq4aeDzHFV/5Ha
 github.com/rancher/dynamiclistener v0.3.3/go.mod h1:QwTpy+drx4gvPMefrrUUKpVaWiy74O7vNvkwBXJ+s3E=
 github.com/rancher/lasso v0.0.0-20210616224652-fc3ebd901c08 h1:NxR8Fh0eE7/5/5Zvlog9B5NVjWKqBSb1WYMUF7/IE5c=
 github.com/rancher/lasso v0.0.0-20210616224652-fc3ebd901c08/go.mod h1:9qZd/S8DqWzfKtjKGgSoHqGEByYmUE3qRaBaaAHwfEM=
-github.com/rancher/remotedialer v0.2.0 h1:xD7t3K6JYwTdAsxmGtTHQMkEkFgKouQ1foLxVW424Dc=
-github.com/rancher/remotedialer v0.2.0/go.mod h1:tkU8ZvrR5lRgaKWaX71nAy6daeqvPFx/lJEnbW7tXSI=
+github.com/rancher/remotedialer v0.2.6-0.20220624190122-ea57207bf2b8 h1:leqh0chjBsXhKWebxxFd5QPcoQLu51EpaHo04ce0o+8=
+github.com/rancher/remotedialer v0.2.6-0.20220624190122-ea57207bf2b8/go.mod h1:BwwztuvViX2JrLLUwDlsYt5DiyUwHLlzynRwkZLAY0Q=
 github.com/rancher/wharfie v0.5.1/go.mod h1:5AHZRFBAOWYPDNCwj/y5Dpj+MMwXLoitPwxjYAIbcxQ=
 github.com/rancher/wharfie v0.5.3 h1:6hiO26H7YTgChbLAE6JppxFRjaH3tbKfMItv/LqV0Q0=
 github.com/rancher/wharfie v0.5.3/go.mod h1:Ebpai7digxegLroBseeC54XRBt5we3DgFS6kAE2ho+o=

@@ -20,7 +20,7 @@ replace (
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 	github.com/opencontainers/selinux => github.com/opencontainers/selinux v1.10.1
 	github.com/rancher/dynamiclistener => github.com/rancher/dynamiclistener v0.3.3
-	github.com/rancher/remotedialer => github.com/rancher/remotedialer v0.2.0
+	github.com/rancher/remotedialer => github.com/rancher/remotedialer v0.2.6-0.20220624190122-ea57207bf2b8
 	github.com/rancher/wrangler => github.com/rancher/wrangler v0.8.11-0.20220211163748-d5a8ee98be5f
 	go.etcd.io/etcd => github.com/k3s-io/etcd v3.4.18-k3s1+incompatible
 	go.etcd.io/etcd/api/v3 => github.com/k3s-io/etcd/api/v3 v3.5.4-k3s1
@@ -75,7 +75,7 @@ require (
 	github.com/google/go-containerregistry v0.7.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.12.3
-	github.com/k3s-io/k3s v1.23.9-0.20220630221104-fc9ffe6c17fe // release-1.23
+	github.com/k3s-io/k3s v1.23.10-0.20220803161004-313dd6e5972b // release-1.23
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/onsi/ginkgo/v2 v2.1.1
 	github.com/onsi/gomega v1.17.0
@@ -87,12 +87,12 @@ require (
 	github.com/urfave/cli v1.22.9
 	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad
 	google.golang.org/grpc v1.45.0
-	k8s.io/api v0.23.8
-	k8s.io/apimachinery v0.23.8
-	k8s.io/apiserver v0.23.8
+	k8s.io/api v0.23.9
+	k8s.io/apimachinery v0.23.9
+	k8s.io/apiserver v0.23.9
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/cri-api v0.24.0-beta.0
-	k8s.io/kubernetes v1.23.8
+	k8s.io/kubernetes v1.23.9
 	k8s.io/utils v0.0.0-20211116205334-6203023598ed
 	sigs.k8s.io/yaml v1.3.0
 )
