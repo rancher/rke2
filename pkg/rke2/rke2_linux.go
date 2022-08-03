@@ -96,6 +96,45 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		cfg.KubeletPath = "kubelet"
 	}
 
+	controlPlaneResources, err := parseControlPlaneResources(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	controlPlaneProbeConfs, err := parseControlPlaneProbeConfs(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	extraEnv, err := parseControlPlaneEnv(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	extraMounts, err := parseControlPlaneMounts(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &podexecutor.StaticPodConfig{
+		Resolver:               resolver,
+		ImagesDir:              agentImagesDir,
+		ManifestsDir:           agentManifestsDir,
+		CISMode:                isCISMode(clx),
+		CloudProvider:          cpConfig,
+		DataDir:                dataDir,
+		AuditPolicyFile:        clx.String("audit-policy-file"),
+		KubeletPath:            cfg.KubeletPath,
+		DisableETCD:            clx.Bool("disable-etcd"),
+		IsServer:               isServer,
+		ControlPlaneResources:  *controlPlaneResources,
+		ControlPlaneProbeConfs: *controlPlaneProbeConfs,
+		ControlPlaneEnv:        *extraEnv,
+		ControlPlaneMounts:     *extraMounts,
+	}, nil
+}
+
+func parseControlPlaneResources(cfg Config) (*podexecutor.ControlPlaneResources, error) {
 	var controlPlaneResources podexecutor.ControlPlaneResources
 	// resources is a map of the component (kube-apiserver, kube-controller-manager, etc.) to a map[string]*string,
 	// where the key of the downstream map is the `cpu-request`, `cpu-limit`, `memory-request`, or `memory-limit` and
@@ -173,7 +212,7 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		for _, rawRequest := range strings.Split(cfg.ControlPlaneResourceRequests, ",") {
 			v := strings.SplitN(rawRequest, "=", 2)
 			if len(v) != 2 {
-				logrus.Fatalf("incorrectly formatted control plane resource request specified: %s", rawRequest)
+				return nil, fmt.Errorf("incorrectly formatted control plane resource request specified: %s", rawRequest)
 			}
 			parsedRequestsLimits[v[0]+"-request"] = v[1]
 		}
@@ -183,7 +222,7 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		for _, rawLimit := range strings.Split(cfg.ControlPlaneResourceLimits, ",") {
 			v := strings.SplitN(rawLimit, "=", 2)
 			if len(v) != 2 {
-				logrus.Fatalf("incorrectly formatted control plane resource limit specified: %s", rawLimit)
+				return nil, fmt.Errorf("incorrectly formatted control plane resource limit specified: %s", rawLimit)
 			}
 			parsedRequestsLimits[v[0]+"-limit"] = v[1]
 		}
@@ -200,8 +239,10 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		}
 	}
 
-	logrus.Debugf("Parsed control plane requests/limits: %+v\n", controlPlaneResources)
+	return &controlPlaneResources, nil
+}
 
+func parseControlPlaneProbeConfs(cfg Config) (*podexecutor.ControlPlaneProbeConfs, error) {
 	var controlPlaneProbes podexecutor.ControlPlaneProbeConfs
 	// probes is a map of the component (kube-apiserver, kube-controller-manager, etc.) probe type, and setting, where
 	// the value corresponds to a pointer to the component probes array.
@@ -359,11 +400,11 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		for _, rawConf := range strings.Split(cfg.ControlPlaneProbeConf, ",") {
 			v := strings.SplitN(rawConf, "=", 2)
 			if len(v) != 2 {
-				logrus.Fatalf("incorrectly formatted control probe config specified: %s", rawConf)
+				return nil, fmt.Errorf("incorrectly formatted control probe config specified: %s", rawConf)
 			}
 			val, err := strconv.ParseInt(v[1], 10, 32)
 			if err != nil || val < 0 {
-				logrus.Fatalf("invalid control plane probe config value specified: %s", rawConf)
+				return nil, fmt.Errorf("invalid control plane probe config value specified: %s", rawConf)
 			}
 			parsedProbeConf[v[0]] = int32(val)
 		}
@@ -382,41 +423,28 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		}
 	}
 
-	logrus.Debugf("Parsed control plane probes: %+v\n", controlPlaneProbes)
+	return &controlPlaneProbes, nil
+}
 
-	extraEnv := podexecutor.ControlPlaneEnv{
+func parseControlPlaneEnv(cfg Config) (*podexecutor.ControlPlaneEnv, error) {
+	return &podexecutor.ControlPlaneEnv{
 		KubeAPIServer:          cfg.ExtraEnv.KubeAPIServer.Value(),
 		KubeScheduler:          cfg.ExtraEnv.KubeScheduler.Value(),
 		KubeControllerManager:  cfg.ExtraEnv.KubeControllerManager.Value(),
 		KubeProxy:              cfg.ExtraEnv.KubeProxy.Value(),
 		Etcd:                   cfg.ExtraEnv.Etcd.Value(),
 		CloudControllerManager: cfg.ExtraEnv.CloudControllerManager.Value(),
-	}
+	}, nil
+}
 
-	extraMounts := podexecutor.ControlPlaneMounts{
+func parseControlPlaneMounts(cfg Config) (*podexecutor.ControlPlaneMounts, error) {
+	return &podexecutor.ControlPlaneMounts{
 		KubeAPIServer:          cfg.ExtraMounts.KubeAPIServer.Value(),
 		KubeScheduler:          cfg.ExtraMounts.KubeScheduler.Value(),
 		KubeControllerManager:  cfg.ExtraMounts.KubeControllerManager.Value(),
 		KubeProxy:              cfg.ExtraMounts.KubeProxy.Value(),
 		Etcd:                   cfg.ExtraMounts.Etcd.Value(),
 		CloudControllerManager: cfg.ExtraMounts.CloudControllerManager.Value(),
-	}
-
-	return &podexecutor.StaticPodConfig{
-		Resolver:               resolver,
-		ImagesDir:              agentImagesDir,
-		ManifestsDir:           agentManifestsDir,
-		CISMode:                isCISMode(clx),
-		CloudProvider:          cpConfig,
-		DataDir:                dataDir,
-		AuditPolicyFile:        clx.String("audit-policy-file"),
-		KubeletPath:            cfg.KubeletPath,
-		DisableETCD:            clx.Bool("disable-etcd"),
-		IsServer:               isServer,
-		ControlPlaneResources:  controlPlaneResources,
-		ControlPlaneProbeConfs: controlPlaneProbes,
-		ControlPlaneEnv:        extraEnv,
-		ControlPlaneMounts:     extraMounts,
 	}, nil
 }
 
