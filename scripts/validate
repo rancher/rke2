@@ -41,7 +41,6 @@ GO=${GO-go}
 echo Running validation
 
 echo Running: golangci-lint
-go version
 golangci-lint run -v
 
 echo Running: go fmt
