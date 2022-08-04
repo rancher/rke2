@@ -16,7 +16,7 @@ jobs:
   test:
     name: "Smoke Test"
     # nested virtualization is only available on macOS hosts
-    runs-on: macos-10.15
+    runs-on: macos-12
     timeout-minutes: 40
     strategy:
       fail-fast: false
