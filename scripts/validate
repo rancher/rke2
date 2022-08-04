@@ -41,10 +41,8 @@ GO=${GO-go}
 echo Running validation
 
 echo Running: golangci-lint
-# workaround for latest golanci-lint version, by default it always 
-# runs against latest version of go, which is not what we want.
-# https://github.com/golangci/golangci-lint/issues/2673
-golangci-lint run --version --verbose --out-format=github-actions
+go version
+golangci-lint run -v
 
 echo Running: go fmt
 go fmt ./
