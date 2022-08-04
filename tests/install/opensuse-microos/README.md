@@ -21,7 +21,7 @@ vagrant up
 ```
 
 See also:
-- [developer-docs/testing.md](../../../../developer-docs/testing.md#environment-variables)
+- [developer-docs/testing.md](../../../developer-docs/testing.md#environment-variables)
 
 ### Vagrant Reload Plugin
 
