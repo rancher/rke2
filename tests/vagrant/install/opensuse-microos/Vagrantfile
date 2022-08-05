@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
   %w[libvirt virtualbox vmware_desktop].each do |p|
     config.vm.provider p do |v, o|
       v.cpus = ENV['TEST_VM_CPUS'] || 2
-      v.memory = ENV['TEST_VM_MEMORY'] || 2048
+      v.memory = ENV['TEST_VM_MEMORY'] || 3072
     end
   end
 

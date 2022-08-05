@@ -8,7 +8,7 @@ Asserting correctness of the RKE2 installer script on [Windows Server 2022](http
 The [Vagrant box](https://app.vagrantup.com/jborean93/boxes/WindowsServer2022) used for this test supports these providers:
 - `hyperv`
 - `libvirt`
-- `virtualbox` (the default for most installations, including `macos-10.15` github actions runners)
+- `virtualbox` (the default for most installations, including `macos-12` github actions runners)
 
 To spin up a VM to test a locally modified `install.ps1`:
 ```shell
