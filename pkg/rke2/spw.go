@@ -22,13 +22,15 @@ import (
 // provided in /var/lib/rancher/rke2/agent/pod-manifests. When restarting rke2, it takes time
 // for any changes to static manifests to be pulled by kubelet. Additionally this prevents errors
 // where something is wrong with the static manifests and RKE2 starts anyways.
-func checkStaticManifests(dataDir string) cmds.StartupHook {
+func checkStaticManifests(containerRuntimeEndpoint, dataDir string) cmds.StartupHook {
 	return func(ctx context.Context, wg *sync.WaitGroup, args cmds.StartupHookArgs) error {
 		go func() {
 			defer wg.Done()
 			if err := wait.PollImmediate(20*time.Second, 30*time.Minute, func() (bool, error) {
-
-				conn, err := containerdk3s.CriConnection(ctx, containerdSock)
+				if containerRuntimeEndpoint == "" {
+					containerRuntimeEndpoint = containerdSock
+				}
+				conn, err := containerdk3s.CriConnection(ctx, containerRuntimeEndpoint)
 				if err != nil {
 					logrus.Infof("Waiting for cri connection: %v", err)
 					return false, nil
