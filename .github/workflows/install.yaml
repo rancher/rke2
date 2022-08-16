@@ -50,7 +50,7 @@ jobs:
         id: vagrant-cache
         continue-on-error: true
       - name: "Vagrant Plugin(s)"
-        run: vagrant plugin install vagrant-reload
+        run: vagrant plugin install vagrant-reload vagrant-rke2
       - name: "Vagrant Up ⏩ Install RKE2"
         run: vagrant up
       - name: "⏳ Node"
