@@ -140,11 +140,7 @@ package-windows-bundle: build				## Package the Windows tarball bundle
 	./scripts/package-windows-bundle
 
 .PHONY: test
-test: codespell-test unit-tests integration-tests
-
-.PHONY: codespell-test
-codespell-test:
-	./scripts/codespell.sh
+test: unit-tests integration-tests
 
 .PHONY: unit-tests
 unit-tests:
