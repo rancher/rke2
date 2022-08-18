@@ -32,6 +32,7 @@ When using this method to install RKE2, the following environment variables can 
 | <span style="white-space: nowrap">`INSTALL_RKE2_CHANNEL_URL`</span> | Channel URL for fetching RKE2 download URL. Defaults to `https://update.rke2.io/v1-release/channels`. |
 | <span style="white-space: nowrap">`INSTALL_RKE2_CHANNEL`</span> | Channel to use for fetching RKE2 download URL. Defaults to `stable`. Options include: `stable`, `latest`, `testing`. |
 | <span style="white-space: nowrap">`INSTALL_RKE2_METHOD`</span> | Method of installation to use. Default is on RPM-based systems `rpm`, all else `tar`. |
+| <span style="white-space: nowrap">`INSTALL_RKE2_SKIP_RELOAD`</span> | Skip reloading the systemctl daemon when doing a `tar` install. |
 
 This installation script is straight-forward and will do the following:
 
