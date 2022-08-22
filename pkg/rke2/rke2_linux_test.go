@@ -30,9 +30,9 @@ func Test_UnitInitExecutor(t *testing.T) {
 			args: args{
 				clx: cli.NewContext(nil, flag.NewFlagSet("test", 0), nil),
 				cfg: Config{
-					ControlPlaneProbeConf:        "kube-proxy-startup-initial-delay-seconds=42",
-					ControlPlaneResourceLimits:   "kube-proxy-cpu=123m",
-					ControlPlaneResourceRequests: "kube-proxy-memory=123Mi",
+					ControlPlaneProbeConf:        []string{"kube-proxy-startup-initial-delay-seconds=42"},
+					ControlPlaneResourceLimits:   []string{"kube-proxy-cpu=123m"},
+					ControlPlaneResourceRequests: []string{"kube-proxy-memory=123Mi"},
 					ExtraEnv:                     ExtraEnv{KubeProxy: []string{"FOO=BAR"}},
 					ExtraMounts:                  ExtraMounts{KubeProxy: []string{"/foo=/bar"}},
 				},
@@ -64,9 +64,9 @@ func Test_UnitInitExecutor(t *testing.T) {
 			args: args{
 				clx: cli.NewContext(nil, flag.NewFlagSet("test", 0), nil),
 				cfg: Config{
-					ControlPlaneProbeConf:        "kube-proxy-startup-initial-delay-seconds=123",
-					ControlPlaneResourceLimits:   "kube-proxy-cpu=42m",
-					ControlPlaneResourceRequests: "kube-proxy-memory=42Mi",
+					ControlPlaneProbeConf:        []string{"kube-proxy-startup-initial-delay-seconds=123"},
+					ControlPlaneResourceLimits:   []string{"kube-proxy-cpu=42m"},
+					ControlPlaneResourceRequests: []string{"kube-proxy-memory=42Mi"},
 					ExtraEnv:                     ExtraEnv{KubeProxy: []string{"BAZ=BOP"}},
 					ExtraMounts:                  ExtraMounts{KubeProxy: []string{"/baz=/bop"}},
 				},
@@ -98,7 +98,7 @@ func Test_UnitInitExecutor(t *testing.T) {
 			args: args{
 				clx: cli.NewContext(nil, flag.NewFlagSet("test", 0), nil),
 				cfg: Config{
-					ControlPlaneProbeConf: "kube-proxy-startup-initial-delay-seconds=-123",
+					ControlPlaneProbeConf: []string{"kube-proxy-startup-initial-delay-seconds=-123"},
 				},
 			},
 			wantErr: true,
@@ -108,7 +108,7 @@ func Test_UnitInitExecutor(t *testing.T) {
 			args: args{
 				clx: cli.NewContext(nil, flag.NewFlagSet("test", 0), nil),
 				cfg: Config{
-					ControlPlaneResourceLimits: "kube-proxy-cpu",
+					ControlPlaneResourceLimits: []string{"kube-proxy-cpu"},
 				},
 			},
 			wantErr: true,
@@ -118,7 +118,7 @@ func Test_UnitInitExecutor(t *testing.T) {
 			args: args{
 				clx: cli.NewContext(nil, flag.NewFlagSet("test", 0), nil),
 				cfg: Config{
-					ControlPlaneResourceRequests: "kube-proxy-memory",
+					ControlPlaneResourceRequests: []string{"kube-proxy-memory"},
 				},
 			},
 			wantErr: true,

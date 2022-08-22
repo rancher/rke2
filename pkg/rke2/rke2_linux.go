@@ -208,8 +208,8 @@ func parseControlPlaneResources(cfg Config) (*podexecutor.ControlPlaneResources,
 
 	var parsedRequestsLimits = make(map[string]string)
 
-	if cfg.ControlPlaneResourceRequests != "" {
-		for _, rawRequest := range strings.Split(cfg.ControlPlaneResourceRequests, ",") {
+	for _, requests := range cfg.ControlPlaneResourceRequests {
+		for _, rawRequest := range strings.Split(requests, ",") {
 			v := strings.SplitN(rawRequest, "=", 2)
 			if len(v) != 2 {
 				return nil, fmt.Errorf("incorrectly formatted control plane resource request specified: %s", rawRequest)
@@ -218,8 +218,8 @@ func parseControlPlaneResources(cfg Config) (*podexecutor.ControlPlaneResources,
 		}
 	}
 
-	if cfg.ControlPlaneResourceLimits != "" {
-		for _, rawLimit := range strings.Split(cfg.ControlPlaneResourceLimits, ",") {
+	for _, limits := range cfg.ControlPlaneResourceLimits {
+		for _, rawLimit := range strings.Split(limits, ",") {
 			v := strings.SplitN(rawLimit, "=", 2)
 			if len(v) != 2 {
 				return nil, fmt.Errorf("incorrectly formatted control plane resource limit specified: %s", rawLimit)
@@ -396,8 +396,8 @@ func parseControlPlaneProbeConfs(cfg Config) (*podexecutor.ControlPlaneProbeConf
 
 	var parsedProbeConf = make(map[string]int32)
 
-	if cfg.ControlPlaneProbeConf != "" {
-		for _, rawConf := range strings.Split(cfg.ControlPlaneProbeConf, ",") {
+	for _, conf := range cfg.ControlPlaneProbeConf {
+		for _, rawConf := range strings.Split(conf, ",") {
 			v := strings.SplitN(rawConf, "=", 2)
 			if len(v) != 2 {
 				return nil, fmt.Errorf("incorrectly formatted control probe config specified: %s", rawConf)
