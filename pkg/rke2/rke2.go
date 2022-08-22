@@ -34,9 +34,9 @@ type Config struct {
 	CloudProviderName            string
 	Images                       images.ImageOverrideConfig
 	KubeletPath                  string
-	ControlPlaneResourceRequests string
-	ControlPlaneResourceLimits   string
-	ControlPlaneProbeConf        string
+	ControlPlaneResourceRequests cli.StringSlice
+	ControlPlaneResourceLimits   cli.StringSlice
+	ControlPlaneProbeConf        cli.StringSlice
 	ExtraMounts                  ExtraMounts
 	ExtraEnv                     ExtraEnv
 }

@@ -93,23 +93,23 @@ var (
 			EnvVar:      "RKE2_AUDIT_POLICY_FILE",
 			Destination: &config.AuditPolicyFile,
 		},
-		&cli.StringFlag{
-			Name:        "control-plane-resource-requests",
-			Usage:       "(components) Control Plane resource requests",
-			EnvVar:      "RKE2_CONTROL_PLANE_RESOURCE_REQUESTS",
-			Destination: &config.ControlPlaneResourceRequests,
+		&cli.StringSliceFlag{
+			Name:   "control-plane-resource-requests",
+			Usage:  "(components) Control Plane resource requests",
+			EnvVar: "RKE2_CONTROL_PLANE_RESOURCE_REQUESTS",
+			Value:  &config.ControlPlaneResourceRequests,
 		},
-		&cli.StringFlag{
-			Name:        "control-plane-resource-limits",
-			Usage:       "(components) Control Plane resource limits",
-			EnvVar:      "RKE2_CONTROL_PLANE_RESOURCE_LIMITS",
-			Destination: &config.ControlPlaneResourceLimits,
+		&cli.StringSliceFlag{
+			Name:   "control-plane-resource-limits",
+			Usage:  "(components) Control Plane resource limits",
+			EnvVar: "RKE2_CONTROL_PLANE_RESOURCE_LIMITS",
+			Value:  &config.ControlPlaneResourceLimits,
 		},
-		&cli.StringFlag{
-			Name:        "control-plane-probe-configuration",
-			Usage:       "(components) Control Plane Probe configuration",
-			EnvVar:      "RKE2_CONTROL_PLANE_PROBE_CONFIGURATION",
-			Destination: &config.ControlPlaneProbeConf,
+		&cli.StringSliceFlag{
+			Name:   "control-plane-probe-configuration",
+			Usage:  "(components) Control Plane Probe configuration",
+			EnvVar: "RKE2_CONTROL_PLANE_PROBE_CONFIGURATION",
+			Value:  &config.ControlPlaneProbeConf,
 		},
 		&cli.StringSliceFlag{
 			Name:   rke2.KubeAPIServer + "-extra-mount",
