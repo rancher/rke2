@@ -13,6 +13,7 @@ replace (
 	github.com/docker/libnetwork => github.com/docker/libnetwork v0.8.0-dev.2.0.20190624125649-f0e46a78ea34
 	github.com/go-logr/logr => github.com/go-logr/logr v1.2.0
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.2
+	github.com/google/cadvisor => github.com/google/cadvisor v0.44.1
 	github.com/googleapis/gax-go/v2 => github.com/googleapis/gax-go/v2 v2.0.5
 	github.com/juju/errors => github.com/k3s-io/nocode v0.0.0-20200630202308-cb097102c09f
 	github.com/kubernetes-sigs/cri-tools => github.com/k3s-io/cri-tools v1.24.0-k3s1
@@ -74,10 +75,10 @@ require (
 	github.com/google/go-containerregistry v0.7.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.12.3
-	github.com/k3s-io/k3s v1.24.4-rc1.0.20220823221057-7d6982d1fab6 // master
+	github.com/k3s-io/k3s v1.25.0-rc1.0.20220829184600-78880a69445a // master
 	github.com/libp2p/go-netroute v0.2.0
-	github.com/onsi/ginkgo/v2 v2.1.3
-	github.com/onsi/gomega v1.19.0
+	github.com/onsi/ginkgo/v2 v2.1.4
+	github.com/onsi/gomega v1.20.0
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/wharfie v0.5.3
 	github.com/rancher/wins v0.1.1
@@ -85,13 +86,15 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/urfave/cli v1.22.9
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
-	google.golang.org/grpc v1.46.2
-	k8s.io/api v0.24.4
-	k8s.io/apimachinery v0.24.4
-	k8s.io/apiserver v0.24.4
+	google.golang.org/grpc v1.47.0
+	k8s.io/api v0.25.0
+	k8s.io/apimachinery v0.25.0
+	k8s.io/apiserver v0.25.0
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/cri-api v0.24.4
-	k8s.io/kubernetes v1.24.4
-	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
+	k8s.io/cri-api v0.25.0
+	k8s.io/kubernetes v1.25.0
+	k8s.io/pod-security-admission v0.0.0
+	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
+	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/yaml v1.3.0
 )

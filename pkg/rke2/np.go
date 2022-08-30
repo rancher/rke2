@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 
@@ -14,6 +15,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/transport"
 	"k8s.io/client-go/util/retry"
 )
 
@@ -25,6 +28,9 @@ const (
 	defaultNetworkPolicyName        = "default-network-policy"
 	defaultNetworkDNSPolicyName     = "default-network-dns-policy"
 	defaultNetworkIngressPolicyName = "default-network-ingress-policy"
+
+	defaultTimeout     = 30
+	cisAnnotationValue = "resolved"
 )
 
 // networkPolicy specifies a base level network policy applied
@@ -288,4 +294,38 @@ func setNetworkPolicies(cisMode bool, namespaces []string) cmds.StartupHook {
 
 		return nil
 	}
+}
+
+// updateNamespaceRef retrieves the most recent revision of Namespace ns, copies over any annotations from
+// the passed revision of the Namespace to the most recent revision, and updates the pointer to refer to the
+// most recent revision. This get/change/update pattern is required to alter an object
+// that may have changed since it was retrieved.
+func updateNamespaceRef(ctx context.Context, cs *kubernetes.Clientset, ns *corev1.Namespace) error {
+	logrus.Info("updating namespace: " + ns.Name)
+	newNS, err := cs.CoreV1().Namespaces().Get(ctx, ns.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if newNS.Annotations == nil {
+		newNS.Annotations = make(map[string]string, len(ns.Annotations))
+	}
+	// copy annotations, since we may have changed them
+	for k, v := range ns.Annotations {
+		newNS.Annotations[k] = v
+	}
+	*ns = *newNS
+	return nil
+}
+
+// newClient create a new Kubernetes client from configuration.
+func newClient(kubeConfigPath string, k8sWrapTransport transport.WrapperFunc) (*kubernetes.Clientset, error) {
+	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+	if err != nil {
+		return nil, err
+	}
+	if k8sWrapTransport != nil {
+		config.WrapTransport = k8sWrapTransport
+	}
+	config.Timeout = time.Second * defaultTimeout
+	return kubernetes.NewForConfig(config)
 }

@@ -39,6 +39,7 @@ var (
 		"/usr/share/ca-certificates",
 	}
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
+	defaultPSAConfigFile   = "/etc/rancher/rke2/psa.yaml"
 )
 
 type ControlPlaneResources struct {
@@ -106,6 +107,7 @@ type StaticPodConfig struct {
 	CloudProvider   *CloudProviderConfig
 	DataDir         string
 	AuditPolicyFile string
+	PSAConfigFile   string
 	KubeletPath     string
 	CISMode         bool
 	DisableETCD     bool
@@ -247,6 +249,11 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 			return err
 		}
 	}
+	psaArgs := []string{
+		"--admission-control-config-file=" + s.PSAConfigFile,
+	}
+	args = append(psaArgs, args...)
+
 	kubeletPreferredAddressTypesFound := false
 	for i, arg := range args {
 		// This is an option k3s adds that does not exist upstream
