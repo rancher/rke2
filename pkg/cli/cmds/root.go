@@ -84,7 +84,7 @@ var (
 		},
 		&cli.StringFlag{
 			Name:   "profile",
-			Usage:  "(security) Validate system configuration against the selected benchmark (valid items: " + rke2.CISProfile15 + ", " + rke2.CISProfile16 + ", " + rke2.CISProfile123 + " )",
+			Usage:  "(security) Validate system configuration against the selected benchmark (valid items: " + rke2.CISProfile123 + " )",
 			EnvVar: "RKE2_CIS_PROFILE",
 		},
 		&cli.StringFlag{
@@ -295,7 +295,7 @@ func setCISFlags(clx *cli.Context) error {
 
 func validateProfile(clx *cli.Context, role CLIRole) {
 	switch clx.String("profile") {
-	case rke2.CISProfile15, rke2.CISProfile16, rke2.CISProfile123:
+	case rke2.CISProfile123:
 		if err := validateCISReqs(role); err != nil {
 			logrus.Fatal(err)
 		}

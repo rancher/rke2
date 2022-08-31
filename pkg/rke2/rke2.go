@@ -62,8 +62,6 @@ type ExtraEnv struct {
 
 // Valid CIS Profile versions
 const (
-	CISProfile15           = "cis-1.5"
-	CISProfile16           = "cis-1.6"
 	CISProfile123          = "cis-1.23"
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
 	containerdSock         = "/run/k3s/containerd/containerd.sock"
@@ -274,7 +272,7 @@ func removeOldPodManifests(dataDir string, disabledItems map[string]bool, cluste
 
 func isCISMode(clx *cli.Context) bool {
 	profile := clx.String("profile")
-	return profile == CISProfile15 || profile == CISProfile16 || profile == CISProfile123
+	return profile == CISProfile123
 }
 
 func startKubelet(ctx context.Context, dataDir string, errChan chan error, cmd *exec.Cmd) {
