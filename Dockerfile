@@ -1,7 +1,7 @@
 ARG KUBERNETES_VERSION=dev
 
 # Build environment
-FROM rancher/hardened-build-base:v1.18.1b7 AS build
+FROM rancher/hardened-build-base:v1.19.0b1 AS build
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
 RUN set -x \
@@ -46,7 +46,7 @@ RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
     chmod a+x /usr/local/bin/kubectl; \
     pip install codespell
 
-RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.47.3
+RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.49.0
 RUN set -x \
     && apk --no-cache add \
     libarchive-tools \
@@ -132,7 +132,7 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
-FROM rancher/hardened-kubernetes:v1.24.4-rke2r1-build20220817 AS kubernetes
+FROM rancher/hardened-kubernetes:v1.25.0-rke2r2-build20220831 AS kubernetes
 FROM rancher/hardened-containerd:v1.6.6-k3s1-build20220606 AS containerd
 FROM rancher/hardened-crictl:v1.24.0-build20220506 AS crictl
 FROM rancher/hardened-runc:v1.1.2-build20220606 AS runc

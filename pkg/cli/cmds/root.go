@@ -84,7 +84,7 @@ var (
 		},
 		&cli.StringFlag{
 			Name:   "profile",
-			Usage:  "(security) Validate system configuration against the selected benchmark (valid items: " + rke2.CISProfile15 + ", " + rke2.CISProfile16 + " )",
+			Usage:  "(security) Validate system configuration against the selected benchmark (valid items: " + rke2.CISProfile123 + " )",
 			EnvVar: "RKE2_CIS_PROFILE",
 		},
 		&cli.StringFlag{
@@ -92,6 +92,12 @@ var (
 			Usage:       "(security) Path to the file that defines the audit policy configuration",
 			EnvVar:      "RKE2_AUDIT_POLICY_FILE",
 			Destination: &config.AuditPolicyFile,
+		},
+		&cli.StringFlag{
+			Name:        "pod-security-admission-config-file",
+			Usage:       "(security) Path to the file that defines Pod Security Admission configuration",
+			EnvVar:      "RKE2_POD_SECURITY_ADMISSION_CONFIG_FILE",
+			Destination: &config.PodSecurityAdmissionConfigFile,
 		},
 		&cli.StringSliceFlag{
 			Name:   "control-plane-resource-requests",
@@ -289,7 +295,7 @@ func setCISFlags(clx *cli.Context) error {
 
 func validateProfile(clx *cli.Context, role CLIRole) {
 	switch clx.String("profile") {
-	case rke2.CISProfile15, rke2.CISProfile16:
+	case rke2.CISProfile123:
 		if err := validateCISReqs(role); err != nil {
 			logrus.Fatal(err)
 		}

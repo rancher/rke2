@@ -29,16 +29,17 @@ import (
 )
 
 type Config struct {
-	AuditPolicyFile              string
-	CloudProviderConfig          string
-	CloudProviderName            string
-	Images                       images.ImageOverrideConfig
-	KubeletPath                  string
-	ControlPlaneResourceRequests cli.StringSlice
-	ControlPlaneResourceLimits   cli.StringSlice
-	ControlPlaneProbeConf        cli.StringSlice
-	ExtraMounts                  ExtraMounts
-	ExtraEnv                     ExtraEnv
+	AuditPolicyFile                string
+	PodSecurityAdmissionConfigFile string
+	CloudProviderConfig            string
+	CloudProviderName              string
+	Images                         images.ImageOverrideConfig
+	KubeletPath                    string
+	ControlPlaneResourceRequests   cli.StringSlice
+	ControlPlaneResourceLimits     cli.StringSlice
+	ControlPlaneProbeConf          cli.StringSlice
+	ExtraMounts                    ExtraMounts
+	ExtraEnv                       ExtraEnv
 }
 
 type ExtraMounts struct {
@@ -61,8 +62,7 @@ type ExtraEnv struct {
 
 // Valid CIS Profile versions
 const (
-	CISProfile15           = "cis-1.5"
-	CISProfile16           = "cis-1.6"
+	CISProfile123          = "cis-1.23"
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
 	containerdSock         = "/run/k3s/containerd/containerd.sock"
 	KubeAPIServer          = "kube-apiserver"
@@ -103,7 +103,6 @@ func Server(clx *cli.Context, cfg Config) error {
 	dataDir := clx.String("data-dir")
 	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
 		checkStaticManifests(cmds.AgentConfig.ContainerRuntimeEndpoint, dataDir),
-		setPSPs(cisMode),
 		setNetworkPolicies(cisMode, defaultNamespaces),
 		setClusterRoles(),
 		restrictServiceAccounts(cisMode, defaultNamespaces),
@@ -273,7 +272,7 @@ func removeOldPodManifests(dataDir string, disabledItems map[string]bool, cluste
 
 func isCISMode(clx *cli.Context) bool {
 	profile := clx.String("profile")
-	return profile == CISProfile15 || profile == CISProfile16
+	return profile == CISProfile123
 }
 
 func startKubelet(ctx context.Context, dataDir string, errChan chan error, cmd *exec.Cmd) {
