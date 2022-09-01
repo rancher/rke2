@@ -12,6 +12,7 @@ import (
 
 	"github.com/k3s-io/k3s/pkg/agent/config"
 	containerdk3s "github.com/k3s-io/k3s/pkg/agent/containerd"
+	"github.com/k3s-io/k3s/pkg/cgroups"
 	"github.com/k3s-io/k3s/pkg/cli/agent"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/cli/etcdsnapshot"
@@ -135,6 +136,7 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	dataDir := clx.String("data-dir")
 	clusterReset := clx.Bool("cluster-reset")
 	clusterResetRestorePath := clx.String("cluster-reset-restore-path")
+	containerRuntimeEndpoint := clx.String("container-runtime-endpoint")
 
 	ex, err := initExecutor(clx, cfg, isServer)
 	if err != nil {
@@ -170,7 +172,7 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 			return err
 		}
 	}
-	return removeOldPodManifests(dataDir, disabledItems, clusterReset)
+	return removeOldPodManifests(dataDir, containerRuntimeEndpoint, disabledItems, clusterReset)
 }
 
 func ForceRestartFile(dataDir string) string {
@@ -185,7 +187,7 @@ func binDir(dataDir string) string {
 	return filepath.Join(dataDir, "bin")
 }
 
-func removeOldPodManifests(dataDir string, disabledItems map[string]bool, clusterReset bool) error {
+func removeOldPodManifests(dataDir, containerRuntimeEndpoint string, disabledItems map[string]bool, clusterReset bool) error {
 	kubeletStandAlone := false
 	execPath := binDir(dataDir)
 	manifestDir := podManifestsDir(dataDir)
@@ -226,28 +228,20 @@ func removeOldPodManifests(dataDir string, disabledItems map[string]bool, cluste
 		ctx, cancel := context.WithTimeout(context.Background(), (5 * time.Minute))
 		defer cancel()
 
-		kubeletCmd := exec.CommandContext(ctx, filepath.Join(execPath, "kubelet"))
-		containerdCmd := exec.CommandContext(ctx, filepath.Join(execPath, "containerd"))
-
-		kubeletErr := make(chan error)
 		containerdErr := make(chan error)
+		kubeletErr := make(chan error)
 
-		// start containerd
-		go startContainerd(ctx, dataDir, containerdErr, containerdCmd)
-		// start kubelet
-		go startKubelet(ctx, dataDir, kubeletErr, kubeletCmd)
+		// start containerd, if necessary. The command will be terminated automatically when the context is cancelled.
+		if containerRuntimeEndpoint == "" {
+			containerdCmd := exec.CommandContext(ctx, filepath.Join(execPath, "containerd"))
+			go startContainerd(ctx, dataDir, containerdErr, containerdCmd)
+		}
+		// start kubelet. The command will be terminated automatically when the context is cancelled.
+		kubeletCmd := exec.CommandContext(ctx, filepath.Join(execPath, "kubelet"))
+		go startKubelet(ctx, dataDir, containerRuntimeEndpoint, kubeletErr, kubeletCmd)
+
 		// check for any running containers from the disabled items list
-		go checkForRunningContainers(ctx, disabledItems, kubeletErr, containerdErr)
-
-		// ensure temporary kubelet and containerd are terminated
-		defer func() {
-			if kubeletCmd.Process != nil {
-				kubeletCmd.Process.Kill()
-			}
-			if containerdCmd.Process != nil {
-				containerdCmd.Process.Kill()
-			}
-		}()
+		go checkForRunningContainers(ctx, containerRuntimeEndpoint, disabledItems, kubeletErr, containerdErr)
 
 		for {
 			select {
@@ -275,17 +269,33 @@ func isCISMode(clx *cli.Context) bool {
 	return profile == CISProfile15 || profile == CISProfile16
 }
 
-func startKubelet(ctx context.Context, dataDir string, errChan chan error, cmd *exec.Cmd) {
-	if err := containerdk3s.WaitForContainerd(ctx, containerdSock); err != nil {
-		logrus.Errorf("Failed to wait for containerd startup: %v", err)
-		return
+func startKubelet(ctx context.Context, dataDir, containerRuntimeEndpoint string, errChan chan error, cmd *exec.Cmd) {
+	if containerRuntimeEndpoint == "" {
+		containerRuntimeEndpoint = containerdSock
+		// Only wait for containerd to start when container-runtime-endpoint is not set;
+		// if it's a different CRI then this containerd-specific check will not work,
+		// and either way the user is responsible for ensuring that it's running.
+		if err := containerdk3s.WaitForContainerd(ctx, containerRuntimeEndpoint); err != nil {
+			logrus.Errorf("Failed to wait for containerd startup: %v", err)
+			return
+		}
+	}
+
+	if !strings.HasPrefix(containerRuntimeEndpoint, "unix://") {
+		containerRuntimeEndpoint = "unix://" + containerRuntimeEndpoint
+	}
+
+	cgroupDriver := "cgroupfs"
+	_, _, controllers := cgroups.CheckCgroups()
+	if controllers["cpuset"] && os.Getenv("INVOCATION_ID") != "" {
+		cgroupDriver = "systemd"
 	}
 
 	args := []string{
 		"--fail-swap-on=false",
+		"--cgroup-driver=" + cgroupDriver,
 		"--container-runtime=remote",
-		"--containerd=" + containerdSock,
-		"--container-runtime-endpoint=unix://" + containerdSock,
+		"--container-runtime-endpoint=" + containerRuntimeEndpoint,
 		"--pod-manifest-path=" + podManifestsDir(dataDir),
 	}
 	cmd.Args = append(cmd.Args, args...)
@@ -326,11 +336,15 @@ func isContainerRunning(name string, resp *runtimeapi.ListContainersResponse) bo
 	return false
 }
 
-func checkForRunningContainers(ctx context.Context, disabledItems map[string]bool, kubeletErr, containerdErr chan error) {
+func checkForRunningContainers(ctx context.Context, containerRuntimeEndpoint string, disabledItems map[string]bool, kubeletErr, containerdErr chan error) {
+	if containerRuntimeEndpoint == "" {
+		containerRuntimeEndpoint = containerdSock
+	}
+
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 	for range ticker.C {
-		conn, err := containerdk3s.CriConnection(ctx, containerdSock)
+		conn, err := containerdk3s.CriConnection(ctx, containerRuntimeEndpoint)
 		if err != nil {
 			logrus.Warnf("Failed to setup cri connection: %v", err)
 			continue
