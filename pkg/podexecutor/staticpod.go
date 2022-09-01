@@ -39,7 +39,6 @@ var (
 		"/usr/share/ca-certificates",
 	}
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
-	defaultPSAConfigFile   = "/etc/rancher/rke2/psa.yaml"
 )
 
 type ControlPlaneResources struct {

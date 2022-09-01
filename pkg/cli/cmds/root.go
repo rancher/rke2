@@ -97,7 +97,7 @@ var (
 			Name:        "pod-security-config-file",
 			Usage:       "(security) Path to the file that defines Pod Security Admission configuration",
 			EnvVar:      "RKE2_POD_SECURITY_CONFIG_FILE",
-			Destination: &config.PodSecuritConfigFile,
+			Destination: &config.PodSecurityConfigFile,
 		},
 		&cli.StringSliceFlag{
 			Name:   "control-plane-resource-requests",
