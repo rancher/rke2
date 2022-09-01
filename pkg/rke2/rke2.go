@@ -29,17 +29,17 @@ import (
 )
 
 type Config struct {
-	AuditPolicyFile              string
-	PodSecurityConfigFile        string
-	CloudProviderConfig          string
-	CloudProviderName            string
-	Images                       images.ImageOverrideConfig
-	KubeletPath                  string
-	ControlPlaneResourceRequests cli.StringSlice
-	ControlPlaneResourceLimits   cli.StringSlice
-	ControlPlaneProbeConf        cli.StringSlice
-	ExtraMounts                  ExtraMounts
-	ExtraEnv                     ExtraEnv
+	AuditPolicyFile                string
+	PodSecurityAdmissionConfigFile string
+	CloudProviderConfig            string
+	CloudProviderName              string
+	Images                         images.ImageOverrideConfig
+	KubeletPath                    string
+	ControlPlaneResourceRequests   cli.StringSlice
+	ControlPlaneResourceLimits     cli.StringSlice
+	ControlPlaneProbeConf          cli.StringSlice
+	ExtraMounts                    ExtraMounts
+	ExtraEnv                       ExtraEnv
 }
 
 type ExtraMounts struct {
