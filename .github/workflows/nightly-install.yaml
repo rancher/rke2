@@ -1,18 +1,7 @@
-name: Installer
+name: Nightly Install
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - "channels.yaml"
-      - "install.sh"
-      - "install.ps1"
-      - "tests/vagrant/install/**"
-  pull_request:
-    branches: [main, master]
-    paths:
-      - "install.sh"
-      - "install.ps1"
-      - "tests/vagrant/install/**"
+  schedule:
+    - cron: "0 0 * * 1-5"
   workflow_dispatch: {}
 jobs:
   test:
@@ -28,29 +17,27 @@ jobs:
         include:
           - {channel: latest, vm: rocky-8}
           - {channel: latest, vm: ubuntu-focal}
-          - {channel: testing, vm: rocky-8}
-          - {channel: testing, vm: ubuntu-focal}
       max-parallel: 2
     defaults:
       run:
-        working-directory: tests/vagrant/install/${{ matrix.vm }}
+        working-directory: tests/install/${{ matrix.vm }}
     env:
       INSTALL_RKE2_CHANNEL: ${{ matrix.channel }}
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with: {fetch-depth: 1}
       - name: "Vagrant Cache"
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.vagrant.d/boxes
             ~/.vagrant.d/gems
-          key: install-${{ hashFiles(format('tests/vagrant/install/{0}/Vagrantfile', matrix.vm)) }}
+          key: install-${{ hashFiles(format('tests/install/{0}/Vagrantfile', matrix.vm)) }}
         id: vagrant-cache
         continue-on-error: true
       - name: "Vagrant Plugin(s)"
-        run: vagrant plugin install vagrant-reload
+        run: vagrant plugin install vagrant-reload vagrant-rke2
       - name: "Vagrant Up ⏩ Install RKE2"
         run: vagrant up
       - name: "⏳ Node"
