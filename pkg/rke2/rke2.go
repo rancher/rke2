@@ -30,7 +30,7 @@ import (
 
 type Config struct {
 	AuditPolicyFile              string
-	PodSecuritConfigFile         string
+	PodSecurityConfigFile        string
 	CloudProviderConfig          string
 	CloudProviderName            string
 	Images                       images.ImageOverrideConfig
