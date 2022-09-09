@@ -153,6 +153,23 @@ first position of the list. For example, to use Multus with `canal` as the defau
 For more information about Multus, refer to the [multus-cni](https://github.com/k8snetworkplumbingwg/multus-cni/tree/master/docs) documentation.
 
 
+## Using Multus with Cilium
+
+To use Cilium with Multus the `exclusive` config needs to be disabled.
+You can do this by creating a file named `/var/lib/rancher/rke2/server/manifests/rke2-cilium-config.yml` with the following content:
+```yaml
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-cilium
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    cni:
+      exclusive: false
+```
+
+
 ## Using Multus with the containernetworking plugins
 
 Any CNI plugin can be used as secondary CNI plugin for Multus to provide additional network interfaces attached to a pod. However, it is most common to use the CNI plugins maintained by the containernetworking team (bridge, host-device,
