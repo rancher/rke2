@@ -592,7 +592,7 @@ func writeDefaultPolicyFile(policyFilePath string) error {
 // writeIfNotExists writes content to a file at a given path, but only if the file does not already exist
 func writeIfNotExists(path string, content []byte) error {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0700); err != nil {
+	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)

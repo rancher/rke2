@@ -19,7 +19,7 @@ const (
 func setPSAs(cisMode bool) error {
 	logrus.Info("Applying Pod Security Admission Configuration")
 	configDir := filepath.Dir(defaultPSAConfigFile)
-	if err := os.MkdirAll(configDir, 0700); err != nil {
+	if err := os.MkdirAll(configDir, 0755); err != nil {
 		return err
 	}
 	if !cisMode { // non-CIS mode
