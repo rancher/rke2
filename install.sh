@@ -475,6 +475,9 @@ do_install_rpm() {
                 7|8)
                     :
                     ;;
+                9) # We are currently using EL8 packages for EL9 as well
+                    maj_ver="8"
+                    ;;
                 *) # In certain cases, like installing on Fedora, maj_ver will end up being something that is not 7 or 8
                     maj_ver="7"
                     ;;
