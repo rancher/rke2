@@ -132,7 +132,7 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
-FROM rancher/hardened-kubernetes:v1.24.4-rke2r1-build20220817 AS kubernetes
+FROM rancher/hardened-kubernetes:v1.24.5-rke2r1-build20220915 AS kubernetes
 FROM rancher/hardened-containerd:v1.6.8-k3s1-build20220901 AS containerd
 FROM rancher/hardened-crictl:v1.24.0-build20220506 AS crictl
 FROM rancher/hardened-runc:v1.1.4-build20220901 AS runc
