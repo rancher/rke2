@@ -20,7 +20,7 @@ RUN set -x \
     yq
 
 RUN if [ "${ARCH}" != "s390x" ]; then \
-    	apk --no-cache add mingw-w64-gcc; \
+    apk --no-cache add mingw-w64-gcc; \
     fi
 
 FROM registry.suse.com/bci/bci-base AS rpm-macros
@@ -55,21 +55,21 @@ RUN set -x \
     python2 \
     \
     && if [ "${ARCH}" != "s390x" ]; then \
-    	apk add --no-cache rpm-dev; \
+    apk add --no-cache rpm-dev; \
     fi
 
 RUN GOCR_VERSION="v0.5.1" && \
-        if [ "${ARCH}" = "arm64" ]; then \
-        wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_arm64.tar.gz && \
-        tar -zxvf go-containerregistry_Linux_arm64.tar.gz && \
-        mv crane /usr/local/bin && \
-        chmod a+x /usr/local/bin/crane; \
-        else \
-        wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_x86_64.tar.gz && \
-        tar -zxvf go-containerregistry_Linux_x86_64.tar.gz && \
-        mv crane /usr/local/bin && \
-        chmod a+x /usr/local/bin/crane; \
-        fi
+    if [ "${ARCH}" = "arm64" ]; then \
+    wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_arm64.tar.gz && \
+    tar -zxvf go-containerregistry_Linux_arm64.tar.gz && \
+    mv crane /usr/local/bin && \
+    chmod a+x /usr/local/bin/crane; \
+    else \
+    wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_x86_64.tar.gz && \
+    tar -zxvf go-containerregistry_Linux_x86_64.tar.gz && \
+    mv crane /usr/local/bin && \
+    chmod a+x /usr/local/bin/crane; \
+    fi
 
 RUN VERSION=0.16.0 && \
     if [ "${ARCH}" = "arm64" ]; then \
@@ -132,7 +132,7 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
-FROM rancher/hardened-kubernetes:v1.23.10-rke2r1-build20220817 AS kubernetes
+FROM rancher/hardened-kubernetes:v1.23.11-rke2r1-build20220915 AS kubernetes
 FROM rancher/hardened-containerd:v1.5.13-k3s1-build20220606 AS containerd
 FROM rancher/hardened-crictl:v1.23.0-build20220414 AS crictl
 FROM rancher/hardened-runc:v1.1.4-build20220901 AS runc
