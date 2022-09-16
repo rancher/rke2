@@ -2298,7 +2298,7 @@ A container running in the host's network namespace could access the local loopb
 
 There should be at least one admission control policy defined which does not permit containers to share the host network namespace.
 
-If you need to run containers which require access to the host's network namesapces, this should be defined in a separate policy and you should carefully check to ensure that only limited service accounts and users are given permission to use that policy.
+If you need to run containers which require access to the host's network namespaces, this should be defined in a separate policy and you should carefully check to ensure that only limited service accounts and users are given permission to use that policy.
 </details>
 
 **Result:** Pass
@@ -2343,7 +2343,7 @@ grep "enforce:" ${config_file}
 Verify that the returned value is `enforce: restricted`
 
 **Remediation:**
-Add policies to each namespace in the cluster which has user workloads to restrict the admission of conatiners with .spec.allowPrivilegeEscalationset to true.
+Add policies to each namespace in the cluster which has user workloads to restrict the admission of containers with .spec.allowPrivilegeEscalationset to true.
 
 
 #### 5.2.7
@@ -2435,7 +2435,7 @@ In many cases applications running in containers do not require any capabilities
 **Result:** Manual
 
 **Remediation:**
-Review the use of capabilites in applications running on your cluster. Where a namespace contains applicaions which do not require any Linux capabities to operate consider adding a PSP which forbids the admission of containers which do not drop all capabilities.
+Review the use of capabilities in applications running on your cluster. Where a namespace contains applicaions which do not require any Linux capabities to operate consider adding a PSP which forbids the admission of containers which do not drop all capabilities.
 
 
 #### 5.2.11
