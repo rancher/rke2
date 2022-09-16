@@ -3,6 +3,8 @@ title: Default Policy Configuration
 ---
 This document describes how RKE2 configures `PodSecurityPolicies` and `NetworkPolicies` in order to be secure-by-default while also providing operators with maximum configuration flexibility.
 
+!!! NOTE: This document applies to RKE2 versions below v1.25.0+rke2r1, please refer to the [Pod Security Standards Documentation](pod_security_standards.md) for the default policy information for release line v1.25 and higher.
+
 #### Pod Security Policies
 
 RKE2 can be ran with or without the `profile: cis-1.6` configuration parameter. This will cause it to apply different `PodSecurityPolicies` (PSPs) at start-up.

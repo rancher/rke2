@@ -87,7 +87,7 @@ OPTIONS:
    --kubelet-path value                          (experimental/agent) Override kubelet binary path [$RKE2_KUBELET_PATH]
    --cloud-provider-name value                   (cloud provider) Cloud provider name [$RKE2_CLOUD_PROVIDER_NAME]
    --cloud-provider-config value                 (cloud provider) Cloud provider configuration file path [$RKE2_CLOUD_PROVIDER_CONFIG]
-   --profile value                               (security) Validate system configuration against the selected benchmark (valid items: cis-1.5, cis-1.6 ) [$RKE2_CIS_PROFILE]
+   --profile value                               (security) Validate system configuration against the selected benchmark (valid items: cis-1.23 ) [$RKE2_CIS_PROFILE]
    --audit-policy-file value                     (security) Path to the file that defines the audit policy configuration [$RKE2_AUDIT_POLICY_FILE]
    --control-plane-resource-requests value       (components) Control Plane resource requests [$RKE2_CONTROL_PLANE_RESOURCE_REQUESTS]
    --control-plane-resource-limits value         (components) Control Plane resource limits [$RKE2_CONTROL_PLANE_RESOURCE_LIMITS]
