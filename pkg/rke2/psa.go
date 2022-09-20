@@ -55,7 +55,7 @@ plugins:
     exemptions:
       usernames: []
       runtimeClasses: []
-      namespaces: [kube-system, cis-operator-system]`
+      namespaces: [kube-system, cis-operator-system, tigera-operator]`
 	return psRestrictedConfig
 }
 
