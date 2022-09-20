@@ -95,7 +95,17 @@ net.ipv6.conf.all.forwarding=1
 
 ## Canal and IP exhaustion
 
-By default Canal keeps track of pod IPs by creating a lock file for each IP in `/var/lib/cni/networks/k8s-pod-network`. Each IP belongs to a single pod and will be deleted as soon as the pod is removed. However, in the unlikely event that containerd loses track of the running pods, lock files may be leaked and Canal will not be able to reuse those IPs anymore. If this occurs, you may experience IP exhaustion errors, for example:
+There are two possible reasons for this:
+
+1. `iptables` binary is not installed in the host and there is a pod defining a hostPort. The pod will be given an IP but its creation will fail and Kubernetes will not cease trying to recreate it, consuming one IP every time it tries. Error messages similar to the following will appear in the containerd log. This is the log showing the error:
+
+```console
+plugin type="portmap" failed (add): failed to open iptables: exec: "iptables": executable file not found in $PATH 
+```
+Please install iptables or xtables-nft package to resolve this problem
+
+
+2. By default Canal keeps track of pod IPs by creating a lock file for each IP in `/var/lib/cni/networks/k8s-pod-network`. Each IP belongs to a single pod and will be deleted as soon as the pod is removed. However, in the unlikely event that containerd loses track of the running pods, lock files may be leaked and Canal will not be able to reuse those IPs anymore. If this occurs, you may experience IP exhaustion errors, for example:
 
 ```console
 failed to allocate for range 0: no IP addresses available in range set
