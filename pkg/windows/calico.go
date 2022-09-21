@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/Microsoft/hcsshim"
+	"github.com/ghodss/yaml"
 	wapi "github.com/iamacarpet/go-win64api"
 	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
 	util2 "github.com/k3s-io/k3s/pkg/agent/util"
@@ -28,7 +29,7 @@ import (
 	"github.com/libp2p/go-netroute"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
+	opv1 "github.com/tigera/operator/api/v1"
 	authv1 "k8s.io/api/authentication/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -545,7 +546,12 @@ func getCNIConfigOverrides(cniConfig *CNIConfig, hc *helm.Factory) error {
 	if err := yaml.Unmarshal([]byte(cniChartConfig.Spec.ValuesContent), &overrides); err != nil {
 		return err
 	}
-	logrus.Debug("calico override found: %+v\n", overrides)
+	// Marshal for clean debug logs, otherwise it's all pointers
+	b, err := yaml.Marshal(overrides)
+	if err != nil {
+		return err
+	}
+	logrus.Debugf("calico override found: %s\n", string(b))
 	if nodeV4 := overrides.Installation.CalicoNetwork.NodeAddressAutodetectionV4; nodeV4 != nil {
 		cniConfig.CalicoConfig.IPAutoDetectionMethod = getNodeAddressAutodetection(*nodeV4)
 	}
@@ -553,8 +559,8 @@ func getCNIConfigOverrides(cniConfig *CNIConfig, hc *helm.Factory) error {
 	return nil
 }
 
-func getNodeAddressAutodetection(autoDetect NodeAddressAutodetection) string {
-	if autoDetect.FirstFound {
+func getNodeAddressAutodetection(autoDetect opv1.NodeAddressAutodetection) string {
+	if autoDetect.FirstFound != nil && *autoDetect.FirstFound {
 		return "first-found"
 	} else if autoDetect.CanReach != "" {
 		return "can-reach=" + autoDetect.CanReach
