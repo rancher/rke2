@@ -72,7 +72,7 @@ type CalicoKubeConfig struct {
 	Path                 string
 }
 
-// Stub of Calico configuaration used to extract custom configuration
+// Stub of Calico configuration used to extract user-provided overrides
 // Based off of https://github.com/tigera/operator/blob/master/api/v1/installation_types.go
 type CalicoInstallation struct {
 	Installation CalicoInstallationSpec `json:"installation,omitempty"`
