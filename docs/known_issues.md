@@ -101,7 +101,7 @@ By default Canal keeps track of pod IPs by creating a lock file for each IP in `
 failed to allocate for range 0: no IP addresses available in range set
 ```
 
-To resolve this, you can manually remove unused IPs from that directory. If you need to do this, please report the problem via GitHub, making sure to specify how it was triggered.
+There are two ways to resolve this. You can either manually remove unused IPs from that directory or drain the node, run rke2-killall.sh, start the rke2 systemd service and uncordon the node. If you need to undertake any of these actions, please report the problem via GitHub, making sure to specify how it was triggered.
 
 
 ## Ingress in CIS Mode
