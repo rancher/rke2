@@ -39,6 +39,7 @@ def provision(vm, role, role_num, node_num)
       install_type = "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
     end
     vm.provision "shell", inline: "ping -c 2 rke2.io"
+    vm.provision "Create Calico Manifest", type: "shell", path: "../scripts/calico_manifest.sh", args: [ "#{NETWORK_PREFIX}.1" ]
   end
 
   if role.include?("server") && role_num == 0
@@ -48,6 +49,7 @@ def provision(vm, role, role_num, node_num)
       rke2.config = <<~YAML
         write-kubeconfig-mode: '0644'
         node-external-ip: #{NETWORK_PREFIX}.100
+        node-ip: #{NETWORK_PREFIX}.100
         token: vagrant-rke2
         cni: calico
       YAML
@@ -60,6 +62,7 @@ def provision(vm, role, role_num, node_num)
       rke2.config = <<~YAML
         write-kubeconfig-mode: '0644'
         node-external-ip: #{node_ip}
+        node-ip: #{node_ip}
         server: https://#{NETWORK_PREFIX}.100:9345
         token: vagrant-rke2
         cni: calico
@@ -101,7 +104,6 @@ def provision(vm, role, role_num, node_num)
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
       # rke2.skip_start = true
       rke2.config = <<~YAML
-        kube-proxy-arg: "feature-gates=IPv6DualStack=false"
         node-external-ip: #{node_ip}
         server: https://#{NETWORK_PREFIX}.100:9345
         token: vagrant-rke2
@@ -111,7 +113,9 @@ def provision(vm, role, role_num, node_num)
 end
 
 Vagrant.configure("2") do |config|
-  config.vagrant.plugins = ["vagrant-rke2", "vagrant-reload", "vagrant-libvirt"]
+  config.vagrant.plugins = ["vagrant-rke2", "vagrant-reload"]
+  # For windows, just use the password not the private key
+  config.ssh.password    = "vagrant"
   # Default provider is libvirt, virtualbox is only provided as a backup
   config.vm.provider "libvirt" do |v|
     v.cpus = NODE_CPUS
@@ -120,6 +124,7 @@ Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |v|
     v.cpus = NODE_CPUS
     v.memory = NODE_MEMORY
+    v.linked_clone = false
   end
 
   if NODE_ROLES.kind_of?(String)
