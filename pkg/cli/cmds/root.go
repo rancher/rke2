@@ -35,6 +35,12 @@ var (
 			Destination: &config.Images.KubeControllerManager,
 		},
 		&cli.StringFlag{
+			Name:        images.CloudControllerManager,
+			Usage:       "(image) Override image to use for cloud-controller-manager",
+			EnvVar:      "RKE2_CLOUD_CONTROLLER_MANAGER_IMAGE",
+			Destination: &config.Images.CloudControllerManager,
+		},
+		&cli.StringFlag{
 			Name:        images.KubeProxy,
 			Usage:       "(image) Override image to use for kube-proxy",
 			EnvVar:      "RKE2_KUBE_PROXY_IMAGE",
