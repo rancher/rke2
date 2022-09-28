@@ -73,17 +73,18 @@ require (
 	github.com/containerd/continuity v0.3.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/google/go-containerregistry v0.7.0
-	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
+	github.com/iamacarpet/go-win64api v0.0.0-20220720120512-241a9064deec
 	github.com/k3s-io/helm-controller v0.12.3
 	github.com/k3s-io/k3s v1.23.10-0.20220804164713-c366ee06de83 // release-1.23
 	github.com/libp2p/go-netroute v0.2.0
-	github.com/onsi/ginkgo/v2 v2.1.1
-	github.com/onsi/gomega v1.17.0
+	github.com/onsi/ginkgo/v2 v2.1.4
+	github.com/onsi/gomega v1.20.0
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/wharfie v0.5.3
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.10
 	github.com/sirupsen/logrus v1.9.0
+	github.com/tigera/operator v1.28.1
 	github.com/urfave/cli v1.22.9
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
 	google.golang.org/grpc v1.45.0
