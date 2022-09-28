@@ -68,30 +68,53 @@ replace (
 )
 
 require (
+	github.com/Azure/go-autorest/autorest v0.11.27 // indirect
+	github.com/Azure/go-autorest/autorest/adal v0.9.20 // indirect
+	github.com/GoogleCloudPlatform/k8s-cloud-provider v1.18.1-0.20220218231025-f11817397a1b // indirect
 	github.com/Microsoft/hcsshim v0.9.2
+	github.com/container-storage-interface/spec v1.6.0 // indirect
 	github.com/containerd/continuity v0.3.0
+	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/flannel-io/flannel v0.19.2 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
+	github.com/go-logr/logr v1.2.3 // indirect
+	github.com/google/cadvisor v0.45.0 // indirect
+	github.com/google/cel-go v0.12.4 // indirect
 	github.com/google/go-containerregistry v0.7.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.12.3
 	github.com/k3s-io/k3s v1.24.4-rc1.0.20220823221057-7d6982d1fab6 // master
 	github.com/libp2p/go-netroute v0.2.0
-	github.com/onsi/ginkgo/v2 v2.1.3
-	github.com/onsi/gomega v1.19.0
+	github.com/onsi/ginkgo/v2 v2.1.4
+	github.com/onsi/gomega v1.20.0
+	github.com/opencontainers/runc v1.1.4 // indirect
 	github.com/pkg/errors v0.9.1
+	github.com/pquerna/cachecontrol v0.1.0 // indirect
 	github.com/rancher/wharfie v0.5.3
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v1.0.0
 	github.com/sirupsen/logrus v1.9.0
+	github.com/tigera/operator v1.28.1
 	github.com/urfave/cli v1.22.9
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
+	golang.org/x/tools v0.1.12 // indirect
 	google.golang.org/grpc v1.46.2
 	k8s.io/api v0.24.4
 	k8s.io/apimachinery v0.24.4
 	k8s.io/apiserver v0.24.4
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
+	k8s.io/cloud-provider v0.25.0 // indirect
+	k8s.io/component-base v0.25.0 // indirect
+	k8s.io/component-helpers v0.25.0 // indirect
+	k8s.io/controller-manager v0.25.0 // indirect
 	k8s.io/cri-api v0.24.4
+	k8s.io/klog/v2 v2.70.1 // indirect
+	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
+	k8s.io/kubectl v0.25.0 // indirect
 	k8s.io/kubernetes v1.24.4
+	k8s.io/mount-utils v0.25.0 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
+	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.32 // indirect
+	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/yaml v1.3.0
 )

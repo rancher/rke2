@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/Microsoft/hcsshim"
+	"github.com/ghodss/yaml"
 	wapi "github.com/iamacarpet/go-win64api"
 	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
 	util2 "github.com/k3s-io/k3s/pkg/agent/util"
@@ -28,11 +29,13 @@ import (
 	"github.com/libp2p/go-netroute"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	opv1 "github.com/tigera/operator/api/v1"
 	authv1 "k8s.io/api/authentication/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
 	"k8s.io/utils/pointer"
 )
 
@@ -171,6 +174,7 @@ func getDefaultConfig(config *CNIConfig, dataDir string, nodeConfig *config.Node
 		StartUpValidIPTimeout: 90,
 		LogDir:                "",
 		IP:                    "autodetect",
+		IPAutoDetectionMethod: "first-found",
 		Felix: FelixConfig{
 			Metadataaddr:    "none",
 			Vxlanvni:        "4096",
@@ -517,22 +521,58 @@ func generateGeneralCalicoEnvs(config *CalicoConfig) []string {
 
 		fmt.Sprintf("STARTUP_VALID_IP_TIMEOUT=90"),
 		fmt.Sprintf("IP=%s", config.IP),
+		fmt.Sprintf("IP_AUTODETECTION_METHOD=%s", config.IPAutoDetectionMethod),
+
 		fmt.Sprintf("USE_POD_CIDR=%t", autoConfigureIpam(config.CNI.IpamType)),
 
 		fmt.Sprintf("VXLAN_VNI=%s", config.Felix.Vxlanvni),
 	}
 }
 
-// getCNIConfigOverrides overrides the default values set for the CNI.
+// getCNIConfigOverrides overrides the default values set for the CNI (calico only).
+// Currently only overriding "nodeAddressAutodetectionV4" is supported
 func getCNIConfigOverrides(cniConfig *CNIConfig, hc *helm.Factory) error {
-	if _, err := hc.Helm().V1().HelmChartConfig().Get(metav1.NamespaceSystem, CalicoChart, metav1.GetOptions{}); err != nil {
+	cniChartConfig, err := hc.Helm().V1().HelmChartConfig().Get(metav1.NamespaceSystem, CalicoChart, metav1.GetOptions{})
+	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil
 		}
 		return fmt.Errorf("failed to check for %s HelmChartConfig", CalicoChart)
 	}
-	logrus.Debug("custom calico configuration isn't currently supported")
+	if cniChartConfig == nil {
+		return nil
+	}
+	overrides := CalicoInstallation{}
+	if err := yaml.Unmarshal([]byte(cniChartConfig.Spec.ValuesContent), &overrides); err != nil {
+		return err
+	}
+	// Marshal for clean debug logs, otherwise it's all pointers
+	b, err := yaml.Marshal(overrides)
+	if err != nil {
+		return err
+	}
+	logrus.Debugf("calico override found: %s\n", string(b))
+	if nodeV4 := overrides.Installation.CalicoNetwork.NodeAddressAutodetectionV4; nodeV4 != nil {
+		cniConfig.CalicoConfig.IPAutoDetectionMethod = getNodeAddressAutodetection(*nodeV4)
+	}
+
 	return nil
+}
+
+func getNodeAddressAutodetection(autoDetect opv1.NodeAddressAutodetection) string {
+	if autoDetect.FirstFound != nil && *autoDetect.FirstFound {
+		return "first-found"
+	} else if autoDetect.CanReach != "" {
+		return "can-reach=" + autoDetect.CanReach
+	} else if autoDetect.Interface != "" {
+		return "interface=" + autoDetect.Interface
+	} else if autoDetect.SkipInterface != "" {
+		return "skip-interface=" + autoDetect.SkipInterface
+	} else if len(autoDetect.CIDRS) > 0 {
+		return "cidr=" + strings.Join(autoDetect.CIDRS, ",")
+	} else {
+		return ""
+	}
 }
 
 func coreClient(restConfig *rest.Config) (kubernetes.Interface, error) {
