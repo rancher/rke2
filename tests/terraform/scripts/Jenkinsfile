@@ -1,0 +1,88 @@
+#!groovy
+node {
+  // def rootPath = "/go/src/github.com/rancher/rke2/tests/terraform/"
+  def job_name = "${JOB_NAME}"
+  if (job_name.contains('/')) { 
+    job_names = job_name.split('/')
+    job_name = job_names[job_names.size() - 1] 
+  }
+  def testContainer = "${job_name}${env.BUILD_NUMBER}_test"
+  def imageName = "rke2-tf-${job_name}${env.BUILD_NUMBER}"
+  // def testsDir = "github.com/rancher/rke2/tests/${env.TEST_PACKAGE}"
+  // def testResultsOut = "results.xml"
+  def envFile = ".env"
+  def branch = "terraform-automation"
+  if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
+    branch = "${env.BRANCH}"
+  }
+  def repo = scm.userRemoteConfigs
+  if ("${env.REPO}" != "null" && "${env.REPO}" != "") {
+    repo = [[url: "${env.REPO}"]]
+  }
+  def timeout = "60m"
+  if ("${env.TIMEOUT}" != "null" && "${env.TIMEOUT}" != "") {
+    timeout = "${env.TIMEOUT}" 
+  }
+  wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 2, 'defaultBg':1]) {
+    withFolderProperties {
+      paramsMap = []
+      params.each {
+        paramsMap << "$it.key=$it.value"
+      }
+      withEnv(paramsMap) {
+        withCredentials([ 
+          string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+          string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
+          string(credentialsId: 'AWS_SSH_PEM_KEY', variable: 'AWS_SSH_PEM_KEY'),
+          string(credentialsId: 'RANCHER_SSH_KEY', variable: 'RANCHER_SSH_KEY'),
+          string(credentialsId: 'ADMIN_PASSWORD', variable: 'ADMIN_PASSWORD'),
+          string(credentialsId: 'USER_PASSWORD', variable: 'USER_PASSWORD'),
+          string(credentialsId: 'ADMIN_PASSWORD', variable: 'ADMIN_PASSWORD'),
+          string(credentialsId: 'USER_PASSWORD', variable: 'USER_PASSWORD')
+        ]) {
+          stage('Checkout') {
+            deleteDir()
+            checkout([
+              $class: 'GitSCM',
+              branches: [[name: "*/${branch}"]],
+              extensions: scm.extensions + [[$class: 'CleanCheckout']],
+              userRemoteConfigs: repo
+            ])
+          }
+          dir ("./") {
+            try {
+              stage('Configure and Build') {
+                if (env.AWS_SSH_PEM_KEY && env.AWS_SSH_KEY_NAME) {
+                  dir("./tests/terraform/modules/config/.ssh") {
+                    def decoded = new String(AWS_SSH_PEM_KEY.decodeBase64())
+                    writeFile file: "aws_key.pem", text: decoded
+                  }
+                }
+
+                dir("./tests/terraform/modules/config") {
+                  def filename = "local.tfvars"
+                  def configContents = env.TFVARS // env.CONFIG
+
+                  writeFile file: filename, text: configContents
+                }
+
+                sh "./tests/terraform/scripts/configure.sh"
+                sh "./tests/terraform/scripts/build.sh"
+              }
+              stage('Run Tests') {
+                sh "docker run --name ${testContainer} -t --env-file ${envFile} " +
+                  "${imageName} sh -c \"chmod 400 /go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem && " +
+                  "go test -timeout=${timeout} -v ./tests/terraform/createcluster_test.go ./tests/terraform/cluster.go ./tests/terraform/testutils.go\""
+              }
+            } finally {           
+              stage('Cleanup') {
+                sh "docker rm -v ${testContainer}"
+                sh "docker rmi -f ${imageName}"
+              }
+            } // finally
+          } // dir 
+        } // withCredentials
+      } // withEnv
+    } // withFolderProperties
+  } // wrap 
+}// node
