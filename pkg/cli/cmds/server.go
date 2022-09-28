@@ -136,7 +136,7 @@ var (
 		"etcd-s3-timeout":                   copy,
 		"disable-helm-controller":           drop,
 		"enable-pprof":                      copy,
-		"servicelb-namespace":               drop,
+		"servicelb-namespace":               copy,
 	})
 )
 

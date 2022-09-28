@@ -403,6 +403,12 @@ func (s *StaticPodConfig) CloudControllerManager(ctx context.Context, ccmRBACRea
 	if err := images.Pull(s.ImagesDir, images.CloudControllerManager, image); err != nil {
 		return err
 	}
+	for i, arg := range args {
+		// This is an option that does not exist on the latest CCM binary
+		if strings.HasPrefix(arg, "--port=") {
+			args = append(args[:i], args[i+1:]...)
+		}
+	}
 	if s.ControlPlaneResources.CloudControllerManagerCPURequest == "" {
 		s.ControlPlaneResources.CloudControllerManagerCPURequest = defaultCloudControllerManagerCPURequest
 	}
