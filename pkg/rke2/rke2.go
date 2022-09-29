@@ -90,7 +90,11 @@ func Server(clx *cli.Context, cfg Config) error {
 	// this also disables several integrated controllers.
 	disableItems := strings.Split(cmds.DisableItems, ",")
 	for _, item := range disableItems {
-		if err := clx.Set("disable", strings.TrimSpace(item)); err != nil {
+		item = strings.TrimSpace(item)
+		if clx.Bool("enable-" + item) {
+			continue
+		}
+		if err := clx.Set("disable", item); err != nil {
 			return err
 		}
 	}
