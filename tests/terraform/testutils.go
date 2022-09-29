@@ -39,12 +39,12 @@ var SSHKEY string
 var SSHUSER string
 var err error
 
-func GetBasepath() string {
+func basepath() string {
 	_, b, _, _ := runtime.Caller(0)
 	return filepath.Join(filepath.Dir(b), "../..")
 }
 
-func PrintFileContents(f string) {
+func printFileContents(f string) {
 	content, err := os.ReadFile(f)
 	if err != nil {
 		log.Fatal(err)
@@ -71,7 +71,7 @@ func publicKey(path string) ssh.AuthMethod {
 	return ssh.PublicKeys(signer)
 }
 
-func ConfigureSSH(host string, SSHUser string, SSHKey string) *ssh.Client {
+func configureSSH(host string, SSHUser string, SSHKey string) *ssh.Client {
 	config = &ssh.ClientConfig{
 		User: SSHUser,
 		Auth: []ssh.AuthMethod{
@@ -102,23 +102,23 @@ func runsshCommand(cmd string, conn *ssh.Client) (string, error) {
 }
 
 // RunCmdOnNode executes a command from within the given node
-func RunCmdOnNode(cmd string, ServerIP string, SSHUser string, SSHKey string) (string, error) {
+func runCmdOnNode(cmd string, ServerIP string, SSHUser string, SSHKey string) (string, error) {
 	Server := ServerIP + ":22"
-	conn := ConfigureSSH(Server, SSHUser, SSHKey)
+	conn := configureSSH(Server, SSHUser, SSHKey)
 	res, err := runsshCommand(cmd, conn)
 	res = strings.TrimSpace(res)
 	return res, err
 }
 
-// RunCommand executes a command on the host
-func RunCommand(cmd string) (string, error) {
+// runCommand executes a command on the host
+func runCommand(cmd string) (string, error) {
 	c := exec.Command("bash", "-c", cmd)
 	out, err := c.CombinedOutput()
 	return string(out), err
 }
 
 // Used to count the pods using prefix passed in the list of pods
-func CountOfStringInSlice(str string, pods []Pod) int {
+func countOfStringInSlice(str string, pods []Pod) int {
 	count := 0
 	for _, pod := range pods {
 		if strings.Contains(pod.Name, str) {
@@ -128,8 +128,8 @@ func CountOfStringInSlice(str string, pods []Pod) int {
 	return count
 }
 
-func DeployWorkload(workload, kubeconfig string) (string, error) {
-	resourceDir := GetBasepath() + "/tests/terraform/resource_files"
+func deployWorkload(workload, kubeconfig string) (string, error) {
+	resourceDir := basepath() + "/tests/terraform/resource_files"
 	files, err := ioutil.ReadDir(resourceDir)
 	if err != nil {
 		err = fmt.Errorf("%s : Unable to read resource manifest file for %s", err, workload)
@@ -139,14 +139,14 @@ func DeployWorkload(workload, kubeconfig string) (string, error) {
 		filename := filepath.Join(resourceDir, f.Name())
 		if strings.TrimSpace(f.Name()) == workload {
 			cmd := "kubectl apply -f " + filename + " --kubeconfig=" + kubeconfig
-			return RunCommand(cmd)
+			return runCommand(cmd)
 		}
 	}
 	return "", nil
 }
 
-func RemoveWorkload(workload, kubeconfig string) (string, error) {
-	resourceDir := GetBasepath() + "/tests/terraform/resource_files"
+func removeWorkload(workload, kubeconfig string) (string, error) {
+	resourceDir := basepath() + "/tests/terraform/resource_files"
 	files, err := ioutil.ReadDir(resourceDir)
 	if err != nil {
 		err = fmt.Errorf("%s : Unable to read resource manifest file for %s", err, workload)
@@ -156,38 +156,38 @@ func RemoveWorkload(workload, kubeconfig string) (string, error) {
 		filename := filepath.Join(resourceDir, f.Name())
 		if strings.TrimSpace(f.Name()) == workload {
 			cmd := "kubectl delete -f " + filename + " --kubeconfig=" + kubeconfig
-			return RunCommand(cmd)
+			return runCommand(cmd)
 		}
 	}
 	return "", nil
 }
 
-func FetchClusterIP(kubeconfig string, namespace string, servicename string) (string, string, error) {
+func fetchClusterIP(kubeconfig string, namespace string, servicename string) (string, string, error) {
 	ipCmd := "kubectl get svc " + servicename + " -n " + namespace + " -o jsonpath='{.spec.clusterIP}' --kubeconfig=" + kubeconfig
-	ip, err := RunCommand(ipCmd)
+	ip, err := runCommand(ipCmd)
 	if err != nil {
 		return "", "", err
 	}
 	portCmd := "kubectl get svc " + servicename + " -n " + namespace + " -o jsonpath='{.spec.ports[0].port}' --kubeconfig=" + kubeconfig
-	port, err := RunCommand(portCmd)
+	port, err := runCommand(portCmd)
 	if err != nil {
 		return "", "", err
 	}
 	return ip, port, err
 }
 
-func FetchNodeExternalIP(kubeconfig string) []string {
+func fetchNodeExternalIP(kubeconfig string) []string {
 	cmd := "kubectl get node --output=jsonpath='{range .items[*]} { .status.addresses[?(@.type==\"ExternalIP\")].address}' --kubeconfig=" + kubeconfig
 	time.Sleep(10 * time.Second)
-	res, _ := RunCommand(cmd)
+	res, _ := runCommand(cmd)
 	nodeExternalIP := strings.Trim(res, " ")
 	nodeExternalIPs := strings.Split(nodeExternalIP, " ")
 	return nodeExternalIPs
 }
 
-func FetchIngressIP(namespace string, kubeconfig string) ([]string, error) {
+func fetchIngressIP(namespace string, kubeconfig string) ([]string, error) {
 	cmd := "kubectl get ingress -n " + namespace + " -o jsonpath='{.items[0].status.loadBalancer.ingress[*].ip}' --kubeconfig=" + kubeconfig
-	res, err := RunCommand(cmd)
+	res, err := runCommand(cmd)
 	if err != nil {
 		return nil, err
 	}
@@ -195,20 +195,18 @@ func FetchIngressIP(namespace string, kubeconfig string) ([]string, error) {
 	if ingressIP != "" {
 		ingressIPs := strings.Split(ingressIP, " ")
 		return ingressIPs, nil
-	} else {
-		return nil, nil
 	}
+	return nil, nil
 }
 
 func parseNodes(kubeConfig string, print bool, cmd string) ([]Node, error) {
 	nodes := make([]Node, 0, 10)
-	nodeList := ""
-	res, err := RunCommand(cmd)
+	res, err := runCommand(cmd)
 	if err != nil {
 		return nil, err
 	}
-	nodeList = strings.TrimSpace(res)
-	split := strings.Split(nodeList, "\n")
+	rawNodes := strings.TrimSpace(res)
+	split := strings.Split(rawNodes, "\n")
 	for _, rec := range split {
 		if strings.TrimSpace(rec) != "" {
 			fields := strings.Fields(rec)
@@ -224,29 +222,27 @@ func parseNodes(kubeConfig string, print bool, cmd string) ([]Node, error) {
 		}
 	}
 	if print {
-		fmt.Println(nodeList)
+		fmt.Println(rawNodes)
 	}
 	return nodes, nil
 }
 
-func GetNodes(kubeConfig string, print bool) ([]Node, error) {
+func nodes(kubeConfig string, print bool) ([]Node, error) {
 	cmd := "kubectl get nodes --no-headers -o wide --kubeconfig=" + kubeConfig
 	return parseNodes(kubeConfig, print, cmd)
 }
 
-func GetWorkerNodes(kubeConfig string, print bool) ([]Node, error) {
+func workerNodes(kubeConfig string, print bool) ([]Node, error) {
 	cmd := "kubectl get node -o jsonpath='{range .items[*]}{@.metadata.name} {@.status.conditions[-1].type} <not retrieved> <not retrieved> {@.status.nodeInfo.kubeletVersion} {@.status.addresses[?(@.type==\"InternalIP\")].address} {@.status.addresses[?(@.type==\"ExternalIP\")].address} {@.spec.taints[*].effect}{\"\\n\"}{end}' --kubeconfig=" + kubeConfig + " | grep -v NoSchedule | grep -v NoExecute"
 	return parseNodes(kubeConfig, print, cmd)
 }
 
 func parsePods(kubeconfig string, print bool, cmd string) ([]Pod, error) {
 	pods := make([]Pod, 0, 10)
-	podList := ""
-	res, _ := RunCommand(cmd)
-	res = strings.TrimSpace(res)
-	podList = res
+	res, _ := runCommand(cmd)
+	rawPods := strings.TrimSpace(res)
 
-	split := strings.Split(res, "\n")
+	split := strings.Split(rawPods, "\n")
 	for _, rec := range split {
 		fields := strings.Fields(string(rec))
 		pod := Pod{
@@ -261,12 +257,12 @@ func parsePods(kubeconfig string, print bool, cmd string) ([]Pod, error) {
 		pods = append(pods, pod)
 	}
 	if print {
-		fmt.Println(podList)
+		fmt.Println(rawPods)
 	}
 	return pods, nil
 }
 
-func GetPods(kubeconfig string, print bool) ([]Pod, error) {
+func pods(kubeconfig string, print bool) ([]Pod, error) {
 	cmd := "kubectl get pods -o wide --no-headers -A --kubeconfig=" + kubeconfig
 	return parsePods(kubeconfig, print, cmd)
 }
