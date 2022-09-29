@@ -27,6 +27,11 @@ var (
 			Usage:  "(networking) CNI Plugins to deploy, one of none, " + strings.Join(CNIItems, ", ") + "; optionally with multus as the first value to enable the multus meta-plugin (default: canal)",
 			EnvVar: "RKE2_CNI",
 		},
+		&cli.BoolFlag{
+			Name:   "enable-servicelb",
+			Usage:  "(components) Enable rke2 default cloud controller manager's service controller",
+			EnvVar: "RKE2_ENABLE_SERVICELB",
+		},
 	}
 
 	k3sServerBase = mustCmdFromK3S(cmds.NewServerCommand(ServerRun), map[string]*K3SFlagOption{
