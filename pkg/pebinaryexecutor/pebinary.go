@@ -104,6 +104,9 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfig
 	switch cniType {
 	case "calico":
 		p.cni = &win.Calico{}
+	case "none":
+		logrus.Info("CNI is set to none, skipping CNI configuration")
+		return nil
 	default:
 		return fmt.Errorf("the CNI %s isn't supported on Windows", cniType)
 	}
