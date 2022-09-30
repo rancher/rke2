@@ -8,7 +8,7 @@ FIPS 140-2 is a U.S. Federal Government security standard used to approve crypto
 
 The Go compiler in use can be found [here](https://go.googlesource.com/go/+/dev.boringcrypto). Each component of the system is built with the version of this compiler that matches the same standard Go compiler version that would be used otherwise.
 
-This version of Go replaces the standard Go crypto libraries with the FIPS validated BoringCrypto module. See GoBoring's [readme](https://github.com/golang/go/blob/dev.boringcrypto/README.boringcrypto.md) for more details. This module has been revalidated as the [Rancher Kubernetes Cryptographic Library](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/3836) in order to ensure support on a wider range of systems.
+This version of Go replaces the standard Go crypto libraries with the FIPS validated BoringCrypto module. See GoBoring's [readme](https://github.com/golang/go/blob/dev.boringcrypto/README.boringcrypto.md) for more details. This module was orginally validated by NIST as the [Rancher Kubernetes Cryptographic Library](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/3836) in order to ensure support on a wider range of systems. However due to changes introduced by SP 800-56A Rev3, this validation is now hisotrical. A re-validation effort is currently underway to return this module to active FIPS 140-2 status. 
 
 ### FIPS Support in Cluster Components
 
