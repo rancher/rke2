@@ -7,7 +7,7 @@ It is a fully [conformant Kubernetes distribution](https://landscape.cncf.io/?se
 To meet these goals, RKE2 does the following:
 
 - Provides [defaults and configuration options](security/hardening_guide.md) that allow clusters to pass the CIS Kubernetes Benchmark [v1.6](security/cis_self_assessment16.md) with minimal operator intervention
-- Enables [FIPS 140-2 compliance](security/fips_support.md)
+- Uses [FIPS 140-2 approved ciphers](security/fips_support.md)
 - Regularly scans components for CVEs using [trivy](https://github.com/aquasecurity/trivy) in our build pipeline
 
 ## How is this different from RKE or K3s?
