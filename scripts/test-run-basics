@@ -16,10 +16,12 @@ all_services=(
 export NUM_SERVERS=1
 export NUM_AGENTS=1
 export WAIT_SERVICES="${all_services[@]}"
+export SERVER_ARGS="${SERVER_ARGS} --enable-servicelb"
 
 start-test() {
     #docker exec $(cat $TEST_DIR/servers/1/metadata/name) check-config || true
     use-nodelocal-DNSCache
+    use-servicelb
     verify-valid-versions $(cat $TEST_DIR/servers/1/metadata/name)
     verify-airgap-images $(cat $TEST_DIR/{servers,agents}/*/metadata/name)
 }
@@ -53,6 +55,14 @@ use-nodelocal-DNSCache() {
     wait-for-services node-cache
 }
 export -f use-nodelocal-DNSCache
+
+# -- Create a loadbalancer service so that the klipper-lb image is used
+use-servicelb() {
+    local loadbalancer_manifest='scripts/airgap/loadbalancer-test.yaml'
+    kubectl apply -f $loadbalancer_manifest
+    wait-for-services lb-tcp-8080
+}
+export -f use-servicelb
 
 # --- create a basic cluster and check for valid versions
 LABEL=BASICS run-test
