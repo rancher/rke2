@@ -206,23 +206,13 @@ var _ = Describe("Test:", func() {
 	})
 })
 
-var _ = AfterEach(func() {
-	failed = failed || CurrentSpecReport().Failed()
-})
-
 var _ = BeforeEach(func() {
-	failed = failed || CurrentSpecReport().Failed()
 	if *destroy {
 		Skip("Cluster is being Deleted")
 	}
 })
 
 var _ = AfterSuite(func() {
-	if failed {
-		fmt.Println("FAILED!")
-	} else {
-		fmt.Println("PASSED!")
-	}
 	if *destroy {
 		status, err := buildCluster(&testing.T{}, *tfVars, *destroy)
 		Expect(err).NotTo(HaveOccurred())
