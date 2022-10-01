@@ -71,6 +71,26 @@ func Run(dir string, args Args) error {
 	if err != nil {
 		return err
 	}
+
+	manifestPath := filepath.Join(dir, args.Command+".yaml")
+
+	// Generate a stable UID based on the manifest path. This allows the kubelet to reconcile the pod's
+	// containers even when the apiserver is unavailable. If the UID is not stable, the kubelet
+	// will consider the manifest change as two separate add/remove operations, and may start the new pod
+	// before terminating the old one. Cleanup of removed pods is disabled until all sources have synced,
+	// so if the apiserver is down, the newly added pod may get stuck in a crash loop due to the old pod
+	// still using its ports. See https://github.com/rancher/rke2/issues/3387
+	hasher := md5.New()
+	fmt.Fprint(hasher, manifestPath)
+	pod.UID = types.UID(hex.EncodeToString(hasher.Sum(nil)[0:]))
+
+	// Append a hash of the completed pod manifest to the container environment for later use when checking
+	// to see if the pod has been updated. It's fine that setting this changes the actual hash; we
+	// just need a stable values that we can compare between the file on disk and the running
+	// container to see if the kubelet has reconciled yet.
+	hash.DeepHashObject(hasher, pod)
+	pod.Spec.Containers[0].Env = append(pod.Spec.Containers[0].Env, v1.EnvVar{Name: "POD_HASH", Value: hex.EncodeToString(hasher.Sum(nil)[0:])})
+
 	b, err := yaml.Marshal(pod)
 	if err != nil {
 		return err
