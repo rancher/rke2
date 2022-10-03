@@ -5,7 +5,6 @@ package pebinaryexecutor
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -104,6 +103,9 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfig
 	switch cniType {
 	case "calico":
 		p.cni = &win.Calico{}
+	case "none":
+		logrus.Info("CNI is set to none, skipping CNI configuration")
+		return nil
 	default:
 		return fmt.Errorf("the CNI %s isn't supported on Windows", cniType)
 	}
@@ -147,11 +149,13 @@ func (p *PEBinaryConfig) Kubelet(ctx context.Context, args []string) error {
 	go func() {
 		for {
 			cniCtx, cancel := context.WithCancel(ctx)
-			go func() {
-				if err := p.cni.Start(cniCtx, p.cniConig); err != nil {
-					logrus.Errorf("error in cni start: %s", err)
-				}
-			}()
+			if p.cni != nil {
+				go func() {
+					if err := p.cni.Start(cniCtx, p.cniConig); err != nil {
+						logrus.Errorf("error in cni start: %s", err)
+					}
+				}()
+			}
 
 			cmd := exec.CommandContext(ctx, p.KubeletPath, cleanArgs...)
 			cmd.Stdout = os.Stdout
@@ -289,9 +293,13 @@ func getCniType(restConfig *rest.Config) (string, error) {
 	for _, h := range hl.Items {
 		if h.Name == win.CalicoChart {
 			return "calico", nil
+		} else if h.Name == "rke2-cilium" {
+			return "cilium", nil
+		} else if h.Name == "rke2-canal" {
+			return "canal", nil
 		}
 	}
-	return "", errors.New("calico chart was not found")
+	return "none", nil
 }
 
 // setWindowsAgentSpecificSettings configures the correct paths needed for Windows
