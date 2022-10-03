@@ -191,6 +191,17 @@ verify_downloader() {
     return 0
 }
 
+# verify_fapolicyd verifies existence of
+# fapolicyd executable.
+verify_fapolicyd() {
+    cmd="$(command -v "fapolicyd")"
+    if [ -z "${cmd}" ]; then
+        return 1
+    fi
+
+    return 0
+}
+
 # setup_tmp creates a temporary directory
 # and cleans up when done.
 setup_tmp() {
@@ -574,6 +585,21 @@ do_install_tar() {
     fi
 }
 
+setup_fapolicy_rules() {
+    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/rocky-release ]; then
+        verify_fapolicyd || return
+        # setting rke2 fapolicyd rules
+        cat <<-EOF >>"/etc/fapolicyd/rules.d/80-rke2.rules"
+allow perm=any all : dir=/var/lib/rancher/
+allow perm=any all : dir=/opt/cni/
+allow perm=any all : dir=/run/k3s/
+allow perm=any all : dir=/var/lib/kubelet/
+EOF
+        fagenrules --load || fatal "failed to load rke2 fapolicyd rules"
+        systemctl restart fapolicyd
+    fi
+}
+
 do_install() {
     setup_env
     check_method_conflict
@@ -590,6 +616,7 @@ do_install() {
         do_install_tar "${INSTALL_RKE2_CHANNEL}"
         ;;
     esac
+    setup_fapolicy_rules
 }
 
 do_install
