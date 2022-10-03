@@ -93,12 +93,12 @@ uninstall_remove_files()
     rm -d /var/lib/rancher || true
 
     if type fapolicyd >/dev/null 2>&1; then
-    if [ -f /etc/fapolicyd/rules.d/80-rke2.rules ]; then
-      rm -f /etc/fapolicyd/rules.d/80-rke2.rules
+        if [ -f /etc/fapolicyd/rules.d/80-rke2.rules ]; then
+            rm -f /etc/fapolicyd/rules.d/80-rke2.rules
+        fi
+        fagenrules --load
+        systemctl restart fapolicyd
     fi
-    fagenrules --load
-    systemctl restart fapolicyd
-fi
 }
 
 uninstall_remove_self()
