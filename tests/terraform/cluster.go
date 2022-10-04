@@ -28,7 +28,7 @@ func buildCluster(t *testing.T, tfVarsPath string, destroy bool) (string, error)
 	if err != nil {
 		return "", err
 	}
-	terraformOptions := &terraform.Options{
+	terraformOptions := terraform.Options{
 		TerraformDir: tfDir,
 		VarFiles:     []string{varDir},
 	}
@@ -69,14 +69,14 @@ func buildCluster(t *testing.T, tfVarsPath string, destroy bool) (string, error)
 
 	if destroy {
 		fmt.Printf("Cluster is being deleted")
-		terraform.Destroy(t, terraformOptions)
+		terraform.Destroy(t, &terraformOptions)
 		return "cluster destroyed", nil
 	}
 
 	fmt.Printf("Creating Cluster")
-	terraform.InitAndApply(t, terraformOptions)
-	kubeConfigFile = terraform.Output(t, terraformOptions, "kubeconfig")
-	masterIPs = terraform.Output(t, terraformOptions, "master_ips")
-	workerIPs = terraform.Output(t, terraformOptions, "worker_ips")
+	terraform.InitAndApply(t, &terraformOptions)
+	kubeConfigFile = terraform.Output(t, &terraformOptions, "kubeconfig")
+	masterIPs = terraform.Output(t, &terraformOptions, "master_ips")
+	workerIPs = terraform.Output(t, &terraformOptions, "worker_ips")
 	return "cluster created", nil
 }

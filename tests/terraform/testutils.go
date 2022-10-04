@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,7 +14,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-type Node struct {
+type node struct {
 	Name       string
 	Status     string
 	Roles      string
@@ -24,7 +23,7 @@ type Node struct {
 	ExternalIP string
 }
 
-type Pod struct {
+type pod struct {
 	NameSpace string
 	Name      string
 	Ready     string
@@ -35,59 +34,56 @@ type Pod struct {
 }
 
 var config *ssh.ClientConfig
-var SSHKEY string
-var SSHUSER string
-var err error
 
 func basepath() string {
 	_, b, _, _ := runtime.Caller(0)
 	return filepath.Join(filepath.Dir(b), "../..")
 }
 
-func printFileContents(f string) {
+func printFileContents(f string) error {
 	content, err := os.ReadFile(f)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	fmt.Println(string(content))
+	return nil
 }
 
-func checkError(e error) {
-	if e != nil {
-		log.Fatal(err)
-		panic(e)
-	}
-}
-
-func publicKey(path string) ssh.AuthMethod {
+func publicKey(path string) (ssh.AuthMethod, error) {
 	key, err := ioutil.ReadFile(path)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return ssh.PublicKeys(signer)
+	return ssh.PublicKeys(signer), nil
 }
 
-func configureSSH(host string, SSHUser string, SSHKey string) *ssh.Client {
+func configureSSH(host string, sshUser string, sshKey string) (*ssh.Client, error) {
+	authMethod, err := publicKey(sshKey)
+	if err != nil {
+		return nil, err
+	}
 	config = &ssh.ClientConfig{
-		User: SSHUser,
+		User: sshUser,
 		Auth: []ssh.AuthMethod{
-			publicKey(SSHKey),
+			authMethod,
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 	conn, err := ssh.Dial("tcp", host, config)
-	checkError(err)
-	return conn
+	if err != nil {
+		return nil, err
+	}
+	return conn, nil
 }
 
 func runsshCommand(cmd string, conn *ssh.Client) (string, error) {
 	session, err := conn.NewSession()
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	defer session.Close()
 	var stdoutBuf bytes.Buffer
@@ -95,16 +91,18 @@ func runsshCommand(cmd string, conn *ssh.Client) (string, error) {
 	session.Stdout = &stdoutBuf
 	session.Stderr = &stderrBuf
 	if err := session.Run(cmd); err != nil {
-		log.Println(session.Stdout)
-		log.Fatal("Error on command execution", err.Error())
+		return "", err
 	}
 	return fmt.Sprintf("%s", stdoutBuf.String()), err
 }
 
 // RunCmdOnNode executes a command from within the given node
-func runCmdOnNode(cmd string, ServerIP string, SSHUser string, SSHKey string) (string, error) {
+func runCmdOnNode(cmd string, ServerIP string, sshUser string, sshKey string) (string, error) {
 	Server := ServerIP + ":22"
-	conn := configureSSH(Server, SSHUser, SSHKey)
+	conn, err := configureSSH(Server, sshUser, sshKey)
+	if err != nil {
+		return "", err
+	}
 	res, err := runsshCommand(cmd, conn)
 	res = strings.TrimSpace(res)
 	return res, err
@@ -118,10 +116,10 @@ func runCommand(cmd string) (string, error) {
 }
 
 // Used to count the pods using prefix passed in the list of pods
-func countOfStringInSlice(str string, pods []Pod) int {
-	count := 0
-	for _, pod := range pods {
-		if strings.Contains(pod.Name, str) {
+func countOfStringInSlice(str string, pods []pod) int {
+	var count int
+	for _, p := range pods {
+		if strings.Contains(p.Name, str) {
 			count++
 		}
 	}
@@ -132,8 +130,7 @@ func deployWorkload(workload, kubeconfig string) (string, error) {
 	resourceDir := basepath() + "/tests/terraform/resource_files"
 	files, err := ioutil.ReadDir(resourceDir)
 	if err != nil {
-		err = fmt.Errorf("%s : Unable to read resource manifest file for %s", err, workload)
-		return "", err
+		return "", fmt.Errorf("%s : Unable to read resource manifest file for %s", err, workload)
 	}
 	for _, f := range files {
 		filename := filepath.Join(resourceDir, f.Name())
@@ -149,8 +146,7 @@ func removeWorkload(workload, kubeconfig string) (string, error) {
 	resourceDir := basepath() + "/tests/terraform/resource_files"
 	files, err := ioutil.ReadDir(resourceDir)
 	if err != nil {
-		err = fmt.Errorf("%s : Unable to read resource manifest file for %s", err, workload)
-		return "", err
+		return "", fmt.Errorf("%s : Unable to read resource manifest file for %s", err, workload)
 	}
 	for _, f := range files {
 		filename := filepath.Join(resourceDir, f.Name())
@@ -199,8 +195,8 @@ func fetchIngressIP(namespace string, kubeconfig string) ([]string, error) {
 	return nil, nil
 }
 
-func parseNodes(kubeConfig string, print bool, cmd string) ([]Node, error) {
-	nodes := make([]Node, 0, 10)
+func parseNodes(kubeConfig string, print bool, cmd string) ([]node, error) {
+	nodes := make([]node, 0, 10)
 	res, err := runCommand(cmd)
 	if err != nil {
 		return nil, err
@@ -210,7 +206,7 @@ func parseNodes(kubeConfig string, print bool, cmd string) ([]Node, error) {
 	for _, rec := range split {
 		if strings.TrimSpace(rec) != "" {
 			fields := strings.Fields(rec)
-			node := Node{
+			n := node{
 				Name:       fields[0],
 				Status:     fields[1],
 				Roles:      fields[2],
@@ -218,7 +214,7 @@ func parseNodes(kubeConfig string, print bool, cmd string) ([]Node, error) {
 				InternalIP: fields[5],
 				ExternalIP: fields[6],
 			}
-			nodes = append(nodes, node)
+			nodes = append(nodes, n)
 		}
 	}
 	if print {
@@ -227,25 +223,25 @@ func parseNodes(kubeConfig string, print bool, cmd string) ([]Node, error) {
 	return nodes, nil
 }
 
-func nodes(kubeConfig string, print bool) ([]Node, error) {
+func nodes(kubeConfig string, print bool) ([]node, error) {
 	cmd := "kubectl get nodes --no-headers -o wide --kubeconfig=" + kubeConfig
 	return parseNodes(kubeConfig, print, cmd)
 }
 
-func workerNodes(kubeConfig string, print bool) ([]Node, error) {
+func workerNodes(kubeConfig string, print bool) ([]node, error) {
 	cmd := "kubectl get node -o jsonpath='{range .items[*]}{@.metadata.name} {@.status.conditions[-1].type} <not retrieved> <not retrieved> {@.status.nodeInfo.kubeletVersion} {@.status.addresses[?(@.type==\"InternalIP\")].address} {@.status.addresses[?(@.type==\"ExternalIP\")].address} {@.spec.taints[*].effect}{\"\\n\"}{end}' --kubeconfig=" + kubeConfig + " | grep -v NoSchedule | grep -v NoExecute"
 	return parseNodes(kubeConfig, print, cmd)
 }
 
-func parsePods(kubeconfig string, print bool, cmd string) ([]Pod, error) {
-	pods := make([]Pod, 0, 10)
+func parsePods(kubeconfig string, print bool, cmd string) ([]pod, error) {
+	pods := make([]pod, 0, 10)
 	res, _ := runCommand(cmd)
 	rawPods := strings.TrimSpace(res)
 
 	split := strings.Split(rawPods, "\n")
 	for _, rec := range split {
 		fields := strings.Fields(string(rec))
-		pod := Pod{
+		p := pod{
 			NameSpace: fields[0],
 			Name:      fields[1],
 			Ready:     fields[2],
@@ -254,7 +250,7 @@ func parsePods(kubeconfig string, print bool, cmd string) ([]Pod, error) {
 			NodeIP:    fields[6],
 			Node:      fields[7],
 		}
-		pods = append(pods, pod)
+		pods = append(pods, p)
 	}
 	if print {
 		fmt.Println(rawPods)
@@ -262,7 +258,7 @@ func parsePods(kubeconfig string, print bool, cmd string) ([]Pod, error) {
 	return pods, nil
 }
 
-func pods(kubeconfig string, print bool) ([]Pod, error) {
+func pods(kubeconfig string, print bool) ([]pod, error) {
 	cmd := "kubectl get pods -o wide --no-headers -A --kubeconfig=" + kubeconfig
 	return parsePods(kubeconfig, print, cmd)
 }
