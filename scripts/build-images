@@ -23,7 +23,7 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.1.1
     ${REGISTRY}/bcibase/nginx-ingress-controller:nginx-1.2.1-hardened7
-    ${REGISTRY}/bcibase/rke2-cloud-provider:${CCM_VERSION}
+    ${REGISTRY}/bcibase/rke2-cloud-provider:v1.25.2-build20221003
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
