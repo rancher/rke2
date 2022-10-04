@@ -141,6 +141,7 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	clusterReset := clx.Bool("cluster-reset")
 	clusterResetRestorePath := clx.String("cluster-reset-restore-path")
 	containerRuntimeEndpoint := clx.String("container-runtime-endpoint")
+	extraKubeletArgs := clx.StringSlice("kubelet-arg")
 
 	ex, err := initExecutor(clx, cfg, isServer)
 	if err != nil {
@@ -176,7 +177,7 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 			return err
 		}
 	}
-	return removeOldPodManifests(dataDir, containerRuntimeEndpoint, disabledItems, clusterReset)
+	return removeOldPodManifests(dataDir, containerRuntimeEndpoint, disabledItems, clusterReset, extraKubeletArgs)
 }
 
 func ForceRestartFile(dataDir string) string {
@@ -191,7 +192,7 @@ func binDir(dataDir string) string {
 	return filepath.Join(dataDir, "bin")
 }
 
-func removeOldPodManifests(dataDir, containerRuntimeEndpoint string, disabledItems map[string]bool, clusterReset bool) error {
+func removeOldPodManifests(dataDir, containerRuntimeEndpoint string, disabledItems map[string]bool, clusterReset bool, extraKubeletArgs []string) error {
 	kubeletStandAlone := false
 	execPath := binDir(dataDir)
 	manifestDir := podManifestsDir(dataDir)
@@ -242,7 +243,7 @@ func removeOldPodManifests(dataDir, containerRuntimeEndpoint string, disabledIte
 		}
 		// start kubelet. The command will be terminated automatically when the context is cancelled.
 		kubeletCmd := exec.CommandContext(ctx, filepath.Join(execPath, "kubelet"))
-		go startKubelet(ctx, dataDir, containerRuntimeEndpoint, kubeletErr, kubeletCmd)
+		go startKubelet(ctx, dataDir, containerRuntimeEndpoint, kubeletErr, kubeletCmd, extraKubeletArgs)
 
 		// check for any running containers from the disabled items list
 		go checkForRunningContainers(ctx, containerRuntimeEndpoint, disabledItems, kubeletErr, containerdErr)
@@ -273,7 +274,7 @@ func isCISMode(clx *cli.Context) bool {
 	return profile == CISProfile123
 }
 
-func startKubelet(ctx context.Context, dataDir, containerRuntimeEndpoint string, errChan chan error, cmd *exec.Cmd) {
+func startKubelet(ctx context.Context, dataDir, containerRuntimeEndpoint string, errChan chan error, cmd *exec.Cmd, extraKubeletArgs []string) {
 	if containerRuntimeEndpoint == "" {
 		containerRuntimeEndpoint = containerdSock
 		// Only wait for containerd to start when container-runtime-endpoint is not set;
@@ -295,14 +296,16 @@ func startKubelet(ctx context.Context, dataDir, containerRuntimeEndpoint string,
 		cgroupDriver = "systemd"
 	}
 
-	args := []string{
-		"--fail-swap-on=false",
-		"--cgroup-driver=" + cgroupDriver,
-		"--container-runtime=remote",
-		"--container-runtime-endpoint=" + containerRuntimeEndpoint,
-		"--pod-manifest-path=" + podManifestsDir(dataDir),
+	args := map[string]string{
+		"cgroup-driver":              cgroupDriver,
+		"container-runtime":          "remote",
+		"container-runtime-endpoint": containerRuntimeEndpoint,
+		"eviction-hard":              "imagefs.available<5%,nodefs.available<5%",
+		"eviction-minimum-reclaim":   "imagefs.available=10%,nodefs.available=10%",
+		"fail-swap-on":               "false",
+		"pod-manifest-path":          podManifestsDir(dataDir),
 	}
-	cmd.Args = append(cmd.Args, args...)
+	cmd.Args = append(cmd.Args, daemonconfig.GetArgs(args, extraKubeletArgs)...)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("PATH=%s:%s", binDir(dataDir), os.Getenv("PATH")))
 	cmd.Env = append(cmd.Env, "NOTIFY_SOCKET=")
 	cmd.Stdout = os.Stdout
