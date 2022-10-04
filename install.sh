@@ -596,7 +596,9 @@ allow perm=any all : dir=/run/k3s/
 allow perm=any all : dir=/var/lib/kubelet/
 EOF
         fagenrules --load || fatal "failed to load rke2 fapolicyd rules"
-        systemctl restart fapolicyd
+        if [ -z "${INSTALL_RKE2_SKIP_RELOAD}" ]; then
+            systemctl restart fapolicyd
+        fi
     fi
 }
 
