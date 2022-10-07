@@ -74,7 +74,7 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 	It("Starts up with no issues", func() {
 		var err error
 		serverNodeNames, linuxAgentNames, windowsAgentNames, err = createMixedCluster(*nodeOS, *serverCount, *linuxAgentCount, *windowsAgentCount)
-		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog())
+		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog(err))
 		fmt.Println("CLUSTER CONFIG")
 		fmt.Println("OS:", *nodeOS)
 		fmt.Println("Server Nodes:", serverNodeNames)
