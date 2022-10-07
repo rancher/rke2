@@ -78,7 +78,7 @@ require (
 	github.com/gruntwork-io/terratest v0.40.19
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.12.3
-	github.com/k3s-io/k3s v1.25.3-0.20220930151720-027039530d43 // master
+	github.com/k3s-io/k3s v1.25.3-0.20221007175439-934d01361402 // master
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/onsi/ginkgo/v2 v2.1.6
 	github.com/onsi/gomega v1.20.1
