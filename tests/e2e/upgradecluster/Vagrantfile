@@ -18,6 +18,7 @@ def provision(vm, roles, role_num, node_num)
   node_ip = "#{NETWORK_PREFIX}.#{100+node_num}"
   vm.network "private_network", ip: node_ip, netmask: "255.255.255.0"
 
+  scripts_location = Dir.exists?("./scripts") ? "./scripts" : "../scripts" 
   vagrant_defaults = '../vagrantdefaults.rb'
   load vagrant_defaults if File.exists?(vagrant_defaults)
   
@@ -26,7 +27,7 @@ def provision(vm, roles, role_num, node_num)
   if !RELEASE_VERSION.empty?
     install_type = "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"
   elsif RELEASE_CHANNEL == "commit"
-    vm.provision "shell", path: "../scripts/latest_commit.sh", args: ["master", "/tmp/rke2_commits"]
+    vm.provision "shell", path: scripts_location + "latest_commit.sh", args: ["master", "/tmp/rke2_commits"]
     install_type = "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
   else
     vm.provision "latest version", type: "shell",
@@ -34,6 +35,10 @@ def provision(vm, roles, role_num, node_num)
     install_type = "INSTALL_RKE2_VERSION=$(cat\ /tmp/rke2_version)"
   end
 
+  if !REGISTRY.empty?
+    vm.provision "Set private registry", type: "shell", path: scripts_location + "/registry.sh", args: [ "#{NETWORK_PREFIX}.1" ]
+  end
+  
   vm.provision "shell", inline: "ping -c 2 rke2.io"
 
   if roles.include?("server") && role_num == 0
