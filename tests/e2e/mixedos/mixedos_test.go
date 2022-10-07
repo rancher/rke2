@@ -69,7 +69,7 @@ var (
 	windowsAgentNames []string
 )
 
-var _ = Describe("Verify Basic Cluster Creation", func() {
+var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 
 	It("Starts up with no issues", func() {
 		var err error
@@ -127,7 +127,7 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 
 var failed bool
 var _ = AfterEach(func() {
-	failed = failed || CurrentGinkgoTestDescription().Failed
+	failed = failed || CurrentSpecReport().Failed()
 })
 
 var _ = AfterSuite(func() {

@@ -34,7 +34,7 @@ var (
 	agentNodeNames  []string
 )
 
-var _ = Describe("Verify Upgrade", func() {
+var _ = Describe("Verify Upgrade", Ordered, func() {
 	Context("Cluster :", func() {
 		It("Starts up with no issues", func() {
 			var err error
@@ -348,7 +348,7 @@ var _ = Describe("Verify Upgrade", func() {
 
 var failed = false
 var _ = AfterEach(func() {
-	failed = failed || CurrentGinkgoTestDescription().Failed
+	failed = failed || CurrentSpecReport().Failed()
 })
 
 var _ = AfterSuite(func() {
