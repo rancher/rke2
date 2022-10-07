@@ -1,13 +1,18 @@
 package e2e
 
 import (
+	"context"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type Node struct {
@@ -28,6 +33,28 @@ type Pod struct {
 	Node      string
 }
 
+type NodeError struct {
+	Node string
+	Cmd  string
+	Err  error
+}
+
+func (ne *NodeError) Error() string {
+	return fmt.Sprintf("failed creating cluster: %s: %v", ne.Cmd, ne.Err)
+}
+
+func (ne *NodeError) Unwrap() error {
+	return ne.Err
+}
+
+func newNodeError(cmd, node string, err error) *NodeError {
+	return &NodeError{
+		Cmd:  cmd,
+		Node: node,
+		Err:  err,
+	}
+}
+
 func CountOfStringInSlice(str string, pods []Pod) int {
 	count := 0
 	for _, pod := range pods {
@@ -38,19 +65,31 @@ func CountOfStringInSlice(str string, pods []Pod) int {
 	return count
 }
 
-func CreateCluster(nodeOS string, serverCount int, agentCount int) ([]string, []string, error) {
-	serverNodeNames := []string{}
+// genNodeEnvs generates the node and testing environment variables for vagrant up
+func genNodeEnvs(nodeOS string, serverCount, agentCount int) ([]string, []string, string) {
+	serverNodeNames := make([]string, serverCount)
 	for i := 0; i < serverCount; i++ {
-		serverNodeNames = append(serverNodeNames, "server-"+strconv.Itoa(i))
+		serverNodeNames[i] = "server-" + strconv.Itoa(i)
 	}
-	agentNodeNames := []string{}
+	agentNodeNames := make([]string, agentCount)
 	for i := 0; i < agentCount; i++ {
-		agentNodeNames = append(agentNodeNames, "agent-"+strconv.Itoa(i))
+		agentNodeNames[i] = "agent-" + strconv.Itoa(i)
 	}
+
 	nodeRoles := strings.Join(serverNodeNames, " ") + " " + strings.Join(agentNodeNames, " ")
 	nodeRoles = strings.TrimSpace(nodeRoles)
+
 	nodeBoxes := strings.Repeat(nodeOS+" ", serverCount+agentCount)
 	nodeBoxes = strings.TrimSpace(nodeBoxes)
+
+	nodeEnvs := fmt.Sprintf(`E2E_NODE_ROLES="%s" E2E_NODE_BOXES="%s"`, nodeRoles, nodeBoxes)
+
+	return serverNodeNames, agentNodeNames, nodeEnvs
+}
+
+func CreateCluster(nodeOS string, serverCount int, agentCount int) ([]string, []string, error) {
+
+	serverNodeNames, agentNodeNames, nodeEnvs := genNodeEnvs(nodeOS, serverCount, agentCount)
 
 	var testOptions string
 	for _, env := range os.Environ() {
@@ -59,18 +98,37 @@ func CreateCluster(nodeOS string, serverCount int, agentCount int) ([]string, []
 		}
 	}
 
-	cmd := fmt.Sprintf("E2E_NODE_ROLES=\"%s\" E2E_NODE_BOXES=\"%s\" %s vagrant up &> vagrant.log", nodeRoles, nodeBoxes, testOptions)
+	// Bring up the first server node
+	cmd := fmt.Sprintf(`%s %s vagrant up %s &> vagrant.log`, nodeEnvs, testOptions, serverNodeNames[0])
+
 	fmt.Println(cmd)
 	if _, err := RunCommand(cmd); err != nil {
-		fmt.Println("Error Creating Cluster", err)
+		return nil, nil, newNodeError(cmd, serverNodeNames[0], err)
+	}
+
+	// Bring up the rest of the nodes in parallel
+	errg, _ := errgroup.WithContext(context.Background())
+	for _, node := range append(serverNodeNames[1:], agentNodeNames...) {
+		cmd := fmt.Sprintf(`%s %s vagrant up %s &>> vagrant.log`, nodeEnvs, testOptions, node)
+		errg.Go(func() error {
+			if _, err := RunCommand(cmd); err != nil {
+				return newNodeError(cmd, node, err)
+			}
+			return nil
+		})
+		// We must wait a bit between provisioning nodes to avoid too many learners attempting to join the cluster
+		time.Sleep(40 * time.Second)
+	}
+	if err := errg.Wait(); err != nil {
 		return nil, nil, err
 	}
+
 	return serverNodeNames, agentNodeNames, nil
 }
 
 func DeployWorkload(workload string, kubeconfig string) (string, error) {
 	resourceDir := "../resource_files"
-	files, err := ioutil.ReadDir(resourceDir)
+	files, err := os.ReadDir(resourceDir)
 	if err != nil {
 		fmt.Println("Unable to read resource manifest file for ", workload)
 	}
@@ -129,16 +187,25 @@ func FetchNodeExternalIP(nodename string) (string, error) {
 	return nodeip, nil
 }
 
-func GetVagrantLog() string {
+// GetVagrantLog returns the logs of on vagrant commands that initialize the nodes and provision RKE2 on each node.
+// It also attempts to fetch the systemctl logs of RKE2 on nodes where the rke2.service failed.
+func GetVagrantLog(cErr error) string {
+	var nodeErr *NodeError
+	nodeJournal := ""
+	if errors.As(cErr, &nodeErr) {
+		nodeJournal, _ = RunCommand("vagrant ssh " + nodeErr.Node + " -c \"sudo journalctl -u rke2* --no-pager\"")
+		nodeJournal = "\nNode Journal Logs:\n" + nodeJournal
+	}
+
 	log, err := os.Open("vagrant.log")
 	if err != nil {
 		return err.Error()
 	}
-	bytes, err := ioutil.ReadAll(log)
+	bytes, err := io.ReadAll(log)
 	if err != nil {
 		return err.Error()
 	}
-	return string(bytes)
+	return string(bytes) + nodeJournal
 }
 
 func GenKubeConfigFile(serverName string) (string, error) {

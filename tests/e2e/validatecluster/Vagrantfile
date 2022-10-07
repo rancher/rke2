@@ -8,6 +8,7 @@ RELEASE_VERSION = (ENV['E2E_RELEASE_VERSION'] || "")
 NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
 NODE_MEMORY = (ENV['E2E_NODE_MEMORY'] || 3072).to_i
 CNI = (ENV['E2E_CNI'] || "canal") # canal, cilium and calico supported
+REGISTRY = (ENV['E2E_REGISTRY'] || "")
 # Virtualbox >= 6.1.28 require `/etc/vbox/network.conf` for expanded private networks,
 # see https://www.virtualbox.org/manual/ch06.html#network_hostonly
 NETWORK_PREFIX = "10.10.10"
@@ -19,6 +20,7 @@ def provision(vm, roles, role_num, node_num)
   node_ip = "#{NETWORK_PREFIX}.#{100+node_num}"
   vm.network "private_network", ip: node_ip, netmask: "255.255.255.0"
 
+  scripts_location = Dir.exists?("./scripts") ? "./scripts" : "../scripts" 
   vagrant_defaults = File.exists?("./vagrantdefaults.rb") ? "./vagrantdefaults.rb" : "../vagrantdefaults.rb"
   load vagrant_defaults
   
@@ -27,6 +29,10 @@ def provision(vm, roles, role_num, node_num)
   
   vm.provision "shell", inline: "ping -c 2 rke2.io"
   
+  if !REGISTRY.empty?
+    vm.provision "Set private registry", type: "shell", path: scripts_location + "/registry.sh", args: [ "#{NETWORK_PREFIX}.1" ]
+  end
+
   if roles.include?("server") && role_num == 0
     vm.provision :rke2, run: 'once' do |rke2|
       rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
