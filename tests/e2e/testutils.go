@@ -117,7 +117,7 @@ func CreateCluster(nodeOS string, serverCount int, agentCount int) ([]string, []
 			return nil
 		})
 		// We must wait a bit between provisioning nodes to avoid too many learners attempting to join the cluster
-		time.Sleep(20 * time.Second)
+		time.Sleep(40 * time.Second)
 	}
 	if err := errg.Wait(); err != nil {
 		return nil, nil, err
@@ -187,13 +187,13 @@ func FetchNodeExternalIP(nodename string) (string, error) {
 	return nodeip, nil
 }
 
-// GetVagrantLog returns the logs of on vagrant commands that initialize the nodes and provision K3s on each node.
-// It also attempts to fetch the systemctl logs of K3s on nodes where the k3s.service failed.
+// GetVagrantLog returns the logs of on vagrant commands that initialize the nodes and provision RKE2 on each node.
+// It also attempts to fetch the systemctl logs of RKE2 on nodes where the rke2.service failed.
 func GetVagrantLog(cErr error) string {
 	var nodeErr *NodeError
 	nodeJournal := ""
 	if errors.As(cErr, &nodeErr) {
-		nodeJournal, _ = RunCommand("vagrant ssh " + nodeErr.Node + " -c \"sudo journalctl -u k3s* --no-pager\"")
+		nodeJournal, _ = RunCommand("vagrant ssh " + nodeErr.Node + " -c \"sudo journalctl -u rke2* --no-pager\"")
 		nodeJournal = "\nNode Journal Logs:\n" + nodeJournal
 	}
 

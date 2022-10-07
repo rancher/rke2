@@ -8,6 +8,7 @@ RELEASE_VERSION = (ENV['E2E_RELEASE_VERSION'] || "")
 NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
 NODE_MEMORY = (ENV['E2E_NODE_MEMORY'] || 3072).to_i
 CNI = (ENV['E2E_CNI'] || "canal") # canal, cilium and calico supported
+REGISTRY = (ENV['E2E_REGISTRY'] || "")
 # Virtualbox >= 6.1.28 require `/etc/vbox/network.conf` for expanded private networks,
 # see https://www.virtualbox.org/manual/ch06.html#network_hostonly
 NETWORK_PREFIX = "10.10.10"
