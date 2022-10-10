@@ -15,6 +15,10 @@ const (
 	systemUnrestrictedSvcAcctRoleBindingName = "system-unrestricted-svc-acct-psp-rolebinding"
 
 	nodeClusterRoleBindingName = "system-node-default-psp-rolebinding"
+
+	svclbPSPName         = "svclb-default-psp"
+	svclbRoleName        = "svclb-default-psp-clusterrole"
+	svclbRoleBindingName = "svclb-default-psp-rolebinding"
 )
 
 const roleTemplate = `kind: ClusterRole
@@ -193,4 +197,49 @@ subjects:
 - kind: Group
   apiGroup: rbac.authorization.k8s.io
   name: system:nodes
+`
+
+const svclbRoleBindingTemplate = `apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: %s
+  namespace: %s
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: %s
+subjects:
+- kind: ServiceAccount
+  name: svclb
+`
+
+const svclbdPSPTemplate = `apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: %s
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  allowedCapabilities:
+  - 'NET_ADMIN'
+  allowedUnsafeSysctls:
+  - 'net.ipv4.ip_forward'
+  - 'net.ipv6.conf.all.forwarding'
+  hostNetwork: false
+  hostPorts:
+  - min: 0
+    max: 65535
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+  readOnlyRootFilesystem: false
 `
