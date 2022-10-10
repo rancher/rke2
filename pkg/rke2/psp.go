@@ -142,21 +142,21 @@ func setSystemUnrestricted(ctx context.Context, cs *kubernetes.Clientset, ns *v1
 // Each PSP has an annotation associated with it that we check to see exists before performing any
 // write operations. The annotation is created upon successful setting of PSPs.
 //
-// Load logic
+// # Load logic
 //
 // CIS:
-// - If the globalRestricted annotation does not exist, create PSP, role, binding.
-// - If the systemUnrestricted annotation does not exist, create the PSP, role, binding.
-// - If the globalUnrestricted annotation does not exist, check if PSP exists, and if so,
-//   delete it, the role, and the bindings.
+//   - If the globalRestricted annotation does not exist, create PSP, role, binding.
+//   - If the systemUnrestricted annotation does not exist, create the PSP, role, binding.
+//   - If the globalUnrestricted annotation does not exist, check if PSP exists, and if so,
+//     delete it, the role, and the bindings.
 //
 // non-CIS:
-// - If the globalUnrestricted annotation does not exist, then create PSP, role, binding.
-// - If the systemUnrestricted annotation does not exist, then create PSP, role, binding.
-// - If the globalRestricted annotation does not exist, then check if the PSP exists and
-//   if it doesn't, create it. Check if the associated role and bindings exist and
-//   if they do, delete them.
-func setPSPs(cisMode bool) cmds.StartupHook {
+//   - If the globalUnrestricted annotation does not exist, then create PSP, role, binding.
+//   - If the systemUnrestricted annotation does not exist, then create PSP, role, binding.
+//   - If the globalRestricted annotation does not exist, then check if the PSP exists and
+//     if it doesn't, create it. Check if the associated role and bindings exist and
+//     if they do, delete them.
+func setPSPs(cisMode bool, lbNamespace string) cmds.StartupHook {
 	return func(ctx context.Context, wg *sync.WaitGroup, args cmds.StartupHookArgs) error {
 		go func() {
 			defer wg.Done()
@@ -359,6 +359,21 @@ func setPSPs(cisMode bool) cmds.StartupHook {
 					return err
 				}); err != nil {
 					logrus.Fatalf("psp: update namespace: %s - %s", ns.Name, err.Error())
+				}
+			}
+
+			if !args.Disables["servicelb"] && lbNamespace != "" {
+				tmpl := fmt.Sprintf(roleTemplate, svclbRoleName, svclbPSPName)
+				if err := deployClusterRoleFromYaml(ctx, cs, tmpl); err != nil && !apierrors.IsAlreadyExists(err) {
+					logrus.Fatalf("psp: deploy clusterrole: %v", err)
+				}
+				tmpl = fmt.Sprintf(svclbdPSPTemplate, svclbPSPName)
+				if err := deployPodSecurityPolicyFromYaml(ctx, cs, tmpl); err != nil && !apierrors.IsAlreadyExists(err) {
+					logrus.Fatalf("psp: deploy psp: %v", err)
+				}
+				tmpl = fmt.Sprintf(svclbRoleBindingTemplate, svclbRoleBindingName, lbNamespace, svclbRoleName)
+				if err := deployRoleBindingFromYaml(ctx, cs, tmpl); err != nil && !apierrors.IsAlreadyExists(err) {
+					logrus.Fatalf("psp: deploy rolebinding: %v", err)
 				}
 			}
 
