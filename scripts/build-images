@@ -26,7 +26,7 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.23.3-build20220810
+    ${REGISTRY}/rancher/hardened-calico:v3.24.1-build20221011
     ${REGISTRY}/rancher/hardened-flannel:v0.19.1-build20220810
 EOF
 
