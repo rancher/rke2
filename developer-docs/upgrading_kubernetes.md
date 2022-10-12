@@ -260,10 +260,9 @@ Create a new release tag at the [image-build-kubernetes](https://github.com/ranc
 
 This will take a few minutes for [CI](https://drone-pr.rancher.io/rancher/image-build-kubernetes) to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kubernetes).
 
-Then:
-* Dockerfile: `FROM rancher/hardened-kubernetes:v1.23.5-rke2r2-build20220217 AS kubernetes`
+Now restart the RKE2 upgrades as defined [here](#L39) with the updated image-build-kubernetes tags.
 
-Once these changes are made, submit a PR for review and let CI complete. Do not merge these PR's or progress the R2 process until QA and the release team have confirmed that an R2 is needed. 
+Once these updates are made create a PR with '[WIP]' in the titled and let CI run. Do not merge these PR's.
 
 ## Release Process Overview
 
