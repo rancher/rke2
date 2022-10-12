@@ -79,6 +79,20 @@ Along with creating a new RKE2 release, we need to trigger a new build of the as
 
 When CI completes, let QA know so they can perform testing.
 
+### Communicating with QA
+
+When coordinating release efforts it is important to maintain a clear line of communication with the QA team. This is best done by relaying timely updates in the release thread of the #discuss-k3s-rke2-release channel in the organisations slack. It is best to notify QA once RCs, RPMs, and KDM PRs are available. Fill in the template below and paste it into the release thread:
+
+```
+RKE2 <tag> is now available for testing! @k3s-rke2-qa
+KDM PRs:
+<links to relevant KDM PRs>
+RC:
+<links to relevant rcs>
+RPM:
+<links to relevant rpms>
+```
+
 ### Primary Release
 
 Once QA signs off on the RC, it's time to cut the primary release. Go to the [rke2](https://github.com/rancher/rke2) repository.
@@ -120,7 +134,7 @@ We then create the "**stable**" RPMs. Follow the steps below.
 
 ### Release Notes
 
-Release notes should be drafted before the release is complete and ideally before the primary release tags are cut. This happens in the [Rancher Labs - Release Notes](https://github.com/rancherlabs/release-notes) repository. Create a new branch from your fork and update the relevant files in `rke2/`. The release note files have been standardized and should stay in the style they're currently in.
+ The drafting of release notes occurs in the [Rancher Labs - Release Notes](https://github.com/rancherlabs/release-notes) repository. To begin drafing release notes create a new branch from your fork and update the relevant files in `rke2/` directory. The release note files have been standardized and should adhere to the existing style and formatting.
 
 The 2 primary sections of the release notes are the "Changes since ..." and the "Package Component Versions". The other sections need to be reviewed as well. The "Changes since ..." section can be fleshed out by reviewing the closed issues and pull requests for the matching milestone.
 
@@ -247,13 +261,7 @@ Create a new release tag at the [image-build-kubernetes](https://github.com/ranc
 This will take a few minutes for [CI](https://drone-pr.rancher.io/rancher/image-build-kubernetes) to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kubernetes).
 
 Then:
-
 * Dockerfile: `FROM rancher/hardened-kubernetes:v1.23.5-rke2r2-build20220217 AS kubernetes`
-* version.sh:
-  * `KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.23.5}`
-  * `KUBERNETES_IMAGE_TAG=${KUBERNETES_IMAGE_TAG:-v1.21.13-rke2r2-build20220525}`
-* In v1.21, kube-proxy is still in use an needs to be updated in the Dockerfile. Update the line: `RUN CHART_VERSION="v1.21.10-build2021041301"     CHART_FILE=/charts/rke2-kube-proxy.yaml` to the relevant RKE2 Kubernetes build version.
-* go.mod: ensure that the associated k3s version is used.
 
 Once these changes are made, submit a PR for review and let CI complete. Do not merge these PR's or progress the R2 process until QA and the release team have confirmed that an R2 is needed. 
 
