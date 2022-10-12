@@ -248,7 +248,7 @@ Every RKE2 release, from RC to primary, triggers the release process of the down
   - [Drone publish job](https://drone-publish.rancher.io/rancher/rke2-upgrade)
 
 ## Prepare for an 'R2'
-At this point it is likely that the release is over. However, in the event of a CVE, critical bug affecting user experiences or something similiar, we may be required to cut what the release team refers to as an 'R2' or 'Release 2'. This process is identical to the release process, save only that the tags are cut with ```+rke2r2```. To prep an R2 one need only to perform the following:
+At this point it is likely that the release is over. However, in the event of a CVE, critical bug affecting user experiences or something similar, we may be required to cut what the release team refers to as an 'R2' or 'Release 2'. This process is identical to the release process, save only that the tags are cut with ```+rke2r2```. To prep an R2 one need only to perform the following:
 
 Create a new release tag at the [image-build-kubernetes](https://github.com/rancher/image-build-kubernetes) repo.
 
