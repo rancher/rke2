@@ -262,7 +262,7 @@ This will take a few minutes for [CI](https://drone-pr.rancher.io/rancher/image-
 
 Now restart the RKE2 upgrades as defined [here](#L39) with the updated image-build-kubernetes tags.
 
-Once these updates are made create a PR with '[WIP]' in the titled and let CI run. Do not merge these PR's.
+Once the updates are made, create a PR with '[WIP]' in the title, request review, and leave open until needed. If an R2 isn't necessary, these PRs should be closed at the start of the next release process.
 
 ## Release Process Overview
 
