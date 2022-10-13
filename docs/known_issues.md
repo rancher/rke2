@@ -116,7 +116,7 @@ There are two ways to resolve this. You can either manually remove unused IPs fr
 
 ## Ingress in CIS Mode
 
-By default, when RKE2 is run with the `profile: cis-1.6` parameter, it applies network policies that can be restrictive for ingress. This, coupled with the `rke2-ingress-nginx` chart having `hostNetwork: false` by default, requires users to set network policies of their own to allow access to the ingress URLs. Below is an example networkpolicy that allows ingress to any workload in the namespace it is applied in. See https://kubernetes.io/docs/concepts/services-networking/network-policies/ for more configuration options.
+By default, when RKE2 is run with a CIS profile selected by the `profile` parameter, it applies network policies that can be restrictive for ingress. This, coupled with the `rke2-ingress-nginx` chart having `hostNetwork: false` by default, requires users to set network policies of their own to allow access to the ingress URLs. Below is an example networkpolicy that allows ingress to any workload in the namespace it is applied in. See https://kubernetes.io/docs/concepts/services-networking/network-policies/ for more configuration options.
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
