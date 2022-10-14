@@ -119,7 +119,7 @@ RUN CHART_VERSION="v3.24.1-build2022101103"   CHART_FILE=/charts/rke2-canal.yaml
 RUN CHART_VERSION="v3.24.102"                 CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="v3.24.102"                 CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.19.401"                  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="4.1.004"                   CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
+RUN CHART_VERSION="4.1.005"                   CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
 RUN CHART_VERSION="2.11.100-build2022101106"  CHART_FILE=/charts/rke2-metrics-server.yaml CHART_BOOTSTRAP=false  /charts/build-chart.sh
 RUN CHART_VERSION="v3.8-build2022101103"      CHART_FILE=/charts/rke2-multus.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.4.001"                   CHART_FILE=/charts/rancher-vsphere-cpi.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
@@ -133,9 +133,9 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM rancher/hardened-kubernetes:v1.25.3-rke2r1-build20221013 AS kubernetes
-FROM rancher/hardened-containerd:v1.6.8-k3s1-build20220901 AS containerd
-FROM rancher/hardened-crictl:v1.24.0-build20220506 AS crictl
-FROM rancher/hardened-runc:v1.1.4-build20220901 AS runc
+FROM rancher/hardened-containerd:v1.6.8-k3s1-build20221011 AS containerd
+FROM rancher/hardened-crictl:v1.24.0-build20221011 AS crictl
+FROM rancher/hardened-runc:v1.1.4-build20221012 AS runc
 
 FROM scratch AS runtime-collect
 COPY --from=runc \
