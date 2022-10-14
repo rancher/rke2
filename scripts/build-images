@@ -13,22 +13,22 @@ EOF
 
 xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
-    ${REGISTRY}/rancher/hardened-coredns:v1.9.3-build20220613
-    ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.8.5-build20211119
-    ${REGISTRY}/rancher/hardened-dns-node-cache:1.21.2-build20211119
+    ${REGISTRY}/rancher/hardened-coredns:v1.9.3-build20221011
+    ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.8.5-build20221011
+    ${REGISTRY}/rancher/hardened-dns-node-cache:1.21.2-build20221011
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20220504
-    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.6.1-build20220929
+    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.6.1-build20221011
     ${REGISTRY}/rancher/klipper-helm:v0.7.3-build20220613
     ${REGISTRY}/rancher/klipper-lb:v0.3.5
     ${REGISTRY}/rancher/pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.1.1
-    ${REGISTRY}/rancher/nginx-ingress-controller:nginx-1.2.1-hardened7
+    ${REGISTRY}/rancher/nginx-ingress-controller:nginx-1.2.1-hardened9
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
     ${REGISTRY}/rancher/hardened-calico:v3.24.1-build20221011
-    ${REGISTRY}/rancher/hardened-flannel:v0.19.1-build20220810
+    ${REGISTRY}/rancher/hardened-flannel:v0.19.1-build20221011
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
@@ -62,8 +62,8 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
-    ${REGISTRY}/rancher/hardened-multus-cni:v3.8-build20211104
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.0.1-build20220223
+    ${REGISTRY}/rancher/hardened-multus-cni:v3.8-build20221011
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.0.1-build20221011
     ${REGISTRY}/rancher/hardened-sriov-network-operator:v1.1.0-build20220419
     ${REGISTRY}/rancher/hardened-sriov-network-config-daemon:v1.1.0-build20220419
     ${REGISTRY}/rancher/hardened-sriov-network-device-plugin:v3.4.0-build20220419
