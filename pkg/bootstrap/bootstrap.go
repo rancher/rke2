@@ -1,12 +1,9 @@
 package bootstrap
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -30,14 +27,14 @@ import (
 	"github.com/rancher/wharfie/pkg/registries"
 	"github.com/rancher/wharfie/pkg/tarfile"
 	"github.com/rancher/wrangler/pkg/merr"
-	"github.com/rancher/wrangler/pkg/schemes"
+	"github.com/rancher/wrangler/pkg/yaml"
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 var (
 	releasePattern = regexp.MustCompile("^v[0-9]")
+	helmChartGVK   = helmv1.SchemeGroupVersion.WithKind("HelmChart")
 )
 
 // binDirForDigest returns the path to dataDir/data/refDigest/bin.
@@ -253,7 +250,6 @@ func preloadBootstrapFromRuntime(imagesDir string, resolver *images.Resolver) (v
 // NOTE: This will probably fail if any manifest contains multiple documents. This should
 // not matter for any of our packaged components, but may prevent this from working on user manifests.
 func setChartValues(manifestsDir string, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
-	serializer := json.NewSerializerWithOptions(json.DefaultMetaFactory, schemes.All, schemes.All, json.SerializerOptions{Yaml: true, Pretty: true, Strict: true})
 	chartValues := map[string]string{
 		"global.clusterCIDR":                  util.JoinIPNets(nodeConfig.AgentConfig.ClusterCIDRs),
 		"global.clusterCIDRv4":                util.JoinIP4Nets(nodeConfig.AgentConfig.ClusterCIDRs),
@@ -287,7 +283,7 @@ func setChartValues(manifestsDir string, nodeConfig *daemonconfig.Node, cfg cmds
 
 	var errs []error
 	for fileName, info := range files {
-		if err := rewriteChart(fileName, info, chartValues, serializer); err != nil {
+		if err := rewriteChart(fileName, info, chartValues); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -295,69 +291,86 @@ func setChartValues(manifestsDir string, nodeConfig *daemonconfig.Node, cfg cmds
 }
 
 // rewriteChart applies cluster configuration values to the file at fileName with associated info.
-// If the file cannot be decoded as a HelmChart, it is silently skipped. Any other IO error is considered
-// a failure.
-func rewriteChart(fileName string, info os.FileInfo, chartValues map[string]string, serializer *json.Serializer) error {
-	b, err := ioutil.ReadFile(fileName)
+func rewriteChart(fileName string, info os.FileInfo, chartValues map[string]string) error {
+	fh, err := os.OpenFile(fileName, os.O_RDWR, info.Mode())
 	if err != nil {
-		return errors.Wrapf(err, "Failed to read manifest %s", fileName)
+		return errors.Wrapf(err, "failed to open manifest %s", fileName)
 	}
+	defer fh.Close()
 
 	// Ignore manifest if it cannot be decoded
-	obj, _, err := serializer.Decode(b, nil, nil)
+	objs, err := yaml.ToObjects(fh)
 	if err != nil {
-		logrus.Debugf("Failed to decode manifest %s: %s", fileName, err)
+		logrus.Warnf("Failed to decode manifest %s: %s", fileName, err)
 		return nil
-	}
-
-	// Ignore manifest if it is not a HelmChart
-	chart, ok := obj.(*helmv1.HelmChart)
-	if !ok {
-		logrus.Debugf("Manifest %s is %T, not HelmChart", fileName, obj)
-		return nil
-	}
-
-	// Generally we should avoid using Set on HelmCharts since it cannot be overridden by HelmChartConfig,
-	// but in this case we need to do it in order to avoid potentially mangling the ValuesContent field by
-	// blindly appending content to it in order to set values.
-	if chart.Spec.Set == nil {
-		chart.Spec.Set = map[string]intstr.IntOrString{}
 	}
 
 	var changed bool
-	for k, v := range chartValues {
-		val := intstr.FromString(v)
-		if cur, ok := chart.Spec.Set[k]; ok {
-			curBytes, _ := cur.MarshalJSON()
-			newBytes, _ := val.MarshalJSON()
-			if bytes.Equal(curBytes, newBytes) {
-				continue
+
+OBJECTS:
+	for _, obj := range objs {
+		// Manipulate the HelmChart using Unstructured to avoid dropping unknown fields when rewriting the content.
+		// Ref: https://github.com/rancher/rke2/issues/527
+		unst, ok := obj.(*unstructured.Unstructured)
+
+		// Ignore object if it is not a HelmChart
+		if !ok || unst.GroupVersionKind() != helmChartGVK {
+			continue
+		}
+
+		var contentChanged bool
+		content := unst.UnstructuredContent()
+
+		// Generally we should avoid using Set on HelmCharts since it cannot be overridden by HelmChartConfig,
+		// but in this case we need to do it in order to avoid potentially mangling the ValuesContent YAML by
+		// blindly appending content to it in order to set values.
+		for k, v := range chartValues {
+			cv, _, err := unstructured.NestedString(content, "spec", "set", k)
+			if err != nil {
+				logrus.Warnf("Failed to get current value from %s/%s in %s: %v", unst.GetNamespace(), unst.GetName(), fileName, err)
+				continue OBJECTS
+			}
+			if cv != v {
+				if err := unstructured.SetNestedField(content, v, "spec", "set", k); err != nil {
+					logrus.Warnf("Failed to write chart value to %s/%s in %s: %v", unst.GetNamespace(), unst.GetName(), fileName, err)
+					continue OBJECTS
+				}
+				contentChanged = true
 			}
 		}
-		changed = true
-		chart.Spec.Set[k] = val
+
+		if contentChanged {
+			changed = true
+			unst.SetUnstructuredContent(content)
+		}
 	}
 
 	if !changed {
-		logrus.Infof("No cluster configuration value changes necessary for HelmChart %s", fileName)
+		logrus.Infof("No cluster configuration value changes necessary for manifest %s", fileName)
 		return nil
 	}
 
-	var buf bytes.Buffer
-	if err := serializer.Encode(chart, &buf); err != nil {
-		return errors.Wrapf(err, "Failed to serialize modified HelmChart %s", fileName)
-	}
-
-	f, err := os.OpenFile(fileName, os.O_RDWR|os.O_TRUNC, info.Mode())
+	data, err := yaml.Export(objs...)
 	if err != nil {
-		return errors.Wrapf(err, "Unable to open HelmChart %s", fileName)
-	}
-	defer f.Close()
-
-	if _, err := io.Copy(f, &buf); err != nil {
-		return errors.Wrapf(err, "Failed to write modified HelmChart %s", fileName)
+		return errors.Wrapf(err, "failed to export modified manifest %s", fileName)
 	}
 
-	logrus.Infof("Updated HelmChart %s to set cluster configuration values", fileName)
+	if _, err := fh.Seek(0, 0); err != nil {
+		return errors.Wrapf(err, "failed to seek in manifest %s", fileName)
+	}
+
+	if err := fh.Truncate(0); err != nil {
+		return errors.Wrapf(err, "failed to truncate manifest %s", fileName)
+	}
+
+	if _, err := fh.Write(data); err != nil {
+		return errors.Wrapf(err, "failed to write modified manifest %s", fileName)
+	}
+
+	if err := fh.Sync(); err != nil {
+		return errors.Wrapf(err, "failed to sync modified manifest %s", fileName)
+	}
+
+	logrus.Infof("Updated manifest %s to set cluster configuration values", fileName)
 	return nil
 }
