@@ -118,15 +118,15 @@ var _ = Describe("Verify DualStack Configuration", Ordered, func() {
 			res, err := e2e.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred(), res)
 			Expect(res).Should(ContainSubstring("10.10.10"))
-			Expect(res).Should(ContainSubstring("a11:decf:c0ff"))
+			Expect(res).Should(ContainSubstring("fd11:decf:c0ff"))
 		}
 	})
 	It("Verifies that each pod has IPv4 and IPv6", func() {
 		podIPs, err := getPodIPs(kubeConfigFile)
 		Expect(err).NotTo(HaveOccurred())
 		for _, pod := range podIPs {
-			Expect(pod.ipv4).Should(Or(ContainSubstring("10.10.10"), ContainSubstring("10.42.")), pod.name)
-			Expect(pod.ipv6).Should(Or(ContainSubstring("a11:decf:c0ff"), ContainSubstring("2001:cafe:42")), pod.name)
+			Expect(pod.ipv4).Should(Or(ContainSubstring("10.10.10"), ContainSubstring("10.42."), ContainSubstring("192.168.")), pod.name)
+			Expect(pod.ipv6).Should(Or(ContainSubstring("fd11:decf:c0ff"), ContainSubstring("2001:cafe:42")), pod.name)
 		}
 	})
 

@@ -9,7 +9,7 @@ NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
 NODE_MEMORY = (ENV['E2E_NODE_MEMORY'] || 3072).to_i
 CNI = (ENV['E2E_CNI'] || "canal") # canal, cilium and calico supported
 NETWORK4_PREFIX = "10.10.10"
-NETWORK6_PREFIX = "a11:decf:c0ff:ee"
+NETWORK6_PREFIX = "fd11:decf:c0ff:ee"
 install_type = ""
 
 def provision(vm, roles, role_num, node_num)
@@ -17,6 +17,7 @@ def provision(vm, roles, role_num, node_num)
   vm.hostname = "#{roles[0]}-#{role_num}"
   node_ip4 = "#{NETWORK4_PREFIX}.#{100+node_num}"
   node_ip6 = "#{NETWORK6_PREFIX}::#{10+node_num}"
+  node_ip6_gw = "#{NETWORK6_PREFIX}::1"
   # Only works with libvirt, which allows IPv4 + IPv6 on a single network/interface
   vm.network "private_network", 
     :ip => node_ip4,
@@ -33,10 +34,10 @@ def provision(vm, roles, role_num, node_num)
   defaultOSConfigure(vm)
   
   scripts_location = Dir.exists?("./scripts") ? "./scripts" : "../scripts" 
-  vm.provision "IPv6 Setup", type: "shell", path: scripts_location + "/ipv6.sh", args: [node_ip4, node_ip6, CNI, vm.box]
+  vm.provision "IPv6 Setup", type: "shell", path: scripts_location + "/ipv6.sh", args: [node_ip4, node_ip6, node_ip6_gw, CNI, vm.box]
   
   install_type = getInstallType(vm, RELEASE_VERSION, GITHUB_BRANCH)
-  vm.provision "Ping Check", type: "shell", inline: "ping -c 2 rke2.io"
+  vm.provision "Ping Check", type: "shell", inline: "ping -4 -c 2 rke2.io"
   
   if roles.include?("server") && role_num == 0
     vm.provision :rke2, run: 'once' do |rke2|
@@ -48,9 +49,10 @@ def provision(vm, roles, role_num, node_num)
         node-ip: #{node_ip4},#{node_ip6}
         token: vagrant-rke2
         cluster-cidr: 10.42.0.0/16,2001:cafe:42:0::/56
-        service-cidr: 10.43.0.0/16,2001:cafe:42:1::/112
+        service-cidr: 10.43.0.0/16,2001:cafe:43:0::/112
         bind-address: #{NETWORK4_PREFIX}.100
         cni: #{CNI}
+        kubelet-arg: "--node-ip=0.0.0.0" # Workaround for https://github.com/kubernetes/kubernetes/issues/111695
       YAML
     end
   elsif roles.include?("server") && role_num != 0
@@ -64,8 +66,9 @@ def provision(vm, roles, role_num, node_num)
         server: https://#{NETWORK4_PREFIX}.100:9345
         token: vagrant-rke2
         cluster-cidr: 10.42.0.0/16,2001:cafe:42:0::/56
-        service-cidr: 10.43.0.0/16,2001:cafe:42:1::/112
+        service-cidr: 10.43.0.0/16,2001:cafe:43:0::/112
         cni: #{CNI}
+        kubelet-arg: "--node-ip=0.0.0.0" # Workaround for https://github.com/kubernetes/kubernetes/issues/111695
       YAML
     end
   end
@@ -80,7 +83,8 @@ def provision(vm, roles, role_num, node_num)
         node-ip: #{node_ip4},#{node_ip6}
         server: https://#{NETWORK4_PREFIX}.100:9345
         token: vagrant-rke2
-        cni: calico
+        cni: #{CNI}
+        kubelet-arg: "--node-ip=0.0.0.0" # Workaround for https://github.com/kubernetes/kubernetes/issues/111695
       YAML
     end
   end
