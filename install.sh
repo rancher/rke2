@@ -587,7 +587,7 @@ do_install_tar() {
 
 setup_fapolicy_rules() {
     if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/rocky-release ]; then
-        verify_fapolicyd || return
+        verify_fapolicyd || return 0
         # setting rke2 fapolicyd rules
         cat <<-EOF >>"/etc/fapolicyd/rules.d/80-rke2.rules"
 allow perm=any all : dir=/var/lib/rancher/
