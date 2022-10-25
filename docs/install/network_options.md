@@ -230,7 +230,7 @@ that must be fulfilled to consider the node as SR-IOV capable:
 * The host operating system must activate IOMMU virtualization
 * The host operating system includes drivers capable of doing sriov (e.g. i40e, vfio-pci, etc)
 
-The SR-IOV CNI plugin cannot be used as the default CNI plugin for Multus; it must be deployed alongside both Multus and a traditional CNI plugin. The SR-IOV CNI helm chart can be found in the `rancher-charts` Helm repo. For more information see [Rancher Helm Charts documentation](https://rancher.com/docs/rancher/v2.x/en/helm-charts/).
+The SR-IOV CNI plugin cannot be used as the default CNI plugin for Multus; it must be deployed alongside both Multus and a traditional CNI plugin. The SR-IOV CNI helm chart can be found in the `rancher-charts` Helm repo. For more information see [Rancher Helm Charts documentation](https://docs.ranchermanager.rancher.io/pages-for-subheaders/helm-charts-in-rancher).
 
 After installing the SR-IOV CNI chart, the SR-IOV operator will be deployed. Then, the user must specify what nodes in the cluster are SR-IOV capable by labeling them with `feature.node.kubernetes.io/network-sriov.capable=true`:
 
