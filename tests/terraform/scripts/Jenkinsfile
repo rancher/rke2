@@ -1,6 +1,5 @@
 #!groovy
 node {
-  // def rootPath = "/go/src/github.com/rancher/rke2/tests/terraform/"
   def job_name = "${JOB_NAME}"
   if (job_name.contains('/')) { 
     job_names = job_name.split('/')
@@ -8,10 +7,8 @@ node {
   }
   def testContainer = "${job_name}${env.BUILD_NUMBER}_test"
   def imageName = "rke2-tf-${job_name}${env.BUILD_NUMBER}"
-  // def testsDir = "github.com/rancher/rke2/tests/${env.TEST_PACKAGE}"
-  // def testResultsOut = "results.xml"
   def envFile = ".env"
-  def branch = "terraform-automation"
+  def branch = "master"
   if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
     branch = "${env.BRANCH}"
   }
@@ -27,19 +24,19 @@ node {
     withFolderProperties {
       paramsMap = []
       params.each {
-        paramsMap << "$it.key=$it.value"
+        if (it.value && it.value.trim() != "") {
+          paramsMap << "$it.key=$it.value"
+        }
       }
-      withEnv(paramsMap) {
-        withCredentials([ 
-          string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
-          string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
-          string(credentialsId: 'AWS_SSH_PEM_KEY', variable: 'AWS_SSH_PEM_KEY'),
-          string(credentialsId: 'RANCHER_SSH_KEY', variable: 'RANCHER_SSH_KEY'),
-          string(credentialsId: 'ADMIN_PASSWORD', variable: 'ADMIN_PASSWORD'),
-          string(credentialsId: 'USER_PASSWORD', variable: 'USER_PASSWORD'),
-          string(credentialsId: 'ADMIN_PASSWORD', variable: 'ADMIN_PASSWORD'),
-          string(credentialsId: 'USER_PASSWORD', variable: 'USER_PASSWORD')
-        ]) {
+      withCredentials([ 
+        
+        string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+        string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
+        string(credentialsId: 'AWS_SSH_PEM_KEY', variable: 'AWS_SSH_PEM_KEY'),
+        string(credentialsId: 'ADMIN_PASSWORD', variable: 'ADMIN_PASSWORD'),
+        string(credentialsId: 'RKE2_RHEL_PASSWORD', variable: 'RKE2_RHEL_PASSWORD')
+      ]) {
+        withEnv(paramsMap) {
           stage('Checkout') {
             deleteDir()
             checkout([
@@ -61,9 +58,12 @@ node {
 
                 dir("./tests/terraform/modules/config") {
                   def filename = "local.tfvars"
-                  def configContents = env.TFVARS // env.CONFIG
+                  def configContents = env.TFVARS
 
-                  writeFile file: filename, text: configContents
+                  writeFile file: filename, text: configContents +
+                    "\npassword = \"" + RKE2_RHEL_PASSWORD + "\"" +
+                    "\nssh_key = \"" + AWS_SSH_KEY_NAME + "\"" +
+                    "\naccess_key = \"/go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem\""
                 }
 
                 sh "./tests/terraform/scripts/configure.sh"
@@ -81,8 +81,8 @@ node {
               }
             } // finally
           } // dir 
-        } // withCredentials
-      } // withEnv
+        } // withEnv
+      } // withCredentials
     } // withFolderProperties
   } // wrap 
 }// node

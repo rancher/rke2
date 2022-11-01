@@ -5,7 +5,7 @@ set -eu
 
 DEBUG="${DEBUG:-false}"
 
-env | egrep '^(AWS).*\=.+' | sort > .env
+env | egrep '^(AWS|RKE2).*\=.+' | sort > .env
 
 if [ "false" != "${DEBUG}" ]; then
     cat .env
