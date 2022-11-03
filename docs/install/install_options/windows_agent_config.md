@@ -77,3 +77,15 @@ ill also be used for the apiserver client load-balancer. (default: 6444) [%RKE2_
 rke2-windows-amd64.exe version v1.22.5+rke2r2 (b61d4b3cb989b0380aae97fceb9a3e45a35ee2b9)
 go version go1.16.10b7
 ```
+
+### Windows RKE2 Agent Calico env variables
+
+Calico installation on Windows can be customized using env variables. You can specify these variables by:
+
+```console
+$env:<YOUR_VARIABLE>=<VALUE>
+```
+These are the current variables:
+```console
+VXLAN_ADAPTER 		Specifies the interface to be used for the vxlan VTEP. Required if the interface is in team mode
+```
