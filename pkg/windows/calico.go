@@ -305,7 +305,7 @@ func generateCalicoNetworks(backend string) error {
 		return fmt.Errorf("no interfaces found")
 	}
 
-	if err := createExternalNetwork(backend); err != nil {
+	if err := createExternalNetwork(backend, os.Getenv("VXLAN_ADAPTER")); err != nil {
 		return err
 	}
 
@@ -332,7 +332,7 @@ func checkIfNetworkExists(n string) bool {
 	return true
 }
 
-func createExternalNetwork(backend string) error {
+func createExternalNetwork(backend string, vxlanAdapter string) error {
 	logrus.Debug("Creating external network")
 	for !(checkIfNetworkExists(CalicoHnsNetworkName)) {
 		logrus.Debugf("Networking doesn't exist yet: %s ", CalicoHnsNetworkName)
@@ -352,10 +352,11 @@ func createExternalNetwork(backend string) error {
 				logrus.Debugf("error creating firewall rules: %s", err)
 				return err
 			}
-			logrus.Debug("Creating VXLAN network")
+			logrus.Debugf("Creating VXLAN network using the vxlanAdapter: %s", vxlanAdapter)
 			network = hcsshim.HNSNetwork{
-				Type: "Overlay",
-				Name: CalicoHnsNetworkName,
+				Type:               "Overlay",
+				Name:               CalicoHnsNetworkName,
+				NetworkAdapterName: vxlanAdapter,
 				Subnets: []hcsshim.Subnet{
 					{
 						AddressPrefix:  "192.168.255.0/30",
