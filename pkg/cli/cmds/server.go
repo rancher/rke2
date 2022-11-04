@@ -110,6 +110,7 @@ var (
 		"flannel-conf":                      drop,
 		"flannel-cni-conf":                  drop,
 		"flannel-ipv6-masq":                 drop,
+		"flannel-external-ip":               drop,
 		"egress-selector-mode":              copy,
 		"kubelet-arg":                       copy,
 		"kube-proxy-arg":                    copy,
