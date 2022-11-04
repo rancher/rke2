@@ -72,7 +72,7 @@ OPTIONS
 #### Install the Latest Version Instead of Stable
 ```powershell
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/rancher/rke2/master/install.ps1 -Outfile install.ps1
-./install.ps1 -Channel Latest
+./install.ps1 -Channel latest
 ```
 
 #### Install the Latest Version using Tar Installation Method
