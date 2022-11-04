@@ -82,10 +82,6 @@ func Server(clx *cli.Context, cfg Config) error {
 		return err
 	}
 
-	if err := clx.Set("egress-selector-mode", "disabled"); err != nil {
-		return err
-	}
-
 	// Disable all disableable k3s packaged components. In addition to manifests,
 	// this also disables several integrated controllers.
 	disableItems := strings.Split(cmds.DisableItems, ",")
