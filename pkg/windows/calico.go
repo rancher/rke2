@@ -6,7 +6,6 @@ package windows
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -23,14 +22,18 @@ import (
 	wapi "github.com/iamacarpet/go-win64api"
 	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
-	netroute "github.com/libp2p/go-netroute"
+	"github.com/k3s-io/k3s/pkg/version"
+	"github.com/libp2p/go-netroute"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	opv1 "github.com/tigera/operator/api/v1"
-	v1 "k8s.io/api/core/v1"
+	authv1 "k8s.io/api/authentication/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
+	"k8s.io/utils/pointer"
 )
 
 var (
@@ -274,12 +277,23 @@ func (c *Calico) Start(ctx context.Context) error {
 	return nil
 }
 
+// generateCalicoNetworks creates the overlay networks for internode networking
 func (c *Calico) generateCalicoNetworks() error {
 	if err := deleteAllNetworksOnNodeRestart(); err != nil {
 		return err
 	}
 
-	mgmt, err := createHnsNetwork(c.CNICfg.Mode, os.Getenv("VXLAN_ADAPTER"))
+	vxlanAdapter := os.Getenv("VXLAN_ADAPTER")
+
+	if vxlanAdapter == "" && c.CNICfg.IP != "" {
+		iFace, err := findInterface(c.CNICfg.IP)
+		if err != nil {
+			return err
+		}
+		vxlanAdapter = iFace
+	}
+
+	mgmt, err := createHnsNetwork(c.CNICfg.Mode, vxlanAdapter)
 	if err != nil {
 		return err
 	}
@@ -290,7 +304,6 @@ func (c *Calico) generateCalicoNetworks() error {
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -602,4 +615,27 @@ func generateGeneralCalicoEnvs(config *CalicoConfig) []string {
 
 		fmt.Sprintf("VXLAN_VNI=%s", config.Felix.Vxlanvni),
 	}
+}
+
+// findInterface returns the name of the interface that contains the passed ip
+func findInterface(ip string) (string, error) {
+	iFaces, err := net.Interfaces()
+	if err != nil {
+		return "", err
+	}
+
+	for _, iFace := range iFaces {
+		addrs, err := iFace.Addrs()
+		if err != nil {
+			return "", err
+		}
+		logrus.Debugf("evaluating if the interface: %s with addresses %v, contains ip: %s", iFace.Name, addrs, ip)
+		for _, addr := range addrs {
+			if strings.Contains(addr.String(), ip) {
+				return iFace.Name, nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("no interface has the ip: %s", ip)
 }
