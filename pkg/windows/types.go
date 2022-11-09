@@ -4,25 +4,8 @@
 package windows
 
 import (
-	"context"
-
-	"github.com/k3s-io/k3s/pkg/daemons/config"
-	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	opv1 "github.com/tigera/operator/api/v1"
-	"k8s.io/client-go/rest"
 )
-
-type CNI interface {
-	Setup(context.Context, string, *daemonconfig.Node, *rest.Config) (*CNIConfig, error)
-	Start(context.Context, *CNIConfig) error
-}
-
-type CNIConfig struct {
-	NodeConfig   *config.Node
-	CalicoConfig *CalicoConfig
-	NetworkName  string
-	BindAddress  string
-}
 
 type FelixConfig struct {
 	Metadataaddr    string
@@ -42,10 +25,10 @@ type CalicoCNIConfig struct {
 
 type CalicoConfig struct {
 	Name                  string
+	OverlayNetName        string
 	Mode                  string
 	Hostname              string
 	KubeNetwork           string
-	NetworkingBackend     string
 	ServiceCIDR           string
 	DNSServers            string
 	DNSSearch             string
@@ -62,7 +45,7 @@ type CalicoConfig struct {
 	ETCDKeyFile           string
 	ETCDCertFile          string
 	ETCDCaCertFile        string
-	KubeConfig            CalicoKubeConfig
+	KubeConfig            *CalicoKubeConfig
 }
 
 type CalicoKubeConfig struct {
