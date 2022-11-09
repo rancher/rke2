@@ -277,12 +277,23 @@ func (c *Calico) Start(ctx context.Context) error {
 	return nil
 }
 
+// generateCalicoNetworks creates the overlay networks for internode networking
 func (c *Calico) generateCalicoNetworks() error {
 	if err := deleteAllNetworksOnNodeRestart(); err != nil {
 		return err
 	}
 
-	mgmt, err := createHnsNetwork(c.CNICfg.Mode, os.Getenv("VXLAN_ADAPTER"))
+	vxlanAdapter := os.Getenv("VXLAN_ADAPTER")
+
+	if vxlanAdapter == "" && c.CNICfg.IP != "" {
+		iFace, err := findInterface(c.CNICfg.IP)
+		if err != nil {
+			return err
+		}
+		vxlanAdapter = iFace
+	}
+
+	mgmt, err := createHnsNetwork(c.CNICfg.Mode, vxlanAdapter)
 	if err != nil {
 		return err
 	}
@@ -293,7 +304,6 @@ func (c *Calico) generateCalicoNetworks() error {
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -605,4 +615,27 @@ func generateGeneralCalicoEnvs(config *CalicoConfig) []string {
 
 		fmt.Sprintf("VXLAN_VNI=%s", config.Felix.Vxlanvni),
 	}
+}
+
+// findInterface returns the name of the interface that contains the passed ip
+func findInterface(ip string) (string, error) {
+	iFaces, err := net.Interfaces()
+	if err != nil {
+		return "", err
+	}
+
+	for _, iFace := range iFaces {
+		addrs, err := iFace.Addrs()
+		if err != nil {
+			return "", err
+		}
+		logrus.Debugf("evaluating if the interface: %s with addresses %v, contains ip: %s", iFace.Name, addrs, ip)
+		for _, addr := range addrs {
+			if strings.Contains(addr.String(), ip) {
+				return iFace.Name, nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("no interface has the ip: %s", ip)
 }
