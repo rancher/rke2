@@ -60,7 +60,8 @@ Next, we need to create a release candidate (RC). The Drone (CI) process that bu
     * Example tag: `v1.23.5-rc1+rke2r1`
     * **NOTE** Make sure to create the tag against the correct release branch. In the example above, that would map to release branch `release-1.23`.
 
-Ensure "prerelease" checkbox is selected.
+Ensure "Set as a pre-release" checkbox is selected.
+Ensure "Set as the latest release" is **NOT** selected.
 
 CI will run and build the release assets as well as kick off an image build for [RKE2 Upgrade images](https://hub.docker.com/r/rancher/rke2-upgrade/tags?page=1&ordering=last_updated).
 
@@ -102,7 +103,8 @@ Once QA signs off on the RC, it's time to cut the primary release. Go to the [rk
 * Enter the desired version into the "Tag version" box. 
     * Example tag: `v1.23.5+rke2r1`
 
-Ensure "prerelease" checkbox is selected.
+Ensure "Set as a pre-release" checkbox is selected.
+Ensure "Set as the latest release" is **NOT** selected.
 
 Once complete, the process is repeated in the [rke2-packaging](https://github.com/rancher/rke2-packaging) repository.
 
@@ -160,7 +162,7 @@ Be sure to review the rest of the sections as some of them may become irrelevant
 
 This step is specific to Rancher and serves to update Rancher's [Kontainer Driver Metadata](https://github.com/rancher/kontainer-driver-metadata/).
 
-Create PRs in the [KDM](https://github.com/rancher/kontainer-driver-metadata/) `dev-2.6` and `dev-2.7` branches to update the Kubernetes versions in `channels-rke2.yaml`. 
+Normally we'd create PRs in the [KDM](https://github.com/rancher/kontainer-driver-metadata/) `dev-2.6` and `dev-2.7` branches to update the Kubernetes versions in `channels-rke2.yaml`. However, for the time being, there are different branches that need to be updated. They can be found by going to the `#discuss-rancher-k3s-rke2-release` channel in Suse slack and checking the topic for the channel.
 * The PR should consist of two commits:
     1. Changes made to `channels-rke2.yaml` to update the Kubernetes versions.
     2. Run `go generate` and commit the changes this caused to data/data.json. Title this second commit "go generate".
