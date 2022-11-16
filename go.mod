@@ -80,6 +80,7 @@ require (
 	github.com/k3s-io/helm-controller v0.13.0
 	github.com/k3s-io/k3s v1.25.4-0.20221104173529-13c633da1268 // master
 	github.com/libp2p/go-netroute v0.2.0
+	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/onsi/ginkgo/v2 v2.1.6
 	github.com/onsi/gomega v1.20.1
 	github.com/pkg/errors v0.9.1
@@ -274,7 +275,6 @@ require (
 	github.com/mrunalp/fileutils v0.5.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
-	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/nats-io/jsm.go v0.0.31-0.20220317133147-fe318f464eee // indirect
 	github.com/nats-io/nats.go v1.17.1-0.20220923204156-36d2b654c70f // indirect
 	github.com/nats-io/nkeys v0.3.0 // indirect
