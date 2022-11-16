@@ -77,6 +77,7 @@ require (
 	github.com/k3s-io/helm-controller v0.13.1
 	github.com/k3s-io/k3s v1.23.15-0.20221202170705-9fc26d7265d0 // release-1.23
 	github.com/libp2p/go-netroute v0.2.0
+	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.20.0
 	github.com/pkg/errors v0.9.1
