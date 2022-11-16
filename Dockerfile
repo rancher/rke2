@@ -15,6 +15,7 @@ RUN set -x \
     gcc \
     bsd-compat-headers \
     py-pip \
+    py3-pip \
     pigz \
     tar \
     yq
@@ -203,6 +204,6 @@ RUN set -x \
     jq \
     less \
     socat \
-    vim
+    vim 
 ENTRYPOINT ["/bin/rke2"]
 CMD ["server"]
