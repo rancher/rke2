@@ -34,8 +34,6 @@ done <"${RPM_LIST}"
 
 umask 077
 
-python3 -m pip install awscli
-
 aws s3 cp ${RPM_DIR}/*.rpm "s3://rke2-ci-builds" || exit 1
 
 echo "Build uploaded" >&2

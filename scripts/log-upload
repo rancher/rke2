@@ -28,7 +28,6 @@ trap cleanup EXIT INT
 
 
 LOG_TGZ=rke2-log-$(date +%s)-$("${GO}" env GOARCH)-$(git rev-parse --short HEAD)-$(basename $1).tgz
-python3 -m pip install awscli
 
 tar -cz -f ${TMPDIR}/${LOG_TGZ} -C $(dirname $1) $(basename $1)
 aws s3 cp ${TMPDIR}/${LOG_TGZ} s3://rke2-ci-logs || exit 1

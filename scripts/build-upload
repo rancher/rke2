@@ -43,8 +43,6 @@ TARBALL_NAME=$(basename $2 .tar.zst)-$3.tar.zst
 (cd $(dirname $2) && sha256sum $(basename $2)) >${TMPDIR}/${TARBALL_NAME}.sha256sum
 cp $2 ${TMPDIR}/${TARBALL_NAME}
 
-python3 -m pip install awscli
-
 aws s3 cp ${TMPDIR}/${BUNDLE_NAME}* ${TMPDIR}/${TARBALL_NAME}* s3://rke2-ci-builds || exit 1
 
 echo "Build uploaded" >&2
