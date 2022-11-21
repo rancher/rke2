@@ -197,7 +197,25 @@ var _ = Describe("Verify DualStack Configuration", Ordered, func() {
 			}, "10s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
 		}
 	})
-
+	It("Verifies podSelector Network Policy", func() {
+		_, err := e2e.DeployWorkload("pod_client.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+		cmd := "kubectl exec svc/client-curl --kubeconfig=" + kubeConfigFile + " -- curl -m7 ds-clusterip-svc/name.html"
+		Eventually(func() (string, error) {
+			return e2e.RunCommand(cmd)
+		}, "20s", "3s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
+		_, err = e2e.DeployWorkload("netpol-fail.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+		cmd = "kubectl exec svc/client-curl --kubeconfig=" + kubeConfigFile + " -- curl -m7 ds-clusterip-svc/name.html"
+		_, err = e2e.RunCommand(cmd)
+		Expect(err).To(HaveOccurred())
+		_, err = e2e.DeployWorkload("netpol-work.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+		cmd = "kubectl exec svc/client-curl --kubeconfig=" + kubeConfigFile + " -- curl -m7 ds-clusterip-svc/name.html"
+		Eventually(func() (string, error) {
+			return e2e.RunCommand(cmd)
+		}, "20s", "3s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
+	})
 })
 
 var failed bool
