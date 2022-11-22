@@ -42,6 +42,7 @@ var (
 		"kubelet-arg":                       copy,
 		"kube-proxy-arg":                    copy,
 		"rootless":                          drop,
+		"prefer-bundled-bin":                drop,
 		"server":                            copy,
 		"no-flannel":                        drop,
 		"cluster-secret":                    drop,
