@@ -23,7 +23,6 @@ import (
 	wapi "github.com/iamacarpet/go-win64api"
 	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
 	util2 "github.com/k3s-io/k3s/pkg/agent/util"
-	"github.com/k3s-io/k3s/pkg/daemons/agent"
 	"github.com/k3s-io/k3s/pkg/daemons/config"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	netroute "github.com/libp2p/go-netroute"
@@ -96,8 +95,6 @@ func (c *Calico) Setup(ctx context.Context, dataDir string, nodeConfig *daemonco
 	if err := getCNIConfigOverrides(cfg, hc); err != nil {
 		return nil, err
 	}
-
-	agent.NetworkName = CalicoHnsNetworkName
 
 	if err := createNodeNameFile(cfg, dataDir); err != nil {
 		return nil, err
