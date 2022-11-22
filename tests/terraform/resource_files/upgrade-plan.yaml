@@ -1,0 +1,39 @@
+apiVersion: upgrade.cattle.io/v1
+kind: Plan
+metadata:
+  name: rke2-server
+  namespace: system-upgrade
+  labels:
+    rke2-upgrade: server
+spec:
+  concurrency: 1
+  version: $UPGRADEVERSION
+  nodeSelector:
+    matchExpressions:
+      - {key: node-role.kubernetes.io/master, operator: In, values: ["true"]}
+  serviceAccountName: system-upgrade
+  cordon: true
+  upgrade:
+    image: rancher/rke2-upgrade
+---
+apiVersion: upgrade.cattle.io/v1
+kind: Plan
+metadata:
+  name: rke2-agent
+  namespace: system-upgrade
+  labels:
+    rke2-upgrade: agent
+spec:
+  concurrency: 2
+  version: $UPGRADEVERSION
+  nodeSelector:
+    matchExpressions:
+      - {key: node-role.kubernetes.io/master, operator: NotIn, values: ["true"]}
+  serviceAccountName: system-upgrade
+  prepare:
+    image: rancher/rke2-upgrade
+    args: ["prepare", "rke2-server"]
+  drain:
+    force: true
+  upgrade:
+    image: rancher/rke2-upgrade

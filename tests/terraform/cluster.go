@@ -10,21 +10,21 @@ import (
 )
 
 var (
-	kubeConfigFile string
-	masterIPs      string
-	workerIPs      string
-	numServers     int
-	numWorkers     int
-	awsUser        string
-	accessKey      string
+	KubeConfigFile string
+	MasterIPs      string
+	WorkerIPs      string
+	NumServers     int
+	NumWorkers     int
+	AwsUser        string
+	AccessKey      string
 )
 
-func buildCluster(t *testing.T, tfVarsPath string, destroy bool) (string, error) {
-	tfDir, err := filepath.Abs(basepath() + "/tests/terraform/modules")
+func BuildCluster(t *testing.T, tfVarsPath string, destroy bool) (string, error) {
+	tfDir, err := filepath.Abs(Basepath() + "/tests/terraform/modules")
 	if err != nil {
 		return "", err
 	}
-	varDir, err := filepath.Abs(basepath() + tfVarsPath)
+	varDir, err := filepath.Abs(Basepath() + tfVarsPath)
 	if err != nil {
 		return "", err
 	}
@@ -32,11 +32,11 @@ func buildCluster(t *testing.T, tfVarsPath string, destroy bool) (string, error)
 		TerraformDir: tfDir,
 		VarFiles:     []string{varDir},
 	}
-	numServers, err = strconv.Atoi(terraform.GetVariableAsStringFromVarFile(t, varDir, "no_of_server_nodes"))
+	NumServers, err = strconv.Atoi(terraform.GetVariableAsStringFromVarFile(t, varDir, "no_of_server_nodes"))
 	if err != nil {
 		return "", err
 	}
-	numWorkers, err = strconv.Atoi(terraform.GetVariableAsStringFromVarFile(t, varDir, "no_of_worker_nodes"))
+	NumWorkers, err = strconv.Atoi(terraform.GetVariableAsStringFromVarFile(t, varDir, "no_of_worker_nodes"))
 	if err != nil {
 		return "", err
 	}
@@ -62,10 +62,10 @@ func buildCluster(t *testing.T, tfVarsPath string, destroy bool) (string, error)
 		if err != nil {
 			return "", err
 		}
-		numServers = numServers + etcdNodes + etcdCpNodes + etcdWorkerNodes + cpNodes + cpWorkerNodes
+		NumServers = NumServers + etcdNodes + etcdCpNodes + etcdWorkerNodes + cpNodes + cpWorkerNodes
 	}
-	awsUser = terraform.GetVariableAsStringFromVarFile(t, varDir, "aws_user")
-	accessKey = terraform.GetVariableAsStringFromVarFile(t, varDir, "access_key")
+	AwsUser = terraform.GetVariableAsStringFromVarFile(t, varDir, "aws_user")
+	AccessKey = terraform.GetVariableAsStringFromVarFile(t, varDir, "access_key")
 
 	if destroy {
 		fmt.Printf("Cluster is being deleted")
@@ -75,8 +75,8 @@ func buildCluster(t *testing.T, tfVarsPath string, destroy bool) (string, error)
 
 	fmt.Printf("Creating Cluster")
 	terraform.InitAndApply(t, &terraformOptions)
-	kubeConfigFile = terraform.Output(t, &terraformOptions, "kubeconfig")
-	masterIPs = terraform.Output(t, &terraformOptions, "master_ips")
-	workerIPs = terraform.Output(t, &terraformOptions, "worker_ips")
+	KubeConfigFile = terraform.Output(t, &terraformOptions, "kubeconfig")
+	MasterIPs = terraform.Output(t, &terraformOptions, "master_ips")
+	WorkerIPs = terraform.Output(t, &terraformOptions, "worker_ips")
 	return "cluster created", nil
 }

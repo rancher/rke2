@@ -17,21 +17,16 @@ See the [create cluster test](../tests/terraform/createcluster_test.go) as an ex
 Before running the tests, it's required to create a tfvars file in `./tests/terraform/modules/config/local.tfvars`. This should be filled in to match the desired variables, including those relevant for your AWS environment. All variables that are necessary can be seen in [main.tf](../tests/terraform/modules/main.tf).
 It is also required to have standard AWS environment variables present: `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
 
-All TF tests can be run with:
+Tests can be run per package with:
 ```bash
-go test -timeout=60m -v ./tests/terrfaorm/... -run TF
+go test -timeout=30m -v ./tests/terraform/$PACKAGE_NAME/...
 ```
-Tests can be run individually with:
-```bash
-go test -timeout=30m -v ./tests/terraform/createcluster_test.go ./tests/terraform/cluster.go ./tests/terraform/testutils.go
-# OR
-go test -timeout=30m -v ./tests/terraform/... -run TFClusterCreateValidation
-```
-Additionally, you can use docker to run the tests, which may be beneficial when wanting to run multiple tests in parallel. Just be sure to change the resource name in the tfvars file to ensure there won't be overwrites!
+Additionally, you can use docker to run the tests, which may be beneficial when wanting to run multiple tests in parallel. Just be sure to change the resource name in the tfvars file to ensure there won't be overwrites! Provided example below is for running two separate packages using docker:
 ```bash
 $ docker build . -f ./tests/terraform/scripts/Dockerfile.build -t rke2-tf
-# This next command assumes you have the following environment variable in your config/local.tfvars: 'access_key = "/tmp/aws_key.pem"'
-$ docker run --name rke2-tf-test1 -t -e AWS_ACCESS_KEY_ID=<YOUR_ACCESS_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET_KEY> -v /path/to/aws/key.pem:/tmp/aws_key.pem rke2-tf sh -c "go test -timeout=30m -v ./tests/terraform/createcluster_test.go ./tests/terraform/cluster.go ./tests/terraform/testutils.go"
+# These next commands assume you have the following environment variable in your config/local.tfvars: 'access_key = "/tmp/aws_key.pem"'
+$ docker run --name rke2-tf-creation-test -t -e AWS_ACCESS_KEY_ID=<YOUR_ACCESS_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET_KEY> -v /path/to/aws/key.pem:/tmp/aws_key.pem rke2-tf sh -c "go test -timeout=30m -v ./tests/terraform/createcluster/..."
+$ docker run --name rke2-tf-upgrade-test -t -e AWS_ACCESS_KEY_ID=<YOUR_ACCESS_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET_KEY> -v /path/to/aws/key.pem:/tmp/aws_key.pem rke2-tf sh -c "go test -timeout=45m -v ./tests/terraform/upgradecluster/... -upgradeVersion=v1.24.8+rke2r1"
 ```
 
 In between tests, if the cluster is not destroyed, then make sure to delete the ./tests/terraform/modules/terraform.tfstate file if you want to create a new cluster.
