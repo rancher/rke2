@@ -115,6 +115,7 @@ var (
 		"kubelet-arg":                       copy,
 		"kube-proxy-arg":                    copy,
 		"rootless":                          drop,
+		"prefer-bundled-bin":                drop,
 		"agent-token":                       copy,
 		"agent-token-file":                  copy,
 		"server":                            copy,
