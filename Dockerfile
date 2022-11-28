@@ -14,6 +14,8 @@ RUN set -x \
     gcc \
     bsd-compat-headers \
     py-pip \
+    py3-pip \
+    pigz \
     tar \
     yq \
     pigz
@@ -44,7 +46,8 @@ RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
     chmod a+x /usr/local/bin/kubectl; \
     pip install codespell
 
-RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.47.3
+RUN python3 -m pip install awscli
+RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.50.1
 RUN set -x \
     && apk --no-cache add \
     libarchive-tools \
@@ -200,6 +203,6 @@ RUN set -x \
     jq \
     less \
     socat \
-    vim
+    vim 
 ENTRYPOINT ["/bin/rke2"]
 CMD ["server"]

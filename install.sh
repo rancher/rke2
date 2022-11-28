@@ -90,7 +90,7 @@ check_target_ro() {
 
 # setup_env defines needed environment variables.
 setup_env() {
-    STORAGE_URL="https://storage.googleapis.com/rke2-ci-builds"
+    STORAGE_URL="https://rke2-ci-builds.s3.amazonaws.com"
     INSTALL_RKE2_GITHUB_URL="https://github.com/rancher/rke2"
     DEFAULT_TAR_PREFIX="/usr/local"
     # --- bail if we are not root ---
