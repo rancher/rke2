@@ -110,6 +110,37 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 		_, err := e2e.ParsePods(kubeConfigFile, true)
 		Expect(err).NotTo(HaveOccurred())
 	})
+	It("Verifies internode connectivity over the vxlan tunnel", func() {
+		_, err := e2e.DeployWorkload("pod_client.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+
+		_, err = e2e.DeployWorkload("windows_app_deployment.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+
+		// Wait for the pod_client pods to have an IP
+		Eventually(func() string {
+			ips, _ := e2e.PodIPsUsingLabel(kubeConfigFile, "app=client")
+			return ips[0]
+		}, "60s", "10s").Should(ContainSubstring("10.42"), "failed getClientIPs")
+
+		// Wait for the windows_app_deployment pods to have an IP (We must wait 250s because it takes time)
+		Eventually(func() string {
+			ips, _ := e2e.PodIPsUsingLabel(kubeConfigFile, "app=windows-app")
+			return ips[0]
+		}, "250s", "10s").Should(ContainSubstring("10.42"), "failed getClientIPs")
+
+		// Test Linux -> Windows communication
+		cmd := "kubectl exec svc/client-curl --kubeconfig=" + kubeConfigFile + " -- curl -m7 windows-app-svc:3000"
+		Eventually(func() (string, error) {
+			return e2e.RunCommand(cmd)
+		}, "20s", "3s").Should(ContainSubstring("Welcome to PSTools for K8s Debugging"), "failed cmd: "+cmd)
+
+		// Test Windows -> Linux communication
+		cmd = "kubectl exec svc/windows-app-svc --kubeconfig=" + kubeConfigFile + " -- curl -m7 client-curl:8080"
+		Eventually(func() (string, error) {
+			return e2e.RunCommand(cmd)
+		}, "20s", "3s").Should(ContainSubstring("Welcome to nginx!"), "failed cmd: "+cmd)
+	})
 	It("Runs the mixed os sonobuoy plugin", func() {
 		cmd := "sonobuoy run --kubeconfig=/etc/rancher/rke2/rke2.yaml --plugin my-sonobuoy-plugins/mixed-workload-e2e/mixed-workload-e2e.yaml --aggregator-node-selector kubernetes.io/os:linux --wait"
 		res, err := e2e.RunCmdOnNode(cmd, serverNodeNames[0])
