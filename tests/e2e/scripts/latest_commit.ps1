@@ -3,7 +3,7 @@ param ($Branch, $CommitFile)
 (Invoke-RestMethod "https://api.github.com/repos/rancher/rke2/commits?per_page=5&sha=$Branch").sha | `
 Out-File -FilePath $CommitFile
 
-$StorageUrl = "https://storage.googleapis.com/rke2-ci-builds/rke2-images.windows-amd64-"
+$StorageUrl = "https://rke2-ci-builds.s3.amazonaws.com/rke2-images.windows-amd64-"
 $TopCommit = (Get-Content -TotalCount 1 $CommitFile)
 $StatusCode = Invoke-WebRequest $StorageUrl$TopCommit".tar.zst.sha256sum" -DisableKeepAlive -UseBasicParsing -Method head | % {$_.StatusCode}
 $Iterations = 0
