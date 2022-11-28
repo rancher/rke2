@@ -664,7 +664,7 @@ function Install-AirgapTarball() {
 }
 
 # Globals
-$STORAGE_URL = "https://storage.googleapis.com/rke2-ci-builds"
+$STORAGE_URL = "https://rke2-ci-builds.s3.amazonaws.com"
 $INSTALL_RKE2_GITHUB_URL = "https://github.com/rancher/rke2"
 
 Confirm-WindowsFeatures -RequiredFeatures @("Containers")
