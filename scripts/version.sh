@@ -31,11 +31,11 @@ REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code;
 PLATFORM=${GOOS}-${GOARCH}
 RELEASE=${PROG}.${PLATFORM}
 # hardcode versions unless set specifically
-KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.25.4}
-KUBERNETES_IMAGE_TAG=${KUBERNETES_IMAGE_TAG:-v1.25.4-rke2r1-build20221110}
-ETCD_VERSION=${ETCD_VERSION:-v3.5.4-k3s1}
+KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.26.0}
+KUBERNETES_IMAGE_TAG=${KUBERNETES_IMAGE_TAG:-v1.26.0-rke2r1-build20221209}
+ETCD_VERSION=${ETCD_VERSION:-v3.5.5-k3s1}
 PAUSE_VERSION=${PAUSE_VERSION:-3.6}
-CCM_VERSION=${CCM_VERSION:-v1.25.3-build20221017}
+CCM_VERSION=${CCM_VERSION:-v1.25.4-build20221129}
 
 if [ -d .git ]; then
     if [ -z "$GIT_TAG" ]; then
@@ -58,9 +58,13 @@ else
     VERSION="${KUBERNETES_VERSION}-dev+${COMMIT:0:8}$DIRTY"
 fi
 
-if [[ "${VERSION}" =~ ^v([0-9]+)\.([0-9]+)(\.[0-9]+)?([-+].*)?$ ]]; then
+if [[ "${VERSION}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)([-+][a-zA-Z0-9.]+)?[-+]((rke2r[0-9]+|dev.*))$ ]]; then
     VERSION_MAJOR=${BASH_REMATCH[1]}
     VERSION_MINOR=${BASH_REMATCH[2]}
+    PATCH=${BASH_REMATCH[3]}
+    RC=${BASH_REMATCH[4]}
+    RKE2_PATCH=${BASH_REMATCH[5]}
+    echo "VERSION=${VERSION} parsed as MAJOR=${MAJOR} MINOR=${MINOR} PATCH=${PATCH} RC=${RC} RKE2_PATCH=${RKE2_PATCH}"
 fi
 
 DOCKERIZED_VERSION="${VERSION/+/-}" # this mimics what kubernetes builds do

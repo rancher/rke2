@@ -78,7 +78,6 @@ var (
 		"disable": {
 			Usage: "(components) Do not deploy packaged components and delete any deployed components (valid items: " + strings.Join(DisableItems, ", ") + ")",
 		},
-		"disable-selinux":                   drop,
 		"disable-scheduler":                 copy,
 		"disable-cloud-controller":          copy,
 		"disable-network-policy":            drop,
@@ -120,9 +119,6 @@ var (
 		"agent-token-file":                  copy,
 		"server":                            copy,
 		"secrets-encryption":                hide,
-		"no-flannel":                        drop,
-		"no-deploy":                         drop,
-		"cluster-secret":                    drop,
 		"protect-kernel-defaults":           copy,
 		"snapshotter":                       copy,
 		"selinux":                           copy,

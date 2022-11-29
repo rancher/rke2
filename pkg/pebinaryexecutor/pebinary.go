@@ -19,6 +19,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
+	"github.com/natefinch/lumberjack"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
 	win "github.com/rancher/rke2/pkg/windows"
@@ -129,6 +130,16 @@ func (p *PEBinaryConfig) Kubelet(ctx context.Context, args []string) error {
 		cleanArgs = append(cleanArgs, arg)
 	}
 
+	logFile := filepath.Join(p.DataDir, "agent", "logs", "kubelet.log")
+	logrus.Infof("Logging kubelet to %s", logFile)
+	logOut := &lumberjack.Logger{
+		Filename:   logFile,
+		MaxSize:    50,
+		MaxBackups: 3,
+		MaxAge:     28,
+		Compress:   true,
+	}
+
 	logrus.Infof("Running RKE2 kubelet %v", cleanArgs)
 	go func() {
 		for {
@@ -140,8 +151,8 @@ func (p *PEBinaryConfig) Kubelet(ctx context.Context, args []string) error {
 			}()
 
 			cmd := exec.CommandContext(ctx, p.KubeletPath, cleanArgs...)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
+			cmd.Stdout = logOut
+			cmd.Stderr = logOut
 			if err := cmd.Run(); err != nil {
 				logrus.Errorf("Kubelet exited: %v", err)
 			}
