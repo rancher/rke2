@@ -2,10 +2,12 @@
 set -ex
 
 [ -n "$AWS_ACCESS_KEY_ID" ] || {
+  echo "AWS_ACCESS_KEY_ID is not set"
   exit 0
 }
 
 [ -n "$AWS_SECRET_ACCESS_KEY" ] || {
+  echo "AWS_SECRET_ACCESS_KEY is not set"
   exit 0
 }
 
@@ -43,7 +45,12 @@ TARBALL_NAME=$(basename $2 .tar.zst)-$3.tar.zst
 (cd $(dirname $2) && sha256sum $(basename $2)) >${TMPDIR}/${TARBALL_NAME}.sha256sum
 cp $2 ${TMPDIR}/${TARBALL_NAME}
 
-aws s3 cp ${TMPDIR}/${BUNDLE_NAME}* ${TMPDIR}/${TARBALL_NAME}* s3://rke2-ci-builds || exit 1
+for FILE in ${TMPDIR}/${BUNDLE_NAME}*; do
+  aws s3 cp ${FILE} s3://rke2-ci-builds || exit 1
+done
 
+for FILE in ${TMPDIR}/${TARBALL_NAME}*; do
+  aws s3 cp ${FILE} s3://rke2-ci-builds || exit 1
+done
 echo "Build uploaded" >&2
 echo "https://rke2-ci-builds.s3.amazonaws.com/${BUNDLE_NAME}"
