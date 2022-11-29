@@ -2,10 +2,12 @@
 set -ex
 
 [ -n "$AWS_ACCESS_KEY_ID" ] || {
+  echo "AWS_ACCESS_KEY_ID is not set"
   exit 0
 }
 
 [ -n "$AWS_SECRET_ACCESS_KEY" ] || {
+  echo "AWS_SECRET_ACCESS_KEY is not set"
   exit 0
 }
 
@@ -34,7 +36,7 @@ done <"${RPM_LIST}"
 
 umask 077
 
-aws s3 cp ${RPM_DIR}/*.rpm "s3://rke2-ci-builds" || exit 1
+aws s3 cp ${RPM_DIR}/ s3://rke2-ci-builds --exclude "*" --include "*.rpm" --recursive || exit 1
 
 echo "Build uploaded" >&2
 echo "https://rke2-ci-builds.s3.amazonaws.com/${BUNDLE_NAME}"
