@@ -63,7 +63,6 @@ node {
                   writeFile file: filename, text: configContents +
                     "\npassword = \"" + RKE2_RHEL_PASSWORD + "\"" +
                     "\nssh_key = \"" + AWS_SSH_KEY_NAME + "\"" +
-                    "\naccess_key = \"/go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem\""
                     "\naccess_key = \"/go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem\"" +
                     "\nresource_name = \"" + RKE2_HOSTNAME_PREFIX + "\"" +
                     "\nke2_version = \"" + RKE2_VERSION + "\"" +
@@ -76,12 +75,14 @@ node {
               stage('Run Tests') {
                 sh "docker run --name ${testContainer} -t --env-file ${envFile} " +
                   "${imageName} sh -c \"chmod 400 /go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem && " +
-                  "go test -timeout=${timeout} -v ./tests/terraform/createcluster_test.go ./tests/terraform/cluster.go ./tests/terraform/testutils.go\""
+                  "go test -timeout=${timeout} -v ./tests/terraform/${RKE2_TESTCASE}/... ${RKE2_TEST_ARGS}\""
               }
             } finally {           
               stage('Cleanup') {
-                sh "docker rm -v ${testContainer}"
-                sh "docker rmi -f ${imageName}"
+                // Stop and remove containers and images, but don't fail job if these fail for whatever reason (generally due to a previous step failing)
+                sh "docker stop ${testContainer} || true"
+                sh "docker rm -v ${testContainer} || true"
+                sh "docker rmi -f ${imageName} || true"
               }
             } // finally
           } // dir 
