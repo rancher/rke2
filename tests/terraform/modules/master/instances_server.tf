@@ -291,7 +291,7 @@ resource "aws_route53_record" "aws_route53" {
 }
 
 data "aws_route53_zone" "selected" {
-  name         = var.qa_space
+  name         = var.hosted_zone
   private_zone = false
 }
 
