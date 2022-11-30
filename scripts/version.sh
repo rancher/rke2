@@ -55,7 +55,7 @@ fi
 if [[ -n "$GIT_TAG" ]]; then
     VERSION=$GIT_TAG
 else
-    VERSION="${KUBERNETES_VERSION}-dev+${COMMIT:0:8}$DIRTY"
+    VERSION="${KUBERNETES_VERSION}+dev.${COMMIT:0:8}$DIRTY"
 fi
 
 if [[ "${VERSION}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)([-+][a-zA-Z0-9.]+)?[-+]((rke2r[0-9]+|dev.*))$ ]]; then
