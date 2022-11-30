@@ -23,7 +23,7 @@ variable "aws_user" {}
 variable "ec2_instance_class" {}
 variable "volume_size" {}
 variable "iam_role" {}
-variable "qa_space" {}
+variable "hosted_zone" {}
 variable "region" {}
 variable "resource_name" {}
 variable "sg_id" {}

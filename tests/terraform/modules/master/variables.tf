@@ -11,7 +11,7 @@ variable "no_of_server_nodes" {}
 variable "password" {
   default = "password"
 }
-variable "qa_space" {}
+variable "hosted_zone" {}
 variable "region" {}
 variable "resource_name" {}
 variable "rke2_version" {}

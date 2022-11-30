@@ -24,7 +24,7 @@ module "master" {
   ec2_instance_class = var.ec2_instance_class
   volume_size        = var.volume_size
   iam_role           = var.iam_role
-  qa_space           = var.qa_space
+  hosted_zone        = var.hosted_zone
   region             = var.region
   resource_name      = var.resource_name
   sg_id              = var.sg_id
