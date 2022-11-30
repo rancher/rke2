@@ -28,6 +28,14 @@ spec:
                 values:
                 - client
             topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
 ---
 apiVersion: v1
 kind: Service
@@ -42,3 +50,5 @@ spec:
     app: client
   ports:
   - port: 8080
+    protocol: TCP
+    targetPort: 80

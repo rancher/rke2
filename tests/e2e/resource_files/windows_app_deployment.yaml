@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: windows-app-deployment
+spec:
+  selector:
+    matchLabels:
+      app: windows-app
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: windows-app
+    spec:
+      containers:
+        - name: windows-app
+          image: mbuilsuse/pstools:v0.2.0
+          ports:
+            - containerPort: 3000
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - windows
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: windows-app-svc
+  name: windows-app-svc
+  namespace: default
+spec:
+  type: NodePort
+  ports:
+    - port: 3000
+      nodePort: 30096
+      name: http
+  selector:
+    app: windows-app
