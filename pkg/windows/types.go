@@ -46,6 +46,7 @@ type CalicoConfig struct {
 	ETCDCertFile          string
 	ETCDCaCertFile        string
 	KubeConfig            *CalicoKubeConfig
+	Interface             string
 }
 
 type CalicoKubeConfig struct {

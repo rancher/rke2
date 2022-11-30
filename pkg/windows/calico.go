@@ -5,28 +5,19 @@ package windows
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net"
-	"net/http"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"text/template"
-	"time"
 
-	"github.com/Microsoft/hcsshim"
 	"github.com/ghodss/yaml"
-	wapi "github.com/iamacarpet/go-win64api"
 	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/version"
-	"github.com/libp2p/go-netroute"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	opv1 "github.com/tigera/operator/api/v1"
 	authv1 "k8s.io/api/authentication/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -279,18 +270,28 @@ func (c *Calico) Start(ctx context.Context) error {
 
 // generateCalicoNetworks creates the overlay networks for internode networking
 func (c *Calico) generateCalicoNetworks() error {
-	if err := deleteAllNetworksOnNodeRestart(); err != nil {
+	if err := deleteAllNetworks(); err != nil {
 		return err
 	}
 
+	// There are four ways to select the vxlan interface. In order of priority:
+	// 1 - VXLAN_ADAPTER env variable
+	// 2 - c.CNICfg.Interface which set if NodeAddressAutodetection is set (Calico HelmChart)
+	// 3 - nodeIP if defined
+	// 4 - None of the above. In that case, by default the interface with the default route is picked
 	vxlanAdapter := os.Getenv("VXLAN_ADAPTER")
-
-	if vxlanAdapter == "" && c.CNICfg.IP != "" {
-		iFace, err := findInterface(c.CNICfg.IP)
-		if err != nil {
-			return err
+	if vxlanAdapter == "" {
+		if c.CNICfg.Interface != "" {
+			vxlanAdapter = c.CNICfg.Interface
 		}
-		vxlanAdapter = iFace
+
+		if c.CNICfg.Interface == "" && c.CNICfg.IP != "" {
+			iFace, err := findInterface(c.CNICfg.IP)
+			if err != nil {
+				return err
+			}
+			vxlanAdapter = iFace
+		}
 	}
 
 	mgmt, err := createHnsNetwork(c.CNICfg.Mode, vxlanAdapter)
@@ -340,35 +341,35 @@ func (c *Calico) overrideCalicoConfigByHelm(restConfig *rest.Config) error {
 		if err != nil {
 			return err
 		}
+		logrus.Debugf("this is IPAutoDetectionMethod: %s", IPAutoDetectionMethod)
 		c.CNICfg.IPAutoDetectionMethod = IPAutoDetectionMethod
+
+		var calicoInterface string
+		if strings.Contains(IPAutoDetectionMethod, "cidrs") {
+			calicoInterface, err = findInterfaceCIDR(nodeV4.CIDRS)
+			if err != nil {
+				return err
+			}
+		}
+
+		if strings.Contains(IPAutoDetectionMethod, "interface") {
+			calicoInterface, err = findInterfaceRegEx(nodeV4.Interface)
+			if err != nil {
+				return err
+			}
+		}
+
+		if strings.Contains(IPAutoDetectionMethod, "can-reach") {
+			calicoInterface, err = findInterfaceReach(nodeV4.CanReach)
+			if err != nil {
+				return err
+			}
+		}
+
+		c.CNICfg.Interface = calicoInterface
 	}
 
 	return nil
-}
-
-// nodeAddressAutodetection processes the HelmChartConfig info and returns the nodeAddressAutodetection method expected by Calico config
-func nodeAddressAutodetection(autoDetect opv1.NodeAddressAutodetection) (string, error) {
-	if autoDetect.FirstFound != nil && *autoDetect.FirstFound {
-		return "first-found", nil
-	}
-
-	if autoDetect.CanReach != "" {
-		return "can-reach=" + autoDetect.CanReach, nil
-	}
-
-	if autoDetect.Interface != "" {
-		return "interface=" + autoDetect.Interface, nil
-	}
-
-	if autoDetect.SkipInterface != "" {
-		return "skip-interface=" + autoDetect.SkipInterface, nil
-	}
-
-	if len(autoDetect.CIDRS) > 0 {
-		return "cidr=" + strings.Join(autoDetect.CIDRS, ","), nil
-	}
-
-	return "", errors.New("the passed autoDetect value is not supported. Please read Calico docs")
 }
 
 func startFelix(ctx context.Context, config *CalicoConfig) {
@@ -412,173 +413,6 @@ func startCalico(ctx context.Context, config *CalicoConfig) error {
 	return nil
 }
 
-func deleteAllNetworksOnNodeRestart() error {
-	networks, err := hcsshim.HNSListNetworkRequest("GET", "", "")
-	if err != nil {
-		return err
-	}
-
-	for _, network := range networks {
-		if network.Name != "nat" {
-			_, err = network.Delete()
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-// createHnsNetwork creates the network that will connect nodes and returns its managementIP
-func createHnsNetwork(backend string, vxlanAdapter string) (string, error) {
-	var network hcsshim.HNSNetwork
-	if backend == "vxlan" {
-		// Ignoring the return because both true and false without an error represent that the firewall rule was created or already exists
-		if _, err := wapi.FirewallRuleAdd("OverlayTraffic4789UDP", "Overlay network traffic UDP", "", "4789", wapi.NET_FW_IP_PROTOCOL_UDP, wapi.NET_FW_PROFILE2_ALL); err != nil {
-			return "", fmt.Errorf("error creating firewall rules: %v", err)
-		}
-		logrus.Debugf("Creating VXLAN network using the vxlanAdapter: %s", vxlanAdapter)
-		network = hcsshim.HNSNetwork{
-			Type:               "Overlay",
-			Name:               CalicoHnsNetworkName,
-			NetworkAdapterName: vxlanAdapter,
-			Subnets: []hcsshim.Subnet{
-				{
-					AddressPrefix:  "192.168.255.0/30",
-					GatewayAddress: "192.168.255.1",
-					Policies: []json.RawMessage{
-						[]byte("{ \"Type\": \"VSID\", \"VSID\": 9999 }"),
-					},
-				},
-			},
-		}
-	} else {
-		return "", fmt.Errorf("The Calico backend %s is not supported. Only vxlan backend is supported", backend)
-	}
-	// Currently, only vxlan is supported. Leaving the code for future
-	//} else {
-	//	network = hcsshim.HNSNetwork{
-	//		Type: "L2Bridge",
-	//		Name: CalicoHnsNetworkName,
-	//		Subnets: []hcsshim.Subnet{
-	//			{
-	//				AddressPrefix:  "192.168.255.0/30",
-	//				GatewayAddress: "192.168.255.1",
-	//			},
-	//		},
-	//	}
-	//}
-
-	if _, err := network.Create(); err != nil {
-		return "", fmt.Errorf("error creating the %s network: %v", CalicoHnsNetworkName, err)
-	}
-
-	// Check if network exists. If it does not after 5 minutes, fail
-	for start := time.Now(); time.Since(start) < 5*time.Minute; {
-		network, err := hcsshim.GetHNSNetworkByName(CalicoHnsNetworkName)
-		if err == nil {
-			return network.ManagementIP, nil
-		}
-	}
-
-	return "", fmt.Errorf("failed to create %s network", CalicoHnsNetworkName)
-}
-
-func platformType() (string, error) {
-	aksNet, _ := hcsshim.GetHNSNetworkByName("azure")
-	if aksNet != nil {
-		return "aks", nil
-	}
-
-	eksNet, _ := hcsshim.GetHNSNetworkByName("vpcbr*")
-	if eksNet != nil {
-		return "eks", nil
-	}
-
-	// EC2
-	ec2Resp, err := http.Get("http://169.254.169.254/latest/meta-data/local-hostname")
-	if err != nil && hasTimedOut(err) {
-		return "", err
-	}
-	if ec2Resp != nil {
-		defer ec2Resp.Body.Close()
-		if ec2Resp.StatusCode == http.StatusOK {
-			return "ec2", nil
-		}
-	}
-
-	// GCE
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "http://metadata.google.internal/computeMetadata/v1/instance/hostname", nil)
-	if err != nil {
-		return "", err
-	}
-	req.Header.Add("Metadata-Flavor", "Google")
-	gceResp, err := client.Do(req)
-	if err != nil && hasTimedOut(err) {
-		return "", err
-	}
-	if gceResp != nil {
-		defer gceResp.Body.Close()
-		if gceResp.StatusCode == http.StatusOK {
-			return "gce", nil
-		}
-	}
-
-	return "bare-metal", nil
-}
-
-func hasTimedOut(err error) bool {
-	switch err := err.(type) {
-	case *url.Error:
-		if err, ok := err.Err.(net.Error); ok && err.Timeout() {
-			return true
-		}
-	case net.Error:
-		if err.Timeout() {
-			return true
-		}
-	case *net.OpError:
-		if err.Timeout() {
-			return true
-		}
-	}
-	errTxt := "use of closed network connection"
-	if err != nil && strings.Contains(err.Error(), errTxt) {
-		return true
-	}
-	return false
-}
-
-func autoConfigureIpam(it string) bool {
-	if it == "host-local" {
-		return true
-	}
-	return false
-}
-
-func setMetaDataServerRoute(mgmt string) error {
-	ip := net.ParseIP(mgmt)
-	if ip == nil {
-		return fmt.Errorf("not a valid ip")
-	}
-
-	metaIp := net.ParseIP("169.254.169.254/32")
-	router, err := netroute.New()
-	if err != nil {
-		return err
-	}
-
-	_, _, preferredSrc, err := router.Route(ip)
-	if err != nil {
-		return err
-	}
-
-	_, _, _, err = router.RouteWithSrc(nil, preferredSrc, metaIp) // input not used on windows
-	return err
-}
-
 func generateGeneralCalicoEnvs(config *CalicoConfig) []string {
 	return []string{
 		fmt.Sprintf("KUBE_NETWORK=%s", config.KubeNetwork),
@@ -615,27 +449,4 @@ func generateGeneralCalicoEnvs(config *CalicoConfig) []string {
 
 		fmt.Sprintf("VXLAN_VNI=%s", config.Felix.Vxlanvni),
 	}
-}
-
-// findInterface returns the name of the interface that contains the passed ip
-func findInterface(ip string) (string, error) {
-	iFaces, err := net.Interfaces()
-	if err != nil {
-		return "", err
-	}
-
-	for _, iFace := range iFaces {
-		addrs, err := iFace.Addrs()
-		if err != nil {
-			return "", err
-		}
-		logrus.Debugf("evaluating if the interface: %s with addresses %v, contains ip: %s", iFace.Name, addrs, ip)
-		for _, addr := range addrs {
-			if strings.Contains(addr.String(), ip) {
-				return iFace.Name, nil
-			}
-		}
-	}
-
-	return "", fmt.Errorf("no interface has the ip: %s", ip)
 }
