@@ -65,8 +65,8 @@ node {
                     "\nssh_key = \"" + AWS_SSH_KEY_NAME + "\"" +
                     "\naccess_key = \"/go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem\"" +
                     "\nresource_name = \"" + RKE2_HOSTNAME_PREFIX + "\"" +
-                    "\nke2_version = \"" + RKE2_VERSION + "\"" +
-                    "\nke2_channel = \"" + RKE2_CHANNEL + "\""
+                    "\nrke2_version = \"" + RKE2_VERSION + "\"" +
+                    "\nrke2_channel = \"" + RKE2_CHANNEL + "\""
                 }
 
                 sh "./tests/terraform/scripts/configure.sh"
