@@ -254,3 +254,14 @@ func UpgradeCluster(serverNodenames []string, agentNodenames []string) error {
 	}
 	return nil
 }
+
+// PodIPsUsingLabel returns the IPs of the pods with a label (only single-stack supported)
+func PodIPsUsingLabel(kubeConfigFile string, label string) ([]string, error) {
+	cmd := `kubectl get pods -l ` + label + ` -o=jsonpath='{range .items[*]}{.status.podIPs[*].ip}{" "}{end}' --kubeconfig=` + kubeConfigFile
+	res, err := RunCommand(cmd)
+	if err != nil {
+		return nil, err
+	}
+
+	return strings.Split(res, " "), nil
+}
