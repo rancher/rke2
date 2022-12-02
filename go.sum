@@ -455,8 +455,8 @@ github.com/fatih/color v1.12.0/go.mod h1:ELkj/draVOlAH/xkhN6mQ50Qd0MPOk5AAr3maGE
 github.com/fatih/structs v1.1.0/go.mod h1:9NiDSp5zOcgEDl+j00MP/WkGVPOlPRLejGD8Ga6PJ7M=
 github.com/felixge/httpsnoop v1.0.1 h1:lvB5Jl89CsZtGIWuTcDM1E/vkVs49/Ml7JJe07l8SPQ=
 github.com/felixge/httpsnoop v1.0.1/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
-github.com/flannel-io/flannel v0.20.1 h1:3P3pdkhgcb+HAF9qNBV7gSt21IIQpyMJh7lVDSYIBls=
-github.com/flannel-io/flannel v0.20.1/go.mod h1:A23fmdRQyN4i6Gs5UzvVTlj8kcswPYIqisLhgUkhnxk=
+github.com/flannel-io/flannel v0.20.2 h1:/hLQsvyQHQQV0mS9xxWVMf1oHPFBSReM1j5D9Cdm5dc=
+github.com/flannel-io/flannel v0.20.2/go.mod h1:A23fmdRQyN4i6Gs5UzvVTlj8kcswPYIqisLhgUkhnxk=
 github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568/go.mod h1:xEzjJPgXI435gkrCt3MPfRiAkVrwSbHsst4LCFVfpJc=
 github.com/fogleman/gg v1.2.1-0.20190220221249-0403632d5b90/go.mod h1:R/bRT+9gY/C5z7JzPU0zXsXHKM4/ayA+zqcVNZzPa1k=
 github.com/form3tech-oss/jwt-go v3.2.2+incompatible/go.mod h1:pbq4aXjuKjdthFRnoDwaVPLA+WlJuPGy+QneDUgJi2k=
@@ -910,10 +910,10 @@ github.com/k3s-io/etcd/raft/v3 v3.5.4-k3s1 h1:wr4FPk1k51wyVmo5WFdU7PppvxgWkhTpVU
 github.com/k3s-io/etcd/raft/v3 v3.5.4-k3s1/go.mod h1:SCuunjYvZFC0fBX0vxMSPjuZmpcSk+XaAcMrD6Do03w=
 github.com/k3s-io/etcd/server/v3 v3.5.4-k3s1 h1:swbvfSDpl7QsYO6Vh+EBgxZCMyG4N1tUgzLPrIjTvVg=
 github.com/k3s-io/etcd/server/v3 v3.5.4-k3s1/go.mod h1:S5/YTU15KxymM5l3T6b09sNOHPXqGYIZStpuuGbb65c=
-github.com/k3s-io/helm-controller v0.13.0 h1:JfGEU6zrA6wBuVIBt73TbQYC3H+WDJaAc6Q5NbbaDwk=
-github.com/k3s-io/helm-controller v0.13.0/go.mod h1:f8aOuHQDpkshmUK/GiE+jJCJkUL8vp+EzCjV0uCFcsY=
-github.com/k3s-io/k3s v1.25.5-0.20221122214316-614da78e4364 h1:GEHUcnY0foSPu+ForCTu7BLiO/K3PmIjCENsUdpksbc=
-github.com/k3s-io/k3s v1.25.5-0.20221122214316-614da78e4364/go.mod h1:sowXeQjYoNzJIYYlg2vjpXNzU/7p7DerT+BCq031YLw=
+github.com/k3s-io/helm-controller v0.13.1 h1:eG2yZ0QzbtcfMe8GpTVtRtP6HgMDO/Pr9Q1EGbMKKCA=
+github.com/k3s-io/helm-controller v0.13.1/go.mod h1:f8aOuHQDpkshmUK/GiE+jJCJkUL8vp+EzCjV0uCFcsY=
+github.com/k3s-io/k3s v1.25.5-0.20221202170721-b255b07de21d h1:UmblXsFG2u3Dxyo50S9yuoX7NW7U6szgN9l35wkT4p8=
+github.com/k3s-io/k3s v1.25.5-0.20221202170721-b255b07de21d/go.mod h1:lWi3/tZoXLdnh/CHTN6mvAXYcqoNVtK5DL6ePsoFeb8=
 github.com/k3s-io/kine v0.9.6 h1:qomCtPrxIpFi09Q6JUDEbjWPjCliDgJ1Ns2N7l7aWxI=
 github.com/k3s-io/kine v0.9.6/go.mod h1:3N3AE7WgqbX4wYKJ9NdUItJ0i8koC+qaKbYc2sEaVns=
 github.com/k3s-io/klog v1.0.0-k3s2 h1:yyvD2bQbxG7m85/pvNctLX2bUDmva5kOBvuZ77tTGBA=

@@ -18,8 +18,8 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-dns-node-cache:1.21.2-build20221011
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20221011
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.6.2-build20221202
-    ${REGISTRY}/rancher/klipper-helm:v0.7.3-build20220613
-    ${REGISTRY}/rancher/klipper-lb:v0.3.5
+    ${REGISTRY}/rancher/klipper-helm:v0.7.4-build20221121
+    ${REGISTRY}/rancher/klipper-lb:v0.4.0
     ${REGISTRY}/rancher/pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.1.1
     ${REGISTRY}/rancher/nginx-ingress-controller:nginx-1.2.1-hardened9

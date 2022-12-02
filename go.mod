@@ -77,8 +77,8 @@ require (
 	github.com/google/go-containerregistry v0.7.0
 	github.com/gruntwork-io/terratest v0.40.19
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
-	github.com/k3s-io/helm-controller v0.13.0
-	github.com/k3s-io/k3s v1.25.5-0.20221122214316-614da78e4364 // master
+	github.com/k3s-io/helm-controller v0.13.1
+	github.com/k3s-io/k3s v1.25.5-0.20221202170721-b255b07de21d // master
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/onsi/ginkgo/v2 v2.1.6
@@ -188,7 +188,7 @@ require (
 	github.com/euank/go-kmsg-parser v2.0.0+incompatible // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
-	github.com/flannel-io/flannel v0.20.1 // indirect
+	github.com/flannel-io/flannel v0.20.2 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-ole/go-ole v1.2.4 // indirect
