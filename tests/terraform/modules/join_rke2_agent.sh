@@ -43,7 +43,7 @@ then
    subscription-manager repos --enable=rhel-7-server-extras-rpms
 fi
 
-if [ "$node_os" = "centos8" ] || [ "$node_os" = "rhel8" ]
+if [ "$node_os" = "centos8" ] || [ "$node_os" = "rhel8" ] || [ "$node_os" = "oracle8" ]
 then
   yum install tar -y
   yum install iptables -y
@@ -70,7 +70,7 @@ else
 fi
 if [ -n "$worker_flags" ] && [[ "$worker_flags" == *"cis"* ]]
 then
-    if [[ "$node_os" == *"rhel"* ]] || [[ "$node_os" == *"centos"* ]]
+    if [[ "$node_os" == *"rhel"* ]] || [[ "$node_os" == *"centos"* ]] || [[ "$node_os" == *"oracle"* ]]
     then
         cp -f /usr/share/rke2/rke2-cis-sysctl.conf /etc/sysctl.d/60-rke2-cis.conf
     else
