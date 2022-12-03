@@ -26,8 +26,9 @@ func findRke2Executable() string {
 // Rke2Cmd launches the provided Rke2 command via exec. Command blocks until finished.
 // Kubectl commands can also be passed.
 // Command output from both Stderr and Stdout is provided via string.
-//   cmdEx1, err := Rke2Cmd("etcd-snapshot", "ls")
-//   cmdEx2, err := Rke2Cmd("kubectl", "get", "pods", "-A")
+//
+//	cmdEx1, err := Rke2Cmd("etcd-snapshot", "ls")
+//	cmdEx2, err := Rke2Cmd("kubectl", "get", "pods", "-A")
 func Rke2Cmd(cmdName string, cmdArgs ...string) (string, error) {
 	if cmdName == "kubectl" {
 		byteOut, err := exec.Command(cmdName, cmdArgs...).CombinedOutput()
