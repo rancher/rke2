@@ -118,10 +118,11 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 	// Adding PSAs
 	podSecurityConfigFile := clx.String("pod-security-admission-config-file")
 	if podSecurityConfigFile == "" {
-		if err := setPSAs(isCISMode(clx)); err != nil {
-			return nil, err
-		}
 		podSecurityConfigFile = defaultPSAConfigFile
+	}
+
+	if err := setPSAs(isCISMode(clx), podSecurityConfigFile); err != nil {
+		return nil, err
 	}
 
 	return &podexecutor.StaticPodConfig{
