@@ -26,8 +26,10 @@ steps:
     image: rancher/dapper:v0.5.5
     environment:
       ENABLE_REGISTRY: 'true'
-      GCLOUD_AUTH:
-        from_secret: gcloud_auth
+      AWS_ACCESS_KEY_ID:
+        from_secret: AWS_ACCESS_KEY_ID-artifact-uploader
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: AWS_SECRET_ACCESS_KEY-artifact-uploader 
     commands:
       - docker pull --quiet rancher/hardened-build-base:v1.16.10b7
       - docker pull --quiet alpine:3.12
@@ -81,11 +83,13 @@ steps:
 
   - name: test
     image: rancher/dapper:v0.5.5
-    secrets: [ gcloud_auth ]
+    secrets: [ AWS_ACCESS_KEY_ID-artifact-uploader, AWS_SECRET_ACCESS_KEY-artifact-uploader ]
     environment:
       ENABLE_REGISTRY: 'true'
-      GCLOUD_AUTH:
-        from_secret: gcloud_auth
+      AWS_ACCESS_KEY_ID:
+        from_secret: AWS_ACCESS_KEY_ID-artifact-uploader
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: AWS_SECRET_ACCESS_KEY-artifact-uploader  
     commands:
       - dapper -f Dockerfile --target dapper make test
     volumes:
