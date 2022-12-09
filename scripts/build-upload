@@ -1,7 +1,13 @@
 #!/bin/bash
 set -ex
 
-[ -n "$GCLOUD_AUTH" ] || {
+[ -n "$AWS_ACCESS_KEY_ID" ] || {
+  echo "AWS_ACCESS_KEY_ID is not set"
+  exit 0
+}
+
+[ -n "$AWS_SECRET_ACCESS_KEY" ] || {
+  echo "AWS_SECRET_ACCESS_KEY is not set"
   exit 0
 }
 
@@ -31,25 +37,6 @@ cleanup() {
 }
 trap cleanup EXIT INT
 
-GCLOUD_JSON=${TMPDIR}/.gcloud.json
-[ -z "${GCLOUD_AUTH}" ] || echo "${GCLOUD_AUTH}" >${GCLOUD_JSON}
-[ -s "${GCLOUD_JSON}" ] || {
-  echo "gcloud auth not defined" >&2
-  exit 1
-}
-
-BOTO_CONF=${TMPDIR}/.boto
-[ -s "${BOTO_CONF}" ] || cat >${BOTO_CONF} <<END
-[Credentials]
-gs_service_key_file = ${GCLOUD_JSON}
-[Boto]
-https_validate_certificates = True
-[GSUtil]
-content_language = en
-default_api_version = 2
-default_project_id = rancher-dev
-END
-
 BUNDLE_NAME=$(basename $1 .tar.gz)-$3.tar.gz
 (cd $(dirname $1) && sha256sum $(basename $1)) >${TMPDIR}/${BUNDLE_NAME}.sha256sum
 cp $1 ${TMPDIR}/${BUNDLE_NAME}
@@ -58,12 +45,12 @@ TARBALL_NAME=$(basename $2 .tar.zst)-$3.tar.zst
 (cd $(dirname $2) && sha256sum $(basename $2)) >${TMPDIR}/${TARBALL_NAME}.sha256sum
 cp $2 ${TMPDIR}/${TARBALL_NAME}
 
-[ -d "${TMPDIR}/gsutil" ] || curl -sfL https://storage.googleapis.com/pub/gsutil.tar.gz | tar xz -C ${TMPDIR}
+for FILE in ${TMPDIR}/${BUNDLE_NAME}*; do
+  aws s3 cp ${FILE} s3://rke2-ci-builds || exit 1
+done
 
-HOME=${TMPDIR}
-PATH=${PATH}:${HOME}/gsutil
-
-gsutil cp ${TMPDIR}/${BUNDLE_NAME}* ${TMPDIR}/${TARBALL_NAME}* gs://rke2-ci-builds || exit 1
-
+for FILE in ${TMPDIR}/${TARBALL_NAME}*; do
+  aws s3 cp ${FILE} s3://rke2-ci-builds || exit 1
+done
 echo "Build uploaded" >&2
-echo "https://storage.googleapis.com/rke2-ci-builds/${BUNDLE_NAME}"
+echo "https://rke2-ci-builds.s3.amazonaws.com/${BUNDLE_NAME}"
