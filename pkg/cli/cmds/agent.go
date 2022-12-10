@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	k3sAgentBase = mustCmdFromK3S(cmds.NewAgentCommand(AgentRun), map[string]*K3SFlagOption{
+	k3sAgentBase = mustCmdFromK3S(cmds.NewAgentCommand(AgentRun), K3SFlagSet{
 		"config":          copy,
 		"debug":           copy,
 		"v":               hide,

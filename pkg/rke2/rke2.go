@@ -14,7 +14,6 @@ import (
 	containerdk3s "github.com/k3s-io/k3s/pkg/agent/containerd"
 	"github.com/k3s-io/k3s/pkg/cli/agent"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
-	"github.com/k3s-io/k3s/pkg/cli/etcdsnapshot"
 	"github.com/k3s-io/k3s/pkg/cli/server"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
@@ -126,11 +125,6 @@ func Agent(clx *cli.Context, cfg Config) error {
 		return err
 	}
 	return agent.Run(clx)
-}
-
-func EtcdSnapshot(clx *cli.Context, cfg Config) error {
-	cmds.ServerConfig.DatastoreEndpoint = "etcd"
-	return etcdsnapshot.Run(clx)
 }
 
 func setup(clx *cli.Context, cfg Config, isServer bool) error {
