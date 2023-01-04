@@ -189,6 +189,7 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		DataDir:               dataDir,
 		AuditPolicyFile:       clx.String("audit-policy-file"),
 		KubeletPath:           cfg.KubeletPath,
+		KubeProxyChan:         make(chan struct{}),
 		DisableETCD:           clx.Bool("disable-etcd"),
 		IsServer:              isServer,
 		ControlPlaneResources: controlPlaneResources,
