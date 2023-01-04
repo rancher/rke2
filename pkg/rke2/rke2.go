@@ -155,7 +155,6 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 		"etcd":                     !isServer || forceRestart || clx.Bool("disable-etcd"),
 		"kube-apiserver":           !isServer || forceRestart || clx.Bool("disable-apiserver"),
 		"kube-controller-manager":  !isServer || forceRestart || clx.Bool("disable-controller-manager"),
-		"kube-proxy":               !isServer || forceRestart || clx.Bool("disable-kube-proxy"),
 		"kube-scheduler":           !isServer || forceRestart || clx.Bool("disable-scheduler"),
 	}
 	// adding force restart file when cluster reset restore path is passed
