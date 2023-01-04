@@ -108,6 +108,7 @@ type StaticPodConfig struct {
 	AuditPolicyFile string
 	PSAConfigFile   string
 	KubeletPath     string
+	KubeProxyChan   chan struct{}
 	CISMode         bool
 	DisableETCD     bool
 	IsServer        bool
@@ -179,11 +180,16 @@ func (s *StaticPodConfig) Kubelet(ctx context.Context, args []string) error {
 		}
 	}()
 
+	go cleanupKubeProxy(s.ManifestsDir, s.KubeProxyChan)
+
 	return nil
 }
 
 // KubeProxy starts Kube Proxy as a static pod.
 func (s *StaticPodConfig) KubeProxy(ctx context.Context, args []string) error {
+	// close the channel so that the cleanup goroutine does not remove the pod manifest
+	close(s.KubeProxyChan)
+
 	image, err := s.Resolver.GetReference(images.KubeProxy)
 	if err != nil {
 		return err
@@ -605,4 +611,26 @@ func writeIfNotExists(path string, content []byte) error {
 	defer file.Close()
 	_, err = file.Write(content)
 	return err
+}
+
+// cleanupKubeProxy waits to see if kube-proxy is run. If kube-proxy does not run and
+// close the channel within one minute of this goroutine being started by the kubelet
+// runner, then the kube-proxy static pod manifest is removed from disk. The kubelet will
+// clean up the static pod soon after.
+func cleanupKubeProxy(path string, c <-chan struct{}) {
+	manifestPath := filepath.Join(path, "kube-proxy.yaml")
+	if _, err := os.Open(manifestPath); err != nil {
+		if os.IsNotExist(err) {
+			return
+		}
+		logrus.Fatalf("unable to check for kube-proxy static pod: %v", err)
+	}
+
+	select {
+	case <-c:
+		return
+	case <-time.After(time.Minute * 1):
+		logrus.Infof("Removing kube-proxy static pod manifest: kube-proxy has been disabled")
+		os.Remove(manifestPath)
+	}
 }
