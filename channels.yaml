@@ -1,9 +1,9 @@
 channels:
 - name: stable
-  latest: v1.24.9+rke2r1
+  latest: v1.24.8+rke2r1
 - name: latest
   latestRegexp: .*
-  excludeRegexp: (^[^+]+-|v1\.21\.3\+rke2r2)
+  excludeRegexp: (^[^+]+-|v1\.25\.5\+rke2r1|v1\.26\.0\+rke2r1)
 - name: v1.18
   latestRegexp: v1\.18\..*
   excludeRegexp: ^[^+]+-
@@ -26,13 +26,13 @@ channels:
   excludeRegexp: ^[^+]+-
 - name: v1.24
   latestRegexp: v1\.24\..*
-  excludeRegexp: ^[^+]+-
+  excludeRegexp: (^[^+]+-|v1\.24\.9\+rke2r1)
 - name: v1.25
   latestRegexp: v1\.25\..*
-  excludeRegexp: ^[^+]+-
+  excludeRegexp: (^[^+]+-|v1\.25\.5\+rke2r1)
 - name: v1.26
   latestRegexp: v1\.26\..*
-  excludeRegexp: ^[^+]+-
+  excludeRegexp: (^[^+]+-|v1\.26\.0\+rke2r1)
 github:
   owner: rancher
   repo: rke2
