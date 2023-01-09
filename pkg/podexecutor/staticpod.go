@@ -19,6 +19,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
+	"github.com/natefinch/lumberjack"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/staticpod"
@@ -165,11 +166,22 @@ func (s *StaticPodConfig) Kubelet(ctx context.Context, args []string) error {
 		)
 	}
 	args = append(extraArgs, args...)
+
+	logFile := filepath.Join(s.DataDir, "agent", "logs", "kubelet.log")
+	logrus.Infof("Logging kubelet to %s", logFile)
+	logOut := &lumberjack.Logger{
+		Filename:   logFile,
+		MaxSize:    50,
+		MaxBackups: 3,
+		MaxAge:     28,
+		Compress:   true,
+	}
+
 	go func() {
 		for {
 			cmd := exec.CommandContext(ctx, s.KubeletPath, args...)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
+			cmd.Stdout = logOut
+			cmd.Stderr = logOut
 			addDeathSig(cmd)
 
 			err := cmd.Run()
