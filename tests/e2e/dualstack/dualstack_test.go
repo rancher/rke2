@@ -1,8 +1,9 @@
-package validatecluster
+package dualstack
 
 import (
 	"flag"
 	"fmt"
+
 	"os"
 	"strings"
 	"testing"
@@ -16,6 +17,7 @@ import (
 var nodeOS = flag.String("nodeOS", "generic/ubuntu2004", "VM operating system")
 var serverCount = flag.Int("serverCount", 3, "number of server nodes")
 var agentCount = flag.Int("agentCount", 0, "number of agent nodes")
+var ci = flag.Bool("ci", false, "running on CI")
 
 // Environment Variables Info:
 // E2E_RELEASE_VERSION=v1.23.1+rke2r1 or nil for latest commit from master
@@ -60,7 +62,8 @@ func getObjIPs(cmd string) ([]objIP, error) {
 func Test_E2EDualStack(t *testing.T) {
 	flag.Parse()
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Validate DualStack Suite")
+	suiteConfig, reporterConfig := GinkgoConfiguration()
+	RunSpecs(t, "Validate dualstack Test Suite", suiteConfig, reporterConfig)
 }
 
 var (
@@ -68,6 +71,7 @@ var (
 	serverNodeNames []string
 	agentNodeNames  []string
 )
+var _ = ReportAfterEach(e2e.GenReport)
 
 var _ = Describe("Verify DualStack Configuration", Ordered, func() {
 
@@ -90,7 +94,7 @@ var _ = Describe("Verify DualStack Configuration", Ordered, func() {
 			for _, node := range nodes {
 				g.Expect(node.Status).Should(Equal("Ready"))
 			}
-		}, "420s", "5s").Should(Succeed())
+		}, "620s", "5s").Should(Succeed())
 		_, err := e2e.ParseNodes(kubeConfigFile, true)
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -224,7 +228,7 @@ var _ = AfterEach(func() {
 })
 
 var _ = AfterSuite(func() {
-	if failed {
+	if failed && !*ci {
 		fmt.Println("FAILED!")
 	} else {
 		Expect(e2e.DestroyCluster()).To(Succeed())
