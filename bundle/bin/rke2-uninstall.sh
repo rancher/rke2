@@ -20,7 +20,10 @@ check_target_ro() {
 
 . /etc/os-release
 if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
-    : "${INSTALL_RKE2_ROOT:="/usr"}"
+    if rpm -q rke2-common >/dev/null 2>&1; then
+        : "${INSTALL_RKE2_ROOT:="/usr"}"
+    else
+        : "${INSTALL_RKE2_ROOT:="/usr/local"}"
 elif [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
     if rpm -q rke2-common >/dev/null 2>&1; then
         : "${INSTALL_RKE2_ROOT:="/usr"}"
