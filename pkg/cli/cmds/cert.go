@@ -25,7 +25,7 @@ var k3sCertFlags = K3SFlagSet{
 var certSubcommands = []cli.Command{
 	{
 		Name:            "rotate",
-		Usage:           "Certificate Rotatation",
+		Usage:           "Certificate Rotation",
 		SkipFlagParsing: false,
 		SkipArgReorder:  true,
 		Action:          CertificateRotationRun,
