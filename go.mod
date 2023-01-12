@@ -88,6 +88,7 @@ replace (
 
 require (
 	github.com/Microsoft/hcsshim v0.9.5
+	github.com/aws/aws-sdk-go v1.44.116
 	github.com/containerd/continuity v0.3.0
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
@@ -106,6 +107,7 @@ require (
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v1.0.1-0.20220901190859-45a179631861
 	github.com/sirupsen/logrus v1.9.0
+	github.com/spf13/cobra v1.6.0
 	github.com/tigera/operator v1.28.1
 	github.com/urfave/cli v1.22.9
 	golang.org/x/crypto v0.1.0
@@ -151,7 +153,6 @@ require (
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e // indirect
 	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a // indirect
-	github.com/aws/aws-sdk-go v1.44.116 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
@@ -315,7 +316,6 @@ require (
 	github.com/seccomp/libseccomp-golang v0.9.2-0.20220502022130-f33da4d89646 // indirect
 	github.com/shengdoushi/base58 v1.0.0 // indirect
 	github.com/soheilhy/cmux v0.1.5 // indirect
-	github.com/spf13/cobra v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stoewer/go-strcase v1.2.0 // indirect
 	github.com/stretchr/objx v0.4.0 // indirect
