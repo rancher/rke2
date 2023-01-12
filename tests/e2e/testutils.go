@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -12,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/onsi/ginkgo/v2"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -185,6 +187,23 @@ func FetchNodeExternalIP(nodename string) (string, error) {
 	ip := strings.Split(ips, "inet")
 	nodeip := strings.TrimSpace(ip[1])
 	return nodeip, nil
+}
+
+// GenReport returns the relevant lines from test results in json format
+func GenReport(specReport ginkgo.SpecReport) {
+	state := struct {
+		State string        `json:"state"`
+		Name  string        `json:"name"`
+		Type  string        `json:"type"`
+		Time  time.Duration `json:"time"`
+	}{
+		State: specReport.State.String(),
+		Name:  specReport.LeafNodeText,
+		Type:  "rke2 test",
+		Time:  specReport.RunTime,
+	}
+	status, _ := json.Marshal(state)
+	fmt.Printf("%s", status)
 }
 
 // GetVagrantLog returns the logs of on vagrant commands that initialize the nodes and provision RKE2 on each node.
