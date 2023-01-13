@@ -19,7 +19,7 @@ def provision(vm, roles, role_num, node_num)
   node_ip = "#{NETWORK_PREFIX}.#{100+node_num}"
   vm.network "private_network", ip: node_ip, netmask: "255.255.255.0"
 
-  scripts_location = Dir.exists?("./scripts") ? "./scripts" : "../scripts" 
+  scripts_location = Dir.exists?("./scripts/") ? "./scripts/" : "../scripts/"
   vagrant_defaults = '../vagrantdefaults.rb'
   load vagrant_defaults if File.exists?(vagrant_defaults)
   
