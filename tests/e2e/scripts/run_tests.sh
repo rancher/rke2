@@ -29,24 +29,23 @@ run_tests(){
 	count=$(( count + 1 ))
 	vagrant global-status | awk '/running/'|cut -c1-7| xargs -r -d '\n' -n 1 -- vagrant destroy -f
 
+	E2E_RELEASE_VERSION=$rke2_version && export E2E_RELEASE_VERSION
+	E2E_RELEASE_CHANNEL=$rke2_channel && export E2E_RELEASE_CHANNEL
+
+	echo 'RUNNING CLUSTER UPGRADE TEST'
+	E2E_REGISTRY=true /usr/local/go/bin/go test -v ./upgradecluster/upgradecluster_test.go -nodeOS="$nodeOS" -serverCount=$((servercount)) -agentCount=$((agentcount)) -timeout=1h -json -ci |tee createreport/rke2_"$OS".log
+
 	echo 'RUNNING DUALSTACK VALIDATION TEST'
-	E2E_HARDENED="$hardened" /usr/local/go/bin/go test -v dualstack/dualstack_test.go -nodeOS="$nodeOS" -serverCount=1 -agentCount=1  -timeout=30m -json -ci |tee  createreport/rke2_"$OS".log
+	E2E_HARDENED="$hardened" /usr/local/go/bin/go test -v dualstack/dualstack_test.go -nodeOS="$nodeOS" -serverCount=1 -agentCount=1  -timeout=30m -json -ci |tee -a createreport/rke2_"$OS".log
 
 	echo 'RUNNING CLUSTER VALIDATION TEST'
 	E2E_REGISTRY=true E2E_HARDENED="$hardened" /usr/local/go/bin/go test -v validatecluster/validatecluster_test.go -nodeOS="$nodeOS" -serverCount=$((servercount)) -agentCount=$((agentcount))  -timeout=30m -json -ci |tee -a createreport/rke2_"$OS".log
-
 
 	echo 'RUNNING MIXEDOS TEST'
 	/usr/local/go/bin/go test -v mixedos/mixedos_test.go -nodeOS="$nodeOS" -serverCount=$((servercount)) -timeout=1h -json -ci |tee -a  createreport/rke2_"$OS".log
 
 	echo 'RUNNING SPLIT SERVER VALIDATION TEST'
 	E2E_HARDENED="$hardened" /usr/local/go/bin/go test -v splitserver/splitserver_test.go -nodeOS="$nodeOS" -timeout=30m -json -ci |tee -a createreport/rke2_"$OS".log
-
-	E2E_RELEASE_VERSION=$rke2_version && export E2E_RELEASE_VERSION
-	E2E_RELEASE_CHANNEL=$rke2_channel && export E2E_RELEASE_CHANNEL
-
-	echo 'RUNNING CLUSTER UPGRADE TEST'
-	E2E_REGISTRY=true /usr/local/go/bin/go test -v upgradecluster/upgradecluster_test.go -nodeOS="$nodeOS" -serverCount=$((servercount)) -agentCount=$((agentcount)) -timeout=1h -json -ci |tee -a createreport/rke2_"$OS".log
 }
 
 ls createreport/rke2_"$OS".log 2>/dev/null && rm createreport/rke2_"$OS".log
@@ -58,3 +57,6 @@ do
         cp createreport/rke2_"$OS".log createreport/rke2_"$OS"_"$count".log
         run_tests
 done
+
+# Generate report and upload to s3 bucket
+cd createreport && /usr/local/go/bin/go run -v report-template-bindata.go generate_report.go -f rke2_"OS".log
