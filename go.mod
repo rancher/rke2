@@ -71,6 +71,7 @@ replace (
 
 require (
 	github.com/Microsoft/hcsshim v0.9.4
+	github.com/aws/aws-sdk-go v1.44.116
 	github.com/containerd/continuity v0.3.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/google/go-containerregistry v0.7.0
@@ -86,6 +87,7 @@ require (
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v1.0.0
 	github.com/sirupsen/logrus v1.9.0
+	github.com/spf13/cobra v1.6.0
 	github.com/tigera/operator v1.28.1
 	github.com/urfave/cli v1.22.9
 	golang.org/x/sys v0.3.0
