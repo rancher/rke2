@@ -54,7 +54,7 @@ RUN set -x \
     libarchive-tools \
     zstd \
     jq \
-    python2 \
+    python3 \
     \
     && if [ "${ARCH}" != "s390x" ]; then \
     	apk add --no-cache rpm-dev; \

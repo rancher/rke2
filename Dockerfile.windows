@@ -22,7 +22,7 @@ RUN set -x \
     bsd-compat-headers \
     zstd \
     jq \
-    python2 \
+    python3 \
     git \
     libseccomp-dev \
     rsync \
