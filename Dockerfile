@@ -1,7 +1,7 @@
 ARG KUBERNETES_VERSION=dev
 
 # Build environment
-FROM rancher/hardened-build-base:v1.18.7b7 AS build
+FROM rancher/hardened-build-base:v1.19.5b1 AS build
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
 RUN set -x \
@@ -54,7 +54,7 @@ RUN set -x \
     libarchive-tools \
     zstd \
     jq \
-    python2 \
+    python3 \
     \
     && if [ "${ARCH}" != "s390x" ]; then \
     	apk add --no-cache rpm-dev; \
