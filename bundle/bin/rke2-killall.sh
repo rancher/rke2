@@ -88,11 +88,14 @@ if [ -d /sys/class/net/nodelocaldns ]; then
   ip link delete nodelocaldns
 fi
 
-rm -rf /var/lib/cni/
+rm -rf /var/lib/cni/ /var/log/pods/ /var/log/containers
 
 # Delete iptables created by CNI plugins or Kubernetes (kube-proxy)
 iptables-save | grep -v KUBE- | grep -v CNI- | grep -v cali- | grep -v cali: | grep -v CILIUM_ | grep -v flannel | iptables-restore
 ip6tables-save | grep -v KUBE- | grep -v CNI- | grep -v cali- | grep -v cali: | grep -v CILIUM_ | grep -v flannel | ip6tables-restore
+
+set +x
+
 echo 'If this cluster was upgraded from an older release of the Canal CNI, you may need to manually remove some flannel iptables rules:'
 echo -e '\texport cluster_cidr=YOUR-CLUSTER-CIDR'
 echo -e '\tiptables -D POSTROUTING -s $cluster_cidr -j MASQUERADE --random-fully'
