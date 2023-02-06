@@ -73,7 +73,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.116
 	github.com/containerd/continuity v0.3.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
-	github.com/google/go-containerregistry v0.7.0
+	github.com/google/go-containerregistry v0.12.2-0.20230106184643-b063f6aeac72
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.13.1
 	github.com/k3s-io/k3s v1.23.16-0.20230114061511-27f8fe7d0295 // release-1.23
@@ -82,7 +82,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.20.0
 	github.com/pkg/errors v0.9.1
-	github.com/rancher/wharfie v0.5.3
+	github.com/rancher/wharfie v0.6.1
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v0.8.11-0.20220217210408-3ecd23dfea3b
 	github.com/sirupsen/logrus v1.9.0
