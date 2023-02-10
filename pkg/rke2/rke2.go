@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/k3s-io/k3s/pkg/agent/config"
-	containerdk3s "github.com/k3s-io/k3s/pkg/agent/containerd"
+	"github.com/k3s-io/k3s/pkg/agent/cri"
 	"github.com/k3s-io/k3s/pkg/cli/agent"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/cli/etcdsnapshot"
@@ -326,7 +326,7 @@ func terminateRunningContainers(ctx context.Context, containerRuntimeEndpoint st
 	// send on the subprocess error channel to wake up the select
 	// loop and shut everything down when the poll completes
 	containerdErr <- wait.PollUntilWithContext(ctx, 10*time.Second, func(ctx context.Context) (bool, error) {
-		conn, err := containerdk3s.CriConnection(ctx, containerRuntimeEndpoint)
+		conn, err := cri.Connection(ctx, containerRuntimeEndpoint)
 		if err != nil {
 			logrus.Warnf("Failed to open CRI connection: %v", err)
 			return false, nil
