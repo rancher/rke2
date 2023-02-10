@@ -19,6 +19,7 @@ const (
 	helmGroup         = "helm.cattle.io"
 	legacyGroup       = ""
 	networkingGroup   = "networking.k8s.io"
+	discoveryGroup    = "discovery.k8s.io"
 )
 
 var (
@@ -56,9 +57,10 @@ func clusterRoles() []rbacv1.ClusterRole {
 				rbacv1helpers.NewRule("*").Groups(legacyGroup).Resources("nodes").RuleOrDie(),
 				rbacv1helpers.NewRule("patch").Groups(legacyGroup).Resources("nodes/status", "services/status").RuleOrDie(),
 				rbacv1helpers.NewRule("get", "list", "watch", "patch", "update").Groups(legacyGroup).Resources("services", "pods").RuleOrDie(),
-				rbacv1helpers.NewRule("create").Groups(legacyGroup).Resources("serviceaccounts").RuleOrDie(),
+				rbacv1helpers.NewRule("create", "get").Groups(legacyGroup).Resources("serviceaccounts").RuleOrDie(),
 				rbacv1helpers.NewRule("create", "get").Groups("").Resources("namespaces").RuleOrDie(),
 				rbacv1helpers.NewRule("*").Groups(appsGroup).Resources("daemonsets").RuleOrDie(),
+				rbacv1helpers.NewRule("get", "list", "watch").Groups(discoveryGroup).Resources("endpointslices").RuleOrDie(),
 			},
 		},
 	}
