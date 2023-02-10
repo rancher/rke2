@@ -83,7 +83,7 @@ func NewSecretsEncryptCommand() cli.Command {
 
 	var modifiedSubcommands []cli.Command
 	for _, subcommand := range secretsEncryptSubcommands {
-		modifiedSubcommands = append(modifiedSubcommands, mustCmdFromK3S(subcommand, map[string]*K3SFlagOption{
+		modifiedSubcommands = append(modifiedSubcommands, mustCmdFromK3S(subcommand, K3SFlagSet{
 			"data-dir": copy,
 			"token":    copy,
 			"server": {
