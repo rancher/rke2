@@ -2,7 +2,7 @@
 
 set -ex
 
-BUILDTAGS="selinux netgo osusergo no_stage static_build sqlite_omit_load_extension no_embedded_executor"
+BUILDTAGS="selinux netgo osusergo no_stage static_build sqlite_omit_load_extension no_embedded_executor no_cri_dockerd"
 GO_BUILDTAGS="${GO_BUILDTAGS} ${BUILDTAGS} ${DEBUG_TAGS}"
 
 go test -tags "${GO_BUILDTAGS}" -v -cover ./pkg/... -run Unit
