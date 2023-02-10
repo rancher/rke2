@@ -10,7 +10,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-var k3sCertFlags = map[string]*K3SFlagOption{
+var k3sCertFlags = K3SFlagSet{
 	"config":          copy,
 	"debug":           copy,
 	"log":             copy,
