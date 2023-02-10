@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	containerdk3s "github.com/k3s-io/k3s/pkg/agent/containerd"
+	"github.com/k3s-io/k3s/pkg/agent/cri"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -34,7 +34,7 @@ func checkStaticManifests(containerRuntimeEndpoint, dataDir string) cmds.Startup
 				if containerRuntimeEndpoint == "" {
 					containerRuntimeEndpoint = containerdSock
 				}
-				conn, err := containerdk3s.CriConnection(ctx, containerRuntimeEndpoint)
+				conn, err := cri.Connection(ctx, containerRuntimeEndpoint)
 				if err != nil {
 					logrus.Infof("Waiting for cri connection: %v", err)
 					return false, nil
