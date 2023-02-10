@@ -42,7 +42,7 @@ var secretsEncryptSubcommands = []cli.Command{
 		SkipArgReorder:  true,
 		Action:          secretsencrypt.Prepare,
 		Flags: append(cmds.EncryptFlags, &cli.BoolFlag{
-			Name:        "f,force",
+			Name:        "force,f",
 			Usage:       "Force preparation.",
 			Destination: &cmds.ServerConfig.EncryptForce,
 		}),
@@ -54,7 +54,7 @@ var secretsEncryptSubcommands = []cli.Command{
 		SkipArgReorder:  true,
 		Action:          secretsencrypt.Rotate,
 		Flags: append(cmds.EncryptFlags, &cli.BoolFlag{
-			Name:        "f,force",
+			Name:        "force",
 			Usage:       "Force key rotation.",
 			Destination: &cmds.ServerConfig.EncryptForce,
 		}),
@@ -89,7 +89,7 @@ func NewSecretsEncryptCommand() cli.Command {
 			"server": {
 				Default: "https://127.0.0.1:9345",
 			},
-			"f":      ignore,
+			"force":  ignore,
 			"skip":   ignore,
 			"output": ignore,
 		}))

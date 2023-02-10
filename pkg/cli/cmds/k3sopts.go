@@ -104,6 +104,22 @@ func commandFromK3S(cmd cli.Command, flagOpts K3SFlagSet) (cli.Command, error) {
 				strSliceFlag.Hidden = true
 			}
 			flag = strSliceFlag
+		} else if strSliceFlag, ok := flag.(*cli.StringSliceFlag); ok {
+			if opt.Usage != "" {
+				strSliceFlag.Usage = opt.Usage
+			}
+			if opt.Default != "" {
+				slice := &cli.StringSlice{}
+				parts := strings.Split(opt.Default, ",")
+				for _, val := range parts {
+					slice.Set(val)
+				}
+				strSliceFlag.Value = slice
+			}
+			if opt.Hide {
+				strSliceFlag.Hidden = true
+			}
+			flag = strSliceFlag
 		} else if intFlag, ok := flag.(cli.IntFlag); ok {
 			if opt.Usage != "" {
 				intFlag.Usage = opt.Usage
