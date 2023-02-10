@@ -1,5 +1,5 @@
 # RKE2
-![RKE2](docs/assets/logo-horizontal-rke.svg)
+![RKE2](https://docs.rke2.io/img/logo-horizontal-rke2.svg)
 
 RKE2, also known as RKE Government, is Rancher's next-generation Kubernetes distribution.
 
