@@ -34,7 +34,7 @@ var (
 		},
 	}
 
-	k3sServerBase = mustCmdFromK3S(cmds.NewServerCommand(ServerRun), map[string]*K3SFlagOption{
+	k3sServerBase = mustCmdFromK3S(cmds.NewServerCommand(ServerRun), K3SFlagSet{
 		"config":            copy,
 		"debug":             copy,
 		"v":                 hide,
