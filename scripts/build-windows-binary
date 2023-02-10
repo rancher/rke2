@@ -22,7 +22,7 @@ GOOS=windows
 RELEASE=${PROG}.${GOOS}-${GOARCH}
 
 
-BUILDTAGS="netgo osusergo no_stage static_build sqlite_omit_load_extension"
+BUILDTAGS="netgo osusergo no_stage static_build sqlite_omit_load_extension no_cri_dockerd"
 GO_BUILDTAGS="${GO_BUILDTAGS} ${BUILDTAGS} ${DEBUG_TAGS}"
 
 VERSION_FLAGS="
