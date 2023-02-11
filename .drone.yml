@@ -233,7 +233,7 @@ steps:
         - drone-publish.rancher.io
 
   - name: publish-image-runtime
-    image: rancher/hardened-build-base:v1.16.10b7
+    image: rancher/hardened-build-base:v1.19.5b1
     commands:
       - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
