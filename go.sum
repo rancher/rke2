@@ -186,6 +186,8 @@ github.com/aryann/difflib v0.0.0-20170710044230-e206f873d14a/go.mod h1:DAHtR1m6l
 github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf/go.mod h1:lB+ZfQJz7igIIfQNfa7Ml4HSf2uFQQRzpGGRXenZAgY=
 github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a h1:idn718Q4B6AGu/h5Sxe66HYVdqdGu2l9Iebqhi/AEoA=
 github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a/go.mod h1:lB+ZfQJz7igIIfQNfa7Ml4HSf2uFQQRzpGGRXenZAgY=
+github.com/avast/retry-go/v4 v4.3.2 h1:x4sTEu3jSwr7zNjya8NTdIN+U88u/jtO/q3OupBoDtM=
+github.com/avast/retry-go/v4 v4.3.2/go.mod h1:rg6XFaiuFYII0Xu3RDbZQkxCofFwruZKW8oEF1jpWiU=
 github.com/aws/aws-lambda-go v1.13.3/go.mod h1:4UKl9IzQMoD+QF79YdCuzCwp8VbmG4VAQwij/eHl5CU=
 github.com/aws/aws-sdk-go v1.15.27/go.mod h1:mFuSZ37Z9YOHbQEwBWztmVzqXrEkub65tZoCYDt7FT0=
 github.com/aws/aws-sdk-go v1.15.78/go.mod h1:E3/ieXAlvM0XWO57iftYVDLLvQ824smPP3ATZkfNZeM=
@@ -441,8 +443,8 @@ github.com/fatih/color v1.12.0/go.mod h1:ELkj/draVOlAH/xkhN6mQ50Qd0MPOk5AAr3maGE
 github.com/fatih/structs v1.1.0/go.mod h1:9NiDSp5zOcgEDl+j00MP/WkGVPOlPRLejGD8Ga6PJ7M=
 github.com/felixge/httpsnoop v1.0.3 h1:s/nj+GCswXYzN5v2DpNMuMQYe+0DDwt5WVCU6CWBdXk=
 github.com/felixge/httpsnoop v1.0.3/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
-github.com/flannel-io/flannel v0.20.2 h1:/hLQsvyQHQQV0mS9xxWVMf1oHPFBSReM1j5D9Cdm5dc=
-github.com/flannel-io/flannel v0.20.2/go.mod h1:A23fmdRQyN4i6Gs5UzvVTlj8kcswPYIqisLhgUkhnxk=
+github.com/flannel-io/flannel v0.21.1 h1:D7zBx5cTp4gSPyVa07apTyXiPEQx6+Py8HDzR32JKoc=
+github.com/flannel-io/flannel v0.21.1/go.mod h1:G+803LyYHH04iO2zW5fl0vwcjLSaLf3d5YRY85Vx0E4=
 github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568/go.mod h1:xEzjJPgXI435gkrCt3MPfRiAkVrwSbHsst4LCFVfpJc=
 github.com/form3tech-oss/jwt-go v3.2.3+incompatible h1:7ZaBxOI7TMoYBfyA3cQHErNNyAWIKUMIwqxEtgHOs5c=
 github.com/form3tech-oss/jwt-go v3.2.3+incompatible/go.mod h1:pbq4aXjuKjdthFRnoDwaVPLA+WlJuPGy+QneDUgJi2k=
@@ -902,8 +904,8 @@ github.com/k3s-io/etcd/server/v3 v3.5.5-k3s1 h1:dA/JX/Eb+KpDRexfzlLEIZzgfhNqzhOP
 github.com/k3s-io/etcd/server/v3 v3.5.5-k3s1/go.mod h1:rZ95vDw/jrvsbj9XpTqPrTAB9/kzchVdhRirySPkUBc=
 github.com/k3s-io/helm-controller v0.13.1 h1:eG2yZ0QzbtcfMe8GpTVtRtP6HgMDO/Pr9Q1EGbMKKCA=
 github.com/k3s-io/helm-controller v0.13.1/go.mod h1:f8aOuHQDpkshmUK/GiE+jJCJkUL8vp+EzCjV0uCFcsY=
-github.com/k3s-io/k3s v1.26.2-0.20230210184648-3d146d2f1b43 h1:8BPcRHxWKpB3SfWAZIEpVHgKTFOA2AqMTuaArFtoEOY=
-github.com/k3s-io/k3s v1.26.2-0.20230210184648-3d146d2f1b43/go.mod h1:G02hVyXMyBTTlDGxXcEcJVWKjQi3YIs//gnmyJtNf9Y=
+github.com/k3s-io/k3s v1.26.2-0.20230214173941-21560155217b h1:V2wmhzFpmxhVuPb/lQvwtj+gwl9MzZo22JDxb+CmY3w=
+github.com/k3s-io/k3s v1.26.2-0.20230214173941-21560155217b/go.mod h1:zKeLzbxHwJhsSWnwGzya4hnV52NVH4Yprlub7bkKYM0=
 github.com/k3s-io/kine v0.9.8 h1:W+/u9yjNmjYlPeqcZ8w6r+56H6vb/iIPAQtUtdSYWvY=
 github.com/k3s-io/kine v0.9.8/go.mod h1:3N3AE7WgqbX4wYKJ9NdUItJ0i8koC+qaKbYc2sEaVns=
 github.com/k3s-io/klog v1.0.0-k3s2 h1:yyvD2bQbxG7m85/pvNctLX2bUDmva5kOBvuZ77tTGBA=
