@@ -89,7 +89,7 @@ uninstall_remove_files()
     find /etc/systemd/system -name rke2-*.service -type f -delete
     $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2"
     $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
-    $transactional_update rm -rf "${INSTALL_RKE2_ROOT}/share/rke2*"
+    $transactional_update rm -rf ${INSTALL_RKE2_ROOT}/share/rke2*
     rm -rf /etc/rancher/rke2
     rm -rf /etc/rancher/node
     rm -d /etc/rancher || true
