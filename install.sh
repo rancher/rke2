@@ -435,7 +435,7 @@ install_airgap_tarball() {
     fi
 }
 
-# install_dev_rpm orchestates the installation of RKE2 unsigned development rpms
+# install_dev_rpm orchestrates the installation of RKE2 unsigned development rpms
 install_dev_rpm() {
     rpm_installer="${1:-yum}"
     distro="${2:-centos7}"
@@ -466,7 +466,7 @@ install_dev_rpm() {
 }
 
 # do_install_rpm builds a yum repo config from the channel and version to be installed,
-# and calls yum to install the required packates.
+# and calls yum to install the required packages.
 do_install_rpm() {
     . /etc/os-release
     if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ "${ID_LIKE%%[ ]*}" = "suse"  ]; then

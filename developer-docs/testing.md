@@ -58,7 +58,7 @@ testing.
 
 ### Framework
 
-All integration tests in RKE2 follow a [Behavior Diven Development (BDD)](https://en.wikipedia.org/wiki/Behavior-driven_development) style.
+All integration tests in RKE2 follow a [Behavior Driven Development (BDD)](https://en.wikipedia.org/wiki/Behavior-driven_development) style.
 Specifically, RKE2 uses [Ginkgo](https://onsi.github.io/ginkgo/) and [Gomega](https://onsi.github.io/gomega/) to drive the tests.  
 To generate an initial test, the command `ginkgo bootstrap` can be used.
 

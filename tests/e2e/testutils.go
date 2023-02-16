@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -12,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/onsi/ginkgo/v2"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -187,6 +189,23 @@ func FetchNodeExternalIP(nodename string) (string, error) {
 	return nodeip, nil
 }
 
+// GenReport returns the relevant lines from test results in json format
+func GenReport(specReport ginkgo.SpecReport) {
+	state := struct {
+		State string        `json:"state"`
+		Name  string        `json:"name"`
+		Type  string        `json:"type"`
+		Time  time.Duration `json:"time"`
+	}{
+		State: specReport.State.String(),
+		Name:  specReport.LeafNodeText,
+		Type:  "rke2 test",
+		Time:  specReport.RunTime,
+	}
+	status, _ := json.Marshal(state)
+	fmt.Printf("%s", status)
+}
+
 // GetVagrantLog returns the logs of on vagrant commands that initialize the nodes and provision RKE2 on each node.
 // It also attempts to fetch the systemctl logs of RKE2 on nodes where the rke2.service failed.
 func GetVagrantLog(cErr error) string {
@@ -302,7 +321,7 @@ func RunCommand(cmd string) (string, error) {
 
 func UpgradeCluster(serverNodenames []string, agentNodenames []string) error {
 	for _, nodeName := range serverNodenames {
-		cmd := "RELEASE_CHANNEL=commit vagrant provision " + nodeName
+		cmd := "E2E_RELEASE_CHANNEL=commit vagrant provision " + nodeName
 		fmt.Println(cmd)
 		if out, err := RunCommand(cmd); err != nil {
 			fmt.Println("Error Upgrading Cluster", out)
@@ -310,7 +329,7 @@ func UpgradeCluster(serverNodenames []string, agentNodenames []string) error {
 		}
 	}
 	for _, nodeName := range agentNodenames {
-		cmd := "RELEASE_CHANNEL=commit vagrant provision " + nodeName
+		cmd := "E2E_RELEASE_CHANNEL=commit vagrant provision " + nodeName
 		if _, err := RunCommand(cmd); err != nil {
 			fmt.Println("Error Upgrading Cluster", err)
 			return err
