@@ -19,6 +19,8 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
+	"github.com/k3s-io/k3s/pkg/util"
+	"github.com/rancher/rke2/pkg/auth"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/staticpod"
@@ -214,7 +216,13 @@ func (s *StaticPodConfig) KubeProxy(ctx context.Context, args []string) error {
 
 // APIServerHandlers returning the authenticator and request handler for requests to the apiserver endpoint.
 func (s *StaticPodConfig) APIServerHandlers(ctx context.Context) (authenticator.Request, http.Handler, error) {
-	return nil, http.NotFoundHandler(), nil
+	var tokenauth authenticator.Request
+	kubeConfigAPIServer := filepath.Join(s.DataDir, "server", "cred", "api-server.kubeconfig")
+	err := util.WaitForAPIServerReady(ctx, kubeConfigAPIServer, util.DefaultAPIServerReadyTimeout)
+	if err == nil {
+		tokenauth, err = auth.BootstrapTokenAuthenticator(ctx, kubeConfigAPIServer)
+	}
+	return tokenauth, http.NotFoundHandler(), err
 }
 
 // APIServer sets up the apiserver static pod once etcd is available.
