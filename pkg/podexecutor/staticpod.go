@@ -20,10 +20,10 @@ import (
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/util"
-	"github.com/natefinch/lumberjack"
 	"github.com/rancher/rke2/pkg/auth"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
+	"github.com/rancher/rke2/pkg/logging"
 	"github.com/rancher/rke2/pkg/staticpod"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -168,17 +168,9 @@ func (s *StaticPodConfig) Kubelet(ctx context.Context, args []string) error {
 			"--cloud-config="+s.CloudProvider.Path,
 		)
 	}
-	args = append(extraArgs, args...)
 
-	logFile := filepath.Join(s.DataDir, "agent", "logs", "kubelet.log")
-	logrus.Infof("Logging kubelet to %s", logFile)
-	logOut := &lumberjack.Logger{
-		Filename:   logFile,
-		MaxSize:    50,
-		MaxBackups: 3,
-		MaxAge:     28,
-		Compress:   true,
-	}
+	args = append(extraArgs, args...)
+	args, logOut := logging.ExtractFromArgs(args)
 
 	go func() {
 		for {
