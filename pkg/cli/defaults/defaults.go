@@ -30,6 +30,15 @@ func Set(clx *cli.Context, dataDir string) error {
 			"enable-admission-plugins=NodeRestriction",
 		},
 		cmds.ServerConfig.ExtraAPIArgs...)
+	cmds.AgentConfig.ExtraKubeletArgs = append(
+		[]string{
+			"stderrthreshold=FATAL",
+			"log-file-max-size=50",
+			"alsologtostderr=false",
+			"logtostderr=false",
+			"log-file=" + filepath.Join(logsDir, "kubelet.log"),
+		},
+		cmds.AgentConfig.ExtraKubeletArgs...)
 
 	if !cmds.Debug {
 		l := grpclog.NewLoggerV2(ioutil.Discard, ioutil.Discard, os.Stderr)
