@@ -24,6 +24,8 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.1.1
     ${REGISTRY}/rancher/nginx-ingress-controller:nginx-1.4.1-hardened2
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
+    ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-controller:v6.2.1
+    ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-validation-webhook:v6.2.1
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
