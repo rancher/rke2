@@ -244,6 +244,21 @@ var _ = Describe("Upgrade Tests:", func() {
 					g.Expect(node.Version).Should(Equal(k8sVersion), "Nodes should all be upgraded to the specified version")
 				}
 			}, "900s", "30s").Should(Succeed())
+
+			fmt.Printf("\n Fetching pod status postupgrade\n")
+			Eventually(func(g Gomega) {
+				pods, err := terraform.Pods(terraform.KubeConfigFile, false)
+				g.Expect(err).NotTo(HaveOccurred())
+				for _, pod := range pods {
+					if strings.Contains(pod.Name, "helm-install") {
+						g.Expect(pod.Status).Should(Equal("Completed"), pod.Name)
+					} else {
+						g.Expect(pod.Status).Should(Equal("Running"), pod.Name)
+						numRunning := versionRegex.FindAllString(pod.Ready, 2)
+						g.Expect(numRunning[0]).Should(Equal(numRunning[1]), pod.Name, "should have all containers running")
+					}
+				}
+			}, "600s", "5s").Should(Succeed())
 		})
 	})
 
