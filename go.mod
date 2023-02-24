@@ -16,6 +16,7 @@ replace (
 	github.com/google/cadvisor => github.com/google/cadvisor v0.44.1
 	github.com/googleapis/gax-go/v2 => github.com/googleapis/gax-go/v2 v2.0.5
 	github.com/juju/errors => github.com/k3s-io/nocode v0.0.0-20200630202308-cb097102c09f
+	github.com/k3s-io/helm-controller => github.com/k3s-io/helm-controller v0.13.2
 	github.com/kubernetes-sigs/cri-tools => github.com/k3s-io/cri-tools v1.25.0-k3s1
 	github.com/matryer/moq => github.com/rancher/moq v0.0.0-20190404221404-ee5226d43009
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.4
