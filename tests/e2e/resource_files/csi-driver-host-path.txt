@@ -1,0 +1,12 @@
+https://github.com/kubernetes-csi/external-provisioner/raw/v3.4.0/deploy/kubernetes/rbac.yaml
+https://github.com/kubernetes-csi/external-attacher/raw/v4.2.0/deploy/kubernetes/rbac.yaml
+https://github.com/kubernetes-csi/external-snapshotter/raw/v6.2.1/deploy/kubernetes/csi-snapshotter/rbac-csi-snapshotter.yaml
+https://github.com/kubernetes-csi/external-resizer/raw/v1.7.0/deploy/kubernetes/rbac.yaml
+https://github.com/kubernetes-csi/external-health-monitor/raw/v0.8.0/deploy/kubernetes/external-health-monitor-controller/rbac.yaml
+https://github.com/kubernetes-csi/csi-driver-host-path/raw/v1.11.0/deploy/kubernetes-1.24/hostpath/csi-hostpath-driverinfo.yaml
+https://github.com/kubernetes-csi/csi-driver-host-path/raw/v1.11.0/deploy/kubernetes-1.24/hostpath/csi-hostpath-plugin.yaml
+https://github.com/kubernetes-csi/csi-driver-host-path/raw/v1.11.0/deploy/kubernetes-1.24/hostpath/csi-hostpath-snapshotclass.yaml
+https://github.com/kubernetes-csi/csi-driver-host-path/raw/v1.11.0/examples/csi-storageclass.yaml
+https://github.com/kubernetes-csi/csi-driver-host-path/raw/v1.11.0/examples/csi-pvc.yaml
+https://github.com/kubernetes-csi/csi-driver-host-path/raw/v1.11.0/examples/csi-app.yaml
+https://github.com/kubernetes-csi/csi-driver-host-path/raw/v1.11.0/examples/csi-snapshot-v1.yaml
