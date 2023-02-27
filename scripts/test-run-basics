@@ -11,6 +11,8 @@ all_services=(
     kube-scheduler
     metrics-server
     rke2-ingress-nginx-controller
+    rke2-snapshot-controller
+    rke2-snapshot-validation-webhook
 )
 
 export NUM_SERVERS=1
@@ -24,6 +26,7 @@ start-test() {
     use-servicelb
     verify-valid-versions $(cat $TEST_DIR/servers/1/metadata/name)
     verify-airgap-images $(cat $TEST_DIR/{servers,agents}/*/metadata/name)
+    verify-snapshot-controller
 }
 export -f start-test
 
@@ -63,6 +66,17 @@ use-servicelb() {
     wait-for-services lb-tcp-8080
 }
 export -f use-servicelb
+
+# -- Verify that the snapshot controller and validation webhook work,
+#    by installing the host-path CSI driver and waiting for a snapshot to be taken.
+verify-snapshot-controller() {
+  for MANIFEST in $(cat tests/e2e/resource_files/csi-driver-host-path.txt); do
+    kubectl create -f ${MANIFEST}
+  done
+  kubectl wait volumesnapshot new-snapshot-demo --for=jsonpath='{.status.readyToUse}'=true --timeout=2m
+}
+export -f verify-snapshot-controller
+
 
 # --- create a basic cluster and check for valid versions
 LABEL=BASICS run-test
