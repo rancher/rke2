@@ -8,6 +8,22 @@ platform:
   arch: amd64
 
 steps:
+  - name: skipfiles
+    image: plugins/git
+    commands:
+      - export NAME=$(test $DRONE_BUILD_EVENT = pull_request && echo remotes/origin/${DRONE_COMMIT_BRANCH:-master} || echo ${DRONE_COMMIT_SHA}~)
+      - export DIFF=$(git --no-pager diff --name-only $NAME | grep -v -f .droneignore);
+      - if [ -z "$DIFF" ]; then
+            echo "All files in PR are on ignore list";
+            exit 78;
+        else
+            echo "Some files in PR are not ignored, $DIFF";
+        fi;
+    when:
+      event:
+        - push
+        - pull_request
+
   - name: validate-release
     image: rancher/dapper:v0.5.5
     commands:
@@ -170,6 +186,22 @@ platform:
   arch: amd64
 
 steps:
+  - name: skipfiles
+    image: plugins/git
+    commands:
+      - export NAME=$(test $DRONE_BUILD_EVENT = pull_request && echo remotes/origin/${DRONE_COMMIT_BRANCH:-master} || echo ${DRONE_COMMIT_SHA}~)
+      - export DIFF=$(git --no-pager diff --name-only $NAME | grep -v -f .droneignore);
+      - if [ -z "$DIFF" ]; then
+            echo "All files in PR are on ignore list";
+            exit 78;
+        else
+            echo "Some files in PR are not ignored, $DIFF";
+        fi;
+    when:
+      event:
+        - push
+        - pull_request
+
   - name: dispatch
     image: rancher/dapper:v0.5.5
     commands:
@@ -211,6 +243,22 @@ node:
   arch: s390x
 
 steps:
+  - name: skipfiles
+    image: plugins/git
+    commands:
+      - export NAME=$(test $DRONE_BUILD_EVENT = pull_request && echo remotes/origin/${DRONE_COMMIT_BRANCH:-master} || echo ${DRONE_COMMIT_SHA}~)
+      - export DIFF=$(git --no-pager diff --name-only $NAME | grep -v -f .droneignore);
+      - if [ -z "$DIFF" ]; then
+            echo "All files in PR are on ignore list";
+            exit 78;
+        else
+            echo "Some files in PR are not ignored, $DIFF";
+        fi;
+    when:
+      event:
+        - push
+        - pull_request
+
   - name: build
     image: rancher/dapper:v0.5.8
     commands:
@@ -283,10 +331,28 @@ volumes:
 kind: pipeline
 type: docker
 name: manifest
+
 platform:
   os: linux
   arch: amd64
+
 steps:
+  - name: skipfiles
+    image: plugins/git
+    commands:
+      - export NAME=$(test $DRONE_BUILD_EVENT = pull_request && echo remotes/origin/${DRONE_COMMIT_BRANCH:-master} || echo ${DRONE_COMMIT_SHA}~)
+      - export DIFF=$(git --no-pager diff --name-only $NAME | grep -v -f .droneignore);
+      - if [ -z "$DIFF" ]; then
+            echo "All files in PR are on ignore list";
+            exit 78;
+        else
+            echo "Some files in PR are not ignored, $DIFF";
+        fi;
+    when:
+      event:
+        - push
+        - pull_request
+
   - name: push-runtime-manifest
     image: plugins/manifest
     settings:
