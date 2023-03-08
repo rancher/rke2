@@ -44,7 +44,7 @@ do_unmount_and_remove() {
     if [ -n "${MOUNTS}" ]; then
         set -x
         umount ${MOUNTS}
-        rm -rf ${MOUNTS}
+        rm -rf --one-file-system ${MOUNTS}
     else
         set -x
     fi
