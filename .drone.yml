@@ -244,7 +244,7 @@ node:
 
 steps:
   - name: skipfiles
-    image: plugins/git
+    image: alpine/git:v2.30.2-s390x
     commands:
       - export NAME=$(test $DRONE_BUILD_EVENT = pull_request && echo remotes/origin/${DRONE_COMMIT_BRANCH:-master} || echo ${DRONE_COMMIT_SHA}~)
       - export DIFF=$(git --no-pager diff --name-only $NAME | grep -v -f .droneignore);
