@@ -10,12 +10,10 @@ import (
 	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/rke2"
-	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
 var (
-	debug      bool
 	appName    = filepath.Base(os.Args[0])
 	commonFlag = []cli.Flag{
 		&cli.StringFlag{
@@ -233,21 +231,6 @@ func NewApp() *cli.App {
 	cli.VersionPrinter = func(c *cli.Context) {
 		fmt.Printf("%s version %s\n", app.Name, app.Version)
 		fmt.Printf("go version %s\n", runtime.Version())
-	}
-	app.Flags = []cli.Flag{
-		cli.BoolFlag{
-			Name:        "debug",
-			Usage:       "Turn on debug logs",
-			Destination: &debug,
-			EnvVar:      "RKE2_DEBUG",
-		},
-	}
-
-	app.Before = func(clx *cli.Context) error {
-		if debug {
-			logrus.SetLevel(logrus.DebugLevel)
-		}
-		return nil
 	}
 
 	return app
