@@ -34,7 +34,7 @@ getshims() {
     ps -e -o pid= -o args= | sed -e 's/^ *//; s/\s\s*/\t/;' | grep -w 'rke2/data/[^/]*/bin/containerd-shim' | cut -f1
 }
 
-do_unmount() {
+do_unmount_and_remove() {
     { set +x; } 2>/dev/null
     MOUNTS=
     while read ignore mount ignore; do
@@ -44,6 +44,7 @@ do_unmount() {
     if [ -n "${MOUNTS}" ]; then
         set -x
         umount ${MOUNTS}
+        rm -rf --one-file-system ${MOUNTS}
     else
         set -x
     fi
@@ -58,10 +59,10 @@ systemctl stop rke2-agent.service || true
 
 killtree $({ set +x; } 2>/dev/null; getshims; set -x)
 
-do_unmount '/run/k3s'
-do_unmount '/var/lib/rancher/rke2'
-do_unmount '/var/lib/kubelet/pods'
-do_unmount '/run/netns/cni-'
+do_unmount_and_remove '/run/k3s'
+do_unmount_and_remove '/var/lib/rancher/rke2'
+do_unmount_and_remove '/var/lib/kubelet/pods'
+do_unmount_and_remove '/run/netns/cni-'
 
 # Delete network interface(s) that match 'master cni0'
 ip link show 2>/dev/null | grep 'master cni0' | while read ignore iface ignore; do
