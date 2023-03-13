@@ -20,7 +20,14 @@ check_target_ro() {
 
 . /etc/os-release
 if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
-    : "${INSTALL_RKE2_ROOT:="/usr"}"
+    # If redhat/oracle family os is detected, double check whether installation mode is yum or tar.
+    # yum method assumes installation root under /usr
+    # tar method assumes installation root under /usr/local
+    if rpm -q rke2-common >/dev/null 2>&1; then
+        : "${INSTALL_RKE2_ROOT:="/usr"}"
+    else
+        : "${INSTALL_RKE2_ROOT:="/usr/local"}"
+    fi
 elif [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
     if rpm -q rke2-common >/dev/null 2>&1; then
         : "${INSTALL_RKE2_ROOT:="/usr"}"
