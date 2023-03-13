@@ -21,5 +21,5 @@ mkdir -p dist/artifacts
 
 ### (make the tarball)
 if [ -z "${PACKAGE_SKIP_TARBALL}" ]; then
-  tar -czf dist/artifacts/${RELEASE}.tar.gz -C dist/bundle --exclude '*.exe' --exclude '*.ps*' $(find dist/bundle -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
+  tar -czf dist/artifacts/${RELEASE}.tar.gz -C dist/bundle --exclude share/rke2-windows --exclude '*.exe' --exclude '*.ps*' $(find dist/bundle -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
 fi
