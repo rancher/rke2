@@ -5,7 +5,7 @@ RESOURCE_NAME=$(grep resource_name <tests/terraform/modules/config/local.tfvars 
 NAME_PREFIX="$RESOURCE_NAME"
 
 ##Terminate the instances
-echo "Terminating instances for $NAME_PREFIX if still running"
+echo "Terminating instances for $NAME_PREFIX if it is still running"
 # shellcheck disable=SC2046
 aws ec2 terminate-instances --instance-ids $(aws ec2 describe-instances \
   --filters "Name=tag:Name,Values=${NAME_PREFIX}*" \
