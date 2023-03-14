@@ -18,9 +18,9 @@ LB_ARN_LIST=$(aws elbv2 describe-load-balancers \
   --output text)
 
 #Loop through the load balancer ARNs and delete the load balancers
-for lb_arn in $LB_ARN_LIST; do
-  echo "Deleting load balancer $lb_arn"
-  aws elbv2 delete-load-balancer --load-balancer-arn "$lb_arn"
+for LB_ARN in $LB_ARN_LIST; do
+  echo "Deleting load balancer $LB_ARN"
+  aws elbv2 delete-load-balancer --load-balancer-arn "$LB_ARN"
 done
 
 #Get the list of target group ARNs
