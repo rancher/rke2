@@ -171,3 +171,43 @@ serve-docs: mkdocs
 mkdocs:
 	docker build -t mkdocs -f Dockerfile.docs .
 
+#============================ Terraform Tests ==============================#
+include ./config.mk
+
+tf-tests-up:
+	@docker build . -q -f ./tests/terraform/scripts/Dockerfile -t rke2-tf
+
+.PHONY: tf-tests-run
+tf-tests-run:
+	@docker run -d --rm --name rke2-tf-test${name}-t \
+      -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+      -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
+      -v ${ACCESS_KEY_LOCAL}:/go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem \
+      rke2-tf sh -c 'if [ -n "${argName}" ]; then \
+                         go test -v -timeout=45m \
+                           ./tests/terraform/${test}/... \
+                           -"${argName}"="${argValue}"; \
+                       elif [ -z "${test}" ]; then \
+                         go test -v -timeout=45m \
+                           ./tests/terraform/createcluster/...; \
+                       else \
+                         go test -v -timeout=45m \
+                           ./tests/terraform/${test}/...; \
+                       fi'
+
+.PHONY: tf-tests-logs
+tf-tests-logs:
+	@docker logs -f rke2-tf-test$(name)
+
+.PHONY: tf-tests-down
+tf-tests-down:
+	@echo "Removing containers and images"
+	@docker stop $$(docker ps -a -q --filter="name=rke2-tf*") && \
+ 		docker rm $$(docker ps -a -q --filter="name=rke2-tf*")
+
+.PHONY: tf-tests-clean
+tf-tests-clean:
+	@./tests/terraform/scripts/delete_resources.sh
+
+.PHONY: tf-tests
+tf-tests: tf-tests-clean tf-tests-down tf-tests-up tf-tests-run
