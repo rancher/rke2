@@ -4,17 +4,13 @@
 RESOURCE_NAME=$(grep resource_name <tests/terraform/modules/config/local.tfvars | cut -d= -f2 | tr -d ' "')
 NAME_PREFIX="$RESOURCE_NAME"
 
-#Terminate the instances
-INSTANCE_ID=$(aws ec2 describe-instances \
+##Terminate the instances
+echo "Terminating instances for $NAME_PREFIX if still running"
+# shellcheck disable=SC2046
+aws ec2 terminate-instances --instance-ids $(aws ec2 describe-instances \
   --filters "Name=tag:Name,Values=${NAME_PREFIX}*" \
-    "Name=instance-state-name,Values=running" --query \
-    'Reservations[].Instances[].InstanceId' --output text)
-
-echo "Terminating instances $INSTANCE_ID for $NAME_PREFIX if still running"
-
-aws ec2 terminate-instances \
-  --instance-ids "${INSTANCE_ID}" \
-    --user-data "yes" >/dev/null 2>&1
+  "Name=instance-state-name,Values=running" --query \
+  'Reservations[].Instances[].InstanceId' --output text) > /dev/null 2>&1
 
 #Get the list of load balancer ARNs
 LB_ARN_LIST=$(aws elbv2 describe-load-balancers \
