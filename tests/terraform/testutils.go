@@ -168,7 +168,7 @@ func RunCommand(cmd string) (string, error) {
 	return string(out), err
 }
 
-// Used to count the pods using prefix passed in the list of pods
+// CountOfStringInSlice Used to count the pods using prefix passed in the list of pods
 func CountOfStringInSlice(str string, pods []Pod) int {
 	var count int
 	for _, p := range pods {
@@ -181,7 +181,7 @@ func CountOfStringInSlice(str string, pods []Pod) int {
 
 func DeployWorkload(workload, kubeconfig string) (string, error) {
 	resourceDir := Basepath() + "/tests/terraform/resource_files"
-	files, err := ioutil.ReadDir(resourceDir)
+	files, err := os.ReadDir(resourceDir)
 	if err != nil {
 		return "", fmt.Errorf("%s : Unable to read resource manifest file for %s", err, workload)
 	}
@@ -197,7 +197,7 @@ func DeployWorkload(workload, kubeconfig string) (string, error) {
 
 func RemoveWorkload(workload, kubeconfig string) (string, error) {
 	resourceDir := Basepath() + "/tests/terraform/resource_files"
-	files, err := ioutil.ReadDir(resourceDir)
+	files, err := os.ReadDir(resourceDir)
 	if err != nil {
 		return "", fmt.Errorf("%s : Unable to read resource manifest file for %s", err, workload)
 	}
