@@ -154,8 +154,8 @@ func DeployWorkload(workload string, kubeconfig string) (string, error) {
 	return "", nil
 }
 
-// RestartServer restarts the rke2 service on each server-agent given
-func RestartServer(nodeNames []string) error {
+// RestartCluster restarts the rke2 service on each server-agent given
+func RestartCluster(nodeNames []string) error {
 	for _, nodeName := range nodeNames {
 		const cmd = "sudo systemctl restart rke2-*"
 		if _, err := RunCmdOnNode(cmd, nodeName); err != nil {

@@ -156,10 +156,10 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 
 		}, "620s", "5s").Should(Succeed())
 
-		errRestart := e2e.RestartServer(serverNodeNames)
+		errRestart := e2e.RestartCluster(serverNodeNames)
 		Expect(errRestart).NotTo(HaveOccurred(), "Restart Nodes not happened correctly")
 		if len(agentNodeNames) > 0 {
-			errRestartAgent := e2e.RestartServer(agentNodeNames)
+			errRestartAgent := e2e.RestartCluster(agentNodeNames)
 			Expect(errRestartAgent).NotTo(HaveOccurred(), "Restart Agent not happened correctly")
 		}
 
