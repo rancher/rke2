@@ -133,6 +133,55 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 		}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"), "failed cmd: "+cmd)
 	})
 
+	It("Verifies Restart", func() {
+		_, err := e2e.DeployWorkload("daemonset.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred(), "Daemonset manifest not deployed")
+		defer e2e.DeleteWorkload("daemonset.yaml", kubeConfigFile)
+		nodes, _ := e2e.ParseNodes(kubeConfigFile, false)
+
+		Eventually(func(g Gomega) {
+			pods, _ := e2e.ParsePods(kubeConfigFile, false)
+			count := e2e.CountOfStringInSlice("test-daemonset", pods)
+			for _, node := range nodes {
+				g.Expect(node.Status).Should(Equal("Ready"))
+			}
+			g.Expect(len(nodes)).Should((Equal(count)), "Daemonset pod count does not match node count")
+			podsRunning := 0
+			for _, pod := range pods {
+				if strings.Contains(pod.Name, "test-daemonset") && pod.Status == "Running" && pod.Ready == "1/1" {
+					podsRunning++
+				}
+			}
+			g.Expect(len(nodes)).Should((Equal(podsRunning)), "Daemonset running pods count does not match node count")
+
+		}, "620s", "5s").Should(Succeed())
+
+		errRestart := e2e.RestartServer(serverNodeNames)
+		Expect(errRestart).NotTo(HaveOccurred(), "Restart Nodes not happened correctly")
+		if len(agentNodeNames) > 0 {
+			errRestartAgent := e2e.RestartServer(agentNodeNames)
+			Expect(errRestartAgent).NotTo(HaveOccurred(), "Restart Agent not happened correctly")
+		}
+
+		Eventually(func(g Gomega) {
+			nodes, err := e2e.ParseNodes(kubeConfigFile, false)
+			g.Expect(err).NotTo(HaveOccurred())
+			for _, node := range nodes {
+				g.Expect(node.Status).Should(Equal("Ready"))
+			}
+			pods, _ := e2e.ParsePods(kubeConfigFile, false)
+			count := e2e.CountOfStringInSlice("test-daemonset", pods)
+			g.Expect(len(nodes)).Should((Equal(count)), "Daemonset pod count does not match node count")
+			podsRunningAr := 0
+			for _, pod := range pods {
+				if strings.Contains(pod.Name, "test-daemonset") && pod.Status == "Running" && pod.Ready == "1/1" {
+					podsRunningAr++
+				}
+			}
+			g.Expect(len(nodes)).Should((Equal(podsRunningAr)), "Daemonset pods are not running after the restart")
+		}, "620s", "5s").Should(Succeed())
+	})
+
 	It("Verifies Ingress", func() {
 		_, err := e2e.DeployWorkload("ingress.yaml", kubeConfigFile)
 		Expect(err).NotTo(HaveOccurred())
