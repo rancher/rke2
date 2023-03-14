@@ -17,6 +17,8 @@ See the [create cluster test](../tests/terraform/createcluster_test.go) as an ex
 Before running the tests, it's required to create a tfvars file in `./tests/terraform/modules/config/local.tfvars`. This should be filled in to match the desired variables, including those relevant for your AWS environment. All variables that are necessary can be seen in [main.tf](../tests/terraform/modules/main.tf).
 It is also required to have standard AWS environment variables present: `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
 
+** Please also when creating tf var resource_name, make sure that you do not have any instances from other automations with the same name to avoid deleting wrong resources
+
 Tests can be run per package with:
 ```bash
 go test -timeout=30m -v ./tests/terraform/$PACKAGE_NAME/...
@@ -28,6 +30,25 @@ $ docker build . -f ./tests/terraform/scripts/Dockerfile.build -t rke2-tf
 $ docker run --name rke2-tf-creation-test -t -e AWS_ACCESS_KEY_ID=<YOUR_ACCESS_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET_KEY> -v /path/to/aws/key.pem:/tmp/aws_key.pem rke2-tf sh -c "go test -timeout=30m -v ./tests/terraform/createcluster/..."
 $ docker run --name rke2-tf-upgrade-test -t -e AWS_ACCESS_KEY_ID=<YOUR_ACCESS_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET_KEY> -v /path/to/aws/key.pem:/tmp/aws_key.pem rke2-tf sh -c "go test -timeout=45m -v ./tests/terraform/upgradecluster/... -upgradeVersion=v1.24.8+rke2r1"
 ```
+
+We can also run tests through the Makefile:
+```bash
+Args:
+- ${name} append any string to the end of image name
+- ${test} call a specific tests directory
+- ${upgradeVersion} specify the version to upgrade to
+- ${argName} name of the arg to pass to the test
+- ${argValue} value of the arg to pass to the test
+
+Commands:
+$ make tdf-tests-up # create the image from Dockerfile.build
+$ make tf-tests-run # runs all tests if no flags or args provided
+$ make tf-tests-down # removes the image
+$ make tf-tests-clean # removes instances and resources created by tests
+$ make tf-tests-logs # prints logs from container the tests
+$ make tf-tests # clean resources + remove images + run tests
+```
+
 
 In between tests, if the cluster is not destroyed, then make sure to delete the ./tests/terraform/modules/terraform.tfstate file if you want to create a new cluster.
 
