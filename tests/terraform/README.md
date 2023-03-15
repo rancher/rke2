@@ -30,23 +30,32 @@ $ docker build . -f ./tests/terraform/scripts/Dockerfile.build -t rke2-tf
 $ docker run --name rke2-tf-creation-test -t -e AWS_ACCESS_KEY_ID=<YOUR_ACCESS_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET_KEY> -v /path/to/aws/key.pem:/tmp/aws_key.pem rke2-tf sh -c "go test -timeout=30m -v ./tests/terraform/createcluster/..."
 $ docker run --name rke2-tf-upgrade-test -t -e AWS_ACCESS_KEY_ID=<YOUR_ACCESS_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET_KEY> -v /path/to/aws/key.pem:/tmp/aws_key.pem rke2-tf sh -c "go test -timeout=45m -v ./tests/terraform/upgradecluster/... -upgradeVersion=v1.24.8+rke2r1"
 ```
-
+Test Flags:
+```
+- ${upgradeVersion} version to upgrade to
+```
 We can also run tests through the Makefile:
 ```bash
 Args:
-- ${name} append any string to the end of image name
-- ${test} call a specific tests directory
-- ${upgradeVersion} specify the version to upgrade to
-- ${argName} name of the arg to pass to the test
-- ${argValue} value of the arg to pass to the test
+*All args are optional and cab be used with `$make tf-tests-run` and `$make tf-tests-logs`
+
+- ${NAME} append any string to the end of image name
+- ${TEST} call a specific tests directory
+- ${ARGNAME} name of the arg to pass to the test
+- ${ARGVALUE} value of the arg to pass to the test
 
 Commands:
-$ make tdf-tests-up # create the image from Dockerfile.build
-$ make tf-tests-run # runs all tests if no flags or args provided
-$ make tf-tests-down # removes the image
+$ make tdf-tests-up   # create the image from Dockerfile.build
+$ make tf-tests-run   # runs all tests if no flags or args provided
+$ make tf-tests-down  # removes the image
 $ make tf-tests-clean # removes instances and resources created by tests
-$ make tf-tests-logs # prints logs from container the tests
-$ make tf-tests # clean resources + remove images + run tests
+$ make tf-tests-logs  # prints logs from container the tests
+$ make tf-tests       # clean resources + remove images + run tests
+
+Examples:
+$ make tf-tests-run NAME=1 TEST=upgradecluster ARGNAME=upgradeVersion ARGVALUE=v1.24.8+rke2r1
+$ make tf-tests-run TEST=createcluster
+$ make tf-tests-logs NAME=1
 ```
 
 

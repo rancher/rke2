@@ -179,25 +179,25 @@ tf-tests-up:
 
 .PHONY: tf-tests-run
 tf-tests-run:
-	@docker run -d --rm --name rke2-tf-test${name}-t \
+	@docker run -d --rm --name rke2-tf-test${NAME}-t \
       -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
       -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
       -v ${ACCESS_KEY_LOCAL}:/go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem \
-      rke2-tf sh -c 'if [ -n "${argName}" ]; then \
+      rke2-tf sh -c 'if [ -n "${ARGNAME}" ]; then \
                          go test -v -timeout=45m \
-                           ./tests/terraform/${test}/... \
-                           -"${argName}"="${argValue}"; \
-                       elif [ -z "${test}" ]; then \
+                           ./tests/terraform/${TEST}/... \
+                           -"${ARGNAME}"="${ARGVALUE}"; \
+                       elif [ -z "${TEST}" ]; then \
                          go test -v -timeout=45m \
                            ./tests/terraform/createcluster/...; \
                        else \
                          go test -v -timeout=45m \
-                           ./tests/terraform/${test}/...; \
+                           ./tests/terraform/${TEST}/...; \
                        fi'
 
 .PHONY: tf-tests-logs
 tf-tests-logs:
-	@docker logs -f rke2-tf-test$(name)
+	@docker logs -f rke2-tf-test$(NAME)
 
 .PHONY: tf-tests-down
 tf-tests-down:
