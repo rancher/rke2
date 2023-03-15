@@ -205,7 +205,6 @@ tf-tests-down:
 	@docker stop $$(docker ps -a -q --filter="name=rke2-tf*") && \
  		docker rm $$(docker ps -a -q --filter="name=rke2-tf*")
 
-.PHONY: tf-tests-clean
 tf-tests-clean:
 	@./tests/terraform/scripts/delete_resources.sh
 
