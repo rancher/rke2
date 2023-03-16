@@ -179,7 +179,7 @@ tf-tests-up:
 
 .PHONY: tf-tests-run
 tf-tests-run:
-	@docker run -d --rm --name rke2-tf-test${NAME}-t \
+	@docker run -d --rm --name rke2-tf-test${IMGNAME}-t \
       -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
       -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
       -v ${ACCESS_KEY_LOCAL}:/go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem \
@@ -197,7 +197,7 @@ tf-tests-run:
 
 .PHONY: tf-tests-logs
 tf-tests-logs:
-	@docker logs -f rke2-tf-test$(NAME)
+	@docker logs -f rke2-tf-test$(IMGNAME)
 
 .PHONY: tf-tests-down
 tf-tests-down:

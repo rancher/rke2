@@ -39,10 +39,10 @@ We can also run tests through the Makefile:
 Args:
 *All args are optional and cab be used with `$make tf-tests-run` and `$make tf-tests-logs`
 
-- ${NAME}     append any string to the end of image name
-- ${TEST}     call a specific tests directory
-- ${ARGNAME}  name of the arg to pass to the test
-- ${ARGVALUE} value of the arg to pass to the test
+- ${IMGNAME}     append any string to the end of image name
+- ${TEST}        call a specific tests directory
+- ${ARGNAME}     name of the arg to pass to the test
+- ${ARGVALUE}    value of the arg to pass to the test
 
 Commands:
 $ make tdf-tests-up   # create the image from Dockerfile.build
