@@ -237,7 +237,23 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 		return err
 	}
 
-	auditLogFile := filepath.Join(s.DataDir, "server/logs/audit.log")
+	auditLogFile := ""
+	kubeletPreferredAddressTypesFound := false
+	for i, arg := range args {
+		switch name, value, _ := strings.Cut(arg, "="); name {
+		case "--advertise-port", "--basic-auth-file":
+			// This is an option k3s adds that does not exist upstream
+			args = append(args[:i], args[i+1:]...)
+		case "--audit-log-path":
+			auditLogFile = value
+		case "--kubelet-preferred-address-types":
+			kubeletPreferredAddressTypesFound = true
+		}
+	}
+	if !kubeletPreferredAddressTypesFound {
+		args = append([]string{"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}, args...)
+	}
+
 	if s.CloudProvider != nil {
 		extraArgs := []string{
 			"--cloud-provider=" + s.CloudProvider.Name,
@@ -248,45 +264,39 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 	if s.CISMode && s.AuditPolicyFile == "" {
 		s.AuditPolicyFile = defaultAuditPolicyFile
 	}
+
 	if s.AuditPolicyFile != "" {
+		if err := writeDefaultPolicyFile(s.AuditPolicyFile); err != nil {
+			return err
+		}
 		extraArgs := []string{
 			"--audit-policy-file=" + s.AuditPolicyFile,
-			"--audit-log-path=" + auditLogFile,
 			"--audit-log-maxage=30",
 			"--audit-log-maxbackup=10",
 			"--audit-log-maxsize=100",
 		}
 		args = append(extraArgs, args...)
-		if err := writeDefaultPolicyFile(s.AuditPolicyFile); err != nil {
-			return err
+		if auditLogFile == "" {
+			auditLogFile = filepath.Join(s.DataDir, "server/logs/audit.log")
+			args = append([]string{"--audit-log-path=" + auditLogFile}, args...)
 		}
 	}
-	kubeletPreferredAddressTypesFound := false
-	for i, arg := range args {
-		// This is an option k3s adds that does not exist upstream
-		if strings.HasPrefix(arg, "--advertise-port=") {
-			args = append(args[:i], args[i+1:]...)
-		}
-		if strings.HasPrefix(arg, "--basic-auth-file=") {
-			args = append(args[:i], args[i+1:]...)
-		}
-		if strings.HasPrefix(arg, "--kubelet-preferred-address-types=") {
-			kubeletPreferredAddressTypesFound = true
-		}
-	}
-	if !kubeletPreferredAddressTypesFound {
-		args = append([]string{"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}, args...)
-	}
+
 	files := []string{}
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
+	dirs := onlyExisting(ssldirs)
+	if auditLogFile != "" {
+		dirs = append(dirs, filepath.Dir(auditLogFile))
+	}
+
 	return after(etcdReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:       "kube-apiserver",
 			Args:          args,
 			Image:         image,
-			Dirs:          append(onlyExisting(ssldirs), filepath.Dir(auditLogFile)),
+			Dirs:          dirs,
 			CPURequest:    s.ControlPlaneResources.KubeAPIServerCPURequest,
 			CPULimit:      s.ControlPlaneResources.KubeAPIServerCPULimit,
 			MemoryRequest: s.ControlPlaneResources.KubeAPIServerMemoryRequest,
