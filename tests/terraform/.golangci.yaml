@@ -31,7 +31,7 @@ linters-settings:
       - name: imports-blacklist
         arguments: []
       - name: line-length-limit
-        arguments: [90]
+        arguments: [100]
       - name: cyclomatic
         arguments: [7]
       - name: cognitive-complexity

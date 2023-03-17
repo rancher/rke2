@@ -37,13 +37,12 @@ Test Flags:
 We can also run tests through the Makefile:
 ```bash
 Args:
-*All args are optional and cab be used with `$make tf-tests-run` and `$make tf-tests-logs`
+*All args are optional and can be used with `$make tf-tests-run` and `$make tf-tests-logs`
 
 - ${IMGNAME}     append any string to the end of image name
-- ${TEST}        call a specific tests directory
 - ${ARGNAME}     name of the arg to pass to the test
 - ${ARGVALUE}    value of the arg to pass to the test
-- ${TESTDIR}     path to the test directory
+- ${TESTDIR}     path to the test directory 
 
 Commands:
 $ make tdf-tests-up   # create the image from Dockerfile.build
@@ -55,9 +54,9 @@ $ make tf-tests       # clean resources + remove images + run tests
 $ make vet-lint       # runs go vet and go lint
 
 Examples:
-$ make tf-tests-run NAME=1 TEST=upgradecluster ARGNAME=upgradeVersion ARGVALUE=v1.24.8+rke2r1
-$ make tf-tests-run TEST=createcluster
-$ make tf-tests-logs NAME=1
+$ make tf-tests-run IMGNAME=2 TESTDIR=terraform/upgradecluster ARGNAME=upgradeVersion ARGVALUE=v1.24.8+rke2r1
+$ make tf-tests-run TESTDIR=terraform/upgradecluster
+$ make tf-tests-logs IMGNAME=1
 ```
 
 

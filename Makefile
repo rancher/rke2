@@ -171,7 +171,7 @@ serve-docs: mkdocs
 mkdocs:
 	docker build -t mkdocs -f Dockerfile.docs .
 
-#============================ Terraform Tests ==============================#
+#========================= Terraform Tests =========================#
 include ./config.mk
 
 tf-tests-up:
@@ -185,14 +185,14 @@ tf-tests-run:
       -v ${ACCESS_KEY_LOCAL}:/go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem \
       rke2-tf sh -c 'if [ -n "${ARGNAME}" ]; then \
                          go test -v -timeout=45m \
-                           ./tests/terraform/${TEST}/... \
+                           ./tests/${TESTDIR}/... \
                            -"${ARGNAME}"="${ARGVALUE}"; \
                        elif [ -z "${TEST}" ]; then \
                          go test -v -timeout=45m \
                            ./tests/terraform/createcluster/... ./tests/terraform/etcd_int_test.go; \
                        else \
                          go test -v -timeout=45m \
-                           ./tests/terraform/${TEST}/...; \
+                           ./tests/${TESTDIR}/...; \
                        fi'
 
 .PHONY: tf-tests-logs
@@ -211,7 +211,8 @@ tf-tests-clean:
 .PHONY: tf-tests
 tf-tests: tf-tests-clean tf-tests-down tf-tests-up tf-tests-run
 
-.PHONY: tf-tests-logs
+#========================= TestCode Static Quality Check =========================#
+.PHONY: tf-tests-logs                     ## Run locally only inside Tests package
 vet-lint:
 	@echo "Running go vet and lint"
 	@go vet ./tests/${TESTDIR}
