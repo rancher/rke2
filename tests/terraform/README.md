@@ -43,6 +43,7 @@ Args:
 - ${TEST}        call a specific tests directory
 - ${ARGNAME}     name of the arg to pass to the test
 - ${ARGVALUE}    value of the arg to pass to the test
+- ${TESTDIR}     path to the test directory
 
 Commands:
 $ make tdf-tests-up   # create the image from Dockerfile.build
@@ -51,6 +52,7 @@ $ make tf-tests-down  # removes the image
 $ make tf-tests-clean # removes instances and resources created by tests
 $ make tf-tests-logs  # prints logs from container the tests
 $ make tf-tests       # clean resources + remove images + run tests
+$ make vet-lint       # runs go vet and go lint
 
 Examples:
 $ make tf-tests-run NAME=1 TEST=upgradecluster ARGNAME=upgradeVersion ARGVALUE=v1.24.8+rke2r1

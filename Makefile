@@ -189,7 +189,7 @@ tf-tests-run:
                            -"${ARGNAME}"="${ARGVALUE}"; \
                        elif [ -z "${TEST}" ]; then \
                          go test -v -timeout=45m \
-                           ./tests/terraform/createcluster/...; \
+                           ./tests/terraform/createcluster/... ./tests/terraform/etcd_int_test.go; \
                        else \
                          go test -v -timeout=45m \
                            ./tests/terraform/${TEST}/...; \
@@ -197,7 +197,7 @@ tf-tests-run:
 
 .PHONY: tf-tests-logs
 tf-tests-logs:
-	@docker logs -f rke2-tf-test$(IMGNAME)
+	@docker logs -f rke2-tf-test${IMGNAME}
 
 .PHONY: tf-tests-down
 tf-tests-down:
@@ -210,3 +210,9 @@ tf-tests-clean:
 
 .PHONY: tf-tests
 tf-tests: tf-tests-clean tf-tests-down tf-tests-up tf-tests-run
+
+.PHONY: tf-tests-logs
+vet-lint:
+	@echo "Running go vet and lint"
+	@go vet ./tests/${TESTDIR}
+	@cd tests/${TESTDIR} && golangci-lint run --tests

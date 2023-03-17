@@ -9,7 +9,7 @@ import (
 	"github.com/rancher/rke2/tests/terraform"
 )
 
-func upgradeCluster(version string, kubeconfig string) error {
+func UpgradeCluster(version string, kubeconfig string) error {
 	if strings.TrimSpace(version) == "" {
 		return fmt.Errorf("please provide a non-empty rke2 version to upgrade to")
 	}
@@ -26,5 +26,6 @@ func upgradeCluster(version string, kubeconfig string) error {
 	os.WriteFile(newFilePath, []byte(newContent), 0777)
 
 	_, err = terraform.DeployWorkload("plan.yaml", kubeconfig)
+
 	return err
 }
