@@ -1,4 +1,4 @@
-package terraform
+package createcluster
 
 import (
 	"fmt"
@@ -20,11 +20,11 @@ var (
 )
 
 func BuildCluster(t *testing.T, tfVarsPath string, destroy bool) (string, error) {
-	tfDir, err := filepath.Abs(Basepath() + "/tests/terraform/modules")
+	tfDir, err := filepath.Abs(terraform2.Basepath() + "/tests/terraform/modules")
 	if err != nil {
 		return "", err
 	}
-	varDir, err := filepath.Abs(Basepath() + tfVarsPath)
+	varDir, err := filepath.Abs(terraform2.Basepath() + tfVarsPath)
 	if err != nil {
 		return "", err
 	}

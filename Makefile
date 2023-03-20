@@ -171,15 +171,15 @@ serve-docs: mkdocs
 mkdocs:
 	docker build -t mkdocs -f Dockerfile.docs .
 
-#========================= Terraform Tests =========================#
+##========================= Terraform Tests =========================#
 include ./config.mk
 
 tf-tests-up:
-	@docker build . -q -f ./tests/terraform/scripts/Dockerfile -t rke2-tf
+	@docker build . -q -f ./tests/terraform/scripts/Dockerfile.build -t rke2-tf
 
 .PHONY: tf-tests-run
 tf-tests-run:
-	@docker run -d --rm --name rke2-tf-test${IMGNAME}-t \
+	@docker run -d --rm --name rke2-tf-test${IMGNAME} -t \
       -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
       -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
       -v ${ACCESS_KEY_LOCAL}:/go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem \
@@ -187,9 +187,9 @@ tf-tests-run:
                          go test -v -timeout=45m \
                            ./tests/${TESTDIR}/... \
                            -"${ARGNAME}"="${ARGVALUE}"; \
-                       elif [ -z "${TEST}" ]; then \
+                       elif [ -z "${TESTDIR}" ]; then \
                          go test -v -timeout=45m \
-                           ./tests/terraform/createcluster/... ./tests/terraform/etcd_int_test.go; \
+                           ./tests/terraform/createcluster/...; \
                        else \
                          go test -v -timeout=45m \
                            ./tests/${TESTDIR}/...; \
@@ -202,8 +202,8 @@ tf-tests-logs:
 .PHONY: tf-tests-down
 tf-tests-down:
 	@echo "Removing containers and images"
-	@docker stop $$(docker ps -a -q --filter="name=rke2-tf*") && \
- 		docker rm $$(docker ps -a -q --filter="name=rke2-tf*")
+	@docker stop $$(docker ps -a -q --filter="name=rke2-tf*")
+	@docker rm $$(docker ps -a -q --filter="name=rke2-tf*")
 
 tf-tests-clean:
 	@./tests/terraform/scripts/delete_resources.sh
