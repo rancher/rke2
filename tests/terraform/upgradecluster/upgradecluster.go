@@ -11,6 +11,7 @@ import (
 
 func upgradeCluster(version string, kubeconfig string) error {
 	if strings.TrimSpace(version) == "" {
+		
 		return fmt.Errorf("please provide a non-empty rke2 version to upgrade to")
 	}
 	regex := regexp.MustCompile(`\+`)
@@ -26,5 +27,6 @@ func upgradeCluster(version string, kubeconfig string) error {
 	os.WriteFile(newFilePath, []byte(newContent), 0777)
 
 	_, err = terraform.DeployWorkload("plan.yaml", kubeconfig)
+
 	return err
 }
