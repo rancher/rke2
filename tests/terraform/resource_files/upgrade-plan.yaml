@@ -1,7 +1,7 @@
 apiVersion: upgrade.cattle.io/v1
 kind: Plan
 metadata:
-  name: rke2-server
+  name: rke2-server-cp
   namespace: system-upgrade
   labels:
     rke2-upgrade: server
@@ -10,8 +10,34 @@ spec:
   version: $UPGRADEVERSION
   nodeSelector:
     matchExpressions:
-      - {key: node-role.kubernetes.io/master, operator: In, values: ["true"]}
+      - {key: node-role.kubernetes.io/control-plane, operator: In, values: ["true"]}
+  tolerations:
+    - operator: Exists
   serviceAccountName: system-upgrade
+  cordon: true
+  upgrade:
+    image: rancher/rke2-upgrade
+---
+apiVersion: upgrade.cattle.io/v1
+kind: Plan
+metadata:
+  name: rke2-server-etcd
+  namespace: system-upgrade
+  labels:
+    rke2-upgrade: server
+spec:
+  concurrency: 1
+  version: $UPGRADEVERSION
+  nodeSelector:
+    matchExpressions:
+      - {key: node-role.kubernetes.io/etcd, operator: In, values: ["true"]}
+      - {key: node-role.kubernetes.io/control-plane, operator: NotIn, values: ["true"]}
+  tolerations:
+    - operator: Exists
+  serviceAccountName: system-upgrade
+  prepare:
+    image: rancher/rke2-upgrade
+    args: ["prepare", "rke2-server-cp"]
   cordon: true
   upgrade:
     image: rancher/rke2-upgrade
@@ -28,11 +54,12 @@ spec:
   version: $UPGRADEVERSION
   nodeSelector:
     matchExpressions:
-      - {key: node-role.kubernetes.io/master, operator: NotIn, values: ["true"]}
+      - {key: node-role.kubernetes.io/etcd, operator: NotIn, values: ["true"]}
+      - {key: node-role.kubernetes.io/control-plane, operator: NotIn, values: ["true"]}
   serviceAccountName: system-upgrade
   prepare:
     image: rancher/rke2-upgrade
-    args: ["prepare", "rke2-server"]
+    args: ["prepare", "rke2-server-etcd"]
   drain:
     force: true
   upgrade:

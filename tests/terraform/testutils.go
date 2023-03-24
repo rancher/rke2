@@ -1,9 +1,11 @@
 package terraform
 
 import (
+	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,6 +15,8 @@ import (
 
 	"golang.org/x/crypto/ssh"
 )
+
+var config *ssh.ClientConfig
 
 type Node struct {
 	Name       string
@@ -33,10 +37,68 @@ type Pod struct {
 	Node      string
 }
 
-var config *ssh.ClientConfig
+type VarsConfig struct {
+	ClusterType  string
+	SplitRoles   bool
+	ResourceName string
+	ExternalDB   string
+	// other needed variables here
+}
+
+// GetTfVars reads the local.tfvars file and returns a VarsConfig struct
+func GetTfVars(filepath string) (VarsConfig, error) {
+	tfvarsfile, err := os.Open(filepath)
+	if err != nil {
+		return VarsConfig{}, err
+	}
+
+	defer func(file *os.File) {
+		err = file.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(tfvarsfile)
+
+	tfVarsConfig := VarsConfig{}
+	scanner := bufio.NewScanner(tfvarsfile)
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		if strings.Contains(line, "=") {
+			keyValue := strings.Split(line, "=")
+			if len(keyValue) != 2 {
+				return VarsConfig{}, errors.New("invalid line format: " + line)
+			}
+
+			key := strings.TrimSpace(keyValue[0])
+			value := strings.TrimSpace(keyValue[1])
+
+			switch key {
+			case "cluster_type":
+				tfVarsConfig.ClusterType = value
+			case "resource_name":
+				tfVarsConfig.ResourceName = value
+			case "external_db":
+				tfVarsConfig.ExternalDB = value
+			default:
+				return VarsConfig{}, errors.New("unrecognized variable: " + key)
+			}
+		}
+	}
+
+	if err = scanner.Err(); err != nil {
+		return VarsConfig{}, err
+	}
+
+	return tfVarsConfig, nil
+}
 
 func publicKey(path string) (ssh.AuthMethod, error) {
-	key, err := ioutil.ReadFile(path)
+	key, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +169,7 @@ func parseNodes(kubeConfig string, print bool, cmd string) ([]Node, error) {
 	if print {
 		fmt.Println(rawNodes)
 	}
+
 	return nodes, nil
 }
 
@@ -132,6 +195,7 @@ func parsePods(kubeconfig string, print bool, cmd string) ([]Pod, error) {
 	if print {
 		fmt.Println(rawPods)
 	}
+
 	return pods, nil
 }
 
@@ -146,6 +210,7 @@ func PrintFileContents(f string) error {
 		return err
 	}
 	fmt.Println(string(content))
+
 	return nil
 }
 
@@ -158,6 +223,7 @@ func RunCommandOnNode(cmd string, ServerIP string, sshUser string, sshKey string
 	}
 	res, err := runsshCommand(cmd, conn)
 	res = strings.TrimSpace(res)
+
 	return res, err
 }
 
@@ -165,6 +231,7 @@ func RunCommandOnNode(cmd string, ServerIP string, sshUser string, sshKey string
 func RunCommand(cmd string) (string, error) {
 	c := exec.Command("bash", "-c", cmd)
 	out, err := c.CombinedOutput()
+
 	return string(out), err
 }
 
@@ -176,6 +243,7 @@ func CountOfStringInSlice(str string, pods []Pod) int {
 			count++
 		}
 	}
+
 	return count
 }
 
@@ -192,6 +260,7 @@ func DeployWorkload(workload, kubeconfig string) (string, error) {
 			return RunCommand(cmd)
 		}
 	}
+
 	return "", nil
 }
 
@@ -208,34 +277,41 @@ func RemoveWorkload(workload, kubeconfig string) (string, error) {
 			return RunCommand(cmd)
 		}
 	}
+
 	return "", nil
 }
 
 func FetchClusterIP(kubeconfig string, namespace string, servicename string) (string, string, error) {
-	ipCmd := "kubectl get svc " + servicename + " -n " + namespace + " -o jsonpath='{.spec.clusterIP}' --kubeconfig=" + kubeconfig
+	ipCmd := "kubectl get svc " + servicename + " -n " + namespace +
+		" -o jsonpath='{.spec.clusterIP}' --kubeconfig=" + kubeconfig
 	ip, err := RunCommand(ipCmd)
 	if err != nil {
 		return "", "", err
 	}
-	portCmd := "kubectl get svc " + servicename + " -n " + namespace + " -o jsonpath='{.spec.ports[0].port}' --kubeconfig=" + kubeconfig
+	portCmd := "kubectl get svc " + servicename + " -n " + namespace +
+		" -o jsonpath='{.spec.ports[0].port}' --kubeconfig=" + kubeconfig
 	port, err := RunCommand(portCmd)
 	if err != nil {
 		return "", "", err
 	}
+
 	return ip, port, err
 }
 
 func FetchNodeExternalIP(kubeconfig string) []string {
-	cmd := "kubectl get node --output=jsonpath='{range .items[*]} { .status.addresses[?(@.type==\"ExternalIP\")].address}' --kubeconfig=" + kubeconfig
+	cmd := "kubectl get node --output=jsonpath='{range .items[*]} " +
+		"{ .status.addresses[?(@.type==\"ExternalIP\")].address}' --kubeconfig=" + kubeconfig
 	time.Sleep(10 * time.Second)
 	res, _ := RunCommand(cmd)
 	nodeExternalIP := strings.Trim(res, " ")
 	nodeExternalIPs := strings.Split(nodeExternalIP, " ")
+
 	return nodeExternalIPs
 }
 
 func FetchIngressIP(namespace string, kubeconfig string) ([]string, error) {
-	cmd := "kubectl get ingress -n " + namespace + " -o jsonpath='{.items[0].status.loadBalancer.ingress[*].ip}' --kubeconfig=" + kubeconfig
+	cmd := "kubectl get ingress -n " + namespace +
+		" -o jsonpath='{.items[0].status.loadBalancer.ingress[*].ip}' --kubeconfig=" + kubeconfig
 	res, err := RunCommand(cmd)
 	if err != nil {
 		return nil, err
@@ -245,20 +321,28 @@ func FetchIngressIP(namespace string, kubeconfig string) ([]string, error) {
 		ingressIPs := strings.Split(ingressIP, " ")
 		return ingressIPs, nil
 	}
+
 	return nil, nil
 }
 
 func Nodes(kubeConfig string, print bool) ([]Node, error) {
 	cmd := "kubectl get nodes --no-headers -o wide --kubeconfig=" + kubeConfig
+
 	return parseNodes(kubeConfig, print, cmd)
 }
 
 func WorkerNodes(kubeConfig string, print bool) ([]Node, error) {
-	cmd := "kubectl get node -o jsonpath='{range .items[*]}{@.metadata.name} {@.status.conditions[-1].type} <not retrieved> <not retrieved> {@.status.nodeInfo.kubeletVersion} {@.status.addresses[?(@.type==\"InternalIP\")].address} {@.status.addresses[?(@.type==\"ExternalIP\")].address} {@.spec.taints[*].effect}{\"\\n\"}{end}' --kubeconfig=" + kubeConfig + " | grep -v NoSchedule | grep -v NoExecute"
+	cmd := "kubectl get node -o jsonpath='{range .items[*]}{@.metadata.name} " +
+		"{@.status.conditions[-1].type} <not retrieved> <not retrieved> {@.status.nodeInfo.kubeletVersion} " +
+		"{@.status.addresses[?(@.type==\"InternalIP\")].address} " +
+		"{@.status.addresses[?(@.type==\"ExternalIP\")].address} {@.spec.taints[*].effect}{\"\\n\"}{end}' " +
+		"--kubeconfig=" + kubeConfig + " | grep -v NoSchedule | grep -v NoExecute"
+
 	return parseNodes(kubeConfig, print, cmd)
 }
 
 func Pods(kubeconfig string, print bool) ([]Pod, error) {
 	cmd := "kubectl get pods -o wide --no-headers -A --kubeconfig=" + kubeconfig
+
 	return parsePods(kubeconfig, print, cmd)
 }
