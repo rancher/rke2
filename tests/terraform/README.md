@@ -43,7 +43,7 @@ Test Flags:
 ```
 - ${upgradeVersion} version to upgrade to
 ```
-We can also run tests through the Makefile:
+We can also run tests through the Makefile through tests' directory:
 ```bash
 Args:
 *All args are optional and can be used with `$make tf-tests-run` , `$make tf-tests-logs` and `$make vet-lint`
@@ -65,7 +65,7 @@ $ make tf-tests-local-createcluster  # runs create cluster test locally
 $ make tf-tests-local-upgradecluster # runs upgrade cluster test locally
 
 Examples:
-$ make tf-tests-run IMGNAME=2 TESTDIR=terraform/upgradecluster ARGNAME=upgradeVersion ARGVALUE=v1.24.8+rke2r1
+$ make tf-tests-run IMGNAME=2 TESTDIR=terraform/upgradecluster ARGNAME=upgradeVersion ARGVALUE=v1.26.2+rke2r1
 $ make tf-tests-run TESTDIR=terraform/upgradecluster
 $ make tf-tests-logs IMGNAME=1
 $ make vet-lint TESTDIR=terraform/upgradecluster

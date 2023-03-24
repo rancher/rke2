@@ -13,7 +13,6 @@ import (
 	"github.com/rancher/rke2/tests/terraform"
 )
 
-var tfVars = flag.String("tfvars", "/tests/terraform/modules/config/local.tfvars", "custom .tfvars file from base project path")
 var destroy = flag.Bool("destroy", false, "a bool")
 
 func Test_TFClusterCreateValidation(t *testing.T) {
@@ -24,15 +23,19 @@ func Test_TFClusterCreateValidation(t *testing.T) {
 }
 
 var _ = Describe("Test:", func() {
+
 	Context("Build Cluster:", func() {
 		It("Starts up with no issues", func() {
-			status, err := BuildCluster(&testing.T{}, *tfVars, false)
+			status, err := BuildCluster(&testing.T{}, false)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(status).To(Equal("cluster created"))
+
 			defer GinkgoRecover()
+
 			fmt.Println("Server Node IPS:", MasterIPs)
 			fmt.Println("Agent Node IPS:", WorkerIPs)
 			fmt.Println(KubeConfigFile)
+
 			Expect(MasterIPs).ShouldNot(BeEmpty())
 			if NumWorkers > 0 {
 				Expect(WorkerIPs).ShouldNot(BeEmpty())
@@ -44,6 +47,8 @@ var _ = Describe("Test:", func() {
 
 		It("Checks Node and Pod Status", func() {
 			defer func() {
+				fmt.Printf("\nFetching node status\n")
+
 				_, err := terraform.Nodes(KubeConfigFile, true)
 				if err != nil {
 					fmt.Println("Error retrieving nodes: ", err)
@@ -54,22 +59,27 @@ var _ = Describe("Test:", func() {
 				}
 			}()
 
-			fmt.Printf("\nFetching node status\n")
 			expectedNodeCount := NumServers + NumWorkers
 			Eventually(func(g Gomega) {
 				nodes, err := terraform.Nodes(KubeConfigFile, false)
+
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(len(nodes)).To(Equal(expectedNodeCount), "Number of nodes should match the spec")
+				g.Expect(len(nodes)).To(Equal(expectedNodeCount),
+					"Number of nodes should match the spec")
+
 				for _, node := range nodes {
-					g.Expect(node.Status).Should(Equal("Ready"), "Nodes should all be in Ready state")
+					g.Expect(node.Status).Should(Equal("Ready"),
+						"Nodes should all be in Ready state")
 				}
 			}, "420s", "5s").Should(Succeed())
 
-			re := regexp.MustCompile("[0-9]+")
 			fmt.Printf("\nFetching pod status\n")
 			Eventually(func(g Gomega) {
 				pods, err := terraform.Pods(KubeConfigFile, false)
+
 				g.Expect(err).NotTo(HaveOccurred())
+
+				re := regexp.MustCompile("[0-9]+")
 				for _, pod := range pods {
 					if strings.Contains(pod.Name, "helm-install") {
 						g.Expect(pod.Status).Should(Equal("Completed"), pod.Name)
@@ -77,7 +87,8 @@ var _ = Describe("Test:", func() {
 						g.Expect(pod.Status).Should(Equal("Running"), pod.Name)
 						g.Expect(pod.Restarts).Should(Equal("0"), pod.Name)
 						numRunning := re.FindAllString(pod.Ready, 2)
-						g.Expect(numRunning[0]).Should(Equal(numRunning[1]), pod.Name, "should have all containers running")
+						g.Expect(numRunning[0]).Should(Equal(numRunning[1]), pod.Name,
+							"should have all containers running")
 					}
 				}
 			}, "600s", "5s").Should(Succeed())
@@ -87,18 +98,23 @@ var _ = Describe("Test:", func() {
 			namespace := "auto-clusterip"
 			_, err := terraform.DeployWorkload("clusterip.yaml", KubeConfigFile)
 			Expect(err).NotTo(HaveOccurred(), "Cluster IP manifest not deployed")
+
 			defer terraform.RemoveWorkload("clusterip.yaml", KubeConfigFile)
 
 			Eventually(func(g Gomega) {
-				cmd := "kubectl get pods -n " + namespace + " -o=name -l k8s-app=nginx-app-clusterip --field-selector=status.phase=Running --kubeconfig=" + KubeConfigFile
+				cmd := "kubectl get pods -n " + namespace + " -o=name -l k8s-app=nginx-app-clusterip " +
+					"--field-selector=status.phase=Running --kubeconfig=" + KubeConfigFile
 				res, err := terraform.RunCommand(cmd)
 				g.Expect(err).NotTo(HaveOccurred())
 				g.Expect(res).Should(ContainSubstring("test-clusterip"))
 			}, "420s", "5s").Should(Succeed())
 
-			clusterip, port, _ := terraform.FetchClusterIP(KubeConfigFile, namespace, "nginx-clusterip-svc")
+			clusterip, port, _ := terraform.FetchClusterIP(KubeConfigFile, namespace,
+				"nginx-clusterip-svc")
+
 			cmd := "curl -sL --insecure http://" + clusterip + ":" + port + "/name.html"
 			nodeExternalIP := terraform.FetchNodeExternalIP(KubeConfigFile)
+
 			for _, ip := range nodeExternalIP {
 				Eventually(func(g Gomega) {
 					res, err := terraform.RunCommandOnNode(cmd, ip, AwsUser, AccessKey)
@@ -112,16 +128,20 @@ var _ = Describe("Test:", func() {
 			namespace := "auto-nodeport"
 			_, err := terraform.DeployWorkload("nodeport.yaml", KubeConfigFile)
 			Expect(err).NotTo(HaveOccurred(), "NodePort manifest not deployed")
+
 			defer terraform.RemoveWorkload("nodeport.yaml", KubeConfigFile)
 
 			nodeExternalIP := terraform.FetchNodeExternalIP(KubeConfigFile)
-			cmd := "kubectl get service -n " + namespace + " nginx-nodeport-svc --kubeconfig=" + KubeConfigFile + " --output jsonpath=\"{.spec.ports[0].nodePort}\""
+			cmd := "kubectl get service -n " + namespace + " nginx-nodeport-svc --kubeconfig=" +
+				KubeConfigFile + " --output jsonpath=\"{.spec.ports[0].nodePort}\""
+
 			nodeport, err := terraform.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred())
 
 			for _, ip := range nodeExternalIP {
 				Eventually(func(g Gomega) {
-					cmd := "kubectl get pods -n " + namespace + " -o=name -l k8s-app=nginx-app-nodeport --field-selector=status.phase=Running --kubeconfig=" + KubeConfigFile
+					cmd := "kubectl get pods -n " + namespace + " -o=name -l k8s-app=nginx-app-nodeport " +
+						"--field-selector=status.phase=Running --kubeconfig=" + KubeConfigFile
 					res, err := terraform.RunCommand(cmd)
 					g.Expect(err).NotTo(HaveOccurred())
 					g.Expect(res).Should(ContainSubstring("test-nodeport"))
@@ -140,11 +160,14 @@ var _ = Describe("Test:", func() {
 			namespace := "auto-ingress"
 			_, err := terraform.DeployWorkload("ingress.yaml", KubeConfigFile)
 			Expect(err).NotTo(HaveOccurred(), "Ingress manifest not deployed")
+
 			defer terraform.RemoveWorkload("ingress.yaml", KubeConfigFile)
 
 			Eventually(func(g Gomega) {
-				cmd := "kubectl get pods -n " + namespace + " -o=name -l k8s-app=nginx-app-ingress --field-selector=status.phase=Running --kubeconfig=" + KubeConfigFile
+				cmd := "kubectl get pods -n " + namespace + " -o=name -l k8s-app=nginx-app-ingress" +
+					" --field-selector=status.phase=Running --kubeconfig=" + KubeConfigFile
 				res, err := terraform.RunCommand(cmd)
+
 				g.Expect(err).NotTo(HaveOccurred())
 				g.Expect(res).Should(ContainSubstring("test-ingress"))
 			}, "240s", "5s").Should(Succeed())
@@ -154,10 +177,13 @@ var _ = Describe("Test:", func() {
 			if err != nil {
 				fmt.Println("Error retrieving nodes: ", err)
 			}
+
 			Eventually(func(g Gomega) {
 				ingressIps, err = terraform.FetchIngressIP(namespace, KubeConfigFile)
+
 				g.Expect(err).NotTo(HaveOccurred(), "Ingress ip is not returned")
-				g.Expect(len(ingressIps)).To(Equal(len(nodes)), "Number of ingress IPs should match the number of nodes")
+				g.Expect(len(ingressIps)).To(Equal(len(nodes)),
+					"Number of ingress IPs should match the number of nodes")
 			}, "240s", "5s").Should(Succeed())
 
 			for _, ip := range ingressIps {
@@ -173,6 +199,7 @@ var _ = Describe("Test:", func() {
 		It("Verifies Daemonset", func() {
 			_, err := terraform.DeployWorkload("daemonset.yaml", KubeConfigFile)
 			Expect(err).NotTo(HaveOccurred(), "Daemonset manifest not deployed")
+
 			defer terraform.RemoveWorkload("daemonset.yaml", KubeConfigFile)
 
 			nodes, _ := terraform.WorkerNodes(KubeConfigFile, false)
@@ -180,7 +207,8 @@ var _ = Describe("Test:", func() {
 
 			Eventually(func(g Gomega) {
 				count := terraform.CountOfStringInSlice("test-daemonset", pods)
-				g.Expect(count).Should(Equal(len(nodes)), "Daemonset pod count does not match node count")
+				g.Expect(count).Should(Equal(len(nodes)),
+					"Daemonset pod count does not match node count")
 			}, "420s", "10s").Should(Succeed())
 		})
 
@@ -188,6 +216,7 @@ var _ = Describe("Test:", func() {
 			namespace := "auto-dns"
 			_, err := terraform.DeployWorkload("dnsutils.yaml", KubeConfigFile)
 			Expect(err).NotTo(HaveOccurred(), "dnsutils manifest not deployed")
+
 			defer terraform.RemoveWorkload("dnsutils.yaml", KubeConfigFile)
 
 			Eventually(func(g Gomega) {
@@ -198,7 +227,8 @@ var _ = Describe("Test:", func() {
 			}, "420s", "2s").Should(Succeed())
 
 			Eventually(func(g Gomega) {
-				cmd := "kubectl -n " + namespace + " --kubeconfig=" + KubeConfigFile + " exec -t dnsutils -- nslookup kubernetes.default"
+				cmd := "kubectl -n " + namespace + " --kubeconfig=" +
+					KubeConfigFile + " exec -t dnsutils -- nslookup kubernetes.default"
 				res, _ := terraform.RunCommand(cmd)
 				g.Expect(res).Should(ContainSubstring("kubernetes.default.svc.cluster.local"))
 			}, "420s", "2s").Should(Succeed())
@@ -222,7 +252,7 @@ var _ = AfterEach(func() {
 
 var _ = AfterSuite(func() {
 	if *destroy {
-		status, err := BuildCluster(&testing.T{}, *tfVars, *destroy)
+		status, err := BuildCluster(&testing.T{}, *destroy)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(status).To(Equal("cluster destroyed"))
 	}
