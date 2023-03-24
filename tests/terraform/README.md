@@ -14,10 +14,19 @@ See the [create cluster test](../tests/terraform/createcluster_test.go) as an ex
 
 ## Running
 
-Before running the tests, it's required to create a tfvars file in `./tests/terraform/modules/config/local.tfvars`. This should be filled in to match the desired variables, including those relevant for your AWS environment. All variables that are necessary can be seen in [main.tf](../tests/terraform/modules/main.tf).
+- Before running the tests, it's required to create a tfvars file in `./tests/terraform/modules/config/local.tfvars`. This should be filled in to match the desired variables, including those relevant for your AWS environment. All variables that are necessary can be seen in [main.tf](../tests/terraform/modules/main.tf).
 It is also required to have standard AWS environment variables present: `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
 
-** Please also when creating tf var resource_name, make sure that you do not have any instances from other automations with the same name to avoid deleting wrong resources
+
+- The local.tfvars split roles section should be strictly followed to not cause any false positives or negatives on tests
+
+
+- Please also when creating tf var resource_name, make sure that you do not have any instances from other automations with the same name to avoid deleting wrong resources
+
+
+- If you want to run tests locally totally in parallel, please make sure that you have different resource_name for each test
+
+*** 
 
 Tests can be run per package with:
 ```bash
@@ -37,7 +46,7 @@ Test Flags:
 We can also run tests through the Makefile:
 ```bash
 Args:
-*All args are optional and can be used with `$make tf-tests-run` and `$make tf-tests-logs`
+*All args are optional and can be used with `$make tf-tests-run` , `$make tf-tests-logs` and `$make vet-lint`
 
 - ${IMGNAME}     append any string to the end of image name
 - ${ARGNAME}     name of the arg to pass to the test
@@ -45,23 +54,31 @@ Args:
 - ${TESTDIR}     path to the test directory 
 
 Commands:
-$ make tdf-tests-up   # create the image from Dockerfile.build
-$ make tf-tests-run   # runs all tests if no flags or args provided
-$ make tf-tests-down  # removes the image
-$ make tf-tests-clean # removes instances and resources created by tests
-$ make tf-tests-logs  # prints logs from container the tests
-$ make tf-tests       # clean resources + remove images + run tests
-$ make vet-lint       # runs go vet and go lint
+$ make tdf-tests-up                  # create the image from Dockerfile.build
+$ make tf-tests-run                  # runs all tests if no flags or args provided
+$ make tf-tests-down                 # removes the image
+$ make tf-tests-clean                # removes instances and resources created by tests
+$ make tf-tests-logs                 # prints logs from container the tests
+$ make tf-tests                      # clean resources + remove images + run tests
+$ make vet-lint                      # runs go vet and go lint
+$ make tf-tests-local-createcluster  # runs create cluster test locally
+$ make tf-tests-local-upgradecluster # runs upgrade cluster test locally
 
 Examples:
 $ make tf-tests-run IMGNAME=2 TESTDIR=terraform/upgradecluster ARGNAME=upgradeVersion ARGVALUE=v1.24.8+rke2r1
 $ make tf-tests-run TESTDIR=terraform/upgradecluster
 $ make tf-tests-logs IMGNAME=1
+$ make vet-lint TESTDIR=terraform/upgradecluster
 ```
 
 
-In between tests, if the cluster is not destroyed, then make sure to delete the ./tests/terraform/modules/terraform.tfstate file if you want to create a new cluster.
+In between tests, if the cluster is not destroyed, then make sure to delete the ./tests/terraform/modules/terraform.tfstate + .terraform.lock.hcl file if you want to create a new cluster.
 
+
+# Common Issues:
+````
+- Issues related to terraform plugin please also delete the /.terraform folder and or go to folder that have main.tf and just run `terraform init` to download the plugin again
+````
 
 # Debugging
 To focus individual runs on specific test clauses, you can prefix with `F`. For example, in the [create cluster test](../tests/terraform/createcluster_test.go), you can update the initial creation to be: `FIt("Starts up with no issues", func() {` in order to focus the run on only that clause.

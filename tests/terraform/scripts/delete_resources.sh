@@ -4,18 +4,21 @@
 RESOURCE_NAME=$(grep resource_name <tests/terraform/modules/config/local.tfvars | cut -d= -f2 | tr -d ' "')
 NAME_PREFIX="$RESOURCE_NAME"
 
+
 ##Terminate the instances
-echo "Terminating instances for $NAME_PREFIX if it is still running"
+echo "Terminating resources for $NAME_PREFIX if still up and running"
 # shellcheck disable=SC2046
 aws ec2 terminate-instances --instance-ids $(aws ec2 describe-instances \
   --filters "Name=tag:Name,Values=${NAME_PREFIX}*" \
   "Name=instance-state-name,Values=running" --query \
   'Reservations[].Instances[].InstanceId' --output text) > /dev/null 2>&1
 
+
 #Get the list of load balancer ARNs
 LB_ARN_LIST=$(aws elbv2 describe-load-balancers \
   --query "LoadBalancers[?starts_with(LoadBalancerName, '${NAME_PREFIX}') && Type=='network'].LoadBalancerArn" \
   --output text)
+
 
 #Loop through the load balancer ARNs and delete the load balancers
 for LB_ARN in $LB_ARN_LIST; do
@@ -23,16 +26,19 @@ for LB_ARN in $LB_ARN_LIST; do
   aws elbv2 delete-load-balancer --load-balancer-arn "$LB_ARN"
 done
 
+
 #Get the list of target group ARNs
 TG_ARN_LIST=$(aws elbv2 describe-target-groups \
   --query "TargetGroups[?starts_with(TargetGroupName, '${NAME_PREFIX}') && Protocol=='TCP'].TargetGroupArn" \
   --output text)
+
 
 #Loop through the target group ARNs and delete the target groups
 for TG_ARN in $TG_ARN_LIST; do
   echo "Deleting target group $TG_ARN"
   aws elbv2 delete-target-group --target-group-arn "$TG_ARN"
 done
+
 
 #Get the ID and recordName with lower case of the hosted zone that contains the Route 53 record sets
 NAME_PREFIX_LOWER=$(echo "$NAME_PREFIX" | tr '[:upper:]' '[:lower:]')
@@ -43,11 +49,13 @@ R53_RECORD=$(aws route53 list-resource-record-sets \
   --query "ResourceRecordSets[?starts_with(Name, '${NAME_PREFIX_LOWER}.') && Type == 'CNAME'].Name" \
   --output text)
 
+
 #Get ResourceRecord Value
 RECORD_VALUE=$(aws route53 list-resource-record-sets \
   --hosted-zone-id "${R53_ZONE_ID}" \
   --query "ResourceRecordSets[?starts_with(Name, '${NAME_PREFIX_LOWER}.') \
     && Type == 'CNAME'].ResourceRecords[0].Value" --output text)
+
 
 #Delete Route53 record
 if [[ "$R53_RECORD" == "${NAME_PREFIX_LOWER}."* ]]; then

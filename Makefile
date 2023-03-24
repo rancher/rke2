@@ -188,7 +188,7 @@ tf-tests-run:
                            ./tests/${TESTDIR}/... \
                            -"${ARGNAME}"="${ARGVALUE}"; \
                        elif [ -z "${TESTDIR}" ]; then \
-                         go test -v -timeout=45m \
+                         go test -v -timeout=40m \
                            ./tests/terraform/createcluster/...; \
                        else \
                          go test -v -timeout=45m \
@@ -210,6 +210,16 @@ tf-tests-clean:
 
 .PHONY: tf-tests
 tf-tests: tf-tests-clean tf-tests-down tf-tests-up tf-tests-run
+
+
+#========================= Run terraform tests locally =========================#
+.PHONY: tf-tests-local-createcluster
+tf-tests-local-createcluster:
+	@go test -timeout=40m -v ./tests/terraform/createcluster/...
+
+.PHONY: tf-tests-local-upgradecluster
+tf-tests-local-upgradecluster:
+	@go test -timeout=45m -v ./tests/terraform/upgradecluster/... -${ARGVALUE}=${ARGNAME}
 
 #========================= TestCode Static Quality Check =========================#
 .PHONY: tf-tests-logs                     ## Run locally only inside Tests package
