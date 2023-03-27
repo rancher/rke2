@@ -27,7 +27,6 @@ func Test_TFUpgradeClusterValidation(t *testing.T) {
 }
 
 var _ = Describe("Upgrade Tests:", func() {
-
 	Context("Build Cluster:", func() {
 		It("Starts up with no issues", func() {
 			status, err := createcluster.BuildCluster(&testing.T{}, false)
@@ -38,8 +37,9 @@ var _ = Describe("Upgrade Tests:", func() {
 
 			fmt.Println("Server Node IPS:", createcluster.MasterIPs)
 			fmt.Println("Agent Node IPS:", createcluster.WorkerIPs)
-			fmt.Println(createcluster.KubeConfigFile)
+			terraform.PrintFileContents(createcluster.KubeConfigFile)
 
+			Expect(createcluster.KubeConfigFile).ShouldNot(BeEmpty())
 			Expect(createcluster.MasterIPs).ShouldNot(BeEmpty())
 
 			if createcluster.NumWorkers > 0 {
@@ -274,8 +274,8 @@ var _ = Describe("Upgrade Tests:", func() {
 
 			fmt.Printf("\nFetching node status postupgrade\n")
 
+			expectedNodeCount := createcluster.NumServers + createcluster.NumWorkers
 			Eventually(func(g Gomega) {
-				expectedNodeCount := createcluster.NumServers + createcluster.NumWorkers
 				nodes, err := terraform.Nodes(createcluster.KubeConfigFile, false)
 
 				g.Expect(err).NotTo(HaveOccurred())

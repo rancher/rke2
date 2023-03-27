@@ -71,6 +71,7 @@ func BuildCluster(t *testing.T, destroy bool) (string, error) {
 		}
 		NumServers = NumServers + etcdNodes + etcdCpNodes + etcdWorkerNodes + cpNodes + cpWorkerNodes
 	}
+
 	AwsUser = terraform.GetVariableAsStringFromVarFile(t, varDir, "aws_user")
 	AccessKey = terraform.GetVariableAsStringFromVarFile(t, varDir, "access_key")
 

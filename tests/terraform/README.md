@@ -15,7 +15,7 @@ See the [create cluster test](../tests/terraform/createcluster_test.go) as an ex
 ## Running
 
 - Before running the tests, it's required to create a tfvars file in `./tests/terraform/modules/config/local.tfvars`. This should be filled in to match the desired variables, including those relevant for your AWS environment. All variables that are necessary can be seen in [main.tf](../tests/terraform/modules/main.tf).
-It is also required to have standard AWS environment variables present: `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+It is also required to have standard AWS environment variables present: `AWS_ACCESS_KEY_ID` , `AWS_SECRET_ACCESS_KEY` and `ACCESS_KEY_LOCAL`
 
 
 - The local.tfvars split roles section should be strictly followed to not cause any false positives or negatives on tests
@@ -43,42 +43,65 @@ Test Flags:
 ```
 - ${upgradeVersion} version to upgrade to
 ```
-We can also run tests through the Makefile through tests' directory:
+We can also run tests through the Makefile through ./test/terraform directory:
+
+- On the first run with make and docker please delete your .terraform folder, terraform.tfstate and terraform.hcl.lock file
 ```bash
 Args:
-*All args are optional and can be used with `$make tf-tests-run` , `$make tf-tests-logs` and `$make vet-lint`
+*All args are optional and can be used with:
+
+`$make tf-run`         `$make tf-logs`,
+`$make vet-lint`       `$make tf-complete`, 
+`$make tf-upgrade`     `$make tf-test-suite-same-cluster`,
+`$make tf-test-suite`
 
 - ${IMGNAME}     append any string to the end of image name
+- ${TAGNAME}     append any string to the end of tag name
 - ${ARGNAME}     name of the arg to pass to the test
 - ${ARGVALUE}    value of the arg to pass to the test
 - ${TESTDIR}     path to the test directory 
 
 Commands:
-$ make tdf-tests-up                  # create the image from Dockerfile.build
-$ make tf-tests-run                  # runs all tests if no flags or args provided
-$ make tf-tests-down                 # removes the image
-$ make tf-tests-clean                # removes instances and resources created by tests
-$ make tf-tests-logs                 # prints logs from container the tests
-$ make tf-tests                      # clean resources + remove images + run tests
+$ make tf-up                         # create the image from Dockerfile.build
+$ make tf-run                        # runs all tests if no flags or args provided
+$ make tf-down                       # removes the image
+$ make tf-clean                      # removes instances and resources created by tests
+$ make tf-logs                       # prints logs from container the tests
+$ make tf--complete                  # clean resources + remove images + run tests
+$ make tf-create                     # runs create cluster test locally
+$ make tf-upgrade                    # runs upgrade cluster test locally
+$ make tf-test-suite-same-cluster    # runs all tests locally in sequence using the same state    
+$ make tf-remove-state               # removes terraform state dir and files
+$ make tf-test-suite                 # runs all tests locally in sequence not using the same state
 $ make vet-lint                      # runs go vet and go lint
-$ make tf-tests-local-createcluster  # runs create cluster test locally
-$ make tf-tests-local-upgradecluster # runs upgrade cluster test locally
 
+     
 Examples:
-$ make tf-tests-run IMGNAME=2 TESTDIR=terraform/upgradecluster ARGNAME=upgradeVersion ARGVALUE=v1.26.2+rke2r1
-$ make tf-tests-run TESTDIR=terraform/upgradecluster
-$ make tf-tests-logs IMGNAME=1
-$ make vet-lint TESTDIR=terraform/upgradecluster
+$ make tf-up TAGNAME=ubuntu
+$ make tf-run IMGNAME=2 TAGNAME=ubuntu TESTDIR=upgradecluster ARGNAME=upgradeVersion ARGVALUE=v1.26.2+rke2r1
+$ make tf-run TESTDIR=createcluster
+$ make tf-logs IMGNAME=1
+$ make vet-lint TESTDIR=upgradecluster
 ```
 
+# Running tests in parallel:
+- You can play around and have a lot of different test combinations like:
+```
+- Build docker image with different TAGNAME="OS`s" + with different configurations( resource_name, node_os, versions, install type, nodes and etc) and have unique "IMGNAMES"
+- And in the meanwhile run also locally with different configuration while your dockers TAGNAME and IMGNAMES are running
+```
 
-In between tests, if the cluster is not destroyed, then make sure to delete the ./tests/terraform/modules/terraform.tfstate + .terraform.lock.hcl file if you want to create a new cluster.
+# In between tests:
+- If you want to run with same cluster do not delete ./tests/terraform/modules/terraform.tfstate + .terraform.lock.hcl file after each test.
+
+- If you want to use new resources then make sure to delete the ./tests/terraform/modules/terraform.tfstate + .terraform.lock.hcl file if you want to create a new cluster.
 
 
 # Common Issues:
-````
-- Issues related to terraform plugin please also delete the /.terraform folder and or go to folder that have main.tf and just run `terraform init` to download the plugin again
-````
+
+- Issues related to terraform plugin please also delete the modules/.terraform folder
+- In mac m1 maybe you need also to go to rke2/tests/terraform/modules and run `terraform init` to download the plugins
+
 
 # Debugging
 To focus individual runs on specific test clauses, you can prefix with `F`. For example, in the [create cluster test](../tests/terraform/createcluster_test.go), you can update the initial creation to be: `FIt("Starts up with no issues", func() {` in order to focus the run on only that clause.

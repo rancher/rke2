@@ -1,11 +1,8 @@
 package terraform
 
 import (
-	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,6 +12,8 @@ import (
 
 	"golang.org/x/crypto/ssh"
 )
+
+type KubectlCommand string
 
 var config *ssh.ClientConfig
 
@@ -35,66 +34,6 @@ type Pod struct {
 	Restarts  string
 	NodeIP    string
 	Node      string
-}
-
-type VarsConfig struct {
-	ClusterType  string
-	SplitRoles   bool
-	ResourceName string
-	ExternalDB   string
-	// other needed variables here
-}
-
-// GetTfVars reads the local.tfvars file and returns a VarsConfig struct
-func GetTfVars(filepath string) (*VarsConfig, error) {
-	tfvarsfile, err := os.Open(filepath)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func(file *os.File) {
-		err = file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(tfvarsfile)
-
-	tfVarsConfig := VarsConfig{}
-	scanner := bufio.NewScanner(tfvarsfile)
-
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-		if strings.Contains(line, "=") {
-			keyValue := strings.Split(line, "=")
-			if len(keyValue) != 2 {
-				return nil, errors.New("invalid line format: " + line)
-			}
-
-			key := strings.TrimSpace(keyValue[0])
-			value := strings.TrimSpace(keyValue[1])
-
-			switch key {
-			case "cluster_type":
-				tfVarsConfig.ClusterType = value
-			case "resource_name":
-				tfVarsConfig.ResourceName = value
-			case "external_db":
-				tfVarsConfig.ExternalDB = value
-			default:
-				return nil, errors.New("unrecognized variable: " + key)
-			}
-		}
-	}
-
-	if err = scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return &tfVarsConfig, nil
 }
 
 func publicKey(path string) (ssh.AuthMethod, error) {
@@ -204,12 +143,14 @@ func Basepath() string {
 	return filepath.Join(filepath.Dir(b), "../..")
 }
 
-func PrintFileContents(f string) error {
-	content, err := os.ReadFile(f)
-	if err != nil {
-		return err
+func PrintFileContents(f ...string) error {
+	for _, file := range f {
+		content, err := os.ReadFile(file)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(content) + "\n")
 	}
-	fmt.Println(string(content))
 
 	return nil
 }
@@ -327,7 +268,6 @@ func FetchIngressIP(namespace string, kubeconfig string) ([]string, error) {
 
 func Nodes(kubeConfig string, print bool) ([]Node, error) {
 	cmd := "kubectl get nodes --no-headers -o wide --kubeconfig=" + kubeConfig
-
 	return parseNodes(kubeConfig, print, cmd)
 }
 
@@ -343,6 +283,5 @@ func WorkerNodes(kubeConfig string, print bool) ([]Node, error) {
 
 func Pods(kubeconfig string, print bool) ([]Pod, error) {
 	cmd := "kubectl get pods -o wide --no-headers -A --kubeconfig=" + kubeconfig
-
 	return parsePods(kubeconfig, print, cmd)
 }

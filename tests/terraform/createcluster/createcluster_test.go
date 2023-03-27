@@ -23,7 +23,6 @@ func Test_TFClusterCreateValidation(t *testing.T) {
 }
 
 var _ = Describe("Test:", func() {
-
 	Context("Build Cluster:", func() {
 		It("Starts up with no issues", func() {
 			status, err := BuildCluster(&testing.T{}, false)
@@ -34,9 +33,11 @@ var _ = Describe("Test:", func() {
 
 			fmt.Println("Server Node IPS:", MasterIPs)
 			fmt.Println("Agent Node IPS:", WorkerIPs)
-			fmt.Println(KubeConfigFile)
+			terraform.PrintFileContents(KubeConfigFile)
 
+			Expect(KubeConfigFile).ShouldNot(BeEmpty())
 			Expect(MasterIPs).ShouldNot(BeEmpty())
+
 			if NumWorkers > 0 {
 				Expect(WorkerIPs).ShouldNot(BeEmpty())
 			} else {
@@ -45,10 +46,9 @@ var _ = Describe("Test:", func() {
 			Expect(KubeConfigFile).ShouldNot(BeEmpty())
 		})
 
+		fmt.Printf("\nFetching node status\n")
 		It("Checks Node and Pod Status", func() {
 			defer func() {
-				fmt.Printf("\nFetching node status\n")
-
 				_, err := terraform.Nodes(KubeConfigFile, true)
 				if err != nil {
 					fmt.Println("Error retrieving nodes: ", err)

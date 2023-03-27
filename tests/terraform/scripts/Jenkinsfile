@@ -75,7 +75,7 @@ node {
               stage('Run Tests') {
                 sh "docker run --name ${testContainer} -t --env-file ${envFile} " +
                   "${imageName} sh -c \"chmod 400 /go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem && " +
-                  "go test -timeout=${timeout} -v ./tests/terraform/${RKE2_TESTCASE}/... ${RKE2_TEST_ARGS}\""
+                  "cd ./tests/terraform && go test -timeout=${timeout} -v ./${RKE2_TESTCASE}/... ${RKE2_TEST_ARGS}\""
               }
             } finally {           
               stage('Cleanup') {
