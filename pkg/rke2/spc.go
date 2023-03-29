@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
+	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -18,6 +19,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	toolswatch "k8s.io/client-go/tools/watch"
+)
+
+var (
+	removalAnnotation = "etcd." + version.Program + ".cattle.io/remove"
 )
 
 // cleanupStaticPodsOnSelfDelete returns a StartupHook that will start a
@@ -57,7 +62,10 @@ func watchForSelfDelete(ctx context.Context, dataDir string, client kubernetes.I
 	}
 	condition := func(event watch.Event) (bool, error) {
 		if n, ok := event.Object.(*v1.Node); ok {
-			return n.ObjectMeta.DeletionTimestamp != nil, nil
+			if n.ObjectMeta.DeletionTimestamp != nil || n.Annotations[removalAnnotation] == "true" {
+				return true, nil
+			}
+			return false, nil
 		}
 		return false, fmt.Errorf("event object not of type Node")
 	}
@@ -68,7 +76,7 @@ func watchForSelfDelete(ctx context.Context, dataDir string, client kubernetes.I
 		return
 	}
 
-	logrus.Infof("Local Node deleted, cleaning up server static pods")
+	logrus.Infof("Local Node deleted or removed from etcd cluster, cleaning up server static pods")
 	if err := cleanupStaticPods(dataDir); err != nil {
 		logrus.Errorf("spc: failed to clean up static pods: %v", err)
 	}
