@@ -80,7 +80,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
     ${REGISTRY}/rancher/hardened-ib-sriov-cni:v1.0.2-build20221014
     ${REGISTRY}/rancher/hardened-sriov-network-resources-injector:v1.5-build20221014
     ${REGISTRY}/rancher/hardened-sriov-network-webhook:v1.2.0-build20221014
-    ${REGISTRY}/rancher/hardened-whereabouts:v0.6-build20230109
+    ${REGISTRY}/rancher/hardened-whereabouts:v0.6.1-build20230330
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
