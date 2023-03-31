@@ -18,13 +18,15 @@ var nodeOS = flag.String("nodeOS", "generic/ubuntu2004", "operating system for l
 var serverCount = flag.Int("serverCount", 3, "number of server nodes")
 var linuxAgentCount = flag.Int("linuxAgentCount", 0, "number of linux agent nodes")
 var windowsAgentCount = flag.Int("windowsAgentCount", 1, "number of windows agent nodes")
+var ci = flag.Bool("ci", false, "running on CI")
 
 const defaultWindowsOS = "jborean93/WindowsServer2022"
 
 func Test_E2EMixedOSValidation(t *testing.T) {
 	flag.Parse()
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Validate Cluster Suite")
+	suiteConfig, reporterConfig := GinkgoConfiguration()
+	RunSpecs(t, "Validate MixedOS Test Suite", suiteConfig, reporterConfig)
 }
 
 func createMixedCluster(nodeOS string, serverCount, linuxAgentCount, windowsAgentCount int) ([]string, []string, []string, error) {
@@ -69,12 +71,13 @@ var (
 	windowsAgentNames []string
 )
 
-var _ = Describe("Verify Basic Cluster Creation", func() {
+var _ = ReportAfterEach(e2e.GenReport)
+var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 
 	It("Starts up with no issues", func() {
 		var err error
 		serverNodeNames, linuxAgentNames, windowsAgentNames, err = createMixedCluster(*nodeOS, *serverCount, *linuxAgentCount, *windowsAgentCount)
-		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog())
+		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog(err))
 		fmt.Println("CLUSTER CONFIG")
 		fmt.Println("OS:", *nodeOS)
 		fmt.Println("Server Nodes:", serverNodeNames)
@@ -110,6 +113,37 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 		_, err := e2e.ParsePods(kubeConfigFile, true)
 		Expect(err).NotTo(HaveOccurred())
 	})
+	It("Verifies internode connectivity over the vxlan tunnel", func() {
+		_, err := e2e.DeployWorkload("pod_client.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+
+		_, err = e2e.DeployWorkload("windows_app_deployment.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+
+		// Wait for the pod_client pods to have an IP
+		Eventually(func() string {
+			ips, _ := e2e.PodIPsUsingLabel(kubeConfigFile, "app=client")
+			return ips[0]
+		}, "120s", "10s").Should(ContainSubstring("10.42"), "failed getClientIPs")
+
+		// Wait for the windows_app_deployment pods to have an IP (We must wait 250s because it takes time)
+		Eventually(func() string {
+			ips, _ := e2e.PodIPsUsingLabel(kubeConfigFile, "app=windows-app")
+			return ips[0]
+		}, "620s", "10s").Should(ContainSubstring("10.42"), "failed getClientIPs")
+
+		// Test Linux -> Windows communication
+		cmd := "kubectl exec svc/client-curl --kubeconfig=" + kubeConfigFile + " -- curl -m7 windows-app-svc:3000"
+		Eventually(func() (string, error) {
+			return e2e.RunCommand(cmd)
+		}, "120s", "3s").Should(ContainSubstring("Welcome to PSTools for K8s Debugging"), "failed cmd: "+cmd)
+
+		// Test Windows -> Linux communication
+		cmd = "kubectl exec svc/windows-app-svc --kubeconfig=" + kubeConfigFile + " -- curl -m7 client-curl:8080"
+		Eventually(func() (string, error) {
+			return e2e.RunCommand(cmd)
+		}, "20s", "3s").Should(ContainSubstring("Welcome to nginx!"), "failed cmd: "+cmd)
+	})
 	It("Runs the mixed os sonobuoy plugin", func() {
 		cmd := "sonobuoy run --kubeconfig=/etc/rancher/rke2/rke2.yaml --plugin my-sonobuoy-plugins/mixed-workload-e2e/mixed-workload-e2e.yaml --aggregator-node-selector kubernetes.io/os:linux --wait"
 		res, err := e2e.RunCmdOnNode(cmd, serverNodeNames[0])
@@ -127,11 +161,11 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 
 var failed bool
 var _ = AfterEach(func() {
-	failed = failed || CurrentGinkgoTestDescription().Failed
+	failed = failed || CurrentSpecReport().Failed()
 })
 
 var _ = AfterSuite(func() {
-	if failed {
+	if failed && !*ci {
 		fmt.Println("FAILED!")
 	} else {
 		Expect(e2e.DestroyCluster()).To(Succeed())

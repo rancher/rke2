@@ -49,7 +49,7 @@ The following files have references that will need to be updated in the respecti
 
 Once these changes are made, submit a PR for review and let CI complete. When CI is finished and upon getting 1 approval, merge the PR. CI will run for the master merge. 
 
-## RKE2 Release RC
+## RKE2 Release Candidate
 
 Next, we need to create a release candidate (RC). The Drone (CI) process that builds the release itself can be monitored [here](https://drone-publish.rancher.io/rancher/rke2/).
 
@@ -60,7 +60,8 @@ Next, we need to create a release candidate (RC). The Drone (CI) process that bu
     * Example tag: `v1.23.5-rc1+rke2r1`
     * **NOTE** Make sure to create the tag against the correct release branch. In the example above, that would map to release branch `release-1.23`.
 
-Ensure "prerelease" checkbox is selected.
+Ensure "Set as a pre-release" checkbox is selected.
+Ensure "Set as the latest release" is **NOT** selected.
 
 CI will run and build the release assets as well as kick off an image build for [RKE2 Upgrade images](https://hub.docker.com/r/rancher/rke2-upgrade/tags?page=1&ordering=last_updated).
 
@@ -79,6 +80,20 @@ Along with creating a new RKE2 release, we need to trigger a new build of the as
 
 When CI completes, let QA know so they can perform testing.
 
+### Communicating with QA
+
+When coordinating release efforts it is important to maintain a clear line of communication with the QA team. This is best done by relaying timely updates in the release thread of the #discuss-k3s-rke2-release channel in the organisations slack. It is best to notify QA once RCs, RPMs, and KDM PRs are available. Fill in the template below and paste it into the release thread:
+
+```
+RKE2 <tag> is now available for testing! @k3s-rke2-qa
+KDM PRs:
+<links to relevant KDM PRs>
+RC:
+<links to relevant rcs>
+RPM:
+<links to relevant rpms>
+```
+
 ### Primary Release
 
 Once QA signs off on the RC, it's time to cut the primary release. Go to the [rke2](https://github.com/rancher/rke2) repository.
@@ -88,7 +103,8 @@ Once QA signs off on the RC, it's time to cut the primary release. Go to the [rk
 * Enter the desired version into the "Tag version" box. 
     * Example tag: `v1.23.5+rke2r1`
 
-Ensure "prerelease" checkbox is selected.
+Ensure "Set as a pre-release" checkbox is selected.
+Ensure "Set as the latest release" is **NOT** selected.
 
 Once complete, the process is repeated in the [rke2-packaging](https://github.com/rancher/rke2-packaging) repository.
 
@@ -120,7 +136,7 @@ We then create the "**stable**" RPMs. Follow the steps below.
 
 ### Release Notes
 
-Release notes should be drafted before the release is complete. This happens in the [Rancher Labs - Release Notes](https://github.com/rancherlabs/release-notes) repository. Create a new branch from your fork and update the relevant files in `rke2/`. The release note files have been standardized and should stay in the style they're currently in.
+ The drafting of release notes occurs in the [Rancher Labs - Release Notes](https://github.com/rancherlabs/release-notes) repository. To begin drafing release notes create a new branch from your fork and update the relevant files in `rke2/` directory. The release note files have been standardized and should adhere to the existing style and formatting.
 
 The 2 primary sections of the release notes are the "Changes since ..." and the "Package Component Versions". The other sections need to be reviewed as well. The "Changes since ..." section can be fleshed out by reviewing the closed issues and pull requests for the matching milestone.
 
@@ -157,7 +173,7 @@ Be sure to review the rest of the sections as some of them may become irrelevant
 
 This step is specific to Rancher and serves to update Rancher's [Kontainer Driver Metadata](https://github.com/rancher/kontainer-driver-metadata/).
 
-Create PRs in the [KDM](https://github.com/rancher/kontainer-driver-metadata/) `dev-2.6` and `dev-2.5` branches to update the Kubernetes versions in `channels-rke2.yaml`. 
+Normally we'd create PRs in the [KDM](https://github.com/rancher/kontainer-driver-metadata/) `dev-2.6` and `dev-2.7` branches to update the Kubernetes versions in `channels-rke2.yaml`. However, for the time being, there are different branches that need to be updated. They can be found by going to the `#discuss-rancher-k3s-rke2-release` channel in Suse slack and checking the topic for the channel.
 * The PR should consist of two commits:
     1. Changes made to `channels-rke2.yaml` to update the Kubernetes versions.
     2. Run `go generate` and commit the changes this caused to data/data.json. Title this second commit "go generate".
@@ -244,6 +260,23 @@ Every RKE2 release, from RC to primary, triggers the release process of the down
   - [Repository](https://github.com/rancher/rke2-upgrade)
   - [Drone publish job](https://drone-publish.rancher.io/rancher/rke2-upgrade)
 
+## Prepare for an 'R2'
+At this point it is likely that the release is over. However, in the event of a CVE, critical bug affecting user experiences or something similar, we may be required to cut what the release team refers to as an 'R2' or 'Release 2'. This process is identical to the release process, save only that the tags are cut with ```+rke2r2```. To prep an R2 one need only to perform the following:
+
+Create a new release tag at the [image-build-kubernetes](https://github.com/rancher/image-build-kubernetes) repo.
+
+* Click "Releases"
+* Click "Draft a new release"
+* Enter the new release version (the RKE2 Kubernetes version), appended with `-buildYYYYMMdd`, into the "Tag version" box.  **NOTE** The build system is in UTC. The command `TZ=utc date '+-build%Y%m%d'` can be used to get the correct format.
+* When converting the RKE2 version to the Kubernetes version, use dash instead of plus, and do not include any alpha/beta/rc components. For example, if preparing for RKE2 `v1.23.5+rke2r2` before 5 PM Pacific on Friday, August 27th 2021 you would tag `v1.23.5-rke2r2-build20210829`
+* Click the "Publish release" button. 
+
+This will take a few minutes for [CI](https://drone-pr.rancher.io/rancher/image-build-kubernetes) to run but upon completion, a new image will be available in [Dockerhub](https://hub.docker.com/r/rancher/hardened-kubernetes).
+
+Now restart the RKE2 upgrades as defined [here](#L39) with the updated image-build-kubernetes tags.
+
+Once the updates are made, create a PR with '[WIP]' in the title, request review, and leave open until needed. If an R2 isn't necessary, these PRs should be closed at the start of the next release process.
+
 ## Release Process Overview
 
 ```mermaid
@@ -312,3 +345,5 @@ Be sure to reference the sections above for further detail on each step.
 - Tag RKE2 packaging release "stable"
 - Update stable release in channels.yaml
 - Update KDM
+- Begin R2 preparations
+

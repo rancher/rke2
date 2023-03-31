@@ -1,7 +1,7 @@
 ARG KUBERNETES_VERSION=dev
 
 # Build environment
-FROM rancher/hardened-build-base:v1.18.1b7 AS build
+FROM rancher/hardened-build-base:v1.19.7b1 AS build
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
 RUN set -x \
@@ -15,6 +15,7 @@ RUN set -x \
     gcc \
     bsd-compat-headers \
     py-pip \
+    py3-pip \
     pigz \
     tar \
     yq
@@ -28,7 +29,7 @@ RUN zypper install -y systemd-rpm-macros
 
 # Dapper/Drone/CI environment
 FROM build AS dapper
-ENV DAPPER_ENV GODEBUG REPO TAG DRONE_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME GCLOUD_AUTH ENABLE_REGISTRY
+ENV DAPPER_ENV GODEBUG REPO TAG DRONE_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
 ENV DAPPER_OUTPUT ./dist ./bin ./build
@@ -36,7 +37,7 @@ ENV DAPPER_DOCKER_SOCKET true
 ENV DAPPER_TARGET dapper
 ENV DAPPER_RUN_ARGS "--privileged --network host -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy"
 RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
-    VERSION=0.50.0 OS=linux && \
+    VERSION=0.56.10 OS=linux && \
     curl -sL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
     tar -xzf - -C /usr/local/bin; \
     fi
@@ -46,13 +47,14 @@ RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
     chmod a+x /usr/local/bin/kubectl; \
     pip install codespell
 
-RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/v1.45.2/install.sh | sh -s;
+RUN python3 -m pip install awscli
+RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.50.1
 RUN set -x \
     && apk --no-cache add \
     libarchive-tools \
     zstd \
     jq \
-    python2 \
+    python3 \
     \
     && if [ "${ARCH}" != "s390x" ]; then \
     	apk add --no-cache rpm-dev; \
@@ -71,16 +73,17 @@ RUN GOCR_VERSION="v0.5.1" && \
         chmod a+x /usr/local/bin/crane; \
         fi
 
-RUN VERSION=0.16.0 && \
-    if [ "${ARCH}" = "arm64" ]; then \
-    wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-ARM64.tar.gz && \
-    tar -zxvf trivy_${VERSION}_Linux-ARM64.tar.gz && \
+RUN TRIVY_VERSION="0.31.3" && \
+    if [ "${ARCH}" = "amd64" ]; then \
+    wget https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz && \
+    tar -zxvf trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz && \
     mv trivy /usr/local/bin; \
-    else \
-    wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-64bit.tar.gz && \
-    tar -zxvf trivy_${VERSION}_Linux-64bit.tar.gz && \
+    elif [ "${ARCH}" = "arm64" ]; then \
+    wget https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-ARM64.tar.gz && \
+    tar -zxvf trivy_${TRIVY_VERSION}_Linux-ARM64.tar.gz && \
     mv trivy /usr/local/bin; \
     fi
+
 WORKDIR /source
 
 COPY --from=rpm-macros /usr/lib/rpm/macros.d/macros.systemd /usr/lib/rpm/macros.d
@@ -114,28 +117,31 @@ ARG KUBERNETES_VERSION=""
 ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
-RUN CHART_VERSION="1.11.502"                  CHART_FILE=/charts/rke2-cilium.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="v3.22.2-build2022050902"   CHART_FILE=/charts/rke2-canal.yaml          CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="v3.23.103"                 CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="v3.23.103"                 CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="1.19.400"                  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="4.1.003"                   CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
-RUN CHART_VERSION="2.11.100-build2021111904"  CHART_FILE=/charts/rke2-metrics-server.yaml CHART_BOOTSTRAP=false  /charts/build-chart.sh
-RUN CHART_VERSION="v3.8-build2021110403"      CHART_FILE=/charts/rke2-multus.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="1.2.201"                   CHART_FILE=/charts/rancher-vsphere-cpi.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="2.5.1-rancher101"          CHART_FILE=/charts/rancher-vsphere-csi.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="0.1.1100"                  CHART_FILE=/charts/harvester-cloud-provider.yaml CHART_BOOTSTRAP=true /charts/build-chart.sh
-RUN CHART_VERSION="0.1.1100"                  CHART_FILE=/charts/harvester-csi-driver.yaml     CHART_BOOTSTRAP=true /charts/build-chart.sh
+RUN CHART_VERSION="1.13.000"                  CHART_FILE=/charts/rke2-cilium.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="v3.25.0-build2023020902"   CHART_FILE=/charts/rke2-canal.yaml          CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="v3.25.001"                 CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="v3.25.001"                 CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="1.19.401"                  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="4.1.008"                   CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
+RUN CHART_VERSION="2.11.100-build2022101107"  CHART_FILE=/charts/rke2-metrics-server.yaml CHART_BOOTSTRAP=false  /charts/build-chart.sh
+RUN CHART_VERSION="v3.9.3-build2023010902"    CHART_FILE=/charts/rke2-multus.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="1.4.100"                   CHART_FILE=/charts/rancher-vsphere-cpi.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="2.6.2-rancher100"          CHART_FILE=/charts/rancher-vsphere-csi.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="0.1.1400"                  CHART_FILE=/charts/harvester-cloud-provider.yaml CHART_BOOTSTRAP=true /charts/build-chart.sh
+RUN CHART_VERSION="0.1.1600"                  CHART_FILE=/charts/harvester-csi-driver.yaml     CHART_BOOTSTRAP=true /charts/build-chart.sh
+RUN CHART_VERSION="1.7.201"                   CHART_FILE=/charts/rke2-snapshot-controller.yaml CHART_BOOTSTRAP=false /charts/build-chart.sh
+RUN CHART_VERSION="1.7.201"                   CHART_FILE=/charts/rke2-snapshot-controller-crd.yaml CHART_BOOTSTRAP=false /charts/build-chart.sh
+RUN CHART_VERSION="1.7.100"                   CHART_FILE=/charts/rke2-snapshot-validation-webhook.yaml CHART_BOOTSTRAP=false /charts/build-chart.sh
 RUN rm -vf /charts/*.sh /charts/*.md
 
-# rke-runtime image
+# rke2-runtime image
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
-FROM rancher/hardened-kubernetes:v1.24.2-rke2r1-build20220617 AS kubernetes
-FROM rancher/hardened-containerd:v1.6.6-k3s1-build20220606 AS containerd
-FROM rancher/hardened-crictl:v1.24.0-build20220506 AS crictl
-FROM rancher/hardened-runc:v1.1.2-build20220606 AS runc
+FROM rancher/hardened-kubernetes:v1.26.3-rke2r1-build20230317 AS kubernetes
+FROM rancher/hardened-containerd:v1.6.19-k3s1-build20230310 AS containerd
+FROM rancher/hardened-crictl:v1.24.0-build20221011 AS crictl
+FROM rancher/hardened-runc:v1.1.4-build20221012 AS runc
 
 FROM scratch AS runtime-collect
 COPY --from=runc \
@@ -202,6 +208,6 @@ RUN set -x \
     jq \
     less \
     socat \
-    vim
+    vim 
 ENTRYPOINT ["/bin/rke2"]
 CMD ["server"]

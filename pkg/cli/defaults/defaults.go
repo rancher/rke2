@@ -25,10 +25,9 @@ func Set(clx *cli.Context, dataDir string) error {
 	cmds.ServerConfig.HTTPSPort = 6443
 	cmds.ServerConfig.APIServerPort = 6443
 	cmds.ServerConfig.APIServerBindAddress = "0.0.0.0"
-	cmds.AgentConfig.NoFlannel = true
 	cmds.ServerConfig.ExtraAPIArgs = append(
 		[]string{
-			"enable-admission-plugins=NodeRestriction,PodSecurityPolicy",
+			"enable-admission-plugins=NodeRestriction",
 		},
 		cmds.ServerConfig.ExtraAPIArgs...)
 	cmds.AgentConfig.ExtraKubeletArgs = append(

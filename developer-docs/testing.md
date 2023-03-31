@@ -53,12 +53,12 @@ ___
 ## Integration Tests
 
 Integration tests should be used to test a specific functionality of RKE2 that exists across multiple Go packages,
-either via exported function calls, or more often, CLI comands. Integration tests should be used for "black box"
+either via exported function calls, or more often, CLI commands. Integration tests should be used for "black box"
 testing. 
 
 ### Framework
 
-All integration tests in RKE2 follow a [Behavior Diven Development (BDD)](https://en.wikipedia.org/wiki/Behavior-driven_development) style.
+All integration tests in RKE2 follow a [Behavior Driven Development (BDD)](https://en.wikipedia.org/wiki/Behavior-driven_development) style.
 Specifically, RKE2 uses [Ginkgo](https://onsi.github.io/ginkgo/) and [Gomega](https://onsi.github.io/gomega/) to drive the tests.  
 To generate an initial test, the command `ginkgo bootstrap` can be used.
 
@@ -92,10 +92,10 @@ ___
 
 Installer tests should be run anytime one makes a modification to the installer script(s).
 These can be run locally with Vagrant:
-- [CentOS 7](../tests/vagrant/install/centos-7) (stand-in for RHEL 7)
-- [Rocky 8](../tests/vagrant/install/rocky-8) (stand-in for RHEL 8)
-- [MicroOS](../tests/vagrant/install/opensuse-microos) (stand-in for SLE-Micro)
-- [Ubuntu 20.04](../tests/vagrant/install/ubuntu-focal) (Focal Fossa)
+- [CentOS 7](../tests/install/centos-7) (stand-in for RHEL 7)
+- [Rocky 8](../tests/install/rocky-8) (stand-in for RHEL 8)
+- [MicroOS](../tests/install/opensuse-microos) (stand-in for SLE-Micro)
+- [Ubuntu 20.04](../tests/install/ubuntu-focal) (Focal Fossa)
 
 When adding new installer test(s) please copy the prevalent style for the `Vagrantfile`.
 Ideally, the boxes used for additional assertions will support the default `virtualbox` provider which

@@ -16,7 +16,7 @@ fi
 REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
 RELEASE=${PROG}.${GOOS}-${GOARCH}
 
-BUILDTAGS="selinux netgo osusergo no_stage static_build sqlite_omit_load_extension"
+BUILDTAGS="selinux netgo osusergo no_stage static_build sqlite_omit_load_extension no_embedded_executor no_cri_dockerd"
 GO_BUILDTAGS="${GO_BUILDTAGS} ${BUILDTAGS} ${DEBUG_TAGS}"
 
 VERSION_FLAGS="
@@ -24,7 +24,7 @@ VERSION_FLAGS="
         -X ${K3S_PKG}/pkg/version.Program=${PROG}
         -X ${K3S_PKG}/pkg/version.Version=${VERSION}
         -X ${RKE2_PKG}/pkg/images.DefaultRegistry=${REGISTRY}
-        -X ${RKE2_PKG}/pkg/images.DefaultEtcdImage=rancher/hardened-etcd:${ETCD_VERSION}-build20220504
+        -X ${RKE2_PKG}/pkg/images.DefaultEtcdImage=rancher/hardened-etcd:${ETCD_VERSION}-build20221129
         -X ${RKE2_PKG}/pkg/images.DefaultKubernetesImage=rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
         -X ${RKE2_PKG}/pkg/images.DefaultPauseImage=rancher/pause:${PAUSE_VERSION}
         -X ${RKE2_PKG}/pkg/images.DefaultRuntimeImage=${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
@@ -42,7 +42,9 @@ STATIC_FLAGS='-extldflags "-static"'
 
 GO_LDFLAGS="${STATIC_FLAGS} ${EXTRA_LDFLAGS}"
 echo ${DEBUG_GO_GCFLAGS}
-go build \
+
+# passing boringcrypto to GOEXPERIMENT variable to build with goboring library
+GOEXPERIMENT=boringcrypto go build \
     -tags "${GO_BUILDTAGS}" \
     ${GO_GCFLAGS} ${GO_BUILD_FLAGS} \
     -o bin/${PROG} \

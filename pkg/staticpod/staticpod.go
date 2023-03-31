@@ -30,21 +30,40 @@ const (
 	extraMountPrefix = "extra-mount"
 )
 
+type ProbeConf struct {
+	InitialDelaySeconds int32
+	TimeoutSeconds      int32
+	FailureThreshold    int32
+	PeriodSeconds       int32
+}
+
+type ProbeConfs struct {
+	Liveness  ProbeConf
+	Readiness ProbeConf
+	Startup   ProbeConf
+}
+
 type Args struct {
 	Command         string
 	Args            []string
 	Image           name.Reference
 	Dirs            []string
 	Files           []string
+	HealthExec      []string
 	HealthPort      int32
 	HealthProto     string
 	HealthPath      string
+	ReadyExec       []string
+	ReadyPort       int32
+	ReadyProto      string
+	ReadyPath       string
 	CPURequest      string
 	CPULimit        string
 	MemoryRequest   string
 	MemoryLimit     string
 	ExtraMounts     []string
 	ExtraEnv        []string
+	ProbeConfs      ProbeConfs
 	SecurityContext *v1.PodSecurityContext
 	Annotations     map[string]string
 	Privileged      bool
@@ -71,19 +90,39 @@ func Run(dir string, args Args) error {
 	if err != nil {
 		return err
 	}
+
+	manifestPath := filepath.Join(dir, args.Command+".yaml")
+
+	// Generate a stable UID based on the manifest path. This allows the kubelet to reconcile the pod's
+	// containers even when the apiserver is unavailable. If the UID is not stable, the kubelet
+	// will consider the manifest change as two separate add/remove operations, and may start the new pod
+	// before terminating the old one. Cleanup of removed pods is disabled until all sources have synced,
+	// so if the apiserver is down, the newly added pod may get stuck in a crash loop due to the old pod
+	// still using its ports. See https://github.com/rancher/rke2/issues/3387
+	hasher := md5.New()
+	fmt.Fprint(hasher, manifestPath)
+	pod.UID = types.UID(hex.EncodeToString(hasher.Sum(nil)[0:]))
+
+	// Append a hash of the completed pod manifest to the container environment for later use when checking
+	// to see if the pod has been updated. It's fine that setting this changes the actual hash; we
+	// just need a stable values that we can compare between the file on disk and the running
+	// container to see if the kubelet has reconciled yet.
+	hash.DeepHashObject(hasher, pod)
+	pod.Spec.Containers[0].Env = append(pod.Spec.Containers[0].Env, v1.EnvVar{Name: "POD_HASH", Value: hex.EncodeToString(hasher.Sum(nil)[0:])})
+
 	b, err := yaml.Marshal(pod)
 	if err != nil {
 		return err
 	}
-	return writeFile(dir, args.Command, b)
+	return writeFile(manifestPath, b)
 }
 
-func writeFile(dir, name string, content []byte) error {
+func writeFile(dest string, content []byte) error {
+	name := filepath.Base(dest)
+	dir := filepath.Dir(dest)
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err
 	}
-
-	dest := filepath.Join(dir, name+".yaml")
 
 	existing, err := ioutil.ReadFile(dest)
 	if err == nil && bytes.Equal(existing, content) {
@@ -94,7 +133,7 @@ func writeFile(dir, name string, content []byte) error {
 	// rename it into place.  Creating manifests in the destination directory risks the Kubelet
 	// picking them up when they're partially written, or creating duplicate pods if it picks it up
 	// before the temp file is renamed over the existing file.
-	tmpdir, err := os.MkdirTemp(dir+"/..", name)
+	tmpdir, err := os.MkdirTemp(filepath.Dir(dir), name)
 	if err != nil {
 		return err
 	}
@@ -147,19 +186,27 @@ func pod(args Args) (*v1.Pod, error) {
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{
 				{
-					SecurityContext: &v1.SecurityContext{
-						Privileged: &args.Privileged,
-					},
-					Command:         append([]string{args.Command}, args.Args...),
-					Image:           args.Image.Name(),
-					ImagePullPolicy: v1.PullIfNotPresent,
+					Name:    args.Command,
+					Image:   args.Image.Name(),
+					Command: []string{args.Command},
+					Args:    args.Args,
 					Env: []v1.EnvVar{
 						{
 							Name:  "FILE_HASH",
 							Value: filehash,
 						},
 					},
-					Name: args.Command,
+					Resources: v1.ResourceRequirements{
+						Requests: v1.ResourceList{},
+						Limits:   v1.ResourceList{},
+					},
+					LivenessProbe:   livenessProbe(args),
+					ReadinessProbe:  readinessProbe(args),
+					StartupProbe:    startupProbe(args),
+					ImagePullPolicy: v1.PullIfNotPresent,
+					SecurityContext: &v1.SecurityContext{
+						Privileged: &args.Privileged,
+					},
 				},
 			},
 			HostNetwork:       true,
@@ -167,11 +214,6 @@ func pod(args Args) (*v1.Pod, error) {
 			SecurityContext:   args.SecurityContext,
 		},
 	}
-
-	p.Spec.Containers[0].Resources = v1.ResourceRequirements{}
-
-	p.Spec.Containers[0].Resources.Requests = v1.ResourceList{}
-	p.Spec.Containers[0].Resources.Limits = v1.ResourceList{}
 
 	if args.CPURequest != "" {
 		if cpuRequest, err := resource.ParseQuantity(args.CPURequest); err != nil {
@@ -205,32 +247,6 @@ func pod(args Args) (*v1.Pod, error) {
 		}
 	}
 
-	if args.HealthPort != 0 {
-		scheme := args.HealthProto
-		if scheme == "" {
-			scheme = "HTTPS"
-		}
-		path := args.HealthPath
-		if path == "" {
-			path = "/healthz"
-		}
-		p.Spec.Containers[0].LivenessProbe = &v1.Probe{
-			ProbeHandler: v1.ProbeHandler{
-				HTTPGet: &v1.HTTPGetAction{
-					Path: path,
-					Port: intstr.IntOrString{
-						IntVal: args.HealthPort,
-					},
-					Host:   "localhost",
-					Scheme: v1.URIScheme(scheme),
-				},
-			},
-			InitialDelaySeconds: 15,
-			TimeoutSeconds:      15,
-			FailureThreshold:    8,
-		}
-	}
-
 	for _, env := range os.Environ() {
 		parts := strings.SplitN(env, "=", 2)
 		if !strings.Contains(strings.ToLower(parts[0]), "proxy") {
@@ -253,13 +269,6 @@ func pod(args Args) (*v1.Pod, error) {
 
 	addExtraMounts(p, args.ExtraMounts)
 	addExtraEnv(p, args.ExtraEnv)
-
-	// We hash the pod manifest at the end and use that as the UID
-	// this mimics what upstream does
-	// https://github.com/kubernetes/kubernetes/blob/master/pkg/kubelet/config/common.go#L58
-	hasher := md5.New()
-	hash.DeepHashObject(hasher, p)
-	p.ObjectMeta.UID = types.UID(hex.EncodeToString(hasher.Sum(nil)[0:]))
 
 	return p, nil
 }
@@ -406,4 +415,61 @@ func kubeconfigFiles(kubeconfig string) ([]string, error) {
 	}
 
 	return result, nil
+}
+
+// livenessProbe returns a Probe, using the Health values from the provided pod args,
+// and the appropriate thresholds for liveness probing.
+func livenessProbe(args Args) *v1.Probe {
+	return createProbe(args.HealthExec, args.HealthPath, args.HealthProto, args.HealthPort, args.ProbeConfs.Liveness)
+}
+
+// readinessProbe returns a Probe, using the Ready values from the provided pod args,
+// and the appropriate thresholds for readiness probing.
+func readinessProbe(args Args) *v1.Probe {
+	return createProbe(args.ReadyExec, args.ReadyPath, args.ReadyProto, args.ReadyPort, args.ProbeConfs.Readiness)
+}
+
+// startupProbe returns a Probe, using the Health values from the provided pod args,
+// and the appropriate thresholds for startup probing.
+func startupProbe(args Args) *v1.Probe {
+	return createProbe(args.HealthExec, args.HealthPath, args.HealthProto, args.HealthPort, args.ProbeConfs.Startup)
+}
+
+// createProbe creates a Probe using the provided configuration.
+// If command is set, an ExecAction Probe is returned.
+// If command is empty but port is set, a HTTPGetAction Probe is returned.
+// If neither is set, no Probe is returned.
+func createProbe(command []string, path, scheme string, port int32, conf ProbeConf) *v1.Probe {
+	probe := &v1.Probe{
+		InitialDelaySeconds: conf.InitialDelaySeconds,
+		TimeoutSeconds:      conf.TimeoutSeconds,
+		FailureThreshold:    conf.FailureThreshold,
+		PeriodSeconds:       conf.PeriodSeconds,
+	}
+	if len(command) != 0 {
+		probe.Exec = &v1.ExecAction{
+			Command: command,
+		}
+		if probe.PeriodSeconds < 5 {
+			probe.PeriodSeconds = 5
+		}
+		return probe
+	} else if port != 0 {
+		probe.HTTPGet = &v1.HTTPGetAction{
+			Path:   path,
+			Host:   "localhost",
+			Scheme: v1.URIScheme(scheme),
+			Port: intstr.IntOrString{
+				IntVal: port,
+			},
+		}
+		if probe.HTTPGet.Scheme == "" {
+			probe.HTTPGet.Scheme = v1.URISchemeHTTPS
+		}
+		if probe.HTTPGet.Path == "" {
+			probe.HTTPGet.Path = "/healthz"
+		}
+		return probe
+	}
+	return nil
 }

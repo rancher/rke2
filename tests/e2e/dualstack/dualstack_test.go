@@ -1,8 +1,9 @@
-package validatecluster
+package dualstack
 
 import (
 	"flag"
 	"fmt"
+
 	"os"
 	"strings"
 	"testing"
@@ -16,6 +17,7 @@ import (
 var nodeOS = flag.String("nodeOS", "generic/ubuntu2004", "VM operating system")
 var serverCount = flag.Int("serverCount", 3, "number of server nodes")
 var agentCount = flag.Int("agentCount", 0, "number of agent nodes")
+var ci = flag.Bool("ci", false, "running on CI")
 
 // Environment Variables Info:
 // E2E_RELEASE_VERSION=v1.23.1+rke2r1 or nil for latest commit from master
@@ -60,7 +62,8 @@ func getObjIPs(cmd string) ([]objIP, error) {
 func Test_E2EDualStack(t *testing.T) {
 	flag.Parse()
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Validate DualStack Suite")
+	suiteConfig, reporterConfig := GinkgoConfiguration()
+	RunSpecs(t, "Validate dualstack Test Suite", suiteConfig, reporterConfig)
 }
 
 var (
@@ -68,13 +71,14 @@ var (
 	serverNodeNames []string
 	agentNodeNames  []string
 )
+var _ = ReportAfterEach(e2e.GenReport)
 
-var _ = Describe("Verify DualStack Configuration", func() {
+var _ = Describe("Verify DualStack Configuration", Ordered, func() {
 
 	It("Starts up with no issues", func() {
 		var err error
 		serverNodeNames, agentNodeNames, err = e2e.CreateCluster(*nodeOS, *serverCount, *agentCount)
-		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog())
+		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog(err))
 		fmt.Println("CLUSTER CONFIG")
 		fmt.Println("OS:", *nodeOS)
 		fmt.Println("Server Nodes:", serverNodeNames)
@@ -90,7 +94,7 @@ var _ = Describe("Verify DualStack Configuration", func() {
 			for _, node := range nodes {
 				g.Expect(node.Status).Should(Equal("Ready"))
 			}
-		}, "420s", "5s").Should(Succeed())
+		}, "620s", "5s").Should(Succeed())
 		_, err := e2e.ParseNodes(kubeConfigFile, true)
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -118,15 +122,15 @@ var _ = Describe("Verify DualStack Configuration", func() {
 			res, err := e2e.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred(), res)
 			Expect(res).Should(ContainSubstring("10.10.10"))
-			Expect(res).Should(ContainSubstring("a11:decf:c0ff"))
+			Expect(res).Should(ContainSubstring("fd11:decf:c0ff"))
 		}
 	})
 	It("Verifies that each pod has IPv4 and IPv6", func() {
 		podIPs, err := getPodIPs(kubeConfigFile)
 		Expect(err).NotTo(HaveOccurred())
 		for _, pod := range podIPs {
-			Expect(pod.ipv4).Should(Or(ContainSubstring("10.10.10"), ContainSubstring("10.42.")), pod.name)
-			Expect(pod.ipv6).Should(Or(ContainSubstring("a11:decf:c0ff"), ContainSubstring("2001:cafe:42")), pod.name)
+			Expect(pod.ipv4).Should(Or(ContainSubstring("10.10.10"), ContainSubstring("10.42."), ContainSubstring("192.168.")), pod.name)
+			Expect(pod.ipv6).Should(Or(ContainSubstring("fd11:decf:c0ff"), ContainSubstring("2001:cafe:42")), pod.name)
 		}
 	})
 
@@ -197,16 +201,34 @@ var _ = Describe("Verify DualStack Configuration", func() {
 			}, "10s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
 		}
 	})
-
+	It("Verifies podSelector Network Policy", func() {
+		_, err := e2e.DeployWorkload("pod_client.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+		cmd := "kubectl exec svc/client-curl --kubeconfig=" + kubeConfigFile + " -- curl -m7 ds-clusterip-svc/name.html"
+		Eventually(func() (string, error) {
+			return e2e.RunCommand(cmd)
+		}, "20s", "3s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
+		_, err = e2e.DeployWorkload("netpol-fail.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+		cmd = "kubectl exec svc/client-curl --kubeconfig=" + kubeConfigFile + " -- curl -m7 ds-clusterip-svc/name.html"
+		_, err = e2e.RunCommand(cmd)
+		Expect(err).To(HaveOccurred())
+		_, err = e2e.DeployWorkload("netpol-work.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+		cmd = "kubectl exec svc/client-curl --kubeconfig=" + kubeConfigFile + " -- curl -m7 ds-clusterip-svc/name.html"
+		Eventually(func() (string, error) {
+			return e2e.RunCommand(cmd)
+		}, "20s", "3s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
+	})
 })
 
 var failed bool
 var _ = AfterEach(func() {
-	failed = failed || CurrentGinkgoTestDescription().Failed
+	failed = failed || CurrentSpecReport().Failed()
 })
 
 var _ = AfterSuite(func() {
-	if failed {
+	if failed && !*ci {
 		fmt.Println("FAILED!")
 	} else {
 		Expect(e2e.DestroyCluster()).To(Succeed())

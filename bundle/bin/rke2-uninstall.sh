@@ -20,7 +20,14 @@ check_target_ro() {
 
 . /etc/os-release
 if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
-    : "${INSTALL_RKE2_ROOT:="/usr"}"
+    # If redhat/oracle family os is detected, double check whether installation mode is yum or tar.
+    # yum method assumes installation root under /usr
+    # tar method assumes installation root under /usr/local
+    if rpm -q rke2-common >/dev/null 2>&1; then
+        : "${INSTALL_RKE2_ROOT:="/usr"}"
+    else
+        : "${INSTALL_RKE2_ROOT:="/usr/local"}"
+    fi
 elif [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
     if rpm -q rke2-common >/dev/null 2>&1; then
         : "${INSTALL_RKE2_ROOT:="/usr"}"
@@ -88,9 +95,18 @@ uninstall_remove_files()
     rm -rf /etc/rancher/node
     rm -d /etc/rancher || true
     rm -rf /etc/cni
+    rm -rf /opt/cni/bin
     rm -rf /var/lib/kubelet
     rm -rf /var/lib/rancher/rke2
     rm -d /var/lib/rancher || true
+
+    if type fapolicyd >/dev/null 2>&1; then
+        if [ -f /etc/fapolicyd/rules.d/80-rke2.rules ]; then
+            rm -f /etc/fapolicyd/rules.d/80-rke2.rules
+        fi
+        fagenrules --load
+        systemctl restart fapolicyd
+    fi
 }
 
 uninstall_remove_self()

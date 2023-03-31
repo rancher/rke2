@@ -22,7 +22,7 @@ GOOS=windows
 RELEASE=${PROG}.${GOOS}-${GOARCH}
 
 
-BUILDTAGS="netgo osusergo no_stage static_build sqlite_omit_load_extension"
+BUILDTAGS="netgo osusergo no_stage static_build sqlite_omit_load_extension no_cri_dockerd"
 GO_BUILDTAGS="${GO_BUILDTAGS} ${BUILDTAGS} ${DEBUG_TAGS}"
 
 VERSION_FLAGS="
@@ -30,7 +30,7 @@ VERSION_FLAGS="
         -X ${K3S_PKG}/pkg/version.Program=${PROG}
         -X ${K3S_PKG}/pkg/version.Version=${VERSION}
         -X ${RKE2_PKG}/pkg/images.DefaultRegistry=${REGISTRY}
-        -X ${RKE2_PKG}/pkg/images.DefaultEtcdImage=rancher/hardened-etcd:${ETCD_VERSION}-build20220504
+        -X ${RKE2_PKG}/pkg/images.DefaultEtcdImage=rancher/hardened-etcd:${ETCD_VERSION}-build20221129
         -X ${RKE2_PKG}/pkg/images.DefaultKubernetesImage=${REPO}/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
         -X ${RKE2_PKG}/pkg/images.DefaultPauseImage=rancher/pause:${PAUSE_VERSION}
         -X ${RKE2_PKG}/pkg/images.DefaultRuntimeImage=${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH}

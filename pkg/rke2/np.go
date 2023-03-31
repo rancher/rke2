@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 
@@ -14,15 +15,22 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/transport"
 	"k8s.io/client-go/util/retry"
 )
 
 const (
-	namespaceAnnotationNetworkPolicy    = "np.rke2.io"
-	namespaceAnnotationNetworkDNSPolicy = "np.rke2.io/dns"
+	namespaceAnnotationNetworkPolicy        = "np.rke2.io"
+	namespaceAnnotationNetworkDNSPolicy     = "np.rke2.io/dns"
+	namespaceAnnotationNetworkIngressPolicy = "np.rke2.io/ingress"
 
-	defaultNetworkPolicyName    = "default-network-policy"
-	defaultNetworkDNSPolicyName = "default-network-dns-policy"
+	defaultNetworkPolicyName        = "default-network-policy"
+	defaultNetworkDNSPolicyName     = "default-network-dns-policy"
+	defaultNetworkIngressPolicyName = "default-network-ingress-policy"
+
+	defaultTimeout     = 30
+	cisAnnotationValue = "resolved"
 )
 
 // networkPolicy specifies a base level network policy applied
@@ -82,6 +90,43 @@ var networkDNSPolicy = v1.NetworkPolicy{
 						Protocol: &udp,
 						Port: &intstr.IntOrString{
 							IntVal: int32(53),
+						},
+					},
+				},
+			},
+		},
+		Egress: []v1.NetworkPolicyEgressRule{},
+	},
+}
+
+// networkIngressPolicy allows for all http and https traffic
+// into the kube-system namespace to the ingress controller pods.
+var networkIngressPolicy = v1.NetworkPolicy{
+	ObjectMeta: metav1.ObjectMeta{
+		Name: defaultNetworkIngressPolicyName,
+	},
+	Spec: v1.NetworkPolicySpec{
+		PodSelector: metav1.LabelSelector{
+			MatchLabels: map[string]string{
+				"app.kubernetes.io/name": "rke2-ingress-nginx",
+			},
+		},
+		PolicyTypes: []v1.PolicyType{
+			v1.PolicyTypeIngress,
+		},
+		Ingress: []v1.NetworkPolicyIngressRule{
+			{
+				Ports: []v1.NetworkPolicyPort{
+					{
+						Protocol: &tcp,
+						Port: &intstr.IntOrString{
+							IntVal: int32(80),
+						},
+					},
+					{
+						Protocol: &tcp,
+						Port: &intstr.IntOrString{
+							IntVal: int32(443),
 						},
 					},
 				},
@@ -173,6 +218,46 @@ func setNetworkDNSPolicy(ctx context.Context, cs *kubernetes.Clientset) error {
 	return nil
 }
 
+// setNetworkIngressPolicy sets the default Ingress policy allowing the
+// required HTTP/HTTPS traffic to ingress nginx pods.
+func setNetworkIngressPolicy(ctx context.Context, cs *kubernetes.Clientset) error {
+	ns, err := cs.CoreV1().Namespaces().Get(ctx, metav1.NamespaceSystem, metav1.GetOptions{})
+	if err != nil {
+		return fmt.Errorf("networkPolicy: get %s - %w", metav1.NamespaceSystem, err)
+	}
+	if ns.Annotations == nil {
+		ns.Annotations = make(map[string]string)
+	}
+	if _, ok := ns.Annotations[namespaceAnnotationNetworkIngressPolicy]; !ok {
+		if _, err := cs.NetworkingV1().NetworkPolicies(metav1.NamespaceSystem).Get(ctx, defaultNetworkIngressPolicyName, metav1.GetOptions{}); err == nil {
+			if err := cs.NetworkingV1().NetworkPolicies(metav1.NamespaceSystem).Delete(ctx, defaultNetworkIngressPolicyName, metav1.DeleteOptions{}); err != nil {
+				if !apierrors.IsNotFound(err) {
+					return err
+				}
+			}
+		}
+		if _, err := cs.NetworkingV1().NetworkPolicies(metav1.NamespaceSystem).Create(ctx, &networkIngressPolicy, metav1.CreateOptions{}); err != nil {
+			if !apierrors.IsAlreadyExists(err) {
+				return err
+			}
+		}
+		ns.Annotations[namespaceAnnotationNetworkIngressPolicy] = cisAnnotationValue
+
+		if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+			if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
+				if apierrors.IsConflict(err) {
+					return updateNamespaceRef(ctx, cs, ns)
+				}
+				return err
+			}
+			return nil
+		}); err != nil {
+			logrus.Fatalf("networkPolicy: update namespace: %s - %s", ns.Name, err.Error())
+		}
+	}
+	return nil
+}
+
 // setNetworkPolicies applies a default network policy across the 3 primary namespaces.
 func setNetworkPolicies(cisMode bool, namespaces []string) cmds.StartupHook {
 	return func(ctx context.Context, wg *sync.WaitGroup, args cmds.StartupHookArgs) error {
@@ -199,9 +284,48 @@ func setNetworkPolicies(cisMode bool, namespaces []string) cmds.StartupHook {
 			if err := setNetworkDNSPolicy(ctx, cs); err != nil {
 				logrus.Fatal(err)
 			}
+
+			if err := setNetworkIngressPolicy(ctx, cs); err != nil {
+				logrus.Fatal(err)
+			}
+
 			logrus.Info("Applying network policies complete")
 		}()
 
 		return nil
 	}
+}
+
+// updateNamespaceRef retrieves the most recent revision of Namespace ns, copies over any annotations from
+// the passed revision of the Namespace to the most recent revision, and updates the pointer to refer to the
+// most recent revision. This get/change/update pattern is required to alter an object
+// that may have changed since it was retrieved.
+func updateNamespaceRef(ctx context.Context, cs *kubernetes.Clientset, ns *corev1.Namespace) error {
+	logrus.Info("updating namespace: " + ns.Name)
+	newNS, err := cs.CoreV1().Namespaces().Get(ctx, ns.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if newNS.Annotations == nil {
+		newNS.Annotations = make(map[string]string, len(ns.Annotations))
+	}
+	// copy annotations, since we may have changed them
+	for k, v := range ns.Annotations {
+		newNS.Annotations[k] = v
+	}
+	*ns = *newNS
+	return nil
+}
+
+// newClient create a new Kubernetes client from configuration.
+func newClient(kubeConfigPath string, k8sWrapTransport transport.WrapperFunc) (*kubernetes.Clientset, error) {
+	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+	if err != nil {
+		return nil, err
+	}
+	if k8sWrapTransport != nil {
+		config.WrapTransport = k8sWrapTransport
+	}
+	config.Timeout = time.Second * defaultTimeout
+	return kubernetes.NewForConfig(config)
 }

@@ -3,15 +3,19 @@
 cd $(dirname $0)/..
 
 EXITCODE=0
+SCAN_OUTPUT="scan.json"
+
 for IMAGE in $(cat build/images*.txt); do
   echo -e "\nScanning ${IMAGE}"
   trivy image \
     --format json \
-    --output trivy.json \
+    --output ${SCAN_OUTPUT} \
     --exit-code 1 \
-    --severity ${SEVERITIES:-HIGH,CRITICAL} \
-    --no-progress \
+    --security-checks vuln \
+    --severity ${SEVERITIES:-CRITICAL,HIGH} \
     --ignore-unfixed \
+    --no-progress \
+    --quiet \
     ${IMAGE}
   RC=$?
   if [ ${RC} -gt ${EXITCODE} ]; then
@@ -19,10 +23,10 @@ for IMAGE in $(cat build/images*.txt); do
   fi
   if [ ${RC} -gt 0 ]; then
     echo -e "\nSev\tPackage\tVulnID\tInstalled\tFixed"
-    jq -rc '.[0].Vulnerabilities[] | "\(.Severity)\t\(.PkgName)\t\(.VulnerabilityID)\t\(.InstalledVersion)\t\(.FixedVersion)"' trivy.json
+    jq -rc 'try .Results[].Vulnerabilities[] | "\(.Severity)\t\(.PkgName)\t\(.VulnerabilityID)\t\(.InstalledVersion)\t\(.FixedVersion)"' ${SCAN_OUTPUT} | sort
   fi
   echo
-  rm trivy.json
+  rm ${SCAN_OUTPUT}
 done
 
 if [ ${EXITCODE} -gt 0 ]; then

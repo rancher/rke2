@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css">
+        .root {
+            background-color: #232041;
+            color: white;
+        }
+
+        .successBackgroundColor {
+            background-color: darkgreen;
+        }
+
+        .failBackgroundColor {
+            background-color: darkred;
+        }
+
+        .skipBackgroundColor {
+            background-color: darkgrey;
+        }
+
+        .packageCardLayout {
+            grid-template-columns: 1fr auto auto auto;
+            grid-column-gap: 8px;
+            display: grid;
+        }
+
+        .testCardLayout {
+            grid-template-columns: 1fr auto auto;
+            display: grid;
+            width: 100%;
+            gap: 8px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            padding: 4px;
+        }
+
+        .collapsible {
+            cursor: pointer;
+        }
+
+        .collapsibleHeading {
+            color: white;
+            padding: 8px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 15px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .collapsibleHeading:after {
+            content: '\002B';
+        }
+
+        .active:after {
+            content: "\2212";
+        }
+
+        .collapsibleHeadingContent {
+            padding: 0 18px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+        }
+
+        .testStatsOverview {
+	    grid-template-columns: 1fr 1fr 1fr auto;
+            display: grid;
+        }
+
+        .passedTests {
+            font-size: x-large;
+            color: green;
+        }
+
+        .failedTests {
+            font-size: x-large;
+            color: red;
+        }
+        .skippedTests {
+            font-size: x-large;
+            color: grey;
+        }
+    </style>
+</head>
+<body class="root">
+<div style="display: flex; flex-direction: column; margin: 16px; height: 100vh">
+    <div style="font-size: x-large">Test Report</div>
+    <div style="font-size: large">Test Date: {{.TestDate}}</div>
+    <div class="testStatsOverview">
+        <p style="margin-top: 0;" class="passedTests">Passed tests: {{.PassedTests}}</p>
+        <p style="margin-top: 0;" class="failedTests">Failed tests: {{.FailedTests}}</p>
+        <p style="margin-top: 0;" class="skippedTests">Skipped tests: {{.SkippedTests}}</p>
+        <p style="font-size: x-large; margin-top: 0;">Total test time: {{.TotalTestTime}}</p>
+    </div>
+    {{range $index, $element := .HTMLElements}}
+    {{$element}}
+    {{end}}
+</div>
+</body>
+<script>
+    // js script to create an collapsible
+    var coll = document.getElementsByClassName("collapsible");
+    for (let i = 0; i < coll.length; i++) {
+        var collapsibleHeading = undefined
+
+        for (let j = 0; j < coll[i].children.length; j++) {
+            let element = coll[i].children.item(j)
+            if (element.className.includes("collapsibleHeading")) {
+                collapsibleHeading = element
+                break
+            }
+        }
+
+        collapsibleHeading.addEventListener("click", function () {
+            this.classList.toggle("active")
+            var content = this.nextElementSibling;
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+            } else {
+                content.style.maxHeight = window.innerHeight + "px";
+            }
+        });
+    }
+</script>
+</html>

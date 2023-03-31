@@ -55,6 +55,10 @@ fi
 #     rather than the downloading the files from the internet.
 #     Default is not set.
 #
+#   - INSTALL_RKE2_SKIP_RELOAD
+#     If set, the install script will skip reloading systemctl daemon after the tar has been extracted and systemd units
+#     have been moved.
+#     Default is not set.
 
 
 # info logs the given argument at info log level.
@@ -90,7 +94,7 @@ check_target_ro() {
 
 # setup_env defines needed environment variables.
 setup_env() {
-    STORAGE_URL="https://storage.googleapis.com/rke2-ci-builds"
+    STORAGE_URL="https://rke2-ci-builds.s3.amazonaws.com"
     INSTALL_RKE2_GITHUB_URL="https://github.com/rancher/rke2"
     DEFAULT_TAR_PREFIX="/usr/local"
     # --- bail if we are not root ---
@@ -184,6 +188,17 @@ verify_downloader() {
 
     # Set verified executable as our downloader program and return success
     DOWNLOADER=${cmd}
+    return 0
+}
+
+# verify_fapolicyd verifies existence of
+# fapolicyd executable.
+verify_fapolicyd() {
+    cmd="$(command -v "fapolicyd")"
+    if [ -z "${cmd}" ]; then
+        return 1
+    fi
+
     return 0
 }
 
@@ -420,7 +435,7 @@ install_airgap_tarball() {
     fi
 }
 
-# install_dev_rpm orchestates the installation of RKE2 unsigned development rpms
+# install_dev_rpm orchestrates the installation of RKE2 unsigned development rpms
 install_dev_rpm() {
     rpm_installer="${1:-yum}"
     distro="${2:-centos7}"
@@ -451,7 +466,7 @@ install_dev_rpm() {
 }
 
 # do_install_rpm builds a yum repo config from the channel and version to be installed,
-# and calls yum to install the required packates.
+# and calls yum to install the required packages.
 do_install_rpm() {
     . /etc/os-release
     if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ "${ID_LIKE%%[ ]*}" = "suse"  ]; then
@@ -470,6 +485,9 @@ do_install_rpm() {
             case ${maj_ver} in
                 7|8)
                     :
+                    ;;
+                9) # We are currently using EL8 packages for EL9 as well
+                    maj_ver="8"
                     ;;
                 *) # In certain cases, like installing on Fedora, maj_ver will end up being something that is not 7 or 8
                     maj_ver="7"
@@ -561,7 +579,27 @@ do_install_tar() {
     install_airgap_tarball
     verify_tarball
     unpack_tarball
-    systemctl daemon-reload
+
+    if [ -z "${INSTALL_RKE2_SKIP_RELOAD}" ]; then
+        systemctl daemon-reload
+    fi
+}
+
+setup_fapolicy_rules() {
+    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/rocky-release ]; then
+        verify_fapolicyd || return 0
+        # setting rke2 fapolicyd rules
+        cat <<-EOF >>"/etc/fapolicyd/rules.d/80-rke2.rules"
+allow perm=any all : dir=/var/lib/rancher/
+allow perm=any all : dir=/opt/cni/
+allow perm=any all : dir=/run/k3s/
+allow perm=any all : dir=/var/lib/kubelet/
+EOF
+        if [ -z "${INSTALL_RKE2_SKIP_RELOAD}" ]; then
+            fagenrules --load || fatal "failed to load rke2 fapolicyd rules"
+            systemctl restart fapolicyd
+        fi
+    fi
 }
 
 do_install() {
@@ -580,6 +618,7 @@ do_install() {
         do_install_tar "${INSTALL_RKE2_CHANNEL}"
         ;;
     esac
+    setup_fapolicy_rules
 }
 
 do_install

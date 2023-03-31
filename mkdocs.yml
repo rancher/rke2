@@ -49,8 +49,10 @@ nav:
     - security/about_hardened_images.md
     - security/hardening_guide.md
     - security/cis_self_assessment16.md
+    - security/cis_self_assessment123.md
     - security/fips_support.md
     - security/policies.md
+    - security/pod_security_standards.md
     - security/selinux.md
     - security/secrets_encryption.md
   - Architecture:

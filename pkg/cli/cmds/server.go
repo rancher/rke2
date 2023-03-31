@@ -27,9 +27,14 @@ var (
 			Usage:  "(networking) CNI Plugins to deploy, one of none, " + strings.Join(CNIItems, ", ") + "; optionally with multus as the first value to enable the multus meta-plugin (default: canal)",
 			EnvVar: "RKE2_CNI",
 		},
+		&cli.BoolFlag{
+			Name:   "enable-servicelb",
+			Usage:  "(components) Enable rke2 default cloud controller manager's service controller",
+			EnvVar: "RKE2_ENABLE_SERVICELB",
+		},
 	}
 
-	k3sServerBase = mustCmdFromK3S(cmds.NewServerCommand(ServerRun), map[string]*K3SFlagOption{
+	k3sServerBase = mustCmdFromK3S(cmds.NewServerCommand(ServerRun), K3SFlagSet{
 		"config":            copy,
 		"debug":             copy,
 		"v":                 hide,
@@ -73,7 +78,6 @@ var (
 		"disable": {
 			Usage: "(components) Do not deploy packaged components and delete any deployed components (valid items: " + strings.Join(DisableItems, ", ") + ")",
 		},
-		"disable-selinux":                   drop,
 		"disable-scheduler":                 copy,
 		"disable-cloud-controller":          copy,
 		"disable-network-policy":            drop,
@@ -105,17 +109,17 @@ var (
 		"flannel-conf":                      drop,
 		"flannel-cni-conf":                  drop,
 		"flannel-ipv6-masq":                 drop,
+		"flannel-external-ip":               drop,
+		"multi-cluster-cidr":                hide,
 		"egress-selector-mode":              copy,
 		"kubelet-arg":                       copy,
 		"kube-proxy-arg":                    copy,
 		"rootless":                          drop,
+		"prefer-bundled-bin":                drop,
 		"agent-token":                       copy,
 		"agent-token-file":                  copy,
 		"server":                            copy,
 		"secrets-encryption":                hide,
-		"no-flannel":                        drop,
-		"no-deploy":                         drop,
-		"cluster-secret":                    drop,
 		"protect-kernel-defaults":           copy,
 		"snapshotter":                       copy,
 		"selinux":                           copy,
@@ -136,7 +140,7 @@ var (
 		"etcd-s3-timeout":                   copy,
 		"disable-helm-controller":           drop,
 		"enable-pprof":                      copy,
-		"servicelb-namespace":               drop,
+		"servicelb-namespace":               copy,
 	})
 )
 

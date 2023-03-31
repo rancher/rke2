@@ -22,4 +22,4 @@ The rke2 binary will do as it does on every startup of rke2. It extracts the man
 * Manifests that refer to a explicitly disabled component (e.g. via the --disable flag in the cli). In this case, the controller tries to uninstall it and removes the manifest
 * Manifests that refer to a component that should be skipped. For a component to be skipped, we just need to add the suffix `.skip` to the file name of the manifest (e.g. rke2-canal.yaml.skip). In this case, the controller will ignore this component and will not try to upgrade it. If you are running several control-plane nodes, remember to add the `.skip` suffix to the file in all control-plane nodes.
 
-The skips procedure can be very useful for cases such as a user switching to the enterpise version of a cni plugin. In this case, the cni plugin vendor will take care of upgrades.
+The skips procedure can be very useful for cases such as a user switching to the enterprise version of a cni plugin. In this case, the cni plugin vendor will take care of upgrades.

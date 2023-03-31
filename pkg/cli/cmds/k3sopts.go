@@ -4,23 +4,19 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/rancher/wrangler/pkg/merr"
 	"github.com/urfave/cli"
 )
 
 var (
-	drop = &K3SFlagOption{
-		Drop: true,
-	}
-	hide = &K3SFlagOption{
-		Hide: true,
-	}
-	ignore = &K3SFlagOption{
-		Ignore: true,
-	}
+	copy   = &K3SFlagOption{}
+	drop   = &K3SFlagOption{Drop: true}
+	hide   = &K3SFlagOption{Hide: true}
+	ignore = &K3SFlagOption{Ignore: true}
 )
-var copy *K3SFlagOption
 
+// K3SFlagOption describes how a CLI flag from K3s should be wrapped.
 type K3SFlagOption struct {
 	Hide    bool
 	Drop    bool
@@ -29,15 +25,25 @@ type K3SFlagOption struct {
 	Default string
 }
 
-func mustCmdFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) cli.Command {
+// K3SFlagSet is a map of flag names to options
+type K3SFlagSet map[string]*K3SFlagOption
+
+// CopyInto copies flags from a source set into the destination
+func (k K3SFlagSet) CopyInto(d K3SFlagSet) {
+	for key, val := range k {
+		d[key] = val
+	}
+}
+
+func mustCmdFromK3S(cmd cli.Command, flagOpts K3SFlagSet) cli.Command {
 	cmd, err := commandFromK3S(cmd, flagOpts)
 	if err != nil {
-		panic(err)
+		panic(errors.Wrapf(err, "failed to wrap command %q", cmd.Name))
 	}
 	return cmd
 }
 
-func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Command, error) {
+func commandFromK3S(cmd cli.Command, flagOpts K3SFlagSet) (cli.Command, error) {
 	var (
 		newFlags []cli.Flag
 		seen     = map[string]bool{}
@@ -45,10 +51,10 @@ func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Co
 	)
 
 	for _, flag := range cmd.Flags {
-		name := strings.SplitN(flag.GetName(), ",", 2)[0]
+		name := parseName(flag)
 		opt, ok := flagOpts[name]
 		if !ok {
-			errs = append(errs, fmt.Errorf("new unknown option from k3s %s", flag.GetName()))
+			errs = append(errs, fmt.Errorf("missing flag options for k3s flag %q", name))
 			continue
 		}
 		seen[name] = true
@@ -83,6 +89,22 @@ func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Co
 			}
 			flag = strFlag
 		} else if strSliceFlag, ok := flag.(cli.StringSliceFlag); ok {
+			if opt.Usage != "" {
+				strSliceFlag.Usage = opt.Usage
+			}
+			if opt.Default != "" {
+				slice := &cli.StringSlice{}
+				parts := strings.Split(opt.Default, ",")
+				for _, val := range parts {
+					slice.Set(val)
+				}
+				strSliceFlag.Value = slice
+			}
+			if opt.Hide {
+				strSliceFlag.Hidden = true
+			}
+			flag = strSliceFlag
+		} else if strSliceFlag, ok := flag.(*cli.StringSliceFlag); ok {
 			if opt.Usage != "" {
 				strSliceFlag.Usage = opt.Usage
 			}
@@ -139,7 +161,7 @@ func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Co
 			}
 			flag = durationFlag
 		} else {
-			errs = append(errs, fmt.Errorf("unsupported type %T for flag %s", flag, name))
+			errs = append(errs, fmt.Errorf("unsupported type %T for flag %q", flag, name))
 		}
 
 		newFlags = append(newFlags, flag)
@@ -150,11 +172,25 @@ func commandFromK3S(cmd cli.Command, flagOpts map[string]*K3SFlagOption) (cli.Co
 			if v != nil && v.Ignore {
 				continue
 			}
-			errs = append(errs, fmt.Errorf("missing k3s option %s", k))
+			errs = append(errs, fmt.Errorf("got flag options for unknown k3s flag %q", k))
 			continue
 		}
 	}
 
 	cmd.Flags = newFlags
 	return cmd, errs.Err()
+}
+
+// parseName returns a single primary flag name.
+// Flags with short versions may be named "flag", "flag,f", "f,flag", "flag, f" and so on.
+// This returns just the first long version, or the short version if no long is available.
+func parseName(flag cli.Flag) string {
+	names := strings.Split(flag.GetName(), ",")
+	for _, n := range names {
+		n = strings.TrimSpace(n)
+		if len(n) > 1 {
+			return n
+		}
+	}
+	return strings.TrimSpace(names[0])
 }

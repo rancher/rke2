@@ -1,0 +1,93 @@
+#!groovy
+node {
+  def job_name = "${JOB_NAME}"
+  if (job_name.contains('/')) { 
+    job_names = job_name.split('/')
+    job_name = job_names[job_names.size() - 1] 
+  }
+  def testContainer = "${job_name}${env.BUILD_NUMBER}_test"
+  def imageName = "rke2-tf-${job_name}${env.BUILD_NUMBER}"
+  def envFile = ".env"
+  def branch = "master"
+  if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
+    branch = "${env.BRANCH}"
+  }
+  def repo = scm.userRemoteConfigs
+  if ("${env.REPO}" != "null" && "${env.REPO}" != "") {
+    repo = [[url: "${env.REPO}"]]
+  }
+  def timeout = "60m"
+  if ("${env.TIMEOUT}" != "null" && "${env.TIMEOUT}" != "") {
+    timeout = "${env.TIMEOUT}" 
+  }
+  wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 2, 'defaultBg':1]) {
+    withFolderProperties {
+      paramsMap = []
+      params.each {
+        if (it.value && it.value.trim() != "") {
+          paramsMap << "$it.key=$it.value"
+        }
+      }
+      withCredentials([ 
+        
+        string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+        string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
+        string(credentialsId: 'AWS_SSH_PEM_KEY', variable: 'AWS_SSH_PEM_KEY'),
+        string(credentialsId: 'ADMIN_PASSWORD', variable: 'ADMIN_PASSWORD'),
+        string(credentialsId: 'RKE2_RHEL_PASSWORD', variable: 'RKE2_RHEL_PASSWORD')
+      ]) {
+        withEnv(paramsMap) {
+          stage('Checkout') {
+            deleteDir()
+            checkout([
+              $class: 'GitSCM',
+              branches: [[name: "*/${branch}"]],
+              extensions: scm.extensions + [[$class: 'CleanCheckout']],
+              userRemoteConfigs: repo
+            ])
+          }
+          dir ("./") {
+            try {
+              stage('Configure and Build') {
+                if (env.AWS_SSH_PEM_KEY && env.AWS_SSH_KEY_NAME) {
+                  dir("./tests/terraform/modules/config/.ssh") {
+                    def decoded = new String(AWS_SSH_PEM_KEY.decodeBase64())
+                    writeFile file: "aws_key.pem", text: decoded
+                  }
+                }
+
+                dir("./tests/terraform/modules/config") {
+                  def filename = "local.tfvars"
+                  def configContents = env.TFVARS
+
+                  writeFile file: filename, text: configContents +
+                    "\npassword = \"" + RKE2_RHEL_PASSWORD + "\"" +
+                    "\nssh_key = \"" + AWS_SSH_KEY_NAME + "\"" +
+                    "\naccess_key = \"/go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem\"" +
+                    "\nresource_name = \"" + RKE2_HOSTNAME_PREFIX + "\"" +
+                    "\nrke2_version = \"" + RKE2_VERSION + "\"" +
+                    "\nrke2_channel = \"" + RKE2_CHANNEL + "\""
+                }
+
+                sh "./tests/terraform/scripts/configure.sh"
+                sh "./tests/terraform/scripts/build.sh"
+              }
+              stage('Run Tests') {
+                sh "docker run --name ${testContainer} -t --env-file ${envFile} " +
+                  "${imageName} sh -c \"chmod 400 /go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem && " +
+                  "go test -timeout=${timeout} -v ./tests/terraform/${RKE2_TESTCASE}/... ${RKE2_TEST_ARGS}\""
+              }
+            } finally {           
+              stage('Cleanup') {
+                // Stop and remove containers and images, but don't fail job if these fail for whatever reason (generally due to a previous step failing)
+                sh "docker stop ${testContainer} || true"
+                sh "docker rm -v ${testContainer} || true"
+                sh "docker rmi -f ${imageName} || true"
+              }
+            } // finally
+          } // dir 
+        } // withEnv
+      } // withCredentials
+    } // withFolderProperties
+  } // wrap 
+}// node

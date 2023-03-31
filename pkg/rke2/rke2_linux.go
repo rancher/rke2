@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -31,6 +32,15 @@ const (
 	CPULimit      = "cpu-limit"
 	MemoryRequest = "memory-request"
 	MemoryLimit   = "memory-limit"
+
+	Readiness = "readiness"
+	Liveness  = "liveness"
+	Startup   = "startup"
+
+	InitialDelaySeconds = "initial-delay-seconds"
+	TimeoutSeconds      = "timeout-seconds"
+	FailureThreshold    = "failure-threshold"
+	PeriodSeconds       = "period-seconds"
 )
 
 func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.StaticPodConfig, error) {
@@ -86,10 +96,59 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		cfg.KubeletPath = "kubelet"
 	}
 
+	controlPlaneResources, err := parseControlPlaneResources(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	controlPlaneProbeConfs, err := parseControlPlaneProbeConfs(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	extraEnv, err := parseControlPlaneEnv(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	extraMounts, err := parseControlPlaneMounts(cfg)
+	if err != nil {
+		return nil, err
+	}
+	// Adding PSAs
+	podSecurityConfigFile := clx.String("pod-security-admission-config-file")
+	if podSecurityConfigFile == "" {
+		if err := setPSAs(isCISMode(clx)); err != nil {
+			return nil, err
+		}
+		podSecurityConfigFile = defaultPSAConfigFile
+	}
+
+	return &podexecutor.StaticPodConfig{
+		Resolver:               resolver,
+		ImagesDir:              agentImagesDir,
+		ManifestsDir:           agentManifestsDir,
+		CISMode:                isCISMode(clx),
+		CloudProvider:          cpConfig,
+		DataDir:                dataDir,
+		AuditPolicyFile:        clx.String("audit-policy-file"),
+		PSAConfigFile:          podSecurityConfigFile,
+		KubeletPath:            cfg.KubeletPath,
+		KubeProxyChan:          make(chan struct{}),
+		DisableETCD:            clx.Bool("disable-etcd"),
+		IsServer:               isServer,
+		ControlPlaneResources:  *controlPlaneResources,
+		ControlPlaneProbeConfs: *controlPlaneProbeConfs,
+		ControlPlaneEnv:        *extraEnv,
+		ControlPlaneMounts:     *extraMounts,
+	}, nil
+}
+
+func parseControlPlaneResources(cfg Config) (*podexecutor.ControlPlaneResources, error) {
 	var controlPlaneResources podexecutor.ControlPlaneResources
 	// resources is a map of the component (kube-apiserver, kube-controller-manager, etc.) to a map[string]*string,
 	// where the key of the downstream map is the `cpu-request`, `cpu-limit`, `memory-request`, or `memory-limit` and
-	//the value corresponds to a pointer to the component resources array
+	// the value corresponds to a pointer to the component resources array
 	var resources = map[string]map[string]*string{
 		KubeAPIServer: {
 			CPURequest:    &controlPlaneResources.KubeAPIServerCPURequest,
@@ -159,21 +218,21 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 
 	var parsedRequestsLimits = make(map[string]string)
 
-	if cfg.ControlPlaneResourceRequests != "" {
-		for _, rawRequest := range strings.Split(cfg.ControlPlaneResourceRequests, ",") {
+	for _, requests := range cfg.ControlPlaneResourceRequests {
+		for _, rawRequest := range strings.Split(requests, ",") {
 			v := strings.SplitN(rawRequest, "=", 2)
 			if len(v) != 2 {
-				logrus.Fatalf("incorrectly formatted control plane resource request specified: %s", rawRequest)
+				return nil, fmt.Errorf("incorrectly formatted control plane resource request specified: %s", rawRequest)
 			}
 			parsedRequestsLimits[v[0]+"-request"] = v[1]
 		}
 	}
 
-	if cfg.ControlPlaneResourceLimits != "" {
-		for _, rawLimit := range strings.Split(cfg.ControlPlaneResourceLimits, ",") {
+	for _, limits := range cfg.ControlPlaneResourceLimits {
+		for _, rawLimit := range strings.Split(limits, ",") {
 			v := strings.SplitN(rawLimit, "=", 2)
 			if len(v) != 2 {
-				logrus.Fatalf("incorrectly formatted control plane resource limit specified: %s", rawLimit)
+				return nil, fmt.Errorf("incorrectly formatted control plane resource limit specified: %s", rawLimit)
 			}
 			parsedRequestsLimits[v[0]+"-limit"] = v[1]
 		}
@@ -190,40 +249,212 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		}
 	}
 
-	logrus.Debugf("Parsed control plane requests/limits: %+v\n", controlPlaneResources)
+	return &controlPlaneResources, nil
+}
 
-	extraEnv := podexecutor.ControlPlaneEnv{
+func parseControlPlaneProbeConfs(cfg Config) (*podexecutor.ControlPlaneProbeConfs, error) {
+	var controlPlaneProbes podexecutor.ControlPlaneProbeConfs
+	// probes is a map of the component (kube-apiserver, kube-controller-manager, etc.) probe type, and setting, where
+	// the value corresponds to a pointer to the component probes array.
+	var probes = map[string]map[string]map[string]*int32{
+		KubeAPIServer: {
+			Liveness: {
+				InitialDelaySeconds: &controlPlaneProbes.KubeAPIServer.Liveness.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.KubeAPIServer.Liveness.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.KubeAPIServer.Liveness.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.KubeAPIServer.Liveness.PeriodSeconds,
+			},
+			Readiness: {
+				InitialDelaySeconds: &controlPlaneProbes.KubeAPIServer.Readiness.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.KubeAPIServer.Readiness.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.KubeAPIServer.Readiness.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.KubeAPIServer.Readiness.PeriodSeconds,
+			},
+			Startup: {
+				InitialDelaySeconds: &controlPlaneProbes.KubeAPIServer.Startup.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.KubeAPIServer.Startup.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.KubeAPIServer.Startup.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.KubeAPIServer.Startup.PeriodSeconds,
+			},
+		},
+		KubeScheduler: {
+			Liveness: {
+				InitialDelaySeconds: &controlPlaneProbes.KubeScheduler.Liveness.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.KubeScheduler.Liveness.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.KubeScheduler.Liveness.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.KubeScheduler.Liveness.PeriodSeconds,
+			},
+			Readiness: {
+				InitialDelaySeconds: &controlPlaneProbes.KubeScheduler.Readiness.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.KubeScheduler.Readiness.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.KubeScheduler.Readiness.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.KubeScheduler.Readiness.PeriodSeconds,
+			},
+			Startup: {
+				InitialDelaySeconds: &controlPlaneProbes.KubeScheduler.Startup.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.KubeScheduler.Startup.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.KubeScheduler.Startup.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.KubeScheduler.Startup.PeriodSeconds,
+			},
+		},
+		KubeControllerManager: {
+			Liveness: {
+				InitialDelaySeconds: &controlPlaneProbes.KubeControllerManager.Liveness.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.KubeControllerManager.Liveness.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.KubeControllerManager.Liveness.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.KubeControllerManager.Liveness.PeriodSeconds,
+			},
+			Readiness: {
+				InitialDelaySeconds: &controlPlaneProbes.KubeControllerManager.Readiness.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.KubeControllerManager.Readiness.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.KubeControllerManager.Readiness.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.KubeControllerManager.Readiness.PeriodSeconds,
+			},
+			Startup: {
+				InitialDelaySeconds: &controlPlaneProbes.KubeControllerManager.Startup.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.KubeControllerManager.Startup.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.KubeControllerManager.Startup.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.KubeControllerManager.Startup.PeriodSeconds,
+			},
+		},
+		KubeProxy: {
+			Liveness: {
+				InitialDelaySeconds: &controlPlaneProbes.KubeProxy.Liveness.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.KubeProxy.Liveness.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.KubeProxy.Liveness.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.KubeProxy.Liveness.PeriodSeconds,
+			},
+			Readiness: {
+				InitialDelaySeconds: &controlPlaneProbes.KubeProxy.Readiness.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.KubeProxy.Readiness.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.KubeProxy.Readiness.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.KubeProxy.Readiness.PeriodSeconds,
+			},
+			Startup: {
+				InitialDelaySeconds: &controlPlaneProbes.KubeProxy.Startup.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.KubeProxy.Startup.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.KubeProxy.Startup.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.KubeProxy.Startup.PeriodSeconds,
+			},
+		},
+		Etcd: {
+			Liveness: {
+				InitialDelaySeconds: &controlPlaneProbes.Etcd.Liveness.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.Etcd.Liveness.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.Etcd.Liveness.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.Etcd.Liveness.PeriodSeconds,
+			},
+			Readiness: {
+				InitialDelaySeconds: &controlPlaneProbes.Etcd.Readiness.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.Etcd.Readiness.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.Etcd.Readiness.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.Etcd.Readiness.PeriodSeconds,
+			},
+			Startup: {
+				InitialDelaySeconds: &controlPlaneProbes.Etcd.Startup.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.Etcd.Startup.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.Etcd.Startup.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.Etcd.Startup.PeriodSeconds,
+			},
+		},
+		CloudControllerManager: {
+			Liveness: {
+				InitialDelaySeconds: &controlPlaneProbes.CloudControllerManager.Liveness.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.CloudControllerManager.Liveness.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.CloudControllerManager.Liveness.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.CloudControllerManager.Liveness.PeriodSeconds,
+			},
+			Readiness: {
+				InitialDelaySeconds: &controlPlaneProbes.CloudControllerManager.Readiness.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.CloudControllerManager.Readiness.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.CloudControllerManager.Readiness.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.CloudControllerManager.Readiness.PeriodSeconds,
+			},
+			Startup: {
+				InitialDelaySeconds: &controlPlaneProbes.CloudControllerManager.Startup.InitialDelaySeconds,
+				TimeoutSeconds:      &controlPlaneProbes.CloudControllerManager.Startup.TimeoutSeconds,
+				FailureThreshold:    &controlPlaneProbes.CloudControllerManager.Startup.FailureThreshold,
+				PeriodSeconds:       &controlPlaneProbes.CloudControllerManager.Startup.PeriodSeconds,
+			},
+		},
+	}
+
+	// defaultProbeConf contains a map of default probe settings for each type, used if not explicitly configured.
+	var defaultProbeConf = map[string]map[string]int32{
+		// https://github.com/kubernetes/kubernetes/blob/v1.24.0/cmd/kubeadm/app/util/staticpod/utils.go#L246
+		Liveness: {
+			InitialDelaySeconds: 10,
+			TimeoutSeconds:      15,
+			FailureThreshold:    8,
+			PeriodSeconds:       10,
+		},
+		// https://github.com/kubernetes/kubernetes/blob/v1.24.0/cmd/kubeadm/app/util/staticpod/utils.go#L252
+		Readiness: {
+			InitialDelaySeconds: 0,
+			TimeoutSeconds:      15,
+			FailureThreshold:    3,
+			PeriodSeconds:       1,
+		},
+		// https://github.com/kubernetes/kubernetes/blob/v1.24.0/cmd/kubeadm/app/util/staticpod/utils.go#L259
+		Startup: {
+			InitialDelaySeconds: 10,
+			TimeoutSeconds:      5,
+			FailureThreshold:    24,
+			PeriodSeconds:       10,
+		},
+	}
+
+	var parsedProbeConf = make(map[string]int32)
+
+	for _, conf := range cfg.ControlPlaneProbeConf {
+		for _, rawConf := range strings.Split(conf, ",") {
+			v := strings.SplitN(rawConf, "=", 2)
+			if len(v) != 2 {
+				return nil, fmt.Errorf("incorrectly formatted control probe config specified: %s", rawConf)
+			}
+			val, err := strconv.ParseInt(v[1], 10, 32)
+			if err != nil || val < 0 {
+				return nil, fmt.Errorf("invalid control plane probe config value specified: %s", rawConf)
+			}
+			parsedProbeConf[v[0]] = int32(val)
+		}
+	}
+
+	for component, probe := range probes {
+		for probeName, conf := range probe {
+			for threshold, target := range conf {
+				k := component + "-" + probeName + "-" + threshold
+				if val, ok := parsedProbeConf[k]; ok {
+					*target = val
+				} else if val, ok := defaultProbeConf[probeName][threshold]; ok {
+					*target = val
+				}
+			}
+		}
+	}
+
+	return &controlPlaneProbes, nil
+}
+
+func parseControlPlaneEnv(cfg Config) (*podexecutor.ControlPlaneEnv, error) {
+	return &podexecutor.ControlPlaneEnv{
 		KubeAPIServer:          cfg.ExtraEnv.KubeAPIServer.Value(),
 		KubeScheduler:          cfg.ExtraEnv.KubeScheduler.Value(),
 		KubeControllerManager:  cfg.ExtraEnv.KubeControllerManager.Value(),
 		KubeProxy:              cfg.ExtraEnv.KubeProxy.Value(),
 		Etcd:                   cfg.ExtraEnv.Etcd.Value(),
 		CloudControllerManager: cfg.ExtraEnv.CloudControllerManager.Value(),
-	}
+	}, nil
+}
 
-	extraMounts := podexecutor.ControlPlaneMounts{
+func parseControlPlaneMounts(cfg Config) (*podexecutor.ControlPlaneMounts, error) {
+	return &podexecutor.ControlPlaneMounts{
 		KubeAPIServer:          cfg.ExtraMounts.KubeAPIServer.Value(),
 		KubeScheduler:          cfg.ExtraMounts.KubeScheduler.Value(),
 		KubeControllerManager:  cfg.ExtraMounts.KubeControllerManager.Value(),
 		KubeProxy:              cfg.ExtraMounts.KubeProxy.Value(),
 		Etcd:                   cfg.ExtraMounts.Etcd.Value(),
 		CloudControllerManager: cfg.ExtraMounts.CloudControllerManager.Value(),
-	}
-
-	return &podexecutor.StaticPodConfig{
-		Resolver:              resolver,
-		ImagesDir:             agentImagesDir,
-		ManifestsDir:          agentManifestsDir,
-		CISMode:               isCISMode(clx),
-		CloudProvider:         cpConfig,
-		DataDir:               dataDir,
-		AuditPolicyFile:       clx.String("audit-policy-file"),
-		KubeletPath:           cfg.KubeletPath,
-		DisableETCD:           clx.Bool("disable-etcd"),
-		IsServer:              isServer,
-		ControlPlaneResources: controlPlaneResources,
-		ControlPlaneEnv:       extraEnv,
-		ControlPlaneMounts:    extraMounts,
 	}, nil
 }
 

@@ -16,6 +16,7 @@ import (
 var nodeOS = flag.String("nodeOS", "generic/ubuntu2004", "VM operating system")
 var serverCount = flag.Int("serverCount", 3, "number of server nodes")
 var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
+var ci = flag.Bool("ci", false, "running on CI")
 
 // Environment Variables Info:
 // E2E_CNI=(canal|cilium|calico)
@@ -24,7 +25,8 @@ var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 func Test_E2EClusterValidation(t *testing.T) {
 	flag.Parse()
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Validate Cluster Suite")
+	suiteConfig, reporterConfig := GinkgoConfiguration()
+	RunSpecs(t, "Validate Cluster Test Suite", suiteConfig, reporterConfig)
 }
 
 var (
@@ -32,13 +34,14 @@ var (
 	serverNodeNames []string
 	agentNodeNames  []string
 )
+var _ = ReportAfterEach(e2e.GenReport)
 
-var _ = Describe("Verify Basic Cluster Creation", func() {
+var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 
 	It("Starts up with no issues", func() {
 		var err error
 		serverNodeNames, agentNodeNames, err = e2e.CreateCluster(*nodeOS, *serverCount, *agentCount)
-		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog())
+		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog(err))
 		fmt.Println("CLUSTER CONFIG")
 		fmt.Println("OS:", *nodeOS)
 		fmt.Println("Server Nodes:", serverNodeNames)
@@ -130,6 +133,55 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 		}, "240s", "5s").Should(ContainSubstring("test-loadbalancer"), "failed cmd: "+cmd)
 	})
 
+	It("Verifies Restart", func() {
+		_, err := e2e.DeployWorkload("daemonset.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred(), "Daemonset manifest not deployed")
+		defer e2e.DeleteWorkload("daemonset.yaml", kubeConfigFile)
+		nodes, _ := e2e.ParseNodes(kubeConfigFile, false)
+
+		Eventually(func(g Gomega) {
+			pods, _ := e2e.ParsePods(kubeConfigFile, false)
+			count := e2e.CountOfStringInSlice("test-daemonset", pods)
+			for _, node := range nodes {
+				g.Expect(node.Status).Should(Equal("Ready"))
+			}
+			g.Expect(len(nodes)).Should((Equal(count)), "Daemonset pod count does not match node count")
+			podsRunning := 0
+			for _, pod := range pods {
+				if strings.Contains(pod.Name, "test-daemonset") && pod.Status == "Running" && pod.Ready == "1/1" {
+					podsRunning++
+				}
+			}
+			g.Expect(len(nodes)).Should((Equal(podsRunning)), "Daemonset running pods count does not match node count")
+
+		}, "620s", "5s").Should(Succeed())
+
+		errRestart := e2e.RestartCluster(serverNodeNames)
+		Expect(errRestart).NotTo(HaveOccurred(), "Restart Nodes not happened correctly")
+		if len(agentNodeNames) > 0 {
+			errRestartAgent := e2e.RestartCluster(agentNodeNames)
+			Expect(errRestartAgent).NotTo(HaveOccurred(), "Restart Agent not happened correctly")
+		}
+
+		Eventually(func(g Gomega) {
+			nodes, err := e2e.ParseNodes(kubeConfigFile, false)
+			g.Expect(err).NotTo(HaveOccurred())
+			for _, node := range nodes {
+				g.Expect(node.Status).Should(Equal("Ready"))
+			}
+			pods, _ := e2e.ParsePods(kubeConfigFile, false)
+			count := e2e.CountOfStringInSlice("test-daemonset", pods)
+			g.Expect(len(nodes)).Should((Equal(count)), "Daemonset pod count does not match node count")
+			podsRunningAr := 0
+			for _, pod := range pods {
+				if strings.Contains(pod.Name, "test-daemonset") && pod.Status == "Running" && pod.Ready == "1/1" {
+					podsRunningAr++
+				}
+			}
+			g.Expect(len(nodes)).Should((Equal(podsRunningAr)), "Daemonset pods are not running after the restart")
+		}, "620s", "5s").Should(Succeed())
+	})
+
 	It("Verifies Ingress", func() {
 		_, err := e2e.DeployWorkload("ingress.yaml", kubeConfigFile)
 		Expect(err).NotTo(HaveOccurred())
@@ -199,11 +251,11 @@ var _ = Describe("Verify Basic Cluster Creation", func() {
 
 var failed bool
 var _ = AfterEach(func() {
-	failed = failed || CurrentGinkgoTestDescription().Failed
+	failed = failed || CurrentSpecReport().Failed()
 })
 
 var _ = AfterSuite(func() {
-	if failed {
+	if failed && !*ci {
 		fmt.Println("FAILED!")
 	} else {
 		Expect(e2e.DestroyCluster()).To(Succeed())

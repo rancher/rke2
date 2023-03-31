@@ -8,10 +8,26 @@ platform:
   arch: amd64
 
 steps:
+  - name: skipfiles
+    image: plugins/git
+    commands:
+      - export NAME=$(test $DRONE_BUILD_EVENT = pull_request && echo remotes/origin/${DRONE_COMMIT_BRANCH:-master} || echo ${DRONE_COMMIT_SHA}~)
+      - export DIFF=$(git --no-pager diff --name-only $NAME | grep -v -f .droneignore);
+      - if [ -z "$DIFF" ]; then
+            echo "All files in PR are on ignore list";
+            exit 78;
+        else
+            echo "Some files in PR are not ignored, $DIFF";
+        fi;
+    when:
+      event:
+        - push
+        - pull_request
+
   - name: validate-release
     image: rancher/dapper:v0.5.5
     commands:
-      - docker pull --quiet rancher/hardened-build-base:v1.18.1b7
+      - docker pull --quiet rancher/hardened-build-base:v1.19.7b1
       - dapper -f Dockerfile --target dapper make validate-release
     volumes:
       - name: docker
@@ -26,10 +42,12 @@ steps:
     image: rancher/dapper:v0.5.5
     environment:
       ENABLE_REGISTRY: 'true'
-      GCLOUD_AUTH:
-        from_secret: gcloud_auth
+      AWS_ACCESS_KEY_ID:
+        from_secret: AWS_ACCESS_KEY_ID-rke2-ci-uploader
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: AWS_SECRET_ACCESS_KEY-rke2-ci-uploader     
     commands:
-      - docker pull --quiet rancher/hardened-build-base:v1.18.1b7
+      - docker pull --quiet rancher/hardened-build-base:v1.19.7b1
       - docker pull --quiet alpine:3.15
       - dapper -f Dockerfile --target dapper make dapper-ci
     volumes:
@@ -58,7 +76,7 @@ steps:
   - name: package-images
     image: rancher/dapper:v0.5.5
     commands:
-      - docker pull --quiet rancher/hardened-build-base:v1.18.1b7
+      - docker pull --quiet rancher/hardened-build-base:v1.19.7b1
       - dapper -f Dockerfile --target dapper make package-images
     volumes:
       - name: docker
@@ -83,11 +101,13 @@ steps:
 
   - name: test
     image: rancher/dapper:v0.5.5
-    secrets: [ gcloud_auth ]
+    secrets: [ AWS_ACCESS_KEY_ID-rke2-ci-uploader, AWS_SECRET_ACCESS_KEY-rke2-ci-uploader ]
     environment:
       ENABLE_REGISTRY: 'true'
-      GCLOUD_AUTH:
-        from_secret: gcloud_auth
+      AWS_ACCESS_KEY_ID:
+        from_secret: AWS_ACCESS_KEY_ID-rke2-ci-uploader
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: AWS_SECRET_ACCESS_KEY-rke2-ci-uploader  
     commands:
       - dapper -f Dockerfile --target dapper make test
     volumes:
@@ -95,7 +115,7 @@ steps:
         path: /var/run/docker.sock
 
   - name: publish-image-runtime
-    image: rancher/hardened-build-base:v1.18.1b7
+    image: rancher/hardened-build-base:v1.19.7b1
     commands:
       - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
@@ -119,7 +139,7 @@ steps:
   - name: package-windows-images
     image: rancher/dapper:v0.5.5
     commands:
-      - docker pull --quiet rancher/hardened-build-base:v1.18.1b7
+      - docker pull --quiet rancher/hardened-build-base:v1.19.7b1
       - dapper -f Dockerfile --target dapper make package-windows-images
     when:
       event:
@@ -166,6 +186,22 @@ platform:
   arch: amd64
 
 steps:
+  - name: skipfiles
+    image: plugins/git
+    commands:
+      - export NAME=$(test $DRONE_BUILD_EVENT = pull_request && echo remotes/origin/${DRONE_COMMIT_BRANCH:-master} || echo ${DRONE_COMMIT_SHA}~)
+      - export DIFF=$(git --no-pager diff --name-only $NAME | grep -v -f .droneignore);
+      - if [ -z "$DIFF" ]; then
+            echo "All files in PR are on ignore list";
+            exit 78;
+        else
+            echo "Some files in PR are not ignored, $DIFF";
+        fi;
+    when:
+      event:
+        - push
+        - pull_request
+
   - name: dispatch
     image: rancher/dapper:v0.5.5
     commands:
@@ -207,6 +243,22 @@ node:
   arch: s390x
 
 steps:
+  - name: skipfiles
+    image: alpine/git:v2.30.2-s390x
+    commands:
+      - export NAME=$(test $DRONE_BUILD_EVENT = pull_request && echo remotes/origin/${DRONE_COMMIT_BRANCH:-master} || echo ${DRONE_COMMIT_SHA}~)
+      - export DIFF=$(git --no-pager diff --name-only $NAME | grep -v -f .droneignore);
+      - if [ -z "$DIFF" ]; then
+            echo "All files in PR are on ignore list";
+            exit 78;
+        else
+            echo "Some files in PR are not ignored, $DIFF";
+        fi;
+    when:
+      event:
+        - push
+        - pull_request
+
   - name: build
     image: rancher/dapper:v0.5.8
     commands:
@@ -229,7 +281,7 @@ steps:
         - drone-publish.rancher.io
 
   - name: publish-image-runtime
-    image: rancher/hardened-build-base:v1.18.1b7
+    image: rancher/hardened-build-base:v1.19.7b1
     commands:
       - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
@@ -279,10 +331,28 @@ volumes:
 kind: pipeline
 type: docker
 name: manifest
+
 platform:
   os: linux
   arch: amd64
+
 steps:
+  - name: skipfiles
+    image: plugins/git
+    commands:
+      - export NAME=$(test $DRONE_BUILD_EVENT = pull_request && echo remotes/origin/${DRONE_COMMIT_BRANCH:-master} || echo ${DRONE_COMMIT_SHA}~)
+      - export DIFF=$(git --no-pager diff --name-only $NAME | grep -v -f .droneignore);
+      - if [ -z "$DIFF" ]; then
+            echo "All files in PR are on ignore list";
+            exit 78;
+        else
+            echo "Some files in PR are not ignored, $DIFF";
+        fi;
+    when:
+      event:
+        - push
+        - pull_request
+
   - name: push-runtime-manifest
     image: plugins/manifest
     settings:

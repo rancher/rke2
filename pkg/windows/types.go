@@ -4,24 +4,8 @@
 package windows
 
 import (
-	"context"
-
-	"github.com/k3s-io/k3s/pkg/daemons/config"
-	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
-	"k8s.io/client-go/rest"
+	opv1 "github.com/tigera/operator/api/v1"
 )
-
-type CNI interface {
-	Setup(context.Context, string, *daemonconfig.Node, *rest.Config) (*CNIConfig, error)
-	Start(context.Context, *CNIConfig) error
-}
-
-type CNIConfig struct {
-	NodeConfig   *config.Node
-	CalicoConfig *CalicoConfig
-	NetworkName  string
-	BindAddress  string
-}
 
 type FelixConfig struct {
 	Metadataaddr    string
@@ -41,10 +25,10 @@ type CalicoCNIConfig struct {
 
 type CalicoConfig struct {
 	Name                  string
+	OverlayNetName        string
 	Mode                  string
 	Hostname              string
 	KubeNetwork           string
-	NetworkingBackend     string
 	ServiceCIDR           string
 	DNSServers            string
 	DNSSearch             string
@@ -53,6 +37,7 @@ type CalicoConfig struct {
 	Platform              string
 	StartUpValidIPTimeout int
 	IP                    string
+	IPAutoDetectionMethod string
 	LogDir                string
 	Felix                 FelixConfig
 	CNI                   CalicoCNIConfig
@@ -60,7 +45,8 @@ type CalicoConfig struct {
 	ETCDKeyFile           string
 	ETCDCertFile          string
 	ETCDCaCertFile        string
-	KubeConfig            CalicoKubeConfig
+	KubeConfig            *CalicoKubeConfig
+	Interface             string
 }
 
 type CalicoKubeConfig struct {
@@ -68,4 +54,16 @@ type CalicoKubeConfig struct {
 	Server               string
 	Token                string
 	Path                 string
+}
+
+// Stub of Calico configuration used to extract user-provided overrides
+// Based off of https://github.com/tigera/operator/blob/master/api/v1/installation_types.go
+type CalicoInstallation struct {
+	Installation CalicoInstallationSpec `json:"installation,omitempty"`
+}
+
+type CalicoInstallationSpec struct {
+	CalicoNetwork            opv1.CalicoNetworkSpec `json:"calicoNetwork,omitempty"`
+	FlexVolumePath           string                 `json:"flexVolumePath,omitempty"`
+	ControlPlaneNodeSelector map[string]string      `json:"controlPlaneNodeSelector,omitempty"`
 }

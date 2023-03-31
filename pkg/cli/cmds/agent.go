@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	k3sAgentBase = mustCmdFromK3S(cmds.NewAgentCommand(AgentRun), map[string]*K3SFlagOption{
+	k3sAgentBase = mustCmdFromK3S(cmds.NewAgentCommand(AgentRun), K3SFlagSet{
 		"config":          copy,
 		"debug":           copy,
 		"v":               hide,
@@ -22,7 +22,6 @@ var (
 		},
 		"token":                             copy,
 		"token-file":                        copy,
-		"disable-selinux":                   drop,
 		"node-name":                         copy,
 		"with-node-id":                      drop,
 		"node-label":                        copy,
@@ -42,9 +41,8 @@ var (
 		"kubelet-arg":                       copy,
 		"kube-proxy-arg":                    copy,
 		"rootless":                          drop,
+		"prefer-bundled-bin":                drop,
 		"server":                            copy,
-		"no-flannel":                        drop,
-		"cluster-secret":                    drop,
 		"protect-kernel-defaults":           copy,
 		"snapshotter":                       copy,
 		"selinux":                           copy,

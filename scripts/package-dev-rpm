@@ -9,7 +9,7 @@ export COMMIT
 export DAPPER_SOURCE=${DAPPER_SOURCE:-$(realpath -q .)}
 export COMBARCH='x86_64-amd64'
 
-RPM_VERSION="${DOCKERIZED_VERSION//-dev/}+rke2r0.testing.0"
+RPM_VERSION="${VERSION}.testing.0"
 
 TMPDIR=$(mktemp -d -t)
 SCRIPT_LIST=$(mktemp "${TMPDIR}/XXXXXX")

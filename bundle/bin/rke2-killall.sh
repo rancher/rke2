@@ -34,7 +34,7 @@ getshims() {
     ps -e -o pid= -o args= | sed -e 's/^ *//; s/\s\s*/\t/;' | grep -w 'rke2/data/[^/]*/bin/containerd-shim' | cut -f1
 }
 
-do_unmount() {
+do_unmount_and_remove() {
     { set +x; } 2>/dev/null
     MOUNTS=
     while read ignore mount ignore; do
@@ -44,6 +44,7 @@ do_unmount() {
     if [ -n "${MOUNTS}" ]; then
         set -x
         umount ${MOUNTS}
+        rm -rf --one-file-system ${MOUNTS}
     else
         set -x
     fi
@@ -58,10 +59,10 @@ systemctl stop rke2-agent.service || true
 
 killtree $({ set +x; } 2>/dev/null; getshims; set -x)
 
-do_unmount '/run/k3s'
-do_unmount '/var/lib/rancher/rke2'
-do_unmount '/var/lib/kubelet/pods'
-do_unmount '/run/netns/cni-'
+do_unmount_and_remove '/run/k3s'
+do_unmount_and_remove '/var/lib/rancher/rke2'
+do_unmount_and_remove '/var/lib/kubelet/pods'
+do_unmount_and_remove '/run/netns/cni-'
 
 # Delete network interface(s) that match 'master cni0'
 ip link show 2>/dev/null | grep 'master cni0' | while read ignore iface ignore; do
@@ -88,11 +89,14 @@ if [ -d /sys/class/net/nodelocaldns ]; then
   ip link delete nodelocaldns
 fi
 
-rm -rf /var/lib/cni/
+rm -rf /var/lib/cni/ /var/log/pods/ /var/log/containers
 
 # Delete iptables created by CNI plugins or Kubernetes (kube-proxy)
 iptables-save | grep -v KUBE- | grep -v CNI- | grep -v cali- | grep -v cali: | grep -v CILIUM_ | grep -v flannel | iptables-restore
 ip6tables-save | grep -v KUBE- | grep -v CNI- | grep -v cali- | grep -v cali: | grep -v CILIUM_ | grep -v flannel | ip6tables-restore
+
+set +x
+
 echo 'If this cluster was upgraded from an older release of the Canal CNI, you may need to manually remove some flannel iptables rules:'
 echo -e '\texport cluster_cidr=YOUR-CLUSTER-CIDR'
 echo -e '\tiptables -D POSTROUTING -s $cluster_cidr -j MASQUERADE --random-fully'
