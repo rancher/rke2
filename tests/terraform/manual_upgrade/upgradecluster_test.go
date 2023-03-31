@@ -94,8 +94,7 @@ var _ = Describe("Upgrade Tests:", func() {
 			Expect(err).NotTo(HaveOccurred(), "Cluster IP manifest not deployed")
 
 			Eventually(func(g Gomega) {
-				cmd := "kubectl get pods -n " + namespace + " -o=name -l k8s-app=nginx-app-clusterip --field-selector=status.phase=Running --kubeconfig=" + terraform.KubeConfigFile
-				res, err := terraform.RunCommand(cmd)
+				res, err := terraform.IsAppRunning(namespace, "nginx-app-clusterip", terraform.KubeConfigFile)
 				g.Expect(err).NotTo(HaveOccurred())
 				g.Expect(res).Should((ContainSubstring("test-clusterip")))
 			}, "420s", "5s").Should(Succeed())
@@ -124,8 +123,7 @@ var _ = Describe("Upgrade Tests:", func() {
 
 			for _, ip := range nodeExternalIP {
 				Eventually(func(g Gomega) {
-					cmd := "kubectl get pods -n " + namespace + " -o=name -l k8s-app=nginx-app-nodeport --field-selector=status.phase=Running --kubeconfig=" + terraform.KubeConfigFile
-					res, err := terraform.RunCommand(cmd)
+					res, err := terraform.IsAppRunning(namespace, "nginx-app-nodeport", terraform.KubeConfigFile)
 					g.Expect(err).NotTo(HaveOccurred())
 					g.Expect(res).Should(ContainSubstring("test-nodeport"))
 				}, "240s", "5s").Should(Succeed())
@@ -145,8 +143,7 @@ var _ = Describe("Upgrade Tests:", func() {
 			Expect(err).NotTo(HaveOccurred(), "Ingress manifest not deployed")
 
 			Eventually(func(g Gomega) {
-				cmd := "kubectl get pods -n " + namespace + " -o=name -l k8s-app=nginx-app-ingress --field-selector=status.phase=Running --kubeconfig=" + terraform.KubeConfigFile
-				res, err := terraform.RunCommand(cmd)
+				res, err := terraform.IsAppRunning(namespace, "nginx-app-ingress", terraform.KubeConfigFile)
 				g.Expect(err).NotTo(HaveOccurred())
 				g.Expect(res).Should(ContainSubstring("test-ingress"))
 			}, "240s", "5s").Should(Succeed())
@@ -207,9 +204,16 @@ var _ = Describe("Upgrade Tests:", func() {
 
 	Context("Upgrade nodes via manual:", func() {
 		It("Upgrade nodes", func() {
-
-			const cmdRestartServer = "sudo systemctl restart rke2-server"
-			const cmdRestartAgent = "sudo systemctl restart rke2-agent"
+			var cmdUpgradeVersion, cmdRestartServer, cmdRestartAgent string
+			if *channel != "" {
+				// If a channel is specified, upgrade using that channel
+				cmdUpgradeVersion = "sudo curl -sfL https://get.rke2.io | sudo INSTALL_RKE2_VERSION=" + *upgradeVersion + " INSTALL_RKE2_CHANNEL=" + *channel + " sh -"
+			} else {
+				// If no channel is specified, upgrade using the version specified
+				cmdUpgradeVersion = "sudo curl -sfL https://get.rke2.io | sudo INSTALL_RKE2_VERSION=" + *upgradeVersion + " sh -"
+			}
+			cmdRestartServer = "sudo systemctl restart rke2-server"
+			cmdRestartAgent = "sudo systemctl restart rke2-agent"
 
 			versionRegex := regexp.MustCompile("-rc[0-9]+")
 			k8sVersion := versionRegex.ReplaceAllString(*upgradeVersion, "")
@@ -222,7 +226,7 @@ var _ = Describe("Upgrade Tests:", func() {
 
 			for _, node := range nodes {
 				// Every node will be upgraded and restarted
-				cmdUpgradeVersion := "sudo curl -sfL https://get.rke2.io | sudo INSTALL_RKE2_VERSION=" + *upgradeVersion + " INSTALL_RKE2_CHANNEL=" + *channel + " sh -"
+
 				Eventually(func(g Gomega) {
 					fmt.Println("\nUpgrading ", node.Roles, node.ExternalIP)
 					terraform.RunCommandOnNode(cmdUpgradeVersion, node.ExternalIP, terraform.AwsUser, terraform.AccessKey)
@@ -278,13 +282,12 @@ var _ = Describe("Upgrade Tests:", func() {
 			namespace := "auto-clusterip"
 			defer terraform.RemoveWorkload("clusterip.yaml", terraform.KubeConfigFile)
 
-			cmd := "kubectl get pods -n " + namespace + " -o=name -l k8s-app=nginx-app-clusterip --field-selector=status.phase=Running --kubeconfig=" + terraform.KubeConfigFile
-			res, err := terraform.RunCommand(cmd)
+			res, err := terraform.IsAppRunning(namespace, "nginx-app-clusterip", terraform.KubeConfigFile)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res).Should((ContainSubstring("test-clusterip")))
 
 			clusterip, port, _ := terraform.FetchClusterIP(terraform.KubeConfigFile, namespace, "nginx-clusterip-svc")
-			cmd = "curl -sL --insecure http://" + clusterip + ":" + port + "/name.html"
+			cmd := "curl -sL --insecure http://" + clusterip + ":" + port + "/name.html"
 			nodeExternalIP := terraform.FetchNodeExternalIP(terraform.KubeConfigFile)
 			for _, ip := range nodeExternalIP {
 				Eventually(func(g Gomega) {
@@ -306,8 +309,7 @@ var _ = Describe("Upgrade Tests:", func() {
 
 			for _, ip := range nodeExternalIP {
 				Eventually(func(g Gomega) {
-					cmd := "kubectl get pods -n " + namespace + " -o=name -l k8s-app=nginx-app-nodeport --field-selector=status.phase=Running --kubeconfig=" + terraform.KubeConfigFile
-					res, err := terraform.RunCommand(cmd)
+					res, err := terraform.IsAppRunning(namespace, "nginx-app-nodeport", terraform.KubeConfigFile)
 					g.Expect(err).NotTo(HaveOccurred())
 					g.Expect(res).Should(ContainSubstring("test-nodeport"))
 				}, "120s", "5s").Should(Succeed())
@@ -325,8 +327,7 @@ var _ = Describe("Upgrade Tests:", func() {
 			namespace := "auto-ingress"
 			defer terraform.RemoveWorkload("ingress.yaml", terraform.KubeConfigFile)
 
-			cmd := "kubectl get pods -n " + namespace + " -o=name -l k8s-app=nginx-app-ingress --field-selector=status.phase=Running --kubeconfig=" + terraform.KubeConfigFile
-			res, err := terraform.RunCommand(cmd)
+			res, err := terraform.IsAppRunning(namespace, "nginx-app-ingress", terraform.KubeConfigFile)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res).Should(ContainSubstring("test-ingress"))
 
@@ -379,6 +380,7 @@ var _ = Describe("Upgrade Tests:", func() {
 			}, "120s", "2s").Should(Succeed())
 		})
 	})
+
 })
 
 var _ = BeforeEach(func() {
