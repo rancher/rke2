@@ -164,6 +164,12 @@ Here are some locations to check CNI versions in the build-images script:
 - Cilium: Look in `build/images-cilium` section for `/rancher/mirrored-cilium-cilium`
 - Multus: Look in `build/images-multus` section for `/rancher/hardened-multus-cni`
 
+The build images script might not be up to date, another way to find CNI versions:
+- look in the Dockerfile and find the chart version
+- find the git repo for that chart
+- find the GH release of the chart that is mentioned
+- look in the chart for the CNI container version
+
 
 Once the release notes are approved and merged, through the normal review and approval process, copy the contents of the files and paste them into the release itself, by editing the relevant release. 
 
