@@ -121,7 +121,7 @@ RUN CHART_VERSION="v3.25.0-build2023020902"   CHART_FILE=/charts/rke2-canal.yaml
 RUN CHART_VERSION="v3.25.002"                 CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="v3.25.002"                 CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.19.401"                  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="4.1.008"                   CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
+RUN CHART_VERSION="4.5.201"                   CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
 RUN CHART_VERSION="2.11.100-build2022101107"  CHART_FILE=/charts/rke2-metrics-server.yaml CHART_BOOTSTRAP=false  /charts/build-chart.sh
 RUN CHART_VERSION="v3.9.3-build2023010902"      CHART_FILE=/charts/rke2-multus.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.4.101"                   CHART_FILE=/charts/rancher-vsphere-cpi.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
