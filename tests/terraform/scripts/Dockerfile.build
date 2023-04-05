@@ -1,17 +1,23 @@
 FROM golang:alpine
 
-ENV TERRAFORM_VERSION=1.2.8
-
-ARG SSH_KEY
+ARG TF_VERSION=1.4.0
+ENV TERRAFORM_VERSION $TF_VERSION
 
 RUN apk update && \
     apk upgrade --update-cache --available && \
-    apk add curl git jq bash openssh unzip gcc g++ make ca-certificates && \
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    apk add --no-cache curl git jq bash openssh unzip gcc g++ make ca-certificates && \
+    if [ "$(uname -m)" = "aarch64" ]; then \
+        KUBE_ARCH="linux/arm64" && \
+        TF_ARCH="linux_arm64"; \
+    else \
+        KUBE_ARCH="linux/amd64" && \
+        TF_ARCH="linux_amd64"; \
+    fi && \
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/${KUBE_ARCH}/kubectl" && \
     chmod +x ./kubectl && \
     mv ./kubectl /usr/local/bin && \
     mkdir tmp && \
-    curl "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" -o tmp/terraform.zip && \
+    curl "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_${TF_ARCH}.zip" -o tmp/terraform.zip && \
     unzip tmp/terraform.zip -d /usr/local/bin && \
     chmod +x /usr/local/bin/terraform && \
     rm -rf tmp

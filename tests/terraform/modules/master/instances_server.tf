@@ -71,10 +71,10 @@ resource "aws_instance" "master2" {
   }
   subnet_id              = var.subnets
   availability_zone      = var.availability_zone
-  vpc_security_group_ids = ["${var.sg_id}"]
+  vpc_security_group_ids = [var.sg_id]
   key_name               = var.ssh_key
-  tags = {
-    Name                              = "${var.resource_name}-servers"
+  tags  =                {
+    Name                 = "${var.resource_name}-server${count.index + 1}"
     "kubernetes.io/cluster/clusterid" = "owned"
   }
   depends_on = [aws_instance.master]
@@ -109,6 +109,16 @@ locals {
   node_token = trimspace("${data.local_file.token.content}")
 }
 
+resource "random_string" "suffix" {
+  length = 4
+  upper = false
+  special = false
+}
+
+locals {
+  random_string =  random_string.suffix.result
+}
+
 resource "local_file" "master_ips" {
   content  = join(",", aws_instance.master.*.public_ip, aws_instance.master2.*.public_ip)
   filename = "/tmp/${var.resource_name}_master_ips"
@@ -118,7 +128,7 @@ resource "aws_lb_target_group" "aws_tg_6443" {
   port     = 6443
   protocol = "TCP"
   vpc_id   = var.vpc_id
-  name     = "${var.resource_name}-tg-6443"
+  name     = "${var.resource_name}${local.random_string}-tg-6443"
   count    = var.create_lb ? 1 : 0
 }
 
@@ -126,7 +136,7 @@ resource "aws_lb_target_group" "aws_tg_9345" {
   port     = 9345
   protocol = "TCP"
   vpc_id   = var.vpc_id
-  name     = "${var.resource_name}-tg-9345"
+  name     = "${var.resource_name}${local.random_string}-tg-9345"
   count    = var.create_lb ? 1 : 0
 }
 
@@ -134,7 +144,7 @@ resource "aws_lb_target_group" "aws_tg_80" {
   port     = 80
   protocol = "TCP"
   vpc_id   = var.vpc_id
-  name     = "${var.resource_name}-tg-80"
+  name     = "${var.resource_name}${local.random_string}-tg-80"
   health_check {
     protocol            = "HTTP"
     port                = "traffic-port"
@@ -152,7 +162,7 @@ resource "aws_lb_target_group" "aws_tg_443" {
   port     = 443
   protocol = "TCP"
   vpc_id   = var.vpc_id
-  name     = "${var.resource_name}-tg-443"
+  name     = "${var.resource_name}${local.random_string}-tg-443"
   health_check {
     protocol            = "HTTP"
     port                = 80
@@ -233,7 +243,7 @@ resource "aws_lb" "aws_nlb" {
   internal           = false
   load_balancer_type = "network"
   subnets            = ["${var.subnets}"]
-  name               = "${var.resource_name}-nlb"
+  name               = "${var.resource_name}${local.random_string}-nlb"
   count              = var.create_lb ? 1 : 0
 }
 
@@ -283,7 +293,7 @@ resource "aws_lb_listener" "aws_nlb_listener_443" {
 
 resource "aws_route53_record" "aws_route53" {
   zone_id = data.aws_route53_zone.selected.zone_id
-  name    = var.resource_name
+  name    = "${var.resource_name}${local.random_string}-r53"
   type    = "CNAME"
   ttl     = "300"
   records = ["${aws_lb.aws_nlb[0].dns_name}"]

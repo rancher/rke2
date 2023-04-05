@@ -1,12 +1,14 @@
-package terraform
+package createcluster
 
 import (
 	"fmt"
+
 	"path/filepath"
 	"strconv"
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	tf "github.com/rancher/rke2/tests/terraform"
 )
 
 var (
@@ -17,14 +19,17 @@ var (
 	NumWorkers     int
 	AwsUser        string
 	AccessKey      string
+	modulesPath    = "/tests/terraform/modules"
+	tfVarsPath     = "/tests/terraform/modules/config/local.tfvars"
 )
 
-func BuildCluster(t *testing.T, tfVarsPath string, destroy bool) (string, error) {
-	tfDir, err := filepath.Abs(Basepath() + "/tests/terraform/modules")
+func BuildCluster(t *testing.T, destroy bool) (string, error) {
+	tfDir, err := filepath.Abs(tf.Basepath() + modulesPath)
 	if err != nil {
 		return "", err
 	}
-	varDir, err := filepath.Abs(Basepath() + tfVarsPath)
+
+	varDir, err := filepath.Abs(tf.Basepath() + tfVarsPath)
 	if err != nil {
 		return "", err
 	}
@@ -32,6 +37,7 @@ func BuildCluster(t *testing.T, tfVarsPath string, destroy bool) (string, error)
 		TerraformDir: tfDir,
 		VarFiles:     []string{varDir},
 	}
+
 	NumServers, err = strconv.Atoi(terraform.GetVariableAsStringFromVarFile(t, varDir, "no_of_server_nodes"))
 	if err != nil {
 		return "", err
@@ -40,6 +46,7 @@ func BuildCluster(t *testing.T, tfVarsPath string, destroy bool) (string, error)
 	if err != nil {
 		return "", err
 	}
+
 	splitRoles := terraform.GetVariableAsStringFromVarFile(t, varDir, "split_roles")
 	if splitRoles == "true" {
 		etcdNodes, err := strconv.Atoi(terraform.GetVariableAsStringFromVarFile(t, varDir, "etcd_only_nodes"))
@@ -64,6 +71,7 @@ func BuildCluster(t *testing.T, tfVarsPath string, destroy bool) (string, error)
 		}
 		NumServers = NumServers + etcdNodes + etcdCpNodes + etcdWorkerNodes + cpNodes + cpWorkerNodes
 	}
+
 	AwsUser = terraform.GetVariableAsStringFromVarFile(t, varDir, "aws_user")
 	AccessKey = terraform.GetVariableAsStringFromVarFile(t, varDir, "access_key")
 
@@ -74,9 +82,11 @@ func BuildCluster(t *testing.T, tfVarsPath string, destroy bool) (string, error)
 	}
 
 	fmt.Printf("Creating Cluster")
+
 	terraform.InitAndApply(t, &terraformOptions)
 	KubeConfigFile = terraform.Output(t, &terraformOptions, "kubeconfig")
 	MasterIPs = terraform.Output(t, &terraformOptions, "master_ips")
 	WorkerIPs = terraform.Output(t, &terraformOptions, "worker_ips")
+
 	return "cluster created", nil
 }

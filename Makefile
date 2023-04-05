@@ -170,4 +170,3 @@ serve-docs: mkdocs
 
 mkdocs:
 	docker build -t mkdocs -f Dockerfile.docs .
-
