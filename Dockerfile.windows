@@ -1,4 +1,4 @@
-FROM alpine:3.15 AS build
+FROM alpine:3.17 AS build
 
 RUN apk --no-cache add \
     curl \
@@ -38,7 +38,7 @@ RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/ins
 WORKDIR /source
 # End Dapper stuff
 
-FROM rancher/hardened-containerd:v1.6.19-k3s1-build20230310-amd64-windows AS containerd
+FROM rancher/hardened-containerd:v1.6.19-k3s1-build20230406-amd64-windows AS containerd
 FROM build as windows-runtime-collect
 ARG KUBERNETES_VERSION=dev
 
