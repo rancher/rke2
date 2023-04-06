@@ -121,12 +121,12 @@ RUN CHART_VERSION="1.13.000"                  CHART_FILE=/charts/rke2-cilium.yam
 RUN CHART_VERSION="v3.25.0-build2023020902"   CHART_FILE=/charts/rke2-canal.yaml          CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="v3.25.002"                 CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="v3.25.002"                 CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="1.19.401"                  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="1.19.402"                  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="4.5.201"                   CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
 RUN CHART_VERSION="2.11.100-build2022101107"  CHART_FILE=/charts/rke2-metrics-server.yaml CHART_BOOTSTRAP=false  /charts/build-chart.sh
 RUN CHART_VERSION="v3.9.3-build2023010902"    CHART_FILE=/charts/rke2-multus.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="1.4.100"                   CHART_FILE=/charts/rancher-vsphere-cpi.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="2.6.2-rancher100"          CHART_FILE=/charts/rancher-vsphere-csi.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="1.4.200"                   CHART_FILE=/charts/rancher-vsphere-cpi.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
+RUN CHART_VERSION="2.6.2-rancher200"          CHART_FILE=/charts/rancher-vsphere-csi.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="0.1.1400"                  CHART_FILE=/charts/harvester-cloud-provider.yaml CHART_BOOTSTRAP=true /charts/build-chart.sh
 RUN CHART_VERSION="0.1.1600"                  CHART_FILE=/charts/harvester-csi-driver.yaml     CHART_BOOTSTRAP=true /charts/build-chart.sh
 RUN CHART_VERSION="1.7.201"                   CHART_FILE=/charts/rke2-snapshot-controller.yaml CHART_BOOTSTRAP=false /charts/build-chart.sh
@@ -139,9 +139,9 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM rancher/hardened-kubernetes:v1.25.8-rke2r1-build20230317 AS kubernetes
-FROM rancher/hardened-containerd:v1.6.19-k3s1-build20230310 AS containerd
-FROM rancher/hardened-crictl:v1.24.0-build20221011 AS crictl
-FROM rancher/hardened-runc:v1.1.4-build20221012 AS runc
+FROM rancher/hardened-containerd:v1.6.19-k3s1-build20230406 AS containerd
+FROM rancher/hardened-crictl:v1.26.1-build20230406 AS crictl
+FROM rancher/hardened-runc:v1.1.5-build20230406 AS runc
 
 FROM scratch AS runtime-collect
 COPY --from=runc \
