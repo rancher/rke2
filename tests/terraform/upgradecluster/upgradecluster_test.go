@@ -292,7 +292,7 @@ var _ = Describe("Upgrade Tests:", func() {
 
 			fmt.Printf("\n Fetching pod status postupgrade\n")
 			Eventually(func(g Gomega) {
-				pods, err := terraform.Pods(terraform.KubeConfigFile, false)
+				pods, err := terraform.Pods(createcluster.KubeConfigFile, false)
 				g.Expect(err).NotTo(HaveOccurred())
 				for _, pod := range pods {
 					if strings.Contains(pod.Name, "helm-install") {
