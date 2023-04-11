@@ -132,7 +132,6 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	clusterReset := clx.Bool("cluster-reset")
 	clusterResetRestorePath := clx.String("cluster-reset-restore-path")
 	containerRuntimeEndpoint := clx.String("container-runtime-endpoint")
-	extraKubeletArgs := clx.StringSlice("kubelet-arg")
 
 	ex, err := initExecutor(clx, cfg, isServer)
 	if err != nil {
@@ -167,7 +166,7 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 			return err
 		}
 	}
-	return removeDisabledPods(dataDir, containerRuntimeEndpoint, disabledItems, clusterReset, extraKubeletArgs)
+	return removeDisabledPods(dataDir, containerRuntimeEndpoint, disabledItems, clusterReset)
 }
 
 func ForceRestartFile(dataDir string) string {
@@ -183,7 +182,7 @@ func binDir(dataDir string) string {
 }
 
 // removeDisabledPods deletes the pod manifests for any disabled pods, as well as ensuring that the containers themselves are terminated.
-func removeDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems map[string]bool, clusterReset bool, extraKubeletArgs []string) error {
+func removeDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems map[string]bool, clusterReset bool) error {
 	terminatePods := false
 	execPath := binDir(dataDir)
 	manifestDir := podManifestsDir(dataDir)
@@ -261,7 +260,7 @@ func isCISMode(clx *cli.Context) bool {
 	return profile == CISProfile123
 }
 
-func startContainerd(ctx context.Context, dataDir string, errChan chan error, cmd *exec.Cmd) {
+func startContainerd(_ context.Context, dataDir string, errChan chan error, cmd *exec.Cmd) {
 	args := []string{
 		"-c", filepath.Join(dataDir, "agent", "etc", "containerd", "config.toml"),
 		"-a", containerdSock,

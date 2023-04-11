@@ -12,36 +12,36 @@ const defaultSnapshotRentention = 5
 func NewEtcdSnapshotCommand() cli.Command {
 	cmds.ServerConfig.DatastoreEndpoint = "etcd"
 	k3sOpts := K3SFlagSet{
-		"config":          copy,
-		"debug":           copy,
-		"log":             copy,
-		"alsologtostderr": copy,
-		"node-name":       copy,
+		"config":          copyFlag,
+		"debug":           copyFlag,
+		"log":             copyFlag,
+		"alsologtostderr": copyFlag,
+		"node-name":       copyFlag,
 		"data-dir": {
 			Usage:   "(data) Folder to hold state",
 			Default: rke2Path,
 		},
-		"name":               copy,
-		"dir":                copy,
-		"snapshot-compress":  copy,
-		"s3":                 copy,
-		"s3-endpoint":        copy,
-		"s3-endpoint-ca":     copy,
-		"s3-skip-ssl-verify": copy,
-		"s3-access-key":      copy,
-		"s3-secret-key":      copy,
-		"s3-bucket":          copy,
-		"s3-region":          copy,
-		"s3-folder":          copy,
-		"s3-insecure":        copy,
-		"s3-timeout":         copy,
+		"name":               copyFlag,
+		"dir":                copyFlag,
+		"snapshot-compress":  copyFlag,
+		"s3":                 copyFlag,
+		"s3-endpoint":        copyFlag,
+		"s3-endpoint-ca":     copyFlag,
+		"s3-skip-ssl-verify": copyFlag,
+		"s3-access-key":      copyFlag,
+		"s3-secret-key":      copyFlag,
+		"s3-bucket":          copyFlag,
+		"s3-region":          copyFlag,
+		"s3-folder":          copyFlag,
+		"s3-insecure":        copyFlag,
+		"s3-timeout":         copyFlag,
 	}
 	subcommandOpts := map[string]K3SFlagSet{
 		"ls": {
-			"output": copy,
+			"output": copyFlag,
 		},
 		"prune": {
-			"snapshot-retention": copy,
+			"snapshot-retention": copyFlag,
 		},
 	}
 

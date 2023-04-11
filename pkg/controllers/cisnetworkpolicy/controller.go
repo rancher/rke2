@@ -53,7 +53,7 @@ func (h *handler) handle(key string, node *core.Node) (*core.Node, error) {
 	return h.reconcileFlannelHostNetworkPolicy(key, node)
 }
 
-func (h *handler) reconcileFlannelHostNetworkPolicy(nodeName string, node *core.Node) (*core.Node, error) {
+func (h *handler) reconcileFlannelHostNetworkPolicy(_ string, _ *core.Node) (*core.Node, error) {
 	var np *netv1.NetworkPolicy
 	var npIR *netv1.NetworkPolicyIngressRule
 
