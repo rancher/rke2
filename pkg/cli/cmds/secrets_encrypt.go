@@ -8,25 +8,25 @@ import (
 
 func NewSecretsEncryptCommand() cli.Command {
 	k3sOpts := K3SFlagSet{
-		"data-dir": copy,
-		"token":    copy,
+		"data-dir": copyFlag,
+		"token":    copyFlag,
 		"server": {
 			Default: "https://127.0.0.1:9345",
 		},
 	}
 	subcommandOpts := map[string]K3SFlagSet{
 		"status": {
-			"output": copy,
+			"output": copyFlag,
 		},
 		"prepare": {
-			"force": copy,
+			"force": copyFlag,
 		},
 		"rotate": {
-			"force": copy,
+			"force": copyFlag,
 		},
 		"reencrypt": {
-			"force": copy,
-			"skip":  copy,
+			"force": copyFlag,
+			"skip":  copyFlag,
 		},
 	}
 

@@ -10,10 +10,10 @@ import (
 )
 
 var (
-	copy   = &K3SFlagOption{}
-	drop   = &K3SFlagOption{Drop: true}
-	hide   = &K3SFlagOption{Hide: true}
-	ignore = &K3SFlagOption{Ignore: true}
+	copyFlag   = &K3SFlagOption{}
+	dropFlag   = &K3SFlagOption{Drop: true}
+	hideFlag   = &K3SFlagOption{Hide: true}
+	ignoreFlag = &K3SFlagOption{Ignore: true}
 )
 
 // K3SFlagOption describes how a CLI flag from K3s should be wrapped.

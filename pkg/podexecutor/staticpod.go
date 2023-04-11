@@ -125,7 +125,7 @@ type CloudProviderConfig struct {
 // Bootstrap prepares the static executor to run components by setting the system default registry
 // and staging the kubelet and containerd binaries.  On servers, it also ensures that manifests are
 // copied in to place and in sync with the system configuration.
-func (s *StaticPodConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
+func (s *StaticPodConfig) Bootstrap(_ context.Context, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
 	// On servers this is set to an initial value from the CLI when the resolver is created, so that
 	// static pod manifests can be created before the agent bootstrap is complete. The agent itself
 	// really only needs to know about the runtime and pause images, all of which are configured after the
@@ -192,7 +192,7 @@ func (s *StaticPodConfig) Kubelet(ctx context.Context, args []string) error {
 }
 
 // KubeProxy starts Kube Proxy as a static pod.
-func (s *StaticPodConfig) KubeProxy(ctx context.Context, args []string) error {
+func (s *StaticPodConfig) KubeProxy(_ context.Context, args []string) error {
 	// close the channel so that the cleanup goroutine does not remove the pod manifest
 	close(s.KubeProxyChan)
 
@@ -233,7 +233,7 @@ func (s *StaticPodConfig) APIServerHandlers(ctx context.Context) (authenticator.
 }
 
 // APIServer sets up the apiserver static pod once etcd is available.
-func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) error {
+func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeAPIServer)
 	if err != nil {
 		return err
@@ -337,7 +337,7 @@ func (s *StaticPodConfig) APIServer(ctx context.Context, etcdReady <-chan struct
 var permitPortSharingFlag = []string{"--permit-port-sharing=true"}
 
 // Scheduler starts the kube-scheduler static pod, once the apiserver is available.
-func (s *StaticPodConfig) Scheduler(ctx context.Context, apiReady <-chan struct{}, args []string) error {
+func (s *StaticPodConfig) Scheduler(_ context.Context, apiReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeScheduler)
 	if err != nil {
 		return err
@@ -392,7 +392,7 @@ func after(after <-chan struct{}, f func() error) error {
 }
 
 // ControllerManager starts the kube-controller-manager static pod, once the apiserver is available.
-func (s *StaticPodConfig) ControllerManager(ctx context.Context, apiReady <-chan struct{}, args []string) error {
+func (s *StaticPodConfig) ControllerManager(_ context.Context, apiReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeControllerManager)
 	if err != nil {
 		return err
@@ -440,7 +440,7 @@ func (s *StaticPodConfig) ControllerManager(ctx context.Context, apiReady <-chan
 
 // CloudControllerManager starts the cloud-controller-manager static pod, once the cloud controller manager RBAC
 // (and subsequently, the api server) is available.
-func (s *StaticPodConfig) CloudControllerManager(ctx context.Context, ccmRBACReady <-chan struct{}, args []string) error {
+func (s *StaticPodConfig) CloudControllerManager(_ context.Context, ccmRBACReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.CloudControllerManager)
 	if err != nil {
 		return err
@@ -490,7 +490,7 @@ func (s *StaticPodConfig) CurrentETCDOptions() (opts executor.InitialOptions, er
 }
 
 // ETCD starts the etcd static pod.
-func (s *StaticPodConfig) ETCD(ctx context.Context, args executor.ETCDConfig, extraArgs []string) error {
+func (s *StaticPodConfig) ETCD(_ context.Context, args executor.ETCDConfig, extraArgs []string) error {
 	image, err := s.Resolver.GetReference(images.ETCD)
 	if err != nil {
 		return err
