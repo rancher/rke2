@@ -9,7 +9,7 @@ import (
 
 func NewTokenCommand() cli.Command {
 	k3sOpts := K3SFlagSet{
-		"kubeconfig": copy,
+		"kubeconfig": copyFlag,
 		"data-dir": {
 			Usage:   "(data) Folder to hold state",
 			Default: rke2Path,
@@ -17,13 +17,13 @@ func NewTokenCommand() cli.Command {
 	}
 	subCommandOpts := map[string]K3SFlagSet{
 		"create": {
-			"description": copy,
-			"groups":      copy,
-			"ttl":         copy,
-			"usages":      copy,
+			"description": copyFlag,
+			"groups":      copyFlag,
+			"ttl":         copyFlag,
+			"usages":      copyFlag,
 		},
 		"list": {
-			"output": copy,
+			"output": copyFlag,
 		},
 	}
 
