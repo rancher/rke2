@@ -34,20 +34,20 @@ func NewCertCommand() cli.Command {
 	k3sOpts := K3SFlagSet{}
 	subCommandOpts := map[string]K3SFlagSet{
 		"rotate": {
-			"alsologtostderr": copy,
-			"config":          copy,
-			"debug":           copy,
-			"log":             copy,
-			"service":         copy,
+			"alsologtostderr": copyFlag,
+			"config":          copyFlag,
+			"debug":           copyFlag,
+			"log":             copyFlag,
+			"service":         copyFlag,
 			"data-dir": {
 				Usage:   "(data) Folder to hold state",
 				Default: rke2Path,
 			},
 		},
 		"rotate-ca": {
-			"server": copy,
-			"path":   copy,
-			"force":  copy,
+			"server": copyFlag,
+			"path":   copyFlag,
+			"force":  copyFlag,
 		},
 	}
 
