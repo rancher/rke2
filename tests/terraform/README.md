@@ -7,10 +7,10 @@ TF tests utilize [Ginkgo](https://onsi.github.io/ginkgo/) and [Gomega](https://o
 
 ## Format
 
-- All TF tests should be placed under `tests/terraform/<TEST_NAME>`.
+- All TF tests should be placed under `tests/terraform/cases/<TEST_NAME>`.
 - All TF test functions should be named: `Test_TF<TEST_NAME>`. 
 
-See the [create cluster test](../tests/terraform/createcluster_test.go) as an example.
+See the [create cluster test](../tests/terraform/cases/createcluster_test.go) as an example.
 
 ## Running
 
@@ -30,14 +30,14 @@ It is also required to have standard AWS environment variables present: `AWS_ACC
 
 Tests can be run per package with:
 ```bash
-go test -timeout=30m -v ./tests/terraform/$PACKAGE_NAME/...
+go test -timeout=30m -v ./tests/terraform/cases/$PACKAGE_NAME/...
 ```
 Additionally, you can use docker to run the tests, which may be beneficial when wanting to run multiple tests in parallel. Just be sure to change the resource name in the tfvars file to ensure there won't be overwrites! Provided example below is for running two separate packages using docker:
 ```bash
-$ docker build . -f ./tests/terraform/scripts/Dockerfile.build -t rke2-tf
+$ docker build . -f ./tests/terraform/shared/scripts/Dockerfile.build -t rke2-tf
 # These next commands assume you have the following environment variable in your config/local.tfvars: 'access_key = "/tmp/aws_key.pem"'
-$ docker run --name rke2-tf-creation-test -t -e AWS_ACCESS_KEY_ID=<YOUR_ACCESS_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET_KEY> -v /path/to/aws/key.pem:/tmp/aws_key.pem rke2-tf sh -c "go test -timeout=30m -v ./tests/terraform/createcluster/..."
-$ docker run --name rke2-tf-upgrade-test -t -e AWS_ACCESS_KEY_ID=<YOUR_ACCESS_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET_KEY> -v /path/to/aws/key.pem:/tmp/aws_key.pem rke2-tf sh -c "go test -timeout=45m -v ./tests/terraform/upgradecluster/... -upgradeVersion=v1.24.8+rke2r1"
+$ docker run --name rke2-tf-creation-test -t -e AWS_ACCESS_KEY_ID=<YOUR_ACCESS_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET_KEY> -v /path/to/aws/key.pem:/tmp/aws_key.pem rke2-tf sh -c "go test -timeout=30m -v ./tests/terraform/cases/createcluster/..."
+$ docker run --name rke2-tf-upgrade-test -t -e AWS_ACCESS_KEY_ID=<YOUR_ACCESS_KEY> -e AWS_SECRET_ACCESS_KEY=<YOUR_SECRET_KEY> -v /path/to/aws/key.pem:/tmp/aws_key.pem rke2-tf sh -c "go test -timeout=45m -v ./tests/terraform/cases/upgradecluster/... -upgradeVersion=v1.24.8+rke2r1"
 ```
 Test Flags:
 ```
@@ -100,8 +100,9 @@ $ make vet-lint TESTDIR=upgradecluster
 # Common Issues:
 
 - Issues related to terraform plugin please also delete the modules/.terraform folder
+- Issues related to terraform failed to find local token , please also delete modules/.terraform folder
 - In mac m1 maybe you need also to go to rke2/tests/terraform/modules and run `terraform init` to download the plugins
 
 
 # Debugging
-To focus individual runs on specific test clauses, you can prefix with `F`. For example, in the [create cluster test](../tests/terraform/createcluster_test.go), you can update the initial creation to be: `FIt("Starts up with no issues", func() {` in order to focus the run on only that clause.
+To focus individual runs on specific test clauses, you can prefix with `F`. For example, in the [create cluster test](../tests/terraform/cases/createcluster_test.go), you can update the initial creation to be: `FIt("Starts up with no issues", func() {` in order to focus the run on only that clause.

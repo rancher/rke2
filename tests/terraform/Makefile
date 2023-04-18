@@ -4,7 +4,7 @@ include ./config.mk
 
 TAGNAME ?= default
 tf-up:
-	@cd ../.. && docker build . -q -f ./tests/terraform/scripts/Dockerfile.build -t rke2-tf-${TAGNAME}
+	@cd ../.. && docker build . -q -f ./tests/terraform/shared/scripts/Dockerfile.build -t rke2-tf-${TAGNAME}
 
 .PHONY: tf-run
 tf-run:
@@ -12,7 +12,7 @@ tf-run:
       -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
       -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
       -v ${ACCESS_KEY_LOCAL}:/go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem \
-       rke2-tf-${TAGNAME} sh -c 'cd ./tests/terraform ; \
+       rke2-tf-${TAGNAME} sh -c 'cd ./tests/terraform/cases ; \
        				  if [ -n "${ARGNAME}" ]; then \
                          go test -v -timeout=45m \
                            ./${TESTDIR}/... \
@@ -38,7 +38,7 @@ tf-down:
 
 .PHONY: tf-clean
 tf-clean:
-	@./scripts/delete_resources.sh
+	@./shared/scripts/delete_resources.sh
 
 .PHONY: tf-complete
 tf-tests-complete: tf-clean tf-down tf-remove-state tf-up tf-run
@@ -48,11 +48,11 @@ tf-tests-complete: tf-clean tf-down tf-remove-state tf-up tf-run
 
 .PHONY: tf-create
 tf-create:
-	@go test -timeout=45m -v ./createcluster/...
+	@go test -timeout=45m -v ./cases/createcluster/...
 
 .PHONY: tf-upgrade
 tf-upgrade:
-	@go test -timeout=45m -v ./upgradecluster/... -${ARGNAME}=${ARGVALUE}
+	@go test -timeout=45m -v ./cases/upgradecluster/... -${ARGNAME}=${ARGVALUE}
 
 .PHONY: tf-remove-state
 tf-remove-state:
@@ -72,4 +72,4 @@ tf-test-suite-same-cluster:
 .PHONY: vet-lint                      ## Run locally only inside Tests package
 vet-lint:
 	@echo "Running go vet and lint"
-	@go vet ./${TESTDIR} && golangci-lint run --tests
+	@go vet ./cases/${TESTDIR} && golangci-lint run --tests
