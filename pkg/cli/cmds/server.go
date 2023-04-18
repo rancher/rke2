@@ -92,7 +92,7 @@ var (
 		"etcd-snapshot-name":                copyFlag,
 		"etcd-snapshot-compress":            copyFlag,
 		"node-name":                         copyFlag,
-		"with-node-id":                      dropFlag,
+		"with-node-id":                      copyFlag,
 		"node-label":                        copyFlag,
 		"node-taint":                        copyFlag,
 		"image-credential-provider-bin-dir": copyFlag,
