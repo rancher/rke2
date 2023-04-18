@@ -6,7 +6,7 @@ import (
 	"github.com/rancher/rke2/tests/terraform/shared/util"
 )
 
-func TestDaemonset(t ginkgo.GinkgoTestingT, deployWorkload bool) {
+func TestTFDaemonset(t ginkgo.GinkgoTestingT, deployWorkload bool) {
 	if deployWorkload {
 		_, err := util.ManageWorkload("create", "daemonset.yaml")
 		gomega.Expect(err).NotTo(gomega.HaveOccurred(),

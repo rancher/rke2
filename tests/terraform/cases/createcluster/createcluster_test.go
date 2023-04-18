@@ -37,12 +37,12 @@ var _ = Describe("Test:", func() {
 		})
 
 		It("Verifies Ingress", func() {
-			testfunctions2.TestIngress(GinkgoT(), true)
+			testfunctions2.TestTFIngress(GinkgoT(), true)
 			defer util.ManageWorkload("delete", "ingress.yaml")
 		})
 
 		It("Verifies Daemonset", func() {
-			testfunctions2.TestDaemonset(GinkgoT(), true)
+			testfunctions2.TestTFDaemonset(GinkgoT(), true)
 			defer util.ManageWorkload("delete", "daemonset.yaml")
 		})
 

@@ -9,7 +9,7 @@ import (
 	"github.com/rancher/rke2/tests/terraform/shared/util"
 )
 
-func TestIngress(t ginkgo.GinkgoTestingT, deployWorkload bool) {
+func TestTFIngress(t ginkgo.GinkgoTestingT, deployWorkload bool) {
 	if deployWorkload {
 		_, err := util.ManageWorkload("create", "ingress.yaml")
 		gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Ingress manifest not deployed")

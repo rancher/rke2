@@ -35,11 +35,11 @@ var _ = Describe("Upgrade Tests:", func() {
 			})
 
 			It("Verifies Ingress Preupgrade", func() {
-				testfunctions2.TestIngress(GinkgoT(), true)
+				testfunctions2.TestTFIngress(GinkgoT(), true)
 			})
 
 			It("Verifies Daemonset Preupgrade", func() {
-				testfunctions2.TestDaemonset(GinkgoT(), true)
+				testfunctions2.TestTFDaemonset(GinkgoT(), true)
 			})
 
 			It("Verifies DNS Access Preupgrade", func() {
@@ -71,12 +71,12 @@ var _ = Describe("Upgrade Tests:", func() {
 		})
 
 		It("Verifies Ingress Postupgrade", func() {
-			testfunctions2.TestIngress(GinkgoT(), false)
+			testfunctions2.TestTFIngress(GinkgoT(), false)
 			defer util.ManageWorkload("delete", "ingress.yaml")
 		})
 
 		It("Verifies Daemonset Postupgrade", func() {
-			testfunctions2.TestDaemonset(GinkgoT(), false)
+			testfunctions2.TestTFDaemonset(GinkgoT(), false)
 			defer util.ManageWorkload("delete", "daemonset.yaml")
 		})
 

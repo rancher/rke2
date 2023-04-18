@@ -30,6 +30,8 @@ type Pod struct {
 	Node      string
 }
 
+// ManageWorkload creates or deletes a workload based on the action
+// create or delete
 func ManageWorkload(action, workload string) (string, error) {
 	if action != "create" && action != "delete" {
 		return "", fmt.Errorf("invalid action: %s. Must be 'create' or 'delete'", action)
@@ -73,6 +75,7 @@ func ManageWorkload(action, workload string) (string, error) {
 	return "", nil
 }
 
+// IsWorkloadDeleted returns true if the workload is deleted
 func IsWorkloadDeleted(workload string) (bool, error) {
 	cmd := fmt.Sprintf("kubectl get all -A --kubeconfig=%s", KubeConfigFile)
 	res, err := RunCommandHost(cmd)
