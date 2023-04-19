@@ -164,7 +164,14 @@ Here are some locations to check CNI versions in the build-images script:
 - Cilium: Look in `build/images-cilium` section for `/rancher/mirrored-cilium-cilium`
 - Multus: Look in `build/images-multus` section for `/rancher/hardened-multus-cni`
 
-The build images script might not be up to date, another way to find CNI versions:
+The build-images script controls what images are available to be built for air-gapped installs.
+If the build-images script is not up to date then air-gapped installs will fail,
+ this is a release-blocking issue that needs to be resolved.
+Normally it is the responsibility of the person who updates the chart or component to
+also update the build-image script, so if it is not up to date there is a failure in that process.
+
+To validate the build-image script:
+
 - look in the Dockerfile and find the chart version
 - find the git repo for that chart
 - find the GH release of the chart that is mentioned
