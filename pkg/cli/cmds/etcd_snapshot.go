@@ -46,7 +46,6 @@ func NewEtcdSnapshotCommand() cli.Command {
 	}
 
 	command := cmds.NewEtcdSnapshotCommands(
-		etcdsnapshot.Run,
 		etcdsnapshot.Delete,
 		etcdsnapshot.List,
 		etcdsnapshot.Prune,
