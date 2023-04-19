@@ -21,6 +21,16 @@ resource "aws_instance" "master" {
     "kubernetes.io/cluster/clusterid" = "owned"
   }
   provisioner "file" {
+    source      = "optional_write_files.sh"
+    destination = "/tmp/optional_write_files.sh"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/optional_write_files.sh",
+      "sudo /tmp/optional_write_files.sh \"${var.optional_files}\"",
+    ]
+  }
+  provisioner "file" {
     source      = "define_node_role.sh"
     destination = "/tmp/define_node_role.sh"
   }
@@ -78,6 +88,16 @@ resource "aws_instance" "master2" {
     "kubernetes.io/cluster/clusterid" = "owned"
   }
   depends_on = [aws_instance.master]
+  provisioner "file" {
+    source      = "optional_write_files.sh"
+    destination = "/tmp/optional_write_files.sh"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/optional_write_files.sh",
+      "sudo /tmp/optional_write_files.sh \"${var.optional_files}\"",
+    ]
+  }
   provisioner "file" {
     source      = "define_node_role.sh"
     destination = "/tmp/define_node_role.sh"

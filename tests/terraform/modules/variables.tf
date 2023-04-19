@@ -68,3 +68,6 @@ variable "cp_only_nodes" {
 variable "cp_worker_nodes" {
   default = 0
 }
+variable "optional_files" {
+  description = "File location and raw data url separate by commas, with a space for other pairs. E.g. file1,url1 file2,url2"
+}
