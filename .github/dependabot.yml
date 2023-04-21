@@ -4,6 +4,9 @@ updates:
   # Maintain dependencies for Docker Images
   - package-ecosystem: "docker"
     directory: "/"
+    ignore:
+      - dependency-name: "rancher/hardened-build-base"
+      - dependency-name: "rancher/hardened-kubernetes"
     schedule:
       interval: "weekly"
 
@@ -12,4 +15,3 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-
