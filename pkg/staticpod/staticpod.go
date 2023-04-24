@@ -49,6 +49,7 @@ type Args struct {
 	Image           name.Reference
 	Dirs            []string
 	Files           []string
+	ExcludeFiles    []string
 	HealthExec      []string
 	HealthPort      int32
 	HealthProto     string
@@ -80,7 +81,7 @@ func Run(dir string, args Args) error {
 			}
 		}
 	}
-	files, err := readFiles(args.Args)
+	files, err := readFiles(args.Args, args.ExcludeFiles)
 	if err != nil {
 		return err
 	}
@@ -361,13 +362,18 @@ func addExtraEnv(p *v1.Pod, extraEnv []string) {
 	}
 }
 
-func readFiles(args []string) ([]string, error) {
+func readFiles(args, excludeFiles []string) ([]string, error) {
 	files := map[string]bool{}
+	excludes := map[string]bool{}
+
+	for _, file := range excludeFiles {
+		excludes[file] = true
+	}
 
 	for _, arg := range args {
 		parts := strings.SplitN(arg, "=", 2)
 		if len(parts) == 2 && strings.HasPrefix(parts[1], string(os.PathSeparator)) {
-			if stat, err := os.Stat(parts[1]); err == nil && !stat.IsDir() && !strings.Contains(parts[1], "audit.log") {
+			if stat, err := os.Stat(parts[1]); err == nil && !stat.IsDir() && !excludes[parts[1]] {
 				files[parts[1]] = true
 
 				if parts[0] == "--kubeconfig" {
