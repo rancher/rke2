@@ -283,19 +283,20 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 		args = append(extraArgs, args...)
 		if auditLogFile == "" {
 			auditLogFile = filepath.Join(s.DataDir, "server/logs/audit.log")
-			args = append([]string{"--audit-log-path=" + auditLogFile}, args...)
 		}
 	}
 
 	args = append([]string{"--admission-control-config-file=" + s.PSAConfigFile}, args...)
 
 	files := []string{}
+	excludeFiles := []string{}
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
 	dirs := onlyExisting(ssldirs)
-	if auditLogFile != "" {
+	if auditLogFile != "" && auditLogFile != "-" {
 		dirs = append(dirs, filepath.Dir(auditLogFile))
+		excludeFiles = append(excludeFiles, auditLogFile)
 	}
 
 	return after(etcdReady, func() error {
@@ -312,6 +313,7 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 			ExtraMounts:   s.ControlPlaneMounts.KubeAPIServer,
 			ProbeConfs:    s.ControlPlaneProbeConfs.KubeAPIServer,
 			Files:         files,
+			ExcludeFiles:  excludeFiles,
 			HealthExec: []string{
 				"kubectl",
 				"get",
