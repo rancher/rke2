@@ -69,13 +69,13 @@ node {
                     "\nrke2_channel = \"" + RKE2_CHANNEL + "\""
                 }
 
-                sh "./tests/terraform/scripts/configure.sh"
-                sh "./tests/terraform/scripts/build.sh"
+                sh "./tests/terraform/shared/scripts/configure.sh"
+                sh "./tests/terraform/shared/scripts/build.sh"
               }
               stage('Run Tests') {
                 sh "docker run --name ${testContainer} -t --env-file ${envFile} " +
                   "${imageName} sh -c \"chmod 400 /go/src/github.com/rancher/rke2/tests/terraform/modules/config/.ssh/aws_key.pem && " +
-                  "cd ./tests/terraform && go test -timeout=${timeout} -v ./${RKE2_TESTCASE}/... ${RKE2_TEST_ARGS}\""
+                  "cd ./tests/terraform/cases && go test -timeout=${timeout} -v ./${RKE2_TESTCASE}/... ${RKE2_TEST_ARGS}\""
               }
             } finally {           
               stage('Cleanup') {
