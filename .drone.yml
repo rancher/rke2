@@ -230,6 +230,7 @@ volumes:
 
 depends_on:
   - build-amd64
+  - build-s390x
 ---
 kind: pipeline
 type: docker
