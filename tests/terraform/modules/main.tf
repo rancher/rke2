@@ -14,6 +14,7 @@ module "master" {
   etcd_worker_nodes  = var.etcd_worker_nodes
   cp_only_nodes      = var.cp_only_nodes
   cp_worker_nodes    = var.cp_worker_nodes
+  optional_files     = var.optional_files
 
   # AWS variables
   access_key         = var.access_key
