@@ -141,18 +141,42 @@ We then create the "**stable**" RPMs. Follow the steps below.
 The 2 primary sections of the release notes are the "Changes since ..." and the "Package Component Versions". The other sections need to be reviewed as well. The "Changes since ..." section can be fleshed out by reviewing the closed issues and pull requests for the matching milestone.
 
 #### Packaged Components
-It can be confusing to track where each number for a component is getting pulled from. Below provides
-some locations to check component versions:
+It can be confusing to track where each number for a component is getting pulled from.
 
+Here are some locations to check component versions:
+- Kubernetes: Look in `Dockerfile` for `FROM rancher/hardened-kubernetes`.
 - Etcd: Look in `scripts/version` for `ETCD_VERSION`.
-- Containerd: Look in `Dockerfile` for `rancher/hardened-containerd`.
-- Runc: Look in `Dockerfile` for `rancher/hardened-runc`.
-- Flannel: Look in `scripts/build-images` for `rancher/hardened-flannel`.
-- Calico: Look in `scripts/build-images` for `rancher/hardened-calico`.
+- Containerd: Look in `Dockerfile` for `FROM rancher/hardened-containerd`.
+- Runc: Look in `Dockerfile` for `FROM rancher/hardened-runc`.
 - Metrics-server: Look in `scripts/build-images` for `rancher/hardened-k8s-metrics-server`.
 - CoreDNS: Look in `scripts/build-images` for `rancher/hardened-coredns`.
-- Ingress-Nginx: Look in `Dockerfile` find the line with `charts/rke2-ingress-nginx`.
+- Ingress-Nginx: Look in `Dockerfile` find the line with `CHART_FILE=/charts/rke2-ingress-nginx`.
 - Helm-controller: Look in `go.mod` for `helm-controller`.
+
+#### Available CNIs
+
+All CNI versions are in `scripts/build-images`.
+
+Here are some locations to check CNI versions in the build-images script:
+- Canal-Flannel: Look in `build/images-canal` section for `/rancher/hardened-flannel`
+- Canal-Calico: Look in `build/images-canal` section for `/rancher/hardened-calico`
+- Calico: Look in `build/images-calico` section for `/rancher/mirrored-calico-cni`.
+- Cilium: Look in `build/images-cilium` section for `/rancher/mirrored-cilium-cilium`
+- Multus: Look in `build/images-multus` section for `/rancher/hardened-multus-cni`
+
+The build-images script controls what images are available to be built for air-gapped installs.
+If the build-images script is not up to date then air-gapped installs will fail,
+ this is a release-blocking issue that needs to be resolved.
+Normally it is the responsibility of the person who updates the chart or component to
+also update the build-image script, so if it is not up to date there is a failure in that process.
+
+To validate the build-image script:
+
+- look in the Dockerfile and find the chart version
+- find the git repo for that chart
+- find the GH release of the chart that is mentioned
+- look in the chart for the CNI container version
+
 
 Once the release notes are approved and merged, through the normal review and approval process, copy the contents of the files and paste them into the release itself, by editing the relevant release. 
 
