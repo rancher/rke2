@@ -168,7 +168,7 @@ COPY --from=charts \
 FROM scratch AS runtime
 COPY --from=runtime-collect / /
 
-FROM ubuntu:20.04 AS test
+FROM ubuntu:22.04 AS test
 ARG TARGETARCH
 VOLUME /var/lib/rancher/rke2
 VOLUME /var/lib/kubelet
