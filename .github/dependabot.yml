@@ -9,9 +9,13 @@ updates:
       - dependency-name: "rancher/hardened-kubernetes"
     schedule:
       interval: "weekly"
+    reviewers:
+      - "rancher/k3s"
 
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    reviewers:
+      - "rancher/k3s"
