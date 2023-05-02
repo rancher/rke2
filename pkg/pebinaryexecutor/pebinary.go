@@ -16,6 +16,7 @@ import (
 
 	"github.com/Microsoft/hcsshim"
 	"github.com/Microsoft/hcsshim/hcn"
+	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
@@ -23,7 +24,9 @@ import (
 	"github.com/rancher/rke2/pkg/images"
 	win "github.com/rancher/rke2/pkg/windows"
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -49,13 +52,21 @@ type PEBinaryConfig struct {
 	KubeConfigKubeProxy string
 	DisableETCD         bool
 	IsServer            bool
-	cni                 win.Calico
+	CNI                 string
+	CNIConfig           win.Calico
 }
 
 type CloudProviderConfig struct {
 	Name string
 	Path string
 }
+
+const (
+	CNINone = "none"
+	CNICalico = "calico"
+	CNICilium = "cilium"
+	CNICanal = "canal"
+)
 
 // Bootstrap prepares the binary executor to run components by setting the system default registry
 // and staging the kubelet and containerd binaries.  On servers, it also ensures that manifests are
@@ -93,8 +104,20 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfig
 
 	restConfig, err := clientcmd.BuildConfigFromFlags("", nodeConfig.AgentConfig.KubeConfigK3sController)
 
-	if err := p.cni.Setup(ctx, nodeConfig, restConfig, p.DataDir); err != nil {
+	p.CNI, err = getCniType(restConfig)
+	if err != nil {
 		return err
+	}
+
+	switch p.CNI {
+	case "", CNICalico:
+		if err := p.CNIConfig.Setup(ctx, nodeConfig, restConfig, p.DataDir); err != nil {
+			return err
+		}
+	case CNINone:
+		logrus.Info("Skipping CNI setup")
+	default:
+		logrus.Fatal("Unsupported CNI: ", p.CNI)
 	}
 
 	// required to initialize KubeProxy
@@ -133,11 +156,13 @@ func (p *PEBinaryConfig) Kubelet(ctx context.Context, args []string) error {
 	go func() {
 		for {
 			cniCtx, cancel := context.WithCancel(ctx)
-			go func() {
-				if err := p.cni.Start(cniCtx); err != nil {
-					logrus.Errorf("error in cni start: %s", err)
-				}
-			}()
+			if p.CNI != CNINone {
+				go func() {
+					if err := p.CNIConfig.Start(cniCtx); err != nil {
+						logrus.Errorf("error in cni start: %s", err)
+					}
+				}()
+			}
 
 			cmd := exec.CommandContext(ctx, p.KubeletPath, cleanArgs...)
 			cmd.Stdout = os.Stdout
@@ -154,9 +179,13 @@ func (p *PEBinaryConfig) Kubelet(ctx context.Context, args []string) error {
 
 // KubeProxy starts the kubeproxy in a subprocess with watching goroutine.
 func (p *PEBinaryConfig) KubeProxy(ctx context.Context, args []string) error {
+	if p.CNI == CNINone {
+		return nil
+	}
+
 	extraArgs := map[string]string{
-		"network-name": p.cni.CNICfg.OverlayNetName,
-		"bind-address": p.cni.CNICfg.IP,
+		"network-name": p.CNIConfig.CNICfg.OverlayNetName,
+		"bind-address": p.CNIConfig.CNICfg.IP,
 	}
 
 	if err := hcn.DSRSupported(); err == nil {
@@ -165,7 +194,7 @@ func (p *PEBinaryConfig) KubeProxy(ctx context.Context, args []string) error {
 		extraArgs["enable-dsr"] = "true"
 	}
 
-	if p.cni.CNICfg.Name == "Calico" {
+	if p.CNIConfig.CNICfg.Name == "Calico" {
 		var vip string
 		for range time.Tick(time.Second * 5) {
 			endpoint, err := hcsshim.GetHNSEndpointByName("Calico_ep")
@@ -254,6 +283,28 @@ func getArgs(argsMap map[string]string) []string {
 	}
 	sort.Strings(args)
 	return args
+}
+
+func getCniType(restConfig *rest.Config) (string, error) {
+	hc, err := helm.NewFactoryFromConfig(restConfig)
+	if err != nil {
+		return "", err
+	}
+	hl, err := hc.Helm().V1().HelmChart().List(metav1.NamespaceSystem, metav1.ListOptions{})
+	if err != nil {
+		return "", err
+	}
+	for _, h := range hl.Items {
+		switch h.Name {
+		case win.CalicoChart:
+			return CNICalico, nil
+		case "rke2-cilium":
+			return CNICilium, nil
+		case "rke2-canal":
+			return CNICanal, nil
+		}
+	}
+	return CNINone, nil
 }
 
 // setWindowsAgentSpecificSettings configures the correct paths needed for Windows
