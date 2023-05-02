@@ -17,6 +17,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	opv1 "github.com/tigera/operator/api/v1"
 	authv1 "k8s.io/api/authentication/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -104,7 +105,11 @@ users:
       "Value":  {
         "Type":  "SDNROUTE",
         "DestinationPrefix":  "{{ .ServiceCIDR }}",
-        "NeedEncap":  true
+        {{- if eq .Mode "vxlan" }}
+        "NeedEncap": true
+	{{- else }}
+        "NeedEncap": false
+	{{- end }}
       }
     }
   ]
@@ -265,6 +270,9 @@ func (c *Calico) Start(ctx context.Context) error {
 		break
 	}
 	go startFelix(ctx, c.CNICfg)
+	if c.CNICfg.Mode == "windows-bgp" {
+		go startConfd(ctx, c.CNICfg)
+	}
 
 	return nil
 }
@@ -280,10 +288,10 @@ func (c *Calico) generateCalicoNetworks() error {
 	// 2 - c.CNICfg.Interface which set if NodeAddressAutodetection is set (Calico HelmChart)
 	// 3 - nodeIP if defined
 	// 4 - None of the above. In that case, by default the interface with the default route is picked
-	vxlanAdapter := os.Getenv("VXLAN_ADAPTER")
-	if vxlanAdapter == "" {
+	networkAdapter := os.Getenv("VXLAN_ADAPTER")
+	if networkAdapter == "" {
 		if c.CNICfg.Interface != "" {
-			vxlanAdapter = c.CNICfg.Interface
+			networkAdapter = c.CNICfg.Interface
 		}
 
 		if c.CNICfg.Interface == "" && c.CNICfg.IP != "" {
@@ -291,11 +299,11 @@ func (c *Calico) generateCalicoNetworks() error {
 			if err != nil {
 				return err
 			}
-			vxlanAdapter = iFace
+			networkAdapter = iFace
 		}
 	}
 
-	mgmt, err := createHnsNetwork(c.CNICfg.Mode, vxlanAdapter)
+	mgmt, err := createHnsNetwork(c.CNICfg.Mode, networkAdapter)
 	if err != nil {
 		return err
 	}
@@ -338,39 +346,72 @@ func (c *Calico) overrideCalicoConfigByHelm(restConfig *rest.Config) error {
 	}
 	logrus.Debugf("calico override found: %s\n", string(b))
 	if nodeV4 := overrides.Installation.CalicoNetwork.NodeAddressAutodetectionV4; nodeV4 != nil {
-		IPAutoDetectionMethod, err := nodeAddressAutodetection(*nodeV4)
+		c.CNICfg.IPAutoDetectionMethod, c.CNICfg.Interface, err = findCalicoInterface(nodeV4)
 		if err != nil {
 			return err
 		}
-		logrus.Debugf("this is IPAutoDetectionMethod: %s", IPAutoDetectionMethod)
-		c.CNICfg.IPAutoDetectionMethod = IPAutoDetectionMethod
-
-		var calicoInterface string
-		if strings.Contains(IPAutoDetectionMethod, "cidrs") {
-			calicoInterface, err = findInterfaceCIDR(nodeV4.CIDRS)
-			if err != nil {
-				return err
-			}
+	}
+	if bgpEnabled := overrides.Installation.CalicoNetwork.BGP; bgpEnabled != nil {
+		if *bgpEnabled == opv1.BGPEnabled {
+			c.CNICfg.Mode = "windows-bgp"
 		}
+	}
+	return nil
+}
 
-		if strings.Contains(IPAutoDetectionMethod, "interface") {
-			calicoInterface, err = findInterfaceRegEx(nodeV4.Interface)
-			if err != nil {
-				return err
-			}
-		}
-
-		if strings.Contains(IPAutoDetectionMethod, "can-reach") {
-			calicoInterface, err = findInterfaceReach(nodeV4.CanReach)
-			if err != nil {
-				return err
-			}
-		}
-
-		c.CNICfg.Interface = calicoInterface
+func findCalicoInterface(nodeV4 *opv1.NodeAddressAutodetection) (IPAutoDetectionMethod, calicoInterface string, err error) {
+	IPAutoDetectionMethod, err = nodeAddressAutodetection(*nodeV4)
+	if err != nil {
+		return "", "", err
 	}
 
-	return nil
+	if strings.Contains(IPAutoDetectionMethod, "cidrs") {
+		calicoInterface, err = findInterfaceCIDR(nodeV4.CIDRS)
+		if err != nil {
+			return "", "", err
+		}
+	}
+
+	if strings.Contains(IPAutoDetectionMethod, "interface") {
+		calicoInterface, err = findInterfaceRegEx(nodeV4.Interface)
+		if err != nil {
+			return "", "", err
+		}
+	}
+	if strings.Contains(IPAutoDetectionMethod, "can-reach") {
+		calicoInterface, err = findInterfaceReach(nodeV4.CanReach)
+		if err != nil {
+			return "", "", err
+		}
+	}
+	return
+}
+
+func startConfd(ctx context.Context, config *CalicoConfig) {
+	outputFile, err := os.Create(calicoLogPath + "confd.log")
+	if err != nil {
+		logrus.Fatalf("error creating confd.log: %v", err)
+		return
+	}
+	defer outputFile.Close()
+
+	specificEnvs := []string{
+		fmt.Sprintf("PATH=%s", os.Getenv("PATH")),
+	}
+
+	args := []string{
+		"-confd",
+		fmt.Sprintf( "-confd-confdir=%s", filepath.Join(config.CNI.BinDir, "confd")),
+	}
+
+	logrus.Infof("Confd Envs: %s", append(generateGeneralCalicoEnvs(config), specificEnvs...))
+	cmd := exec.CommandContext(ctx, "calico-node.exe", args...)
+	cmd.Env = append(generateGeneralCalicoEnvs(config), specificEnvs...)
+	cmd.Stdout = outputFile
+	cmd.Stderr = outputFile
+	_ = os.Chdir(filepath.Join(config.CNI.BinDir, "confd"))
+	_ = cmd.Run()
+        logrus.Error("Confd exited")
 }
 
 func startFelix(ctx context.Context, config *CalicoConfig) {
