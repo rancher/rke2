@@ -90,9 +90,6 @@ require (
 	github.com/Microsoft/hcsshim v0.10.0-rc.8
 	github.com/aws/aws-sdk-go v1.44.197
 	github.com/containerd/continuity v0.3.0
-	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
-	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-containerregistry v0.12.2-0.20230106184643-b063f6aeac72
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.14.0
@@ -202,6 +199,8 @@ require (
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/flannel-io/flannel v0.21.4 // indirect
+	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.4 // indirect
@@ -223,6 +222,7 @@ require (
 	github.com/google/cadvisor v0.46.0 // indirect
 	github.com/google/cel-go v0.12.6 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/gopacket v1.1.19 // indirect
 	github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1 // indirect
