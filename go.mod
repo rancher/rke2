@@ -73,7 +73,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.197
 	github.com/containerd/continuity v0.3.0
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
+	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-containerregistry v0.12.2-0.20230106184643-b063f6aeac72
 	github.com/gruntwork-io/terratest v0.40.19
