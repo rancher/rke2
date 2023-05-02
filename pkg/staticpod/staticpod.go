@@ -13,7 +13,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ghodss/yaml"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/sirupsen/logrus"
@@ -24,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kubernetes/pkg/util/hash"
+	"sigs.k8s.io/yaml"
 )
 
 const (
