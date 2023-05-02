@@ -95,7 +95,9 @@ RUN unzip calico-windows-${CALICO_VERSION}.zip
 RUN mv CalicoWindows/calico-node.exe rancher/
 RUN mv CalicoWindows/cni/calico.exe rancher/
 RUN mv CalicoWindows/cni/calico-ipam.exe rancher/
+RUN mv CalicoWindows/confd confd/
 
 FROM scratch AS windows-runtime
 COPY --from=containerd /usr/local/bin/*.exe /bin/
 COPY --from=windows-runtime-collect ./rancher/* /bin/
+COPY --from=windows-runtime-collect ./confd/ /bin/confd

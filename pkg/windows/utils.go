@@ -22,18 +22,18 @@ import (
 )
 
 // createHnsNetwork creates the network that will connect nodes and returns its managementIP
-func createHnsNetwork(backend string, vxlanAdapter string) (string, error) {
+func createHnsNetwork(backend string, networkAdapter string) (string, error) {
 	var network hcsshim.HNSNetwork
 	if backend == "vxlan" {
 		// Ignoring the return because both true and false without an error represent that the firewall rule was created or already exists
 		if _, err := wapi.FirewallRuleAdd("OverlayTraffic4789UDP", "Overlay network traffic UDP", "", "4789", wapi.NET_FW_IP_PROTOCOL_UDP, wapi.NET_FW_PROFILE2_ALL); err != nil {
 			return "", fmt.Errorf("error creating firewall rules: %v", err)
 		}
-		logrus.Infof("Creating VXLAN network using the vxlanAdapter: %s", vxlanAdapter)
+		logrus.Infof("Creating VXLAN network using the vxlanAdapter: %s", networkAdapter)
 		network = hcsshim.HNSNetwork{
 			Type:               "Overlay",
 			Name:               CalicoHnsNetworkName,
-			NetworkAdapterName: vxlanAdapter,
+			NetworkAdapterName: networkAdapter,
 			Subnets: []hcsshim.Subnet{
 				{
 					AddressPrefix:  "192.168.255.0/30",
@@ -45,21 +45,18 @@ func createHnsNetwork(backend string, vxlanAdapter string) (string, error) {
 			},
 		}
 	} else {
-		return "", fmt.Errorf("The Calico backend %s is not supported. Only vxlan backend is supported", backend)
+		network = hcsshim.HNSNetwork{
+			Type: "L2Bridge",
+			Name: CalicoHnsNetworkName,
+			NetworkAdapterName: networkAdapter,
+			Subnets: []hcsshim.Subnet{
+				{
+					AddressPrefix:  "192.168.255.0/30",
+					GatewayAddress: "192.168.255.1",
+				},
+			},
+		}
 	}
-	// Currently, only vxlan is supported. Leaving the code for future
-	//} else {
-	//	network = hcsshim.HNSNetwork{
-	//		Type: "L2Bridge",
-	//		Name: CalicoHnsNetworkName,
-	//		Subnets: []hcsshim.Subnet{
-	//			{
-	//				AddressPrefix:  "192.168.255.0/30",
-	//				GatewayAddress: "192.168.255.1",
-	//			},
-	//		},
-	//	}
-	//}
 
 	if _, err := network.Create(); err != nil {
 		return "", fmt.Errorf("error creating the %s network: %v", CalicoHnsNetworkName, err)
