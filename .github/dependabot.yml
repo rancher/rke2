@@ -9,6 +9,8 @@ updates:
       - dependency-name: "rancher/hardened-kubernetes"
     schedule:
       interval: "weekly"
+    labels:
+      - "kind/dependabot"
     reviewers:
       - "rancher/k3s"
 
@@ -17,5 +19,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    labels:
+      - "kind/dependabot"
     reviewers:
       - "rancher/k3s"
