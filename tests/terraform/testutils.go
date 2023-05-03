@@ -285,3 +285,8 @@ func Pods(kubeconfig string, print bool) ([]Pod, error) {
 	cmd := "kubectl get pods -o wide --no-headers -A --kubeconfig=" + kubeconfig
 	return parsePods(kubeconfig, print, cmd)
 }
+
+func IsAppRunning(namespace, appName string, kubeconfig string) (string, error) {
+	cmd := "kubectl get pods -n" + namespace + " -o=name -l k8s-app=" + appName + " --field-selector=status.phase=Running --kubeconfig=" + kubeconfig
+	return RunCommand(cmd)
+}

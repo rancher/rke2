@@ -1,4 +1,4 @@
-package upgradecluster
+package suc_upgrade
 
 import (
 	"fmt"
