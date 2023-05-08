@@ -73,17 +73,6 @@ RUN GOCR_VERSION="v0.5.1" && \
         chmod a+x /usr/local/bin/crane; \
         fi
 
-RUN TRIVY_VERSION="0.31.3" && \
-    if [ "${ARCH}" = "amd64" ]; then \
-    wget https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz && \
-    tar -zxvf trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz && \
-    mv trivy /usr/local/bin; \
-    elif [ "${ARCH}" = "arm64" ]; then \
-    wget https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-ARM64.tar.gz && \
-    tar -zxvf trivy_${TRIVY_VERSION}_Linux-ARM64.tar.gz && \
-    mv trivy /usr/local/bin; \
-    fi
-
 WORKDIR /source
 
 COPY --from=rpm-macros /usr/lib/rpm/macros.d/macros.systemd /usr/lib/rpm/macros.d
