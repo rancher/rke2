@@ -179,61 +179,6 @@ volumes:
 ---
 kind: pipeline
 type: docker
-name: dispatch
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-  - name: skipfiles
-    image: plugins/git
-    commands:
-      - export NAME=$(test $DRONE_BUILD_EVENT = pull_request && echo remotes/origin/${DRONE_COMMIT_BRANCH:-master} || echo ${DRONE_COMMIT_SHA}~)
-      - export DIFF=$(git --no-pager diff --name-only $NAME | grep -v -f .droneignore);
-      - if [ -z "$DIFF" ]; then
-            echo "All files in PR are on ignore list";
-            exit 78;
-        else
-            echo "Some files in PR are not ignored, $DIFF";
-        fi;
-    when:
-      event:
-        - push
-        - pull_request
-
-  - name: dispatch
-    image: rancher/dapper:v0.5.5
-    commands:
-      - dapper -f Dockerfile --target dapper make dispatch
-    environment:
-      PAT_TOKEN:
-        from_secret: github_token
-      PAT_USERNAME:
-        from_secret: pat_username
-    volumes:
-      - name: docker
-        path: /var/run/docker.sock
-    when:
-      event:
-        - tag
-      instance:
-        - drone-publish.rancher.io
-      ref:
-        - refs/head/master
-        - refs/tags/*
-
-volumes:
-  - name: docker
-    host:
-      path: /var/run/docker.sock
-
-depends_on:
-  - build-amd64
-  - build-s390x
----
-kind: pipeline
-type: docker
 name: build-s390x
 
 platform:
@@ -328,6 +273,61 @@ volumes:
     host:
       path: /var/run/docker.sock
 
+---
+kind: pipeline
+type: docker
+name: dispatch
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: skipfiles
+    image: plugins/git
+    commands:
+      - export NAME=$(test $DRONE_BUILD_EVENT = pull_request && echo remotes/origin/${DRONE_COMMIT_BRANCH:-master} || echo ${DRONE_COMMIT_SHA}~)
+      - export DIFF=$(git --no-pager diff --name-only $NAME | grep -v -f .droneignore);
+      - if [ -z "$DIFF" ]; then
+            echo "All files in PR are on ignore list";
+            exit 78;
+        else
+            echo "Some files in PR are not ignored, $DIFF";
+        fi;
+    when:
+      event:
+        - push
+        - pull_request
+
+  - name: dispatch
+    image: rancher/dapper:v0.5.5
+    commands:
+      - dapper -f Dockerfile --target dapper make dispatch
+    environment:
+      PAT_TOKEN:
+        from_secret: github_token
+      PAT_USERNAME:
+        from_secret: pat_username
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    when:
+      event:
+        - tag
+      instance:
+        - drone-publish.rancher.io
+      ref:
+        - refs/head/master
+        - refs/tags/*
+
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock
+
+depends_on:
+  - build-amd64
+  - build-s390x
 ---
 kind: pipeline
 type: docker
