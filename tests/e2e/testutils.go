@@ -339,6 +339,34 @@ func RunCommand(cmd string) (string, error) {
 	return string(out), err
 }
 
+// StartCluster starts the rke2 service on each node given
+func StartCluster(nodeNames []string) error {
+	for _, nodeName := range nodeNames {
+		cmd := "sudo systemctl start rke2"
+		if strings.Contains(nodeName, "server") {
+			cmd += "-server"
+		}
+		if strings.Contains(nodeName, "agent") {
+			cmd += "-agent"
+		}
+		if _, err := RunCmdOnNode(cmd, nodeName); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// StopCluster starts the rke2 service on each node given
+func StopCluster(nodeNames []string) error {
+	for _, nodeName := range nodeNames {
+		cmd := "sudo systemctl stop rke2*"
+		if _, err := RunCmdOnNode(cmd, nodeName); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func UpgradeCluster(serverNodenames []string, agentNodenames []string) error {
 	for _, nodeName := range serverNodenames {
 		cmd := "E2E_RELEASE_CHANNEL=commit vagrant provision " + nodeName
