@@ -128,7 +128,7 @@ func Agent(clx *cli.Context, cfg Config) error {
 	return agent.Run(clx)
 }
 
-func EtcdSnapshot(clx *cli.Context, cfg Config) error {
+func EtcdSnapshot(clx *cli.Context, _ Config) error {
 	cmds.ServerConfig.DatastoreEndpoint = "etcd"
 	return etcdsnapshot.Run(clx)
 }

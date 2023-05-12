@@ -82,7 +82,7 @@ func runsshCommand(cmd string, conn *ssh.Client) (string, error) {
 	return fmt.Sprintf("%s", stdoutBuf.String()), err
 }
 
-func parseNodes(kubeConfig string, print bool, cmd string) ([]Node, error) {
+func parseNodes(_ string, print bool, cmd string) ([]Node, error) {
 	nodes := make([]Node, 0, 10)
 	res, err := RunCommand(cmd)
 	if err != nil {
@@ -110,7 +110,7 @@ func parseNodes(kubeConfig string, print bool, cmd string) ([]Node, error) {
 	return nodes, nil
 }
 
-func parsePods(kubeconfig string, print bool, cmd string) ([]Pod, error) {
+func parsePods(_ string, print bool, cmd string) ([]Pod, error) {
 	pods := make([]Pod, 0, 10)
 	res, _ := RunCommand(cmd)
 	rawPods := strings.TrimSpace(res)
