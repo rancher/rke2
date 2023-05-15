@@ -68,3 +68,5 @@ The **Chart** column indicates the Helm chart that uses this image. `CORE` indic
 | harvester-csi-driver | docker.io/rancher/longhornio-csi-node-driver-registrar | Longhorn team |  | FALSE |
 | harvester-csi-driver | docker.io/rancher/longhornio-csi-provisioner | Longhorn team |  | FALSE |
 | harvester-csi-driver | docker.io/rancher/longhornio-csi-resizer | Longhorn team |  | FALSE |
+|  |  |  |  |  |
+| rke2-upgrade | rancher/rke2-upgrade | rancher/rke2-upgrade | alpine | FALSE |
