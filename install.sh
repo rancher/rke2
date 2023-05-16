@@ -192,12 +192,17 @@ verify_downloader() {
 }
 
 # verify_fapolicyd verifies existence of
-# fapolicyd executable.
+# fapolicyd and fagenrules executables and make sure that fapolicyd service is running.
 verify_fapolicyd() {
     cmd="$(command -v "fapolicyd")"
     if [ -z "${cmd}" ]; then
         return 1
     fi
+    cmd="$(command -v "fagenrules")"
+    if [ -z "${cmd}" ]; then
+        return 1
+    fi
+    systemctl is-active --quiet fapolicyd || return 1
 
     return 0
 }
