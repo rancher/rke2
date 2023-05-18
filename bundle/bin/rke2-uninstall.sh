@@ -114,7 +114,13 @@ uninstall_remove_self()
     $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-uninstall.sh"
 }
 
+uninstall_remove_policy()
+{
+    semodule -r rke2 || true
+}
+
 uninstall_killall
 trap uninstall_remove_self EXIT
 uninstall_disable_services
 uninstall_remove_files
+uninstall_remove_policy
