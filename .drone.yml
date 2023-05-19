@@ -20,9 +20,11 @@ steps:
             echo "Some files in PR are not ignored, $DIFF";
         fi;
     when:
-      event:
-        - push
-        - pull_request
+      ref:
+        include:
+          - refs/heads/master
+          - refs/heads/release-*
+          - refs/pull/**
 
   - name: validate-release
     image: rancher/dapper:v0.5.5
@@ -53,6 +55,13 @@ steps:
     volumes:
       - name: docker
         path: /var/run/docker.sock
+    when:
+      ref:
+        include:
+          - refs/heads/master
+          - refs/heads/release-*
+          - refs/pull/**
+          - refs/tags/*
 
   - name: fossa
     image: rancher/drone-fossa:latest
@@ -98,6 +107,11 @@ steps:
     when:
       instance:
         - drone-publish.rancher.io
+      ref:
+        include:
+          - refs/heads/master
+          - refs/heads/release-*
+          - refs/tags/*
 
   - name: test
     image: rancher/dapper:v0.5.5
@@ -113,6 +127,13 @@ steps:
     volumes:
       - name: docker
         path: /var/run/docker.sock
+    when:
+      ref:
+        include:
+          - refs/heads/master
+          - refs/heads/release-*
+          - refs/pull/**
+          - refs/tags/*
 
   - name: publish-image-runtime
     image: rancher/hardened-build-base:v1.20.3b1
@@ -201,9 +222,11 @@ steps:
             echo "Some files in PR are not ignored, $DIFF";
         fi;
     when:
-      event:
-        - push
-        - pull_request
+      ref:
+        include:
+          - refs/heads/master
+          - refs/heads/release-*
+          - refs/pull/**
 
   - name: build
     image: rancher/dapper:v0.5.8
@@ -212,6 +235,13 @@ steps:
     volumes:
       - name: docker
         path: /var/run/docker.sock
+    when:
+      ref:
+        include:
+          - refs/heads/master
+          - refs/heads/release-*
+          - refs/pull/**
+          - refs/tags/*
 
   - name: package-images
     image: rancher/dapper:v0.5.8
@@ -295,9 +325,11 @@ steps:
             echo "Some files in PR are not ignored, $DIFF";
         fi;
     when:
-      event:
-        - push
-        - pull_request
+      ref:
+        include:
+          - refs/heads/master
+          - refs/heads/release-*
+          - refs/pull/**
 
   - name: dispatch
     image: rancher/dapper:v0.5.5
@@ -350,9 +382,11 @@ steps:
             echo "Some files in PR are not ignored, $DIFF";
         fi;
     when:
-      event:
-        - push
-        - pull_request
+      ref:
+        include:
+          - refs/heads/master
+          - refs/heads/release-*
+          - refs/pull/**
 
   - name: push-runtime-manifest
     image: plugins/manifest
