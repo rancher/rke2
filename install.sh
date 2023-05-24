@@ -480,6 +480,12 @@ do_install_rpm() {
             repodir=/etc/zypp/repos.d
         fi
         if [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
+            # create the /var/lib/rpm-state in SLE systems to fix the prein selinux macro
+            if [ "${TRANSACTIONAL_UPDATE=false}" != "true" ] && [ -x /usr/sbin/transactional-update ]; then
+                transactional_update_run="transactional-update --no-selfupdate -d run"
+            fi
+            ${transactional_update_run} mkdir -p /var/lib/rpm-state
+            # configure infix and rpm_installer
             rpm_site_infix=microos
             if [ "${VARIANT_ID:-}" = sle-micro ]; then
                 rpm_site_infix=slemicro
