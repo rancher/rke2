@@ -481,6 +481,10 @@ do_install_rpm() {
         fi
         if [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
             rpm_site_infix=microos
+            if [ "${VARIANT_ID:-}" = sle-micro ]; then
+                rpm_site_infix=slemicro
+                package_installer=zypper
+            fi
             rpm_installer="zypper --gpg-auto-import-keys"
             if [ "${TRANSACTIONAL_UPDATE=false}" != "true" ] && [ -x /usr/sbin/transactional-update ]; then
                 rpm_installer="transactional-update --no-selfupdate -d run ${rpm_installer}"
