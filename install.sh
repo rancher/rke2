@@ -550,7 +550,7 @@ gpgkey=https://${rpm_site}/public.key
 EOF
     fi
 
-    if rpm -q --quiet rke2-selinux && [ "${maj_ver}" == "9" ]; then 
+    if rpm -q --quiet rke2-selinux; then 
             # remove rke2-selinux module in el9 before upgrade to allow container-selinux to upgrade safely
             if check_available_upgrades container-selinux && check_available_upgrades rke2-selinux; then
                 MODULE_PRIORITY=$(semodule --list=full | grep rke2 | cut -f1 -d" ")
@@ -576,8 +576,13 @@ EOF
 }
 
 check_available_upgrades() {
+    . /etc/os-release
     set +e
-    available_upgrades=$(yum -q --refresh list $1 --upgrades | tail -n 1 | awk '{print $2}')
+    if [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
+        available_upgrades=$(zypper -q -t -s 11 se -s -u --type package $1 | tail -n 1 | grep -v "No matching" | awk '{print $3}')
+    else
+        available_upgrades=$(yum -q --refresh list $1 --upgrades | tail -n 1 | awk '{print $2}')
+    fi
     set -e
     if [ -n "${available_upgrades}" ]; then
         return 0
