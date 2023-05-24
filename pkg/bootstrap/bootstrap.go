@@ -93,6 +93,7 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 
 	refBinDir := binDirForDigest(cfg.DataDir, refDigest)
 	refChartsDir := chartsDirForDigest(cfg.DataDir, refDigest)
+	manifestsDir := manifestsDir(cfg.DataDir)
 	imagesDir := imagesDir(cfg.DataDir)
 
 	if dirExists(refBinDir) && dirExists(refChartsDir) {
@@ -130,12 +131,18 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 			}
 		}
 
+		// preserve manifests directory mode when extracting, if it already exists
+		extractOptions := []extract.Option{}
+		if fi, err := os.Stat(manifestsDir); err == nil {
+			extractOptions = append(extractOptions, extract.WithMode(fi.Mode()))
+		}
+
 		// Extract binaries and charts
 		extractPaths := map[string]string{
 			"/bin":    refBinDir,
 			"/charts": refChartsDir,
 		}
-		if err := extract.ExtractDirs(img, extractPaths); err != nil {
+		if err := extract.ExtractDirs(img, extractPaths, extractOptions...); err != nil {
 			return "", errors.Wrap(err, "failed to extract runtime image")
 		}
 		// Ensure correct permissions on bin dir
