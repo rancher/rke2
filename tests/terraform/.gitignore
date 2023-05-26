@@ -1,4 +1,0 @@
-.ssh/
-*.tfstate*
-.terraform*
-config/

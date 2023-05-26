@@ -1,0 +1,8 @@
+.ssh/
+config/
+/tests/.vscode
+/.idea/
+/modules/.terraform/
+*.terraform*
+*.tfstate*
+*plan.yaml
