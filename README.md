@@ -7,7 +7,7 @@ It is a fully [conformant Kubernetes distribution](https://landscape.cncf.io/?se
 
 To meet these goals, RKE2 does the following:
 
-- Provides [defaults and configuration options](https://docs.rke2.io/security/hardening_guide/) that allow clusters to pass the [CIS Kubernetes Benchmark](https://docs.rke2.io/security/cis_self_assessment/) with minimal operator intervention
+- Provides [defaults and configuration options](https://docs.rke2.io/security/hardening_guide/) that allow clusters to pass the [CIS Kubernetes Benchmark](https://docs.rke2.io/security/cis_self_assessment123/) with minimal operator intervention
 - Enables [FIPS 140-2 compliance](https://docs.rke2.io/security/fips_support/)
 - Supports SELinux policy and [Multi-Category Security (MCS)](https://selinuxproject.org/page/NB_MLS) label enforcement
 - Regularly scans components for CVEs using [trivy](https://github.com/aquasecurity/trivy) in our build pipeline
