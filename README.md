@@ -32,7 +32,7 @@ A full breakdown of installation methods and information can be found [here](htt
 
 ## Configuration File
 
-The primary way to configure RKE2 is through its [config file](https://docs.rke2.io/install/install_options/install_options/#configuration-file). Command line arguments and environment variables are also available, but RKE2 is installed as a systemd service and thus these are not as easy to leverage.
+The primary way to configure RKE2 is through its [config file](https://docs.rke2.io/install/configuration#configuration-file). Command line arguments and environment variables are also available, but RKE2 is installed as a systemd service and thus these are not as easy to leverage.
 
 By default, RKE2 will launch with the values present in the YAML file located at `/etc/rancher/rke2/config.yaml`.
 
