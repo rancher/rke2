@@ -6,20 +6,23 @@ import (
 	"strings"
 )
 
-var (
-	UpgradeVersionSUC  UpgradeVersion
-	InstallType        InstallTypeValue
-	InstallUpgradeFlag MultiValueFlag
-	TestCase           TestConfigFlag
-)
+var ServiceFlag FlagConfig
 
-// UpgradeVersion is a custom type to use upgradeVersionSUC flag
-type UpgradeVersion struct {
+type FlagConfig struct {
+	InstallType       InstallTypeValueFlag
+	InstallUpgrade    MultiValueFlag
+	TestCase          TestConfigFlag
+	ClusterConfig     ClusterConfigFlag
+	UpgradeVersionSUC UpgradeVersionFlag
+}
+
+// UpgradeVersionFlag is a custom type to use upgradeVersionSUC flag
+type UpgradeVersionFlag struct {
 	Version string
 }
 
-// InstallTypeValue is a customflag type that can be used to parse the installation type
-type InstallTypeValue struct {
+// InstallTypeValueFlag is a customflag type that can be used to parse the installation type
+type InstallTypeValueFlag struct {
 	Version string
 	Commit  string
 }
@@ -36,6 +39,13 @@ type TestCaseFlagType func(deployWorkload bool)
 
 // MultiValueFlag is a customflag type that can be used to parse multiple values
 type MultiValueFlag []string
+
+type DestroyFlag bool
+
+// ClusterConfigFlag is a customFlag type that can be used to change some cluster config
+type ClusterConfigFlag struct {
+	Destroy DestroyFlag
+}
 
 // String returns the string representation of the MultiValueFlag
 func (m *MultiValueFlag) String() string {
@@ -74,12 +84,12 @@ func (t *TestConfigFlag) Set(value string) error {
 }
 
 // String returns the string representation of the InstallTypeValue
-func (i *InstallTypeValue) String() string {
+func (i *InstallTypeValueFlag) String() string {
 	return fmt.Sprintf("Version: %s, Commit: %s", i.Version, i.Commit)
 }
 
 // Set parses the input string and sets the Version or Commit field using Set customflag interface
-func (i *InstallTypeValue) Set(value string) error {
+func (i *InstallTypeValueFlag) Set(value string) error {
 	parts := strings.Split(value, "=")
 
 	if len(parts) == 2 {
@@ -99,17 +109,33 @@ func (i *InstallTypeValue) Set(value string) error {
 }
 
 // String returns the string representation of the UpgradeVersion for SUC upgrade
-func (t *UpgradeVersion) String() string {
+func (t *UpgradeVersionFlag) String() string {
 	return t.Version
 }
 
 // Set parses the input string and sets the Version field for SUC upgrades
-func (t *UpgradeVersion) Set(value string) error {
+func (t *UpgradeVersionFlag) Set(value string) error {
 	if strings.HasPrefix(value, "v") && strings.HasSuffix(value, "rke2r1") {
 		t.Version = value
 	} else {
 		return fmt.Errorf("invalid install format: %s", value)
 	}
+
+	return nil
+}
+
+// String returns the string representation of the DestroyFlag
+func (d *DestroyFlag) String() string {
+	return fmt.Sprintf("%v", *d)
+}
+
+// Set parses the customFlag value for DestroyFlag
+func (d *DestroyFlag) Set(value string) error {
+	v, err := strconv.ParseBool(value)
+	if err != nil {
+		return err
+	}
+	*d = DestroyFlag(v)
 
 	return nil
 }

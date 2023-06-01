@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/rancher/rke2/tests/acceptance/core/service/factory"
-	"github.com/rancher/rke2/tests/acceptance/shared/util"
+	"github.com/rancher/rke2/tests/acceptance/shared"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -12,22 +12,20 @@ import (
 
 // TestBuildCluster test the creation of a cluster using terraform
 func TestBuildCluster(g GinkgoTInterface, destroy bool) {
-	status, err := factory.BuildCluster(g, destroy)
-	if err != nil {
-		return
-	}
-	Expect(status).To(Equal("cluster created"))
+	cluster := factory.GetCluster(g)
 
-	util.PrintFileContents(util.KubeConfigFile)
-	Expect(util.KubeConfigFile).ShouldNot(BeEmpty())
-	Expect(util.ServerIPs).ShouldNot(BeEmpty())
+	Expect(cluster.Status).To(Equal("cluster created"))
 
-	fmt.Println("Server Node IPS:", util.ServerIPs)
-	fmt.Println("Agent Node IPS:", util.AgentIPs)
+	shared.PrintFileContents(shared.KubeConfigFile)
+	Expect(shared.KubeConfigFile).ShouldNot(BeEmpty())
+	Expect(cluster.ServerIPs).ShouldNot(BeEmpty())
 
-	if util.NumAgents > 0 {
-		Expect(util.AgentIPs).ShouldNot(BeEmpty())
+	fmt.Println("Server Node IPS:", cluster.ServerIPs)
+	fmt.Println("Agent Node IPS:", cluster.AgentIPs)
+
+	if cluster.NumAgents > 0 {
+		Expect(cluster.AgentIPs).ShouldNot(BeEmpty())
 	} else {
-		Expect(util.AgentIPs).Should(BeEmpty())
+		Expect(cluster.AgentIPs).Should(BeEmpty())
 	}
 }

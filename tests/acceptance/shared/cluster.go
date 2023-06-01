@@ -1,4 +1,4 @@
-package util
+package shared
 
 import (
 	"fmt"
@@ -7,6 +7,12 @@ import (
 	"strings"
 
 	"github.com/onsi/gomega"
+)
+
+var (
+	KubeConfigFile string
+	AwsUser        string
+	AccessKey      string
 )
 
 type Node struct {
@@ -41,7 +47,7 @@ func ManageWorkload(action, workload string) (string, error) {
 	var res string
 	var err error
 
-	resourceDir := BasePath() + "/fixtures/workloads/"
+	resourceDir := BasePath() + "/acceptance/workloads/"
 
 	files, err := os.ReadDir(resourceDir)
 	if err != nil {
@@ -94,7 +100,7 @@ func deleteWorkload(workload, filename string) (string, error) {
 
 // IsWorkloadDeleted returns true if the workload is deleted.
 func IsWorkloadDeleted(workload string) (bool, error) {
-	res, err := RunCommandHost(GetAll + KubeConfigFile)
+	res, err := RunCommandHost("kubectl get all -A --kubeconfig=" + KubeConfigFile)
 	if err != nil {
 		return false, err
 	}
@@ -160,17 +166,23 @@ func addKubectlCommand(action, source string, args []string) string {
 
 // Nodes returns the list of nodes in the cluster and parses the output with parseNodes.
 func Nodes(print bool) ([]Node, error) {
-	return parseNodes(GetNodesWide+KubeConfigFile, print)
+	return parseNodes("kubectl get nodes --no-headers -o wide --kubeconfig="+KubeConfigFile, print)
 }
 
 // WorkerNodes returns the list of worker nodes in the cluster.
 func WorkerNodes(print bool) ([]Node, error) {
-	return parseNodes(GetWorkerNodes+KubeConfigFile+GrepNoExec, print)
+	return parseNodes("kubectl get node -o jsonpath='{range .items[*]}{@.metadata.name} "+
+		"{@.status.conditions[-1].type} <not retrieved> <not retrieved> "+
+		"{@.status.nodeInfo.kubeletVersion} "+
+		"{@.status.addresses[?(@.type==\"InternalIP\")].address} "+
+		"{@.status.addresses[?(@.type==\"ExternalIP\")].address} "+
+		"{@.spec.taints[*].effect}{\"\\n\"}{end}' "+
+		"--kubeconfig="+KubeConfigFile+GrepNoExec, print)
 }
 
 // Pods returns the list of pods in the cluster and parses the output with parsePods.
 func Pods(print bool) ([]Pod, error) {
-	return parsePods(GetPodsWide+KubeConfigFile, print)
+	return parsePods("kubectl get pods -o wide --no-headers -A --kubeconfig="+KubeConfigFile, print)
 }
 
 // FetchClusterIP returns the cluster IP and port of the service.
@@ -195,7 +207,8 @@ func FetchClusterIP(
 
 // FetchNodeExternalIP returns the external IP of the nodes.
 func FetchNodeExternalIP() []string {
-	res, _ := RunCommandHost(GetNodesExternalIp + KubeConfigFile)
+	res, _ := RunCommandHost("kubectl get nodes --output=jsonpath='{.items[*].status.addresses[?(@.type==\"ExternalIP\")].address}' " +
+		"--kubeconfig=" + KubeConfigFile)
 	nodeExternalIP := strings.Trim(res, " ")
 	nodeExternalIPs := strings.Split(nodeExternalIP, " ")
 

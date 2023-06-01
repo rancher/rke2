@@ -9,7 +9,6 @@ import (
 	"github.com/rancher/rke2/tests/acceptance/core/service/customflag"
 	"github.com/rancher/rke2/tests/acceptance/core/service/template"
 	"github.com/rancher/rke2/tests/acceptance/core/testcase"
-	"github.com/rancher/rke2/tests/acceptance/shared/util"
 
 	. "github.com/onsi/ginkgo/v2"
 )
@@ -20,14 +19,14 @@ var _ = Describe("VersionTemplate Upgrade:", func() {
 		testcase.TestBuildCluster(GinkgoT(), false)
 	})
 
-	It("Check Node Status", func() {
+	It("Validate Node", func() {
 		testcase.TestNodeStatus(
 			assert.NodeAssertReadyStatus(),
 			nil,
 		)
 	})
 
-	It("Checks Pod Status", func() {
+	It("Validate Pod", func() {
 		testcase.TestPodStatus(
 			assert.PodAssertRestart(),
 			assert.PodAssertReady(),
@@ -37,36 +36,30 @@ var _ = Describe("VersionTemplate Upgrade:", func() {
 
 	It("Test Bump version", func() {
 		template.VersionTemplate(template.VersionTestTemplate{
-			Description: Description,
+			Description: template.TestMapFlag.Description,
 			TestCombination: &template.RunCmd{
 				RunOnHost: []template.TestMap{
 					{
-						Cmd:                  CmdHost,
-						ExpectedValue:        ExpectedValueHost,
-						ExpectedValueUpgrade: ExpectedValueUpgradedHost,
+						Cmd:                  template.TestMapFlag.CmdHost,
+						ExpectedValue:        template.TestMapFlag.ExpectedValueHost,
+						ExpectedValueUpgrade: template.TestMapFlag.ExpectedValueUpgradedHost,
 					},
 				},
 				RunOnNode: []template.TestMap{
 					{
-						Cmd:                  CmdNode,
-						ExpectedValue:        ExpectedValueNode,
-						ExpectedValueUpgrade: ExpectedValueUpgradedNode,
+						Cmd:                  template.TestMapFlag.CmdNode,
+						ExpectedValue:        template.TestMapFlag.ExpectedValueNode,
+						ExpectedValueUpgrade: template.TestMapFlag.ExpectedValueUpgradedNode,
 					},
 				},
 			},
-			InstallUpgrade: customflag.InstallUpgradeFlag,
+			InstallUpgrade: customflag.ServiceFlag.InstallUpgrade,
 			TestConfig: &template.TestConfig{
-				TestFunc:       template.TestCase(customflag.TestCase.TestFunc),
-				DeployWorkload: customflag.TestCase.DeployWorkload,
+				TestFunc:       template.TestCase(customflag.ServiceFlag.TestCase.TestFunc),
+				DeployWorkload: customflag.ServiceFlag.TestCase.DeployWorkload,
 			},
 		})
 	})
-})
-
-var _ = BeforeEach(func() {
-	if *util.Destroy {
-		Skip("Cluster is being Deleted")
-	}
 })
 
 var _ = AfterEach(func() {

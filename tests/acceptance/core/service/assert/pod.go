@@ -4,20 +4,20 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/rancher/rke2/tests/acceptance/shared/util"
+	"github.com/rancher/rke2/tests/acceptance/shared"
 
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/types"
 )
 
-type PodAssertFunc func(g Gomega, pod util.Pod)
+type PodAssertFunc func(g Gomega, pod shared.Pod)
 
 var completedAssert = "Completed"
 
 // PodAssertRestart custom assertion func that asserts that pods are not restarting with no reason
 // controller, scheduler, helm-install pods can be restarted occasionally when cluster started if only once
 func PodAssertRestart() PodAssertFunc {
-	return func(g Gomega, pod util.Pod) {
+	return func(g Gomega, pod shared.Pod) {
 		if strings.Contains(pod.NameSpace, "kube-system") &&
 			strings.Contains(pod.Name, "controller") &&
 			strings.Contains(pod.Name, "scheduler") {
@@ -31,7 +31,7 @@ func PodAssertRestart() PodAssertFunc {
 // PodAssertReady custom assertion func that asserts that the pod is
 // with correct numbers of ready containers.
 func PodAssertReady() PodAssertFunc {
-	return func(g Gomega, pod util.Pod) {
+	return func(g Gomega, pod shared.Pod) {
 		g.ExpectWithOffset(1, pod.Ready).To(checkReadyFields(),
 			"should have equal values in n/n format")
 	}
@@ -55,7 +55,7 @@ func checkReadyFields() types.GomegaMatcher {
 // PodAssertStatus custom assertion that asserts that pod status is completed or in some cases
 // apply pods can have an error status
 func PodAssertStatus() PodAssertFunc {
-	return func(g Gomega, pod util.Pod) {
+	return func(g Gomega, pod shared.Pod) {
 		if strings.Contains(pod.Name, "helm-install") {
 			g.Expect(pod.Status).Should(Equal(completedAssert), pod.Name)
 		} else if strings.Contains(pod.Name, "apply") &&
@@ -65,7 +65,7 @@ func PodAssertStatus() PodAssertFunc {
 				Equal(completedAssert),
 			), pod.Name)
 		} else {
-			g.Expect(pod.Status).Should(Equal(util.RunningAssert), pod.Name)
+			g.Expect(pod.Status).Should(Equal(shared.RunningAssert), pod.Name)
 		}
 	}
 }
@@ -73,9 +73,9 @@ func PodAssertStatus() PodAssertFunc {
 // CheckPodStatusRunning asserts that the pod is running with the specified label = app name.
 func CheckPodStatusRunning(name, namespace, assert string) {
 	cmd := "kubectl get pods -n " + namespace + " -o=name -l k8s-app=" + name +
-		" --field-selector=status.phase=Running --kubeconfig=" + util.KubeConfigFile
+		" --field-selector=status.phase=Running --kubeconfig=" + shared.KubeConfigFile
 	Eventually(func(g Gomega) {
-		res, err := util.RunCommandHost(cmd)
+		res, err := shared.RunCommandHost(cmd)
 		if err != nil {
 			return
 		}

@@ -2,29 +2,32 @@ package testcase
 
 import (
 	"github.com/rancher/rke2/tests/acceptance/core/service/assert"
-	"github.com/rancher/rke2/tests/acceptance/shared/util"
+	"github.com/rancher/rke2/tests/acceptance/shared"
 
 	. "github.com/onsi/gomega"
 )
 
+var ExecDnsUtils = "kubectl exec -n auto-dns -t dnsutils --kubeconfig="
+var Nslookup = "kubernetes.default.svc.cluster.local"
+
 func TestCoredns(deployWorkload bool) {
 	if deployWorkload {
-		_, err := util.ManageWorkload("create", "dnsutils.yaml")
+		_, err := shared.ManageWorkload("create", "dnsutils.yaml")
 		Expect(err).NotTo(HaveOccurred(),
 			"dnsutils manifest not deployed", err)
 	}
-	_, err := util.AddHelmRepo("traefik", "https://helm.traefik.io/traefik")
+	_, err := shared.AddHelmRepo("traefik", "https://helm.traefik.io/traefik")
 	if err != nil {
 		return
 	}
 
-	err = assert.ValidateOnHost(util.ExecDnsUtils+util.KubeConfigFile+
-		" -- nslookup kubernetes.default", util.Nslookup)
+	err = assert.ValidateOnHost(ExecDnsUtils+shared.KubeConfigFile+
+		" -- nslookup kubernetes.default", Nslookup)
 	if err != nil {
 		return
 	}
 
-	ips := util.FetchNodeExternalIP()
+	ips := shared.FetchNodeExternalIP()
 	for _, ip := range ips {
 		err = assert.ValidateOnHost(
 			ip,

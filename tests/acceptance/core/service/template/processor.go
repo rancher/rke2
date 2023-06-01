@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/rancher/rke2/tests/acceptance/core/service/assert"
-	"github.com/rancher/rke2/tests/acceptance/shared/util"
+	"github.com/rancher/rke2/tests/acceptance/shared"
 
 	. "github.com/onsi/ginkgo/v2"
 )
@@ -50,7 +50,7 @@ func processOnNode(resultChan chan error, ip, cmd, expectedValue string) {
 		return
 	}
 
-	version := util.GetRke2Version()
+	version := shared.GetRke2Version()
 	fmt.Printf("\n Checking version: %s on ip: %s \n "+
 		"Command: %s, \n Expected Value: %s", version, ip, cmd, expectedValue)
 
@@ -79,10 +79,10 @@ func processOnHost(resultChan chan error, ip, cmd, expectedValue string) {
 		return
 	}
 
-	kubeconfigFlag := " --kubeconfig=" + util.KubeConfigFile
+	kubeconfigFlag := " --kubeconfig=" + shared.KubeConfigFile
 	fullCmd := joinCommands(cmd, kubeconfigFlag)
 
-	version := util.GetRke2Version()
+	version := shared.GetRke2Version()
 	fmt.Printf("\n Checking version: %s on ip: %s \n "+
 		"Command: %s, \n Expected Value: %s", version, ip, fullCmd, expectedValue)
 

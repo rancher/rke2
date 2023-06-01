@@ -5,11 +5,12 @@ package versionbump
 import (
 	"fmt"
 
-	. "github.com/onsi/ginkgo/v2"
 	"github.com/rancher/rke2/tests/acceptance/core/service/assert"
 	"github.com/rancher/rke2/tests/acceptance/core/service/customflag"
 	"github.com/rancher/rke2/tests/acceptance/core/service/template"
 	"github.com/rancher/rke2/tests/acceptance/core/testcase"
+
+	. "github.com/onsi/ginkgo/v2"
 )
 
 var _ = Describe("VersionTemplate Upgrade:", func() {
@@ -18,14 +19,14 @@ var _ = Describe("VersionTemplate Upgrade:", func() {
 		testcase.TestBuildCluster(GinkgoT(), false)
 	})
 
-	It("Check Node Status", func() {
+	It("Validate Node", func() {
 		testcase.TestNodeStatus(
 			assert.NodeAssertReadyStatus(),
 			nil,
 		)
 	})
 
-	It("Check Pod Status", func() {
+	It("Validate Pod", func() {
 		testcase.TestPodStatus(
 			assert.PodAssertRestart(),
 			assert.PodAssertReady(),
@@ -39,13 +40,13 @@ var _ = Describe("VersionTemplate Upgrade:", func() {
 			TestCombination: &template.RunCmd{
 				RunOnNode: []template.TestMap{
 					{
-						Cmd:                  GetRuncVersion,
-						ExpectedValue:        ExpectedValueNode,
-						ExpectedValueUpgrade: ExpectedValueUpgradedNode,
+						Cmd:                  "(find /var/lib/rancher/rke2/data/ -type f -name runc -exec {} --version \\;)",
+						ExpectedValue:        template.TestMapFlag.ExpectedValueNode,
+						ExpectedValueUpgrade: template.TestMapFlag.ExpectedValueUpgradedNode,
 					},
 				},
 			},
-			InstallUpgrade: customflag.InstallUpgradeFlag,
+			InstallUpgrade: customflag.ServiceFlag.InstallUpgrade,
 			TestConfig:     nil,
 		})
 	})

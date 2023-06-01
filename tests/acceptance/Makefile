@@ -3,7 +3,7 @@ include ./config.mk
 
 TAGNAME ?= default
 test-env-up:
-	@cd ../.. && docker build . -q -f ./tests/acceptance/shared/scripts/Dockerfile.build -t rke2-automated-${TAGNAME}
+	@cd ../.. && docker build . -q -f ./tests/acceptance/scripts/Dockerfile.build -t rke2-automated-${TAGNAME}
 
 # -d
 .PHONY: test-run
@@ -58,7 +58,7 @@ test-env-down:
 
 .PHONY: test-env-clean
 test-env-clean:
-	@./shared/scripts/delete_resources.sh
+	@./scripts/delete_resources.sh
 
 
 .PHONY: test-complete

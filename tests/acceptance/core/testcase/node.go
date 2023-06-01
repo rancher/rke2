@@ -4,8 +4,10 @@ import (
 	"fmt"
 
 	"github.com/rancher/rke2/tests/acceptance/core/service/assert"
-	"github.com/rancher/rke2/tests/acceptance/shared/util"
+	"github.com/rancher/rke2/tests/acceptance/core/service/factory"
+	"github.com/rancher/rke2/tests/acceptance/shared"
 
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
@@ -14,11 +16,12 @@ func TestNodeStatus(
 	nodeAssertReadyStatus assert.NodeAssertFunc,
 	nodeAssertVersion assert.NodeAssertFunc,
 ) {
+	cluster := factory.GetCluster(GinkgoT())
 	fmt.Printf("\nFetching node status\n")
 
-	expectedNodeCount := util.NumServers + util.NumAgents
+	expectedNodeCount := cluster.NumServers + cluster.NumAgents
 	Eventually(func(g Gomega) {
-		nodes, err := util.Nodes(false)
+		nodes, err := shared.Nodes(false)
 		g.Expect(err).NotTo(HaveOccurred())
 		g.Expect(len(nodes)).To(Equal(expectedNodeCount),
 			"Number of nodes should match the spec")

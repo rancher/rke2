@@ -9,7 +9,8 @@ import (
 
 	"github.com/rancher/rke2/tests/acceptance/core/service/assert"
 	"github.com/rancher/rke2/tests/acceptance/core/service/customflag"
-	"github.com/rancher/rke2/tests/acceptance/shared/util"
+	"github.com/rancher/rke2/tests/acceptance/core/service/factory"
+	"github.com/rancher/rke2/tests/acceptance/shared"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -19,20 +20,20 @@ import (
 func TestUpgradeClusterSUC(version string) error {
 	fmt.Printf("\nUpgrading cluster to version: %s\n", version)
 
-	_, err := util.ManageWorkload("create", "suc.yaml")
+	_, err := shared.ManageWorkload("create", "suc.yaml")
 	Expect(err).NotTo(HaveOccurred(),
 		"system-upgrade-controller manifest did not deploy successfully")
 
 	getPodsSystemUpgrade := "kubectl get pods -n system-upgrade --kubeconfig="
 	assert.CheckComponentCmdHost(
-		getPodsSystemUpgrade+util.KubeConfigFile,
+		getPodsSystemUpgrade+shared.KubeConfigFile,
 		"system-upgrade-controller",
-		util.Running,
+		Running,
 	)
 	Expect(err).NotTo(HaveOccurred())
 
-	originalFilePath := util.BasePath() + "/fixtures/workloads" + "/upgrade-plan.yaml"
-	newFilePath := util.BasePath() + "/fixtures/workloads" + "/plan.yaml"
+	originalFilePath := shared.BasePath() + "/fixtures/workloads" + "/upgrade-plan.yaml"
+	newFilePath := shared.BasePath() + "/fixtures/workloads" + "/plan.yaml"
 
 	content, err := os.ReadFile(originalFilePath)
 	if err != nil {
@@ -45,7 +46,7 @@ func TestUpgradeClusterSUC(version string) error {
 		return fmt.Errorf("failed to write file: %s", err)
 	}
 
-	_, err = util.ManageWorkload("create", "plan.yaml")
+	_, err = shared.ManageWorkload("create", "plan.yaml")
 	Expect(err).NotTo(HaveOccurred(), "failed to upgrade cluster.")
 
 	return nil
@@ -56,21 +57,22 @@ func TestUpgradeClusterManually(version string) error {
 	if version == "" {
 		return fmt.Errorf("please provide a non-empty rke2 version to upgrade to")
 	}
+	cluster := factory.GetCluster(GinkgoT())
 
-	serverIPs := strings.Split(util.ServerIPs, ",")
-	agentIPs := strings.Split(util.AgentIPs, ",")
+	serverIPs := strings.Split(cluster.ServerIPs, ",")
+	agentIPs := strings.Split(cluster.AgentIPs, ",")
 
-	if util.NumServers == 0 && util.NumAgents == 0 {
+	if cluster.NumServers == 0 && cluster.NumAgents == 0 {
 		return fmt.Errorf("no nodes found to upgrade")
 	}
 
-	if util.NumServers > 0 {
+	if cluster.NumServers > 0 {
 		if err := upgradeServer(version, serverIPs); err != nil {
 			return err
 		}
 	}
 
-	if util.NumAgents > 0 {
+	if cluster.NumAgents > 0 {
 		if err := upgradeAgent(version, agentIPs); err != nil {
 			return err
 		}
@@ -86,10 +88,10 @@ func upgradeServer(installType string, serverIPs []string) error {
 
 	for _, ip := range serverIPs {
 		switch {
-		case customflag.InstallType.Version != "":
-			installType = fmt.Sprintf("INSTALL_RKE2_VERSION=%s", customflag.InstallType.Version)
-		case customflag.InstallType.Commit != "":
-			installType = fmt.Sprintf("INSTALL_RKE2_COMMIT=%s", customflag.InstallType.Commit)
+		case customflag.ServiceFlag.InstallType.Version != "":
+			installType = fmt.Sprintf("INSTALL_RKE2_VERSION=%s", customflag.ServiceFlag.InstallType.Version)
+		case customflag.ServiceFlag.InstallType.Commit != "":
+			installType = fmt.Sprintf("INSTALL_RKE2_COMMIT=%s", customflag.ServiceFlag.InstallType.Commit)
 		}
 
 		installRke2Server := "sudo curl -sfL https://get.rke2.io | sudo %s INSTALL_RKE2_TYPE=server sh - "
@@ -100,7 +102,7 @@ func upgradeServer(installType string, serverIPs []string) error {
 			defer GinkgoRecover()
 
 			fmt.Println("Upgrading server to: " + upgradeCommand)
-			if _, err := util.RunCommandOnNode(upgradeCommand, ip); err != nil {
+			if _, err := shared.RunCommandOnNode(upgradeCommand, ip); err != nil {
 				fmt.Printf("\nError upgrading server %s: %v\n\n", ip, err)
 				errCh <- err
 				close(errCh)
@@ -108,7 +110,7 @@ func upgradeServer(installType string, serverIPs []string) error {
 			}
 
 			fmt.Println("Restarting server: " + ip)
-			if _, err := util.RestartCluster(ip); err != nil {
+			if _, err := shared.RestartCluster(ip); err != nil {
 				fmt.Printf("\nError restarting server %s: %v\n\n", ip, err)
 				errCh <- err
 				close(errCh)
@@ -130,10 +132,10 @@ func upgradeAgent(installType string, agentIPs []string) error {
 
 	for _, ip := range agentIPs {
 		switch {
-		case customflag.InstallType.Version != "":
-			installType = fmt.Sprintf("INSTALL_RKE2_VERSION=%s", customflag.InstallType.Version)
-		case customflag.InstallType.Commit != "":
-			installType = fmt.Sprintf("INSTALL_RKE2_COMMIT=%s", customflag.InstallType.Commit)
+		case customflag.ServiceFlag.InstallType.Version != "":
+			installType = fmt.Sprintf("INSTALL_RKE2_VERSION=%s", customflag.ServiceFlag.InstallType.Version)
+		case customflag.ServiceFlag.InstallType.Commit != "":
+			installType = fmt.Sprintf("INSTALL_RKE2_COMMIT=%s", customflag.ServiceFlag.InstallType.Commit)
 		}
 
 		installRke2Agent := "sudo curl -sfL https://get.rke2.io | sudo %s INSTALL_RKE2_TYPE=agent sh - "
@@ -144,7 +146,7 @@ func upgradeAgent(installType string, agentIPs []string) error {
 			defer GinkgoRecover()
 
 			fmt.Println("Upgrading agent to: " + upgradeCommand)
-			if _, err := util.RunCommandOnNode(upgradeCommand, ip); err != nil {
+			if _, err := shared.RunCommandOnNode(upgradeCommand, ip); err != nil {
 				fmt.Printf("\nError upgrading agent %s: %v\n\n", ip, err)
 				errCh <- err
 				close(errCh)
@@ -152,7 +154,7 @@ func upgradeAgent(installType string, agentIPs []string) error {
 			}
 
 			fmt.Println("Restarting agent: " + ip)
-			if _, err := util.RestartCluster(ip); err != nil {
+			if _, err := shared.RestartCluster(ip); err != nil {
 				fmt.Printf("\nError restarting agent %s: %v\n\n", ip, err)
 				errCh <- err
 				close(errCh)

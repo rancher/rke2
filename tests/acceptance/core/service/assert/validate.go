@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rancher/rke2/tests/acceptance/shared/util"
+	"github.com/rancher/rke2/tests/acceptance/shared"
 )
 
 // validate calls runAssertion for each cmd/assert pair
@@ -78,7 +78,7 @@ func runAssertion(
 // Need to send kubeconfig file.
 func ValidateOnHost(args ...string) error {
 	exec := func(cmd string) (string, error) {
-		return util.RunCommandHost(cmd)
+		return shared.RunCommandHost(cmd)
 	}
 	return validate(exec, args...)
 }
@@ -87,7 +87,7 @@ func ValidateOnHost(args ...string) error {
 // The last argument should be the assertion.
 func ValidateOnNode(ip string, args ...string) error {
 	exec := func(cmd string) (string, error) {
-		return util.RunCommandOnNode(cmd, ip)
+		return shared.RunCommandOnNode(cmd, ip)
 	}
 	return validate(exec, args...)
 }

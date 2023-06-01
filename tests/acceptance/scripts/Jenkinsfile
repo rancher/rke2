@@ -75,7 +75,7 @@ node {
               stage('Run TestCombination') {
                 sh "docker run --name ${testContainer} -t --env-file ${envFile} " +
                   "${imageName} sh -c \"chmod 400 /go/src/github.com/rancher/rke2/tests/acceptance/modules/config/.ssh/aws_key.pem && " +
-                  "cd ./tests/acceptance/entrypoint && go test -timeout=${timeout} -v ./${RKE2_TESTCASE}/... ${RKE2_TEST_ARGS}\""
+                      "cd ./tests/acceptance/entrypoint && go test -timeout=${timeout} -v ./${RKE2_TESTCASE}/... ${RKE2_TEST_ARGS}\""
               }
             } finally {           
               stage('Cleanup') {

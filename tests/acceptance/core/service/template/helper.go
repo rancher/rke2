@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/rancher/rke2/tests/acceptance/core/testcase"
-	"github.com/rancher/rke2/tests/acceptance/shared/util"
+	"github.com/rancher/rke2/tests/acceptance/shared"
 
 	. "github.com/onsi/ginkgo/v2"
 )
@@ -77,7 +77,7 @@ func joinCommands(cmd, kubeconfigFlag string) string {
 
 // getIPs gets the IPs of the nodes
 func getIPs() (ips []string, err error) {
-	ips = util.FetchNodeExternalIP()
+	ips = shared.FetchNodeExternalIP()
 	return ips, nil
 }
 

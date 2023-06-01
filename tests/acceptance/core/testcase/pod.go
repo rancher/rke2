@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/rancher/rke2/tests/acceptance/core/service/assert"
-	"github.com/rancher/rke2/tests/acceptance/shared/util"
+	"github.com/rancher/rke2/tests/acceptance/shared"
 
 	. "github.com/onsi/gomega"
 )
@@ -19,7 +19,7 @@ func TestPodStatus(
 	fmt.Printf("\nFetching pod status\n")
 
 	Eventually(func(g Gomega) {
-		pods, err := util.Pods(false)
+		pods, err := shared.Pods(false)
 		g.Expect(err).NotTo(HaveOccurred())
 
 		for _, pod := range pods {
@@ -32,7 +32,7 @@ func TestPodStatus(
 					Equal("Completed"),
 				), pod.Name)
 			} else {
-				g.Expect(pod.Status).Should(Equal(util.Running), pod.Name)
+				g.Expect(pod.Status).Should(Equal(Running), pod.Name)
 				if podAssertRestarts != nil {
 					podAssertRestarts(g, pod)
 				}

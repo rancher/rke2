@@ -2,7 +2,7 @@ package testcase
 
 import (
 	"github.com/rancher/rke2/tests/acceptance/core/service/assert"
-	"github.com/rancher/rke2/tests/acceptance/shared/util"
+	"github.com/rancher/rke2/tests/acceptance/shared"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -10,20 +10,20 @@ import (
 
 func TestServiceClusterIp(deployWorkload bool) {
 	if deployWorkload {
-		_, err := util.ManageWorkload("create", "clusterip.yaml")
+		_, err := shared.ManageWorkload("create", "clusterip.yaml")
 		Expect(err).NotTo(HaveOccurred(), "Cluster IP manifest not deployed")
 	}
 
 	getClusterIp := "kubectl get pods -n auto-clusterip -l k8s-app=nginx-app-clusterip" +
 		" --field-selector=status.phase=Running  --kubeconfig="
-	err := assert.ValidateOnHost(getClusterIp+util.KubeConfigFile, util.Running)
+	err := assert.ValidateOnHost(getClusterIp+shared.KubeConfigFile, Running)
 	if err != nil {
 		GinkgoT().Errorf("Error: %v", err)
 	}
 
-	clusterip, port, _ := util.FetchClusterIP("auto-clusterip",
+	clusterip, port, _ := shared.FetchClusterIP("auto-clusterip",
 		"nginx-clusterip-svc")
-	nodeExternalIP := util.FetchNodeExternalIP()
+	nodeExternalIP := shared.FetchNodeExternalIP()
 	for _, ip := range nodeExternalIP {
 		err = assert.ValidateOnNode(ip, "curl -sL --insecure http://"+clusterip+
 			":"+port+"/name.html", "test-clusterip")
@@ -35,14 +35,14 @@ func TestServiceClusterIp(deployWorkload bool) {
 
 func TestServiceNodePort(deployWorkload bool) {
 	if deployWorkload {
-		_, err := util.ManageWorkload("create", "nodeport.yaml")
+		_, err := shared.ManageWorkload("create", "nodeport.yaml")
 		Expect(err).NotTo(HaveOccurred(), "NodePort manifest not deployed")
 	}
 
-	nodeExternalIP := util.FetchNodeExternalIP()
+	nodeExternalIP := shared.FetchNodeExternalIP()
 	getNodePortSVC := "kubectl get service -n auto-nodeport nginx-nodeport-svc" +
 		" --output jsonpath={.spec.ports[0].nodePort} --kubeconfig="
-	nodeport, err := util.RunCommandHost(getNodePortSVC + util.KubeConfigFile)
+	nodeport, err := shared.RunCommandHost(getNodePortSVC + shared.KubeConfigFile)
 	if err != nil {
 		GinkgoT().Errorf("Error: %v", err)
 	}

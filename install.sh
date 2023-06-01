@@ -480,7 +480,17 @@ do_install_rpm() {
             repodir=/etc/zypp/repos.d
         fi
         if [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
+            # create the /var/lib/rpm-state in SLE systems to fix the prein selinux macro
+            if [ "${TRANSACTIONAL_UPDATE=false}" != "true" ] && [ -x /usr/sbin/transactional-update ]; then
+                transactional_update_run="transactional-update --no-selfupdate -d run"
+            fi
+            ${transactional_update_run} mkdir -p /var/lib/rpm-state
+            # configure infix and rpm_installer
             rpm_site_infix=microos
+            if [ "${VARIANT_ID:-}" = sle-micro ]; then
+                rpm_site_infix=slemicro
+                package_installer=zypper
+            fi
             rpm_installer="zypper --gpg-auto-import-keys"
             if [ "${TRANSACTIONAL_UPDATE=false}" != "true" ] && [ -x /usr/sbin/transactional-update ]; then
                 rpm_installer="transactional-update --no-selfupdate -d run ${rpm_installer}"
@@ -488,11 +498,8 @@ do_install_rpm() {
         else
             maj_ver=$(echo "$VERSION_ID" | sed -E -e "s/^([0-9]+)\.?[0-9]*$/\1/")
             case ${maj_ver} in
-                7|8)
+                7|8|9)
                     :
-                    ;;
-                9) # We are currently using EL8 packages for EL9 as well
-                    maj_ver="8"
                     ;;
                 *) # In certain cases, like installing on Fedora, maj_ver will end up being something that is not 7 or 8
                     maj_ver="7"
@@ -549,6 +556,16 @@ gpgkey=https://${rpm_site}/public.key
 EOF
     fi
 
+    if rpm -q --quiet rke2-selinux; then 
+            # remove rke2-selinux module in el9 before upgrade to allow container-selinux to upgrade safely
+            if check_available_upgrades container-selinux && check_available_upgrades rke2-selinux; then
+                MODULE_PRIORITY=$(semodule --list=full | grep rke2 | cut -f1 -d" ")
+                if [ -n "${MODULE_PRIORITY}" ]; then
+                    semodule -X $MODULE_PRIORITY -r rke2 || true
+                fi
+            fi
+        fi
+
     if [ -z "${INSTALL_RKE2_VERSION}" ] && [ -z "${INSTALL_RKE2_COMMIT}" ]; then
         ${rpm_installer} install -y "rke2-${INSTALL_RKE2_TYPE}"
     elif [ -n "${INSTALL_RKE2_COMMIT}" ]; then
@@ -562,6 +579,21 @@ EOF
             ${rpm_installer} install -y "rke2-${INSTALL_RKE2_TYPE}-${rke2_rpm_version}"
         fi
     fi
+}
+
+check_available_upgrades() {
+    . /etc/os-release
+    set +e
+    if [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
+        available_upgrades=$(zypper -q -t -s 11 se -s -u --type package $1 | tail -n 1 | grep -v "No matching" | awk '{print $3}')
+    else
+        available_upgrades=$(yum -q --refresh list $1 --upgrades | tail -n 1 | awk '{print $2}')
+    fi
+    set -e
+    if [ -n "${available_upgrades}" ]; then
+        return 0
+    fi
+    return 1
 }
 
 do_install_tar() {

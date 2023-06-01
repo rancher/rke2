@@ -8,7 +8,7 @@ import (
 	"github.com/rancher/rke2/tests/acceptance/core/service/assert"
 	"github.com/rancher/rke2/tests/acceptance/core/service/customflag"
 	"github.com/rancher/rke2/tests/acceptance/core/testcase"
-	"github.com/rancher/rke2/tests/acceptance/shared/util"
+	"github.com/rancher/rke2/tests/acceptance/shared"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -20,14 +20,14 @@ var _ = Describe("SUC Upgrade Tests:", func() {
 		testcase.TestBuildCluster(GinkgoT(), false)
 	})
 
-	It("Checks Node Status", func() {
+	It("Validate Node", func() {
 		testcase.TestNodeStatus(
 			assert.NodeAssertReadyStatus(),
 			nil,
 		)
 	})
 
-	It("Checks Pod Status", func() {
+	It("Validate Pod", func() {
 		testcase.TestPodStatus(
 			assert.PodAssertRestart(),
 			assert.PodAssertReady(),
@@ -56,7 +56,7 @@ var _ = Describe("SUC Upgrade Tests:", func() {
 	})
 
 	It("\nUpgrade via SUC", func() {
-		err := testcase.TestUpgradeClusterSUC(customflag.UpgradeVersionSUC.String())
+		err := testcase.TestUpgradeClusterSUC(customflag.ServiceFlag.UpgradeVersionSUC.String())
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -77,27 +77,27 @@ var _ = Describe("SUC Upgrade Tests:", func() {
 
 	It("Verifies ClusterIP Service pos upgrade", func() {
 		testcase.TestServiceClusterIp(false)
-		defer util.ManageWorkload("delete", "clusterip.yaml")
+		defer shared.ManageWorkload("delete", "clusterip.yaml")
 	})
 
 	It("Verifies NodePort Service pos upgrade", func() {
 		testcase.TestServiceNodePort(false)
-		defer util.ManageWorkload("delete", "nodeport.yaml")
+		defer shared.ManageWorkload("delete", "nodeport.yaml")
 	})
 
 	It("Verifies Ingress pos upgrade", func() {
 		testcase.TestIngress(false)
-		defer util.ManageWorkload("delete", "ingress.yaml")
+		defer shared.ManageWorkload("delete", "ingress.yaml")
 	})
 
 	It("Verifies Daemonset pos upgrade", func() {
 		testcase.TestDaemonset(false)
-		defer util.ManageWorkload("delete", "daemonset.yaml")
+		defer shared.ManageWorkload("delete", "daemonset.yaml")
 	})
 
 	It("Verifies DNS Access pos upgrade", func() {
 		testcase.TestDnsAccess(true)
-		defer util.ManageWorkload("delete", "dns.yaml")
+		defer shared.ManageWorkload("delete", "dns.yaml")
 	})
 })
 
