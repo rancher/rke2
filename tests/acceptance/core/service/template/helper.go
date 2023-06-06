@@ -44,7 +44,7 @@ func checkVersion(v VersionTestTemplate) error {
 		len(ips)*(len(v.TestCombination.RunOnHost)+len(v.TestCombination.RunOnNode)),
 	)
 
-	processTestCombination(errorChanList, ips, *v.TestCombination)
+	processTestCombination(errorChanList, &wg, ips, *v.TestCombination)
 
 	wg.Wait()
 	close(errorChanList)
@@ -82,8 +82,8 @@ func getIPs() (ips []string, err error) {
 }
 
 // GetTestCase returns the test case based on the name to be used as customflag.
-func GetTestCase(name string) (TestCase, error) {
-	if name == "" {
+func GetTestCase(name *string) (TestCase, error) {
+	if name == nil {
 		return func(deployWorkload bool) {}, nil
 	}
 
@@ -96,9 +96,9 @@ func GetTestCase(name string) (TestCase, error) {
 		"TestCoredns":          testcase.TestCoredns,
 	}
 
-	if test, ok := testCase[name]; ok {
+	if test, ok := testCase[*name]; ok {
 		return test, nil
+	} else {
+		return nil, fmt.Errorf("invalid test case name")
 	}
-
-	return nil, fmt.Errorf("invalid test case name")
 }

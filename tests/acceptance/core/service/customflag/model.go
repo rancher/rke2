@@ -29,7 +29,7 @@ type InstallTypeValueFlag struct {
 
 // TestConfigFlag is a customflag type that can be used to parse the test case argument
 type TestConfigFlag struct {
-	TestFuncName   string
+	TestFuncName   *string
 	TestFunc       TestCaseFlagType
 	DeployWorkload bool
 }
@@ -71,7 +71,7 @@ func (t *TestConfigFlag) Set(value string) error {
 		return fmt.Errorf("invalid test case customflag format")
 	}
 
-	t.TestFuncName = parts[0]
+	t.TestFuncName = &parts[0]
 	if len(parts) > 1 {
 		deployWorkload, err := strconv.ParseBool(parts[1])
 		if err != nil {

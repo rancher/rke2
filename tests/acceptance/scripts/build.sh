@@ -14,7 +14,7 @@ fi
 
 count=0
 while [[ 3 -gt $count ]]; do
-    docker build . -f tests/rke2tf/shared/scripts/Dockerfile.build -t rke2-tf-"${TRIM_JOB_NAME}""${BUILD_NUMBER}"
+    docker build . -f tests/acceptance/scripts/Dockerfile.build -t rke2-test-"${TRIM_JOB_NAME}""${BUILD_NUMBER}"
 
     if [[ $? -eq 0 ]]; then break; fi
     count=$(($count + 1))

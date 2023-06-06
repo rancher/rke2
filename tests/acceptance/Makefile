@@ -1,14 +1,12 @@
-##=========================  Acceptance Tests =========================#
 include ./config.mk
 
 TAGNAME ?= default
 test-env-up:
 	@cd ../.. && docker build . -q -f ./tests/acceptance/scripts/Dockerfile.build -t rke2-automated-${TAGNAME}
 
-# -d
 .PHONY: test-run
 test-run:
-	docker run  --name rke2-automated-test-${IMGNAME} -t \
+	@docker run  --name rke2-automated-test-${IMGNAME} -t \
       -e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
       -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
       -v ${ACCESS_KEY_LOCAL}:/go/src/github.com/rancher/rke2/tests/acceptance/modules/config/.ssh/aws_key.pem \
@@ -24,18 +22,18 @@ test-run:
                                         if [ "${TESTTAG}"  =  "versionbump" ]; then \
                                             go test -timeout=45m -v -tags=versionbump ./versionbump/... -cmdNode "${CMDNODE}" -expectedValueNode "${VALUENODE}" \
                                             -expectedValueUpgradedNode "${VALUENODEUPGRADED}" -cmdHost "${CMDHOST}" -expectedValueHost "${VALUEHOST}" \
-                                            -expectedValueUpgradedHost "${VALUEHOSTUPGRADED}" -installUpgradeFlag "${INSTALLTYPE}" -testCase "${TESTCASE}" \
+                                            -expectedValueUpgradedHost "${VALUEHOSTUPGRADED}" -installType "${INSTALLTYPE}" -testCase "${TESTCASE}" \
                                             -deployWorkload "${DEPLOYWORKLOAD}"; \
-                                            -description "${DESCRIPTION}"; \
                                         elif [ "${TESTTAG}"  = "coredns" ]; then \
                                             go test -timeout=45m -v -tags=coredns ./versionbump/... -expectedValueNode "${VALUENODE}" \
                                             -expectedValueUpgradedNode "${VALUENODEUPGRADED}" -expectedValueHost "${VALUEHOST}" \
-                                            -expectedValueUpgradedHost "${VALUEHOSTUPGRADED}" -installUpgradeFlag "${INSTALLTYPE}"; \
+                                            -expectedValueUpgradedHost "${VALUEHOSTUPGRADED}" -installType "${INSTALLTYPE}" -testCase "${TESTCASE}" \
+                                            -deployWorkload "${DEPLOYWORKLOAD}"; \
                                         elif [ "${TESTTAG}"  = "runc" ]; then \
                                             go test -timeout=45m -v -tags=runc ./versionbump/... \
                                             -expectedValueNode ${VALUENODE} \
                                             -expectedValueUpgradedNode ${VALUENODEUPGRADED} \
-                                            -installUpgradeFlag ${INSTALLTYPE}; \
+                                            -installType ${INSTALLTYPE}; \
                                         fi; \
                                     fi; \
                                 elif [ -z "${TESTDIR}" ]; then \
@@ -93,16 +91,15 @@ test-version-runc:
 	@go test -timeout=45m -v -tags=runc ./entrypoint/versionbump/... \
 		-expectedValueNode ${VALUENODE} \
 		-expectedValueUpgradedNode ${VALUENODEUPGRADED} \
-		-installUpgradeFlag ${INSTALLTYPE} \
-
+		-installType ${INSTALLTYPE}
 
 
 .PHONY: test-version-coredns
 test-version-coredns:
-	@go test -timeout=45m -v -tags=coredns ./entrypoint/versionbump/... \
+	go test -timeout=45m -v -tags=coredns ./entrypoint/versionbump/... \
 		-expectedValueHost ${VALUEHOST} \
 		-expectedValueUpgradedHost ${VALUEHOSTUPGRADED} \
-		-installUpgradeFlag ${INSTALLTYPE} \
+		-installType ${INSTALLTYPE}
 
 
 .PHONY: test-version-bump
@@ -114,7 +111,7 @@ test-version-bump:
 		-cmdHost "${CMDHOST}" \
 		-expectedValueHost ${VALUEHOST} \
 		-expectedValueUpgradedHost ${VALUEHOSTUPGRADED} \
-		-installUpgradeFlag ${INSTALLTYPE} \
+		-installType ${INSTALLTYPE} \
 		-testCase ${TESTCASE} \
 		-deployWorkload ${DEPLOYWORKLOAD}
 

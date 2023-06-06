@@ -32,8 +32,8 @@ func TestUpgradeClusterSUC(version string) error {
 	)
 	Expect(err).NotTo(HaveOccurred())
 
-	originalFilePath := shared.BasePath() + "/fixtures/workloads" + "/upgrade-plan.yaml"
-	newFilePath := shared.BasePath() + "/fixtures/workloads" + "/plan.yaml"
+	originalFilePath := shared.BasePath() + "/acceptance/workloads" + "/upgrade-plan.yaml"
+	newFilePath := shared.BasePath() + "/acceptance/workloads" + "/plan.yaml"
 
 	content, err := os.ReadFile(originalFilePath)
 	if err != nil {

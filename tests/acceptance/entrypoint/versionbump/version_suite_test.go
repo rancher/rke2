@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 	flag.StringVar(&template.TestMapFlag.ExpectedValueNode, "expectedValueNode", "", "Comma separated list of expected values for node commands")
 	flag.StringVar(&template.TestMapFlag.ExpectedValueUpgradedHost, "expectedValueUpgradedHost", "", "Expected value of the command ran on Host after upgrading")
 	flag.StringVar(&template.TestMapFlag.ExpectedValueUpgradedNode, "expectedValueUpgradedNode", "", "Expected value of the command ran on Node after upgrading")
-	flag.Var(&customflag.ServiceFlag.InstallUpgrade, "installUpgradeFlag", "Install upgrade customflag")
+	flag.Var(&customflag.ServiceFlag.InstallUpgrade, "installType", "Install upgrade customflag")
 	flag.StringVar(&template.TestMapFlag.Description, "description", "", "Description of the test")
 	flag.Var(&customflag.ServiceFlag.TestCase, "testCase", "Test case to run")
 	flag.BoolVar(&customflag.ServiceFlag.TestCase.DeployWorkload, "deployWorkload", false, "Deploy workload customflag")

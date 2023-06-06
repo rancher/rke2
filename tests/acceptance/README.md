@@ -58,7 +58,7 @@ Responsibility:       Should not need to implement any logic and only focus on o
 - `Fixtures`
 ```
 Act:                  It acts as a provider for test fixtures
-Responsibility:       Totally independent from any other layer and should only provide
+Responsibility:       Totally independent of any other layer and should only provide
 ```
 
 - `Modules`
@@ -127,9 +127,9 @@ Available arguments to create your command with examples:
 - $ -expectedValueNode "v1.25.2+k3s1"
 - $ -expectedValuesUpgradedNode "v1.26.4-rc1+rke2r1"
 - $ -upgradeVersionSUC "v1.26.4-rc1+rke2r1"
-- $ -installUpgradeFlag=INSTALL_RKE2_COMMIT=257fa2c54cda332e42b8aae248c152f4d1898218
-- $ -deployWorkload=true
-- $ -testCase=TestCaseName
+- $ -installtype INSTALL_RKE2_COMMIT=257fa2c54cda332e42b8aae248c152f4d1898218
+- $ -deployWorkload true
+- $ -testCase TestCaseName
 - $ -description "Description of your test"
 ````
 
@@ -140,7 +140,7 @@ Example of an execution considering that the `commands` are already placed or in
   -expectedValueUpgradedHost "v1.10.1" \
   -expectedValueNode "v1.25.9+rke2r1" \            
   -expectedValueUpgradedNode "v1.26.4-rc1+rke2r1" \                                  
-  -installUpgradeFlag INSTALL_RKE2_VERSION=v1.25.9+rke2r1
+  -installType INSTALL_RKE2_VERSION=v1.25.9+rke2r1
   
 ````
 PS: If you need to send more than one command at once split them with  " , "
@@ -172,7 +172,7 @@ Value passed in command line
                 },
                 },
 		},
-        InstallUpgrade: customflag.InstallUpgradeFlag,
+        InstallUpgrade: customflag.installType,
         TestConfig: &template.TestConfig{
             TestFunc:       testcase.TestCoredns,
             DeployWorkload: true,
@@ -204,7 +204,7 @@ Value passed in command line
 					},
 				},
 			},
-			InstallUpgrade: util.InstallUpgradeFlag,
+			InstallUpgrade: util.installType,
 			TestConfig: &template.TestConfig{
 				TestFunc:       template.TestCase(util.TestCase.TestFunc),
 				DeployWorkload: util.TestCase.DeployWorkload,
@@ -222,7 +222,7 @@ go test -timeout=45m -v -tags=versionbump ./entrypoint/versionbump/...  \
   -cmdHost "kubectl get deploy rke2-coredns-rke2-coredns -n kube-system -o jsonpath='{.spec.template.spec.containers[?(@.name==\"coredns\")].image}'"  \
   -expectedValueHost "v1.9.3" \
   -expectedValueUpgradedHost "v1.10.1" \
-  -installUpgradeFlag INSTALL_RKE2_VERSION=v1.25.9+rke2r1 \
+  -installtype INSTALL_RKE2_VERSION=v1.25.9+rke2r1 \
   -testCase "TestCoredns" \
   -deployWorkload true
                             
@@ -269,10 +269,10 @@ go test -timeout=45m -v -tags=upgradesuc ./entrypoint/upgradecluster/... -upgrad
 Test flags:
 ```
  ${upgradeVersion} version to upgrade to
-    -upgradeVersion=v1.26.2+rke2r1
+    -upgradeVersionSUC v1.26.2+rke2r1
     
  ${installType} type of installation (version or commit) + desired value    
-    -installType=version or commit
+    -installType Version or commit
 ```
 Test tags:
 ```
