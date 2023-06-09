@@ -128,15 +128,6 @@ func CreateCluster(nodeOS string, serverCount int, agentCount int) ([]string, []
 	return serverNodeNames, agentNodeNames, nil
 }
 
-// DeleteWorkload Deletes the content of a manifest file previously applied
-func DeleteWorkload(workload, kubeconfig string) error {
-	cmd := "kubectl delete -f " + workload + " --kubeconfig=" + kubeconfig
-	if _, err := RunCommand(cmd); err != nil {
-		return err
-	}
-	return nil
-}
-
 func DeployWorkload(workload string, kubeconfig string) (string, error) {
 	resourceDir := "../resource_files"
 	files, err := os.ReadDir(resourceDir)
@@ -337,6 +328,34 @@ func RunCommand(cmd string) (string, error) {
 	c := exec.Command("bash", "-c", cmd)
 	out, err := c.CombinedOutput()
 	return string(out), err
+}
+
+// StartCluster starts the rke2 service on each node given
+func StartCluster(nodeNames []string) error {
+	for _, nodeName := range nodeNames {
+		cmd := "sudo systemctl start rke2"
+		if strings.Contains(nodeName, "server") {
+			cmd += "-server"
+		}
+		if strings.Contains(nodeName, "agent") {
+			cmd += "-agent"
+		}
+		if _, err := RunCmdOnNode(cmd, nodeName); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// StopCluster starts the rke2 service on each node given
+func StopCluster(nodeNames []string) error {
+	for _, nodeName := range nodeNames {
+		cmd := "sudo systemctl stop rke2*"
+		if _, err := RunCmdOnNode(cmd, nodeName); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func UpgradeCluster(serverNodenames []string, agentNodenames []string) error {
