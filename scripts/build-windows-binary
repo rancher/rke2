@@ -5,8 +5,8 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-if [ "${GOARCH}" == "s390x" ]; then
-  exit 0
+if [ "${GOARCH}" == "s390x" || "${GOARCH}" == "arm64" ]; then
+    exit 0
 fi
 
 if [ -z "${GODEBUG}" ]; then
@@ -26,23 +26,23 @@ BUILDTAGS="netgo osusergo no_stage static_build sqlite_omit_load_extension no_cr
 GO_BUILDTAGS="${GO_BUILDTAGS} ${BUILDTAGS} ${DEBUG_TAGS}"
 
 VERSION_FLAGS="
-        -X ${K3S_PKG}/pkg/version.GitCommit=${REVISION}
-        -X ${K3S_PKG}/pkg/version.Program=${PROG}
-        -X ${K3S_PKG}/pkg/version.Version=${VERSION}
-        -X ${RKE2_PKG}/pkg/images.DefaultRegistry=${REGISTRY}
-        -X ${RKE2_PKG}/pkg/images.DefaultEtcdImage=rancher/hardened-etcd:${ETCD_VERSION}-build20221129
-        -X ${RKE2_PKG}/pkg/images.DefaultKubernetesImage=${REPO}/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
-        -X ${RKE2_PKG}/pkg/images.DefaultPauseImage=rancher/pause:${PAUSE_VERSION}
-        -X ${RKE2_PKG}/pkg/images.DefaultRuntimeImage=${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH}
+    -X ${K3S_PKG}/pkg/version.GitCommit=${REVISION}
+    -X ${K3S_PKG}/pkg/version.Program=${PROG}
+    -X ${K3S_PKG}/pkg/version.Version=${VERSION}
+    -X ${RKE2_PKG}/pkg/images.DefaultRegistry=${REGISTRY}
+    -X ${RKE2_PKG}/pkg/images.DefaultEtcdImage=rancher/hardened-etcd:${ETCD_VERSION}-build20221129
+    -X ${RKE2_PKG}/pkg/images.DefaultKubernetesImage=${REPO}/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
+    -X ${RKE2_PKG}/pkg/images.DefaultPauseImage=rancher/pause:${PAUSE_VERSION}
+    -X ${RKE2_PKG}/pkg/images.DefaultRuntimeImage=${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH}
 "
 
 GO_LDFLAGS="${STATIC_FLAGS} ${EXTRA_LDFLAGS}"
 echo ${DEBUG_GO_GCFLAGS}
 GOOS=windows \
-  CGO_ENABLED=1 CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc \
-  go build \
-    -tags "${GO_BUILDTAGS}" \
-    ${GO_GCFLAGS} ${GO_BUILD_FLAGS} \
-    -o bin/${PROG}.exe \
-    -ldflags "${GO_LDFLAGS} ${VERSION_FLAGS}" \
-    ${GO_TAGS}
+    CGO_ENABLED=1 CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc \
+    go build \
+        -tags "${GO_BUILDTAGS}" \
+        ${GO_GCFLAGS} ${GO_BUILD_FLAGS} \
+        -o bin/${PROG}.exe \
+        -ldflags "${GO_LDFLAGS} ${VERSION_FLAGS}" \
+        ${GO_TAGS}

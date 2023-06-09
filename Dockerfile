@@ -4,8 +4,8 @@ ARG KUBERNETES_VERSION=dev
 FROM rancher/hardened-build-base:v1.20.4b2 AS build
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
-RUN set -x \
-    && apk --no-cache add \
+RUN set -x && \
+    apk --no-cache add \
     bash \
     curl \
     file \
@@ -20,7 +20,7 @@ RUN set -x \
     tar \
     yq
 
-RUN if [ "${ARCH}" != "s390x" ]; then \
+RUN if [ "${ARCH}" = "amd64" ]; then \
     	apk --no-cache add mingw-w64-gcc; \
     fi
 
@@ -37,9 +37,9 @@ ENV DAPPER_DOCKER_SOCKET true
 ENV DAPPER_TARGET dapper
 ENV DAPPER_RUN_ARGS "--privileged --network host -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy"
 RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
-    VERSION=0.56.10 OS=linux && \
-    curl -sL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
-    tar -xzf - -C /usr/local/bin; \
+        VERSION=0.56.10 OS=linux && \
+        curl -sL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
+        tar -xzf - -C /usr/local/bin; \
     fi
 RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
     curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt \
@@ -49,28 +49,27 @@ RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
 
 RUN python3 -m pip install awscli
 RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.52.2
-RUN set -x \
-    && apk --no-cache add \
+RUN set -x && \
+    apk --no-cache add \
     libarchive-tools \
     zstd \
     jq \
-    python3 \
-    \
-    && if [ "${ARCH}" != "s390x" ]; then \
+    python3 && \
+    if [ "${ARCH}" != "s390x" || "${GOARCH}" != "arm64" ]; then \
     	apk add --no-cache rpm-dev; \
     fi
 
 RUN GOCR_VERSION="v0.5.1" && \
         if [ "${ARCH}" = "arm64" ]; then \
-        wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_arm64.tar.gz && \
-        tar -zxvf go-containerregistry_Linux_arm64.tar.gz && \
-        mv crane /usr/local/bin && \
-        chmod a+x /usr/local/bin/crane; \
+            wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_arm64.tar.gz && \
+            tar -zxvf go-containerregistry_Linux_arm64.tar.gz && \
+            mv crane /usr/local/bin && \
+            chmod a+x /usr/local/bin/crane; \
         else \
-        wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_x86_64.tar.gz && \
-        tar -zxvf go-containerregistry_Linux_x86_64.tar.gz && \
-        mv crane /usr/local/bin && \
-        chmod a+x /usr/local/bin/crane; \
+            wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_x86_64.tar.gz && \
+            tar -zxvf go-containerregistry_Linux_x86_64.tar.gz && \
+            mv crane /usr/local/bin && \
+            chmod a+x /usr/local/bin/crane; \
         fi
 
 WORKDIR /source
@@ -80,8 +79,8 @@ COPY --from=rpm-macros /usr/lib/rpm/macros.d/macros.systemd /usr/lib/rpm/macros.
 
 # Shell used for debugging
 FROM dapper AS shell
-RUN set -x \
-    && apk --no-cache add \
+RUN set -x && \
+    apk --no-cache add \
     bash-completion \
     iptables \
     less \
@@ -128,9 +127,9 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM rancher/hardened-kubernetes:v1.27.2-rke2r1-build20230518 AS kubernetes
-FROM rancher/hardened-containerd:v1.7.1-k3s1-build20230511 AS containerd
-FROM rancher/hardened-crictl:v1.26.1-build20230406 AS crictl
-FROM rancher/hardened-runc:v1.1.7-build20230511 AS runc
+FROM rancher/hardened-containerd:v1.7.1-k3s1-build20230606 AS containerd
+FROM rancher/hardened-crictl:v1.26.1-build20230606 AS crictl
+FROM rancher/hardened-runc:v1.1.7-build20230606 AS runc
 
 FROM scratch AS runtime-collect
 COPY --from=runc \
@@ -175,18 +174,18 @@ ENV KUBECONFIG=/etc/rancher/rke2/rke2.yaml
 # for crictl
 ENV CONTAINER_RUNTIME_ENDPOINT="unix:///run/k3s/containerd/containerd.sock"
 # for ctr
-RUN mkdir -p /run/containerd \
-    &&  ln -s /run/k3s/containerd/containerd.sock /run/containerd/containerd.sock
+RUN mkdir -p /run/containerd && \
+    ln -s /run/k3s/containerd/containerd.sock /run/containerd/containerd.sock
 # for go dns bug
 RUN mkdir -p /etc && \
     echo 'hosts: files dns' > /etc/nsswitch.conf
 # for conformance testing
 RUN chmod 1777 /tmp
-RUN set -x \
-    && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y update \
-    && apt-get -y upgrade \
-    && apt-get -y install \
+RUN set -x && \
+    export DEBIAN_FRONTEND=noninteractive && \
+    apt-get -y update && \
+    apt-get -y upgrade && \
+    apt-get -y install && \
     bash \
     bash-completion \
     ca-certificates \
