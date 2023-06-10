@@ -16,8 +16,8 @@ echo "Did test-run-basics $?"
 
 # ---
 
-[ "$ARCH" != 'amd64' ] && \
-  early-exit "Skipping remaining tests, images not available for $ARCH."
+# [ "$ARCH" != 'amd64' ] && \
+#   early-exit "Skipping remaining tests, images not available for $ARCH."
 
 E2E_OUTPUT=$artifacts test-run-sonobuoy
 echo "Did test-run-sonobuoy $?"
