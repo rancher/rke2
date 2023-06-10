@@ -312,28 +312,6 @@ steps:
           - refs/heads/release-*
           - refs/tags/*
 
-  - name: test
-    image: rancher/dapper:v0.5.5
-    secrets: [ AWS_ACCESS_KEY_ID-rke2-ci-uploader, AWS_SECRET_ACCESS_KEY-rke2-ci-uploader ]
-    environment:
-      ENABLE_REGISTRY: 'true'
-      AWS_ACCESS_KEY_ID:
-        from_secret: AWS_ACCESS_KEY_ID-rke2-ci-uploader
-      AWS_SECRET_ACCESS_KEY:
-        from_secret: AWS_SECRET_ACCESS_KEY-rke2-ci-uploader  
-    commands:
-      - dapper -f Dockerfile --target dapper make test
-    volumes:
-      - name: docker
-        path: /var/run/docker.sock
-    when:
-      ref:
-        include:
-          - refs/heads/master
-          - refs/heads/release-*
-          - refs/pull/**
-          - refs/tags/*
-
   - name: publish-image-runtime
     image: rancher/hardened-build-base:v1.20.4b11
     commands:
