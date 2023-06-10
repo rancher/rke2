@@ -33,7 +33,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
     ${REGISTRY}/rancher/hardened-flannel:v0.21.3-build20230610
 EOF
 
-if [ "${GOARCH}" != "s390x" ] || [ "${GOARCH}" != "arm64" ]; then
+if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.1.8
     ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.13.2
