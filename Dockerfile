@@ -185,7 +185,7 @@ RUN set -x && \
     export DEBIAN_FRONTEND=noninteractive && \
     apt-get -y update && \
     apt-get -y upgrade && \
-    apt-get -y install && \
+    apt-get -y install \
     bash \
     bash-completion \
     ca-certificates \
