@@ -28,7 +28,7 @@ func cleanupStaticPodsOnSelfDelete(dataDir string) cmds.StartupHook {
 		go func() {
 			defer wg.Done()
 			<-args.APIServerReady
-			cs, err := newClient(args.KubeConfigAdmin, nil)
+			cs, err := newClient(args.KubeConfigSupervisor, nil)
 			if err != nil {
 				logrus.Fatalf("spc: new k8s client: %s", err.Error())
 			}

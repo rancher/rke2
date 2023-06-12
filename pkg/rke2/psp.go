@@ -164,7 +164,7 @@ func setPSPs(cisMode bool, lbNamespace string) cmds.StartupHook {
 			logrus.Info("Applying Pod Security Policies")
 
 			nsChanged := false
-			cs, err := newClient(args.KubeConfigAdmin, nil)
+			cs, err := newClient(args.KubeConfigSupervisor, nil)
 			if err != nil {
 				logrus.Fatalf("psp: new k8s client: %s", err.Error())
 			}
