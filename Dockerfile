@@ -55,7 +55,7 @@ RUN set -x && \
     zstd \
     jq \
     python3 && \
-    if [ "${ARCH}" != "s390x" || "${GOARCH}" != "arm64" ]; then \
+    if [ "${ARCH}" != "s390x" ] || [ "${GOARCH}" != "arm64" ]; then \
     	apk add --no-cache rpm-dev; \
     fi
 
