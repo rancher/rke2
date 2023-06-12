@@ -60,7 +60,6 @@ func processOnNode(resultChan chan error, ip, cmd, expectedValue string) {
 		expectedValue,
 	)
 	if err != nil {
-		fmt.Println("error:", err)
 		resultChan <- err
 		close(resultChan)
 		return
@@ -89,7 +88,6 @@ func processOnHost(resultChan chan error, ip, cmd, expectedValue string) {
 		expectedValue,
 	)
 	if err != nil {
-		fmt.Println("error:", err)
 		resultChan <- err
 		close(resultChan)
 		return

@@ -126,8 +126,8 @@ Available arguments to create your command with examples:
 - $ -cmdNode "rke2 --version"
 - $ -expectedValueNode "v1.25.2+k3s1"
 - $ -expectedValuesUpgradedNode "v1.26.4-rc1+rke2r1"
-- $ -upgradeVersionSUC "v1.26.4-rc1+rke2r1"
-- $ -installtype INSTALL_RKE2_COMMIT=257fa2c54cda332e42b8aae248c152f4d1898218
+- $ -upgradeVersion "v1.26.4-rc1+rke2r1"
+- $ -installVersionOrCommit INSTALL_RKE2_COMMIT=257fa2c54cda332e42b8aae248c152f4d1898218
 - $ -deployWorkload true
 - $ -testCase TestCaseName
 - $ -description "Description of your test"
@@ -140,7 +140,7 @@ Example of an execution considering that the `commands` are already placed or in
   -expectedValueUpgradedHost "v1.10.1" \
   -expectedValueNode "v1.25.9+rke2r1" \            
   -expectedValueUpgradedNode "v1.26.4-rc1+rke2r1" \                                  
-  -installType INSTALL_RKE2_VERSION=v1.25.9+rke2r1
+  -installVersionOrCommit INSTALL_RKE2_VERSION=v1.25.9+rke2r1
   
 ````
 PS: If you need to send more than one command at once split them with  " , "
@@ -222,7 +222,7 @@ go test -timeout=45m -v -tags=versionbump ./entrypoint/versionbump/...  \
   -cmdHost "kubectl get deploy rke2-coredns-rke2-coredns -n kube-system -o jsonpath='{.spec.template.spec.containers[?(@.name==\"coredns\")].image}'"  \
   -expectedValueHost "v1.9.3" \
   -expectedValueUpgradedHost "v1.10.1" \
-  -installtype INSTALL_RKE2_VERSION=v1.25.9+rke2r1 \
+  -installVersionOrCommit INSTALL_RKE2_VERSION=v1.25.9+rke2r1 \
   -testCase "TestCoredns" \
   -deployWorkload true
                             
@@ -259,20 +259,20 @@ Tests can be run individually per package or per test tags from acceptance packa
 ```bash
 go test -timeout=45m -v ./entrypoint/$PACKAGE_NAME/...
 
-go test -timeout=45m -v ./entrypoint/upgradecluster/... -installtype INSTALL_RKE2_VERSION=v1.25.8+rke2r1 -upgradeVersion v1.25.8+rke2r1
+go test -timeout=45m -v ./entrypoint/upgradecluster/... -installVersionOrCommit INSTALL_RKE2_VERSION=v1.25.8+rke2r1 -upgradeVersion v1.25.8+rke2r1
 
-go test -timeout=45m -v -tags=upgrademanual ./entrypoint/upgradecluster/... -installtype INSTALL_RKE2_VERSION=v1.25.8+rke2r1
+go test -timeout=45m -v -tags=upgrademanual ./entrypoint/upgradecluster/... -installVersionOrCommit INSTALL_RKE2_VERSION=v1.25.8+rke2r1
 
-go test -timeout=45m -v -tags=upgradesuc ./entrypoint/upgradecluster/... -upgradeVersionSUC v1.25.8+rke2r1
+go test -timeout=45m -v -tags=upgradesuc ./entrypoint/upgradecluster/... -upgradeVersion v1.25.8+rke2r1
 
 ```
 Test flags:
 ```
  ${upgradeVersion} version to upgrade to
-    -upgradeVersionSUC v1.26.2+rke2r1
+    -upgradeVersion v1.26.2+rke2r1
     
  ${installType} type of installation (version or commit) + desired value    
-    -installType Version or commit
+    -installVersionOrCommit Version or commit
 ```
 Test tags:
 ```

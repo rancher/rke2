@@ -6,7 +6,7 @@ node {
     job_name = job_names[job_names.size() - 1] 
   }
   def testContainer = "${job_name}${env.BUILD_NUMBER}_test"
-  def imageName = "rke2-tf-${job_name}${env.BUILD_NUMBER}"
+  def imageName = "rke2-test-${job_name}${env.BUILD_NUMBER}"
   def envFile = ".env"
   def branch = "master"
   if ("${env.BRANCH}" != "null" && "${env.BRANCH}" != "") {
@@ -69,8 +69,8 @@ node {
                     "\nrke2_channel = \"" + RKE2_CHANNEL + "\""
                 }
 
-                sh "./tests/acceptance/shared/scripts/configure.sh"
-                sh "./tests/acceptance/shared/scripts/build.sh"
+                sh "./tests/acceptance/scripts/configure.sh"
+                sh "./tests/acceptance/scripts/build.sh"
               }
               stage('Run TestCombination') {
                 sh "docker run --name ${testContainer} -t --env-file ${envFile} " +

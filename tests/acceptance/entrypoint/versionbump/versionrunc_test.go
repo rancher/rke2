@@ -19,14 +19,14 @@ var _ = Describe("VersionTemplate Upgrade:", func() {
 		testcase.TestBuildCluster(GinkgoT(), false)
 	})
 
-	It("Validate Node", func() {
+	It("Validate Nodes", func() {
 		testcase.TestNodeStatus(
 			assert.NodeAssertReadyStatus(),
 			nil,
 		)
 	})
 
-	It("Validate Pod", func() {
+	It("Validate Pods", func() {
 		testcase.TestPodStatus(
 			assert.PodAssertRestart(),
 			assert.PodAssertReady(),
@@ -47,7 +47,10 @@ var _ = Describe("VersionTemplate Upgrade:", func() {
 				},
 			},
 			InstallUpgrade: customflag.ServiceFlag.InstallUpgrade,
-			TestConfig:     nil,
+			TestConfig: &template.TestConfig{
+				TestFunc:       template.TestCase(customflag.ServiceFlag.TestCase.TestFunc),
+				DeployWorkload: customflag.ServiceFlag.TestCase.DeployWorkload,
+			},
 		})
 	})
 })

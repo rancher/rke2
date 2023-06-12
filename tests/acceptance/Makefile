@@ -14,26 +14,26 @@ test-run:
                                 if [ -n "${TESTDIR}" ]; then \
                                     if [ "${TESTDIR}" = "upgradecluster" ]; then \
                                         if [ "${TESTTAG}" = "upgradesuc" ]; then \
-                                            go test -timeout=45m -v -tags=upgradesuc ./upgradecluster/... -upgradeVersionSUC "${ARGVALUE}"; \
+                                            go test -timeout=45m -v -tags=upgradesuc ./upgradecluster/... -upgradeVersion "${UPGRADEVERSION}"; \
                                         elif [ "${TESTTAG}" = "upgrademanual" ]; then \
-                                            go test -timeout=45m -v -tags=upgrademanual ./upgradecluster/... -installtype "${INSTALLTYPE}"; \
+                                            go test -timeout=45m -v -tags=upgrademanual ./upgradecluster/... -installVersionOrCommit "${INSTALLTYPE}"; \
                                         fi; \
                                     elif [ "${TESTDIR}" = "versionbump" ]; then \
                                         if [ "${TESTTAG}"  =  "versionbump" ]; then \
                                             go test -timeout=45m -v -tags=versionbump ./versionbump/... -cmdNode "${CMDNODE}" -expectedValueNode "${VALUENODE}" \
                                             -expectedValueUpgradedNode "${VALUENODEUPGRADED}" -cmdHost "${CMDHOST}" -expectedValueHost "${VALUEHOST}" \
-                                            -expectedValueUpgradedHost "${VALUEHOSTUPGRADED}" -installType "${INSTALLTYPE}" -testCase "${TESTCASE}" \
+                                            -expectedValueUpgradedHost "${VALUEHOSTUPGRADED}" -installVersionOrCommit "${INSTALLTYPE}" -testCase "${TESTCASE}" \
                                             -deployWorkload "${DEPLOYWORKLOAD}"; \
                                         elif [ "${TESTTAG}"  = "coredns" ]; then \
                                             go test -timeout=45m -v -tags=coredns ./versionbump/... -expectedValueNode "${VALUENODE}" \
                                             -expectedValueUpgradedNode "${VALUENODEUPGRADED}" -expectedValueHost "${VALUEHOST}" \
-                                            -expectedValueUpgradedHost "${VALUEHOSTUPGRADED}" -installType "${INSTALLTYPE}" -testCase "${TESTCASE}" \
+                                            -expectedValueUpgradedHost "${VALUEHOSTUPGRADED}" -installVersionOrCommit "${INSTALLTYPE}" -testCase "${TESTCASE}" \
                                             -deployWorkload "${DEPLOYWORKLOAD}"; \
                                         elif [ "${TESTTAG}"  = "runc" ]; then \
                                             go test -timeout=45m -v -tags=runc ./versionbump/... \
                                             -expectedValueNode ${VALUENODE} \
                                             -expectedValueUpgradedNode ${VALUENODEUPGRADED} \
-                                            -installType ${INSTALLTYPE}; \
+                                            -installVersionOrCommit ${INSTALLTYPE}; \
                                         fi; \
                                     fi; \
                                 elif [ -z "${TESTDIR}" ]; then \
@@ -69,7 +69,7 @@ remove-tf-state:
 	@rm -rf ./modules/.terraform.lock.hcl ./modules/terraform.tfstate ./modules/terraform.tfstate.backup
 
 
-#======================== Run acceptance tests locally =========================#
+#======================= Run acceptance tests locally =========================#
 
 .PHONY: test-create
 test-create:
@@ -78,12 +78,12 @@ test-create:
 
 .PHONY: test-upgrade-suc
 test-upgrade-suc:
-	@go test -timeout=45m -v -tags=upgradesuc  ./entrypoint/upgradecluster/... -upgradeVersionSUC ${ARGVALUE}
+	@go test -timeout=45m -v -tags=upgradesuc  ./entrypoint/upgradecluster/... -upgradeVersion ${UPGRADEVERSION}
 
 
 .PHONY: test-upgrade-manual
 test-upgrade-manual:
-	@go test -timeout=45m -v -tags=upgrademanual ./entrypoint/upgradecluster/... -installtype ${INSTALLTYPE}
+	@go test -timeout=45m -v -tags=upgrademanual ./entrypoint/upgradecluster/... -installVersionOrCommit ${INSTALLTYPE}
 
 
 .PHONY: test-version-runc
@@ -91,28 +91,32 @@ test-version-runc:
 	@go test -timeout=45m -v -tags=runc ./entrypoint/versionbump/... \
 		-expectedValueNode ${VALUENODE} \
 		-expectedValueUpgradedNode ${VALUENODEUPGRADED} \
-		-installType ${INSTALLTYPE}
+		-installVersionOrCommit ${INSTALLTYPE} \
+		-testCase "${TESTCASE}" \
+		-deployWorkload ${DEPLOYWORKLOAD}
 
 
 .PHONY: test-version-coredns
 test-version-coredns:
-	go test -timeout=45m -v -tags=coredns ./entrypoint/versionbump/... \
+	@go test -timeout=45m -v -tags=coredns ./entrypoint/versionbump/... \
 		-expectedValueHost ${VALUEHOST} \
 		-expectedValueUpgradedHost ${VALUEHOSTUPGRADED} \
-		-installType ${INSTALLTYPE}
+		-installVersionOrCommit ${INSTALLTYPE} \
+		-testCase "${TESTCASE}" \
+		-deployWorkload ${DEPLOYWORKLOAD}
 
 
 .PHONY: test-version-bump
 test-version-bump:
-	@go test -timeout=45m -v -tags=versionbump ./entrypoint/versionbump/... \
+	go test -timeout=45m -v -tags=versionbump ./entrypoint/versionbump/... \
 		-cmdNode "${CMDNODE}" \
 		-expectedValueNode ${VALUENODE} \
 		-expectedValueUpgradedNode ${VALUENODEUPGRADED} \
 		-cmdHost "${CMDHOST}" \
 		-expectedValueHost ${VALUEHOST} \
 		-expectedValueUpgradedHost ${VALUEHOSTUPGRADED} \
-		-installType ${INSTALLTYPE} \
-		-testCase ${TESTCASE} \
+		-installVersionOrCommit ${INSTALLTYPE} \
+		-testCase "${TESTCASE}" \
 		-deployWorkload ${DEPLOYWORKLOAD}
 
 

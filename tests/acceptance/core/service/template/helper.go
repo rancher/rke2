@@ -81,9 +81,9 @@ func getIPs() (ips []string, err error) {
 	return ips, nil
 }
 
-// GetTestCase returns the test case based on the name to be used as customflag.
-func GetTestCase(name *string) (TestCase, error) {
-	if name == nil {
+// AddTestCase returns the test case based on the name to be used as customflag.
+func AddTestCase(name string) (TestCase, error) {
+	if name == "" {
 		return func(deployWorkload bool) {}, nil
 	}
 
@@ -96,7 +96,7 @@ func GetTestCase(name *string) (TestCase, error) {
 		"TestCoredns":          testcase.TestCoredns,
 	}
 
-	if test, ok := testCase[*name]; ok {
+	if test, ok := testCase[name]; ok {
 		return test, nil
 	} else {
 		return nil, fmt.Errorf("invalid test case name")
