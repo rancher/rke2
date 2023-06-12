@@ -20,7 +20,7 @@ func setClusterRoles() cmds.StartupHook {
 			<-args.APIServerReady
 			logrus.Info("Applying Cluster Role Bindings")
 
-			config, err := clientcmd.BuildConfigFromFlags("", args.KubeConfigAdmin)
+			config, err := clientcmd.BuildConfigFromFlags("", args.KubeConfigSupervisor)
 			if err != nil {
 				logrus.Fatalf("clusterrole: new k8s client: %v", err)
 			}
