@@ -38,6 +38,8 @@ var (
 		"flannel-iface":                     dropFlag,
 		"flannel-conf":                      dropFlag,
 		"flannel-cni-conf":                  dropFlag,
+		"vpn-auth":                          dropFlag,
+		"vpn-auth-file":                     dropFlag,
 		"kubelet-arg":                       copyFlag,
 		"kube-proxy-arg":                    copyFlag,
 		"rootless":                          dropFlag,
