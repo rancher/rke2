@@ -29,7 +29,7 @@ steps:
   - name: validate-release
     image: rancher/dapper:v0.5.5
     commands:
-      - docker pull --quiet rancher/hardened-build-base:v1.20.4b2
+      - docker pull --quiet rancher/hardened-build-base:v1.20.4b11
       - dapper -f Dockerfile --target dapper make validate-release
     volumes:
       - name: docker
@@ -49,7 +49,7 @@ steps:
       AWS_SECRET_ACCESS_KEY:
         from_secret: AWS_SECRET_ACCESS_KEY-rke2-ci-uploader     
     commands:
-      - docker pull --quiet rancher/hardened-build-base:v1.20.4b2
+      - docker pull --quiet rancher/hardened-build-base:v1.20.4b11
       - docker pull --quiet alpine:3.17
       - dapper -f Dockerfile --target dapper make dapper-ci
     volumes:
@@ -85,7 +85,7 @@ steps:
   - name: package-images
     image: rancher/dapper:v0.5.5
     commands:
-      - docker pull --quiet rancher/hardened-build-base:v1.20.4b2
+      - docker pull --quiet rancher/hardened-build-base:v1.20.4b11
       - dapper -f Dockerfile --target dapper make package-images
     volumes:
       - name: docker
@@ -136,7 +136,7 @@ steps:
           - refs/tags/*
 
   - name: publish-image-runtime
-    image: rancher/hardened-build-base:v1.20.4b2
+    image: rancher/hardened-build-base:v1.20.4b11
     commands:
       - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
@@ -160,7 +160,7 @@ steps:
   - name: package-windows-images
     image: rancher/dapper:v0.5.5
     commands:
-      - docker pull --quiet rancher/hardened-build-base:v1.20.4b2
+      - docker pull --quiet rancher/hardened-build-base:v1.20.4b11
       - dapper -f Dockerfile --target dapper make package-windows-images
     when:
       event:
@@ -197,6 +197,168 @@ volumes:
     host:
       path: /var/run/docker.sock
 
+---
+kind: pipeline
+type: docker
+name: build-arm64
+
+platform:
+  os: linux
+  arch: arm64
+
+steps:
+  - name: skipfiles
+    image: plugins/git
+    commands:
+      - export NAME=$(test $DRONE_BUILD_EVENT = pull_request && echo remotes/origin/${DRONE_COMMIT_BRANCH:-master} || echo ${DRONE_COMMIT_SHA}~)
+      - export DIFF=$(git --no-pager diff --name-only $NAME | grep -v -f .droneignore);
+      - if [ -z "$DIFF" ]; then
+            echo "All files in PR are on ignore list";
+            exit 78;
+        else
+            echo "Some files in PR are not ignored, $DIFF";
+        fi;
+    when:
+      ref:
+        include:
+          - refs/heads/master
+          - refs/heads/release-*
+          - refs/pull/**
+
+  - name: validate-release
+    image: rancher/dapper:v0.5.5
+    commands:
+      - docker pull --quiet rancher/hardened-build-base:v1.20.4b11
+      - dapper -f Dockerfile --target dapper make validate-release
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    when:
+      event:
+        - tag
+      instance:
+        - drone-publish.rancher.io
+
+  - name: build
+    image: rancher/dapper:v0.5.5
+    environment:
+      ENABLE_REGISTRY: 'true'
+      AWS_ACCESS_KEY_ID:
+        from_secret: AWS_ACCESS_KEY_ID-rke2-ci-uploader
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: AWS_SECRET_ACCESS_KEY-rke2-ci-uploader     
+    commands:
+      - docker pull --quiet rancher/hardened-build-base:v1.20.4b11
+      - docker pull --quiet alpine:3.17
+      - dapper -f Dockerfile --target dapper make dapper-ci
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    when:
+      ref:
+        include:
+          - refs/heads/master
+          - refs/heads/release-*
+          - refs/pull/**
+          - refs/tags/*
+
+  - name: fossa
+    image: rancher/drone-fossa:latest
+    failure: ignore
+    settings:
+      api_key:
+        from_secret: FOSSA_API_KEY
+    when:
+      instance:
+        - drone-publish.rancher.io
+      ref:
+        include:
+          - "refs/heads/master"
+          - "refs/heads/release-*"
+          - "refs/tags/v*"
+          - "refs/pull/*"
+      event:
+        - push
+        - tag
+
+  - name: package-images
+    image: rancher/dapper:v0.5.5
+    commands:
+      - docker pull --quiet rancher/hardened-build-base:v1.20.4b11
+      - dapper -f Dockerfile --target dapper make package-images
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    when:
+      event:
+        - tag
+      instance:
+        - drone-publish.rancher.io
+
+  - name: scan
+    image: rancher/dapper:v0.5.5
+    failure: ignore
+    commands:
+      - dapper -f Dockerfile --target dapper make scan-images
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    when:
+      instance:
+        - drone-publish.rancher.io
+      ref:
+        include:
+          - refs/heads/master
+          - refs/heads/release-*
+          - refs/tags/*
+
+  - name: publish-image-runtime
+    image: rancher/hardened-build-base:v1.20.4b11
+    commands:
+      - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
+    environment:
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+      DOCKER_USERNAME:
+        from_secret: docker_username
+    volumes:
+      - name: docker
+        path: /var/run/docker.sock
+    when:
+      event:
+        - tag
+      instance:
+        - drone-publish.rancher.io
+      ref:
+        - refs/head/master
+        - refs/tags/*
+
+  - name: publish-dist-artifacts
+    image: plugins/github-release
+    settings:
+      api_key:
+        from_secret: github_token
+      checksum:
+        - sha256
+      checksum_file: CHECKSUMsum-arm64.txt
+      checksum_flatten: true
+      files:
+        - dist/artifacts/*
+      prerelease: true
+    when:
+      event:
+        - tag
+      instance:
+        - drone-publish.rancher.io
+      ref:
+        - refs/head/master
+        - refs/tags/*
+
+volumes:
+  - name: docker
+    host:
+      path: /var/run/docker.sock
 ---
 kind: pipeline
 type: docker
@@ -257,7 +419,7 @@ steps:
         - drone-publish.rancher.io
 
   - name: publish-image-runtime
-    image: rancher/hardened-build-base:v1.20.4b2
+    image: rancher/hardened-build-base:v1.20.4b11
     commands:
       - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
@@ -359,6 +521,7 @@ volumes:
 
 depends_on:
   - build-amd64
+  - build-arm64
   - build-s390x
 ---
 kind: pipeline
@@ -406,5 +569,6 @@ steps:
         - refs/tags/*
 depends_on:
   - build-amd64
+  - build-arm64
   - build-s390x
 ...

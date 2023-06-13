@@ -20,15 +20,15 @@ BUILDTAGS="selinux netgo osusergo no_stage static_build sqlite_omit_load_extensi
 GO_BUILDTAGS="${GO_BUILDTAGS} ${BUILDTAGS} ${DEBUG_TAGS}"
 
 VERSION_FLAGS="
-        -X ${K3S_PKG}/pkg/version.GitCommit=${REVISION}
-        -X ${K3S_PKG}/pkg/version.Program=${PROG}
-        -X ${K3S_PKG}/pkg/version.Version=${VERSION}
-        -X ${RKE2_PKG}/pkg/images.DefaultRegistry=${REGISTRY}
-        -X ${RKE2_PKG}/pkg/images.DefaultEtcdImage=rancher/hardened-etcd:${ETCD_VERSION}-build20230406
-        -X ${RKE2_PKG}/pkg/images.DefaultKubernetesImage=rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
-        -X ${RKE2_PKG}/pkg/images.DefaultPauseImage=rancher/pause:${PAUSE_VERSION}
-        -X ${RKE2_PKG}/pkg/images.DefaultRuntimeImage=${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
-        -X ${RKE2_PKG}/pkg/images.DefaultCloudControllerManagerImage=rancher/rke2-cloud-provider:${CCM_VERSION}
+    -X ${K3S_PKG}/pkg/version.GitCommit=${REVISION}
+    -X ${K3S_PKG}/pkg/version.Program=${PROG}
+    -X ${K3S_PKG}/pkg/version.Version=${VERSION}
+    -X ${RKE2_PKG}/pkg/images.DefaultRegistry=${REGISTRY}
+    -X ${RKE2_PKG}/pkg/images.DefaultEtcdImage=rancher/hardened-etcd:${ETCD_VERSION}-build20230609
+    -X ${RKE2_PKG}/pkg/images.DefaultKubernetesImage=rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
+    -X ${RKE2_PKG}/pkg/images.DefaultPauseImage=rancher/mirrored-pause:${PAUSE_VERSION}
+    -X ${RKE2_PKG}/pkg/images.DefaultRuntimeImage=${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
+    -X ${RKE2_PKG}/pkg/images.DefaultCloudControllerManagerImage=rancher/rke2-cloud-provider:${CCM_VERSION}
 "
 
 #STATIC_FLAGS='-extldflags "-static -Wl,--fatal-warnings"'
@@ -56,9 +56,9 @@ if type -a go-assert-static.sh >/dev/null 2>&1; then
     go-assert-static.sh bin/${PROG}
 fi
 
-if [ "${GOARCH}" != "s390x" ]; then
-  # assert that rke2 is linked to goboring
-  if type -a go-assert-boring.sh >/dev/null 2>&1; then
-    go-assert-boring.sh bin/${PROG}
-  fi
+if [ "${GOARCH}" = "amd64" ]; then
+    # assert that rke2 is linked to goboring
+    if type -a go-assert-boring.sh >/dev/null 2>&1; then
+        go-assert-boring.sh bin/${PROG}
+    fi
 fi

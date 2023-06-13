@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -e -x
 cd $(dirname $0)/..
 
@@ -16,16 +17,17 @@ echo "Did test-run-basics $?"
 
 # ---
 
-[ "$ARCH" != 'amd64' ] && \
-  early-exit "Skipping remaining tests, images not available for $ARCH."
+if [ "$ARCH" != 'amd64' ]; then
+    early-exit "Skipping remaining tests, images not available for $ARCH."
+fi
 
 E2E_OUTPUT=$artifacts test-run-sonobuoy
 echo "Did test-run-sonobuoy $?"
 # ---
 
-[ "$DRONE_BUILD_EVENT" = 'tag' ] && \
-  early-exit 'Skipping remaining tests on tag.'
-
+if [ "$DRONE_BUILD_EVENT" = 'tag' ]; then
+    early-exit 'Skipping remaining tests on tag.'
+fi
 # ---
 
 #test-run-sonobuoy mysql

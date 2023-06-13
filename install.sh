@@ -157,12 +157,12 @@ check_method_conflict() {
 # fatal if architecture not supported.
 setup_arch() {
     case ${ARCH:=$(uname -m)} in
-    amd64)
+    x86_64|amd64)
         ARCH=amd64
         SUFFIX=$(uname -s | tr '[:upper:]' '[:lower:]')-${ARCH}
         ;;
-    x86_64)
-        ARCH=amd64
+    aarch64|arm64)
+        ARCH=arm64
         SUFFIX=$(uname -s | tr '[:upper:]' '[:lower:]')-${ARCH}
         ;;
     s390x)
