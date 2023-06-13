@@ -43,9 +43,6 @@ verify-airgap-images() {
             | jq -r '.images[].repoTags[0] | select(. != null)'
     done | sort -u >$actual
 
-    echo -e "XXX - Expected: \n${expected}\n"
-    echo -e "XXX - Actual: \n${actual}\n"
-
     if ! diff $expected $actual; then
         echo '[ERROR] Failed airgap image check'
         return 1
