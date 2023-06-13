@@ -334,20 +334,6 @@ steps:
         - refs/head/master
         - refs/tags/*
 
-  - name: package-windows-images
-    image: rancher/dapper:v0.5.5
-    commands:
-      - docker pull --quiet rancher/hardened-build-base:v1.20.4b11
-      - dapper -f Dockerfile --target dapper make package-windows-images
-    when:
-      event:
-        - tag
-      instance:
-        - drone-publish.rancher.io
-    volumes:
-      - name: docker
-        path: /var/run/docker.sock
-
   - name: publish-dist-artifacts
     image: plugins/github-release
     settings:
