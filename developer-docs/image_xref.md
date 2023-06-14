@@ -1,0 +1,582 @@
+# Image Xref
+
+- This is a reference of all of the images that RKE2 uses.
+- It includes links to all binaries that are in each image and how they are built.
+- This is from the image point of view, binaries might be listed multiple times.
+
+The goal is to list all of the images we use,
+ what they are based on,
+ what Go binaries are in them and how they got there.
+
+
+- Image Xref:
+	- [rancher/rke2-runtime](https://hub.docker.com/r/rancher/rke2-runtime/tags)
+		- is built by [rancher/rke2 repo](https://github.com/rancher/rke2)
+		- [based](https://github.com/rancher/rke2/blob/master/Dockerfile#L157) on [scratch](https://hub.docker.com/_/scratch)
+		- contains 9 binaries that we build
+			- runc
+				- is copied from image [rancher/hardened-runc](https://hub.docker.com/r/rancher/hardened-runc/tags)
+				- is built by [rancher/image-build-runc](https://github.com/rancher/image-build-runc/blob/master/Dockerfile#LL24C81-L24C81)
+				- according to [github.com/opencontainers/runc](https://github.com/opencontainers/runc/blob/main/go.mod)
+			- crictl
+				- is copied from image [rancher/hardened-crictl](https://hub.docker.com/r/rancher/hardened-crictl/tags)
+				- is built by [rancher/image-build-crictl](https://github.com/rancher/image-build-crictl/blob/master/Makefile)
+				- according to [github.com/kubernetes-sigs/cri-tools](https://github.com/kubernetes-sigs/cri-tools/blob/master/go.mod)
+			- containerd
+				- is copied from image [rancher/hardened-containerd](https://hub.docker.com/r/rancher/hardened-containerd/tags)
+				- is built by [rancher/image-build-containerd](https://github.com/rancher/image-build-containerd/blob/master/Makefile#L46)
+				- according to [go.mod](https://github.com/k3s-io/containerd/blob/master/go.mod)
+			- containerd-shim
+				- is copied from image [rancher/hardened-containerd](https://hub.docker.com/r/rancher/hardened-containerd/tags)
+				- is built by [rancher/image-build-containerd](https://github.com/rancher/image-build-containerd/blob/master/Makefile#L46)
+				- according to [github.com/k3s-io/containerd](https://github.com/k3s-io/containerd/blob/master/go.mod)
+			- containerd-shim-runc-v1
+				- is copied from image [rancher/hardened-containerd](https://hub.docker.com/r/rancher/hardened-containerd/tags)
+				- is built by [rancher/image-build-containerd](https://github.com/rancher/image-build-containerd/blob/master/Makefile#L46)
+				- according to [github.com/k3s-io/containerd](https://github.com/k3s-io/containerd/blob/master/go.mod)
+			- containerd-shim-runc-v2
+				- is copied from image [rancher/hardened-containerd](https://hub.docker.com/r/rancher/hardened-containerd/tags)
+				- is built by [rancher/image-build-containerd](https://github.com/rancher/image-build-containerd/blob/master/Makefile#L46)
+				- according to [github.com/k3s-io/containerd](https://github.com/k3s-io/containerd/blob/master/go.mod)
+			- ctr
+				- is copied from image [rancher/hardened-containerd](https://hub.docker.com/r/rancher/hardened-containerd/tags)
+				- is built by [rancher/image-build-containerd](https://github.com/rancher/image-build-containerd/blob/master/Makefile#L46)
+				- according to [github.com/k3s-io/containerd](https://github.com/k3s-io/containerd/blob/master/go.mod)
+			- kubectl
+				- is copied from image [rancher/hardened-kubernetes](https://hub.docker.com/r/rancher/hardened-kubernetes/tags)
+				- is built by [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes/blob/master/Makefile#L42)
+				- according to [github.com/kubernetes/kubernetes](https://github.com/kubernetes/kubernetes/blob/master/go.mod)
+			- kubelet
+				- is copied from image [rancher/hardened-kubernetes](https://hub.docker.com/r/rancher/hardened-kubernetes/tags)
+				- is built by [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes/blob/master/Makefile#L42)
+				- according to [github.com/kubernetes/kubernetes](https://github.com/kubernetes/kubernetes/blob/master/go.mod)
+	- [rancher/hardened-runc](https://hub.docker.com/r/rancher/hardened-runc/tags)
+		- is built by [rancher/image-build-runc](https://github.com/rancher/image-build-runc/blob/master/Makefile#L47)
+		- [based](https://github.com/rancher/image-build-runc/blob/master/Dockerfile#LL32C1-L32C9) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- contains 1 [binary](https://github.com/rancher/image-build-runc/blob/master/Dockerfile#LL24C70-L24C81) that we build
+		- runc
+			- is built by [rancher/image-build-runc](https://github.com/rancher/image-build-runc/blob/master/Dockerfile#LL24C70-L24C81)
+			- using [make](https://github.com/opencontainers/runc/blob/main/Makefile#L68)
+			- according to [github.com/opencontainers/runc](https://github.com/opencontainers/runc/blob/main/go.mod)
+	- [rancher/hardened-crictl](https://hub.docker.com/r/rancher/hardened-crictl/tags)
+		- is built by [rancher/image-build-crictl](https://github.com/rancher/image-build-crictl/blob/master/Makefile)
+		- [based](https://github.com/rancher/image-build-crictl/blob/master/Dockerfile#L32) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 1 [binary](https://github.com/rancher/image-build-crictl/blob/master/Dockerfile#LL24C5-L24C83) that we build
+			- crictl
+				- is built by [rancher/image-build-crictl](https://github.com/rancher/image-build-crictl/blob/master/Dockerfile#LL24C5-L24C83)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [github.com/kubernetes-sigs/cri-tools](https://github.com/kubernetes-sigs/cri-tools/blob/master/go.mod)
+	- [rancher/hardened-containerd](https://hub.docker.com/r/rancher/hardened-containerd/tags)
+		- is built by [rancher/image-build-containerd](https://github.com/rancher/image-build-containerd/blob/master/Makefile#L46)
+		- [based](https://github.com/rancher/image-build-containerd/blob/master/Dockerfile#L59) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 6 [binaries](https://github.com/rancher/image-build-containerd/blob/master/Dockerfile#LL44C1-L49C102) that we build
+			- ctr
+				- is built by [rancher/image-build-containerd](https://github.com/rancher/image-build-containerd/blob/master/Dockerfile#LL44C1-L49C102)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [github.com/k3s-io/containerd](https://github.com/k3s-io/containerd/blob/master/go.mod)
+			- containerd
+				- is built by [rancher/image-build-containerd](https://github.com/rancher/image-build-containerd/blob/master/Dockerfile#LL44C1-L49C102)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [github.com/k3s-io/containerd](https://github.com/k3s-io/containerd/blob/master/go.mod)
+			- containerd-stress
+				- is built by [rancher/image-build-containerd](https://github.com/rancher/image-build-containerd/blob/master/Dockerfile#LL44C1-L49C102)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [github.com/k3s-io/containerd](https://github.com/k3s-io/containerd/blob/master/go.mod)
+			- containerd-shim
+				- is built by [rancher/image-build-containerd](https://github.com/rancher/image-build-containerd/blob/master/Dockerfile#LL44C1-L49C102)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [github.com/k3s-io/containerd](https://github.com/k3s-io/containerd/blob/master/go.mod)
+			- containerd-shim-runc-v1
+				- is built by [rancher/image-build-containerd](https://github.com/rancher/image-build-containerd/blob/master/Dockerfile#LL44C1-L49C102)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [github.com/k3s-io/containerd](https://github.com/k3s-io/containerd/blob/master/go.mod)
+			- containerd-shim-runc-v2
+				- is built by [rancher/image-build-containerd](https://github.com/rancher/image-build-containerd/blob/master/Dockerfile#LL44C1-L49C102)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [github.com/k3s-io/containerd](https://github.com/k3s-io/containerd/blob/master/go.mod)
+	- [rancher/hardened-kubernetes](https://hub.docker.com/r/rancher/hardened-kubernetes/tags)
+		- is built by [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes/blob/master/Makefile#L42)
+		- [based](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#L77) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 14 binaries that we build
+			- 8 binaries from k3s-root (and 2 shell scripts, not listed)
+				- we download configs from buildroot
+					- we use the [default buildroot version](https://github.com/k3s-io/k3s-root/blob/master/scripts/download#L5)
+				- the buildroot configs say how to download package source and build it
+				- the [k3s-io/root ci](https://drone-publish.k3s.io/k3s-io/k3s-root/11/1/2) does build packages from source
+					- using the buildroot tool
+			- ipset
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#LL59C24-L59C57)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot ipset config](https://github.com/buildroot/buildroot/tree/master/package/ipset)
+			- ebtables-legacy
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#LL59C24-L59C57)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot ebtables config](https://github.com/buildroot/buildroot/blob/master/package/ebtables/ebtables.mk#L22)
+			- ebtablesd
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#LL59C24-L59C57)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot ebtables config](https://github.com/buildroot/buildroot/blob/master/package/ebtables/ebtables.mk#LL44C62-L44C62)
+			- ebtablesu
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#LL59C24-L59C57)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot ebtables config](https://github.com/buildroot/buildroot/blob/master/package/ebtables/ebtables.mk#LL44C62-L44C62)
+			- iptables-apply
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#LL59C24-L59C57)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot iptables config](https://github.com/buildroot/buildroot/blob/master/package/iptables/iptables.mk#L3)
+			- xtables-legacy-multi
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#LL59C24-L59C57)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot xtables-addons config](https://github.com/buildroot/buildroot/blob/bab89b35f018a332c7d42ed6e6cb8d72fdeac4b2/package/xtables-addons/xtables-addons.mk#L3)
+			- xtables-nft-multi
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#LL59C24-L59C57)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot xtables-addons config](https://github.com/buildroot/buildroot/blob/bab89b35f018a332c7d42ed6e6cb8d72fdeac4b2/package/xtables-addons/xtables-addons.mk#L3)
+			- kube-apiserver
+				- is built in [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#LL63C18-L63C79)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [github.com/kubernetes/kubernetes](https://github.com/kubernetes/kubernetes/blob/master/go.mod)
+			- kube-controller-manager
+				- is built in [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#LL63C18-L63C79)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [github.com/kubernetes/kubernetes](https://github.com/kubernetes/kubernetes/blob/master/go.mod)
+			- kube-scheduler
+				- is built in [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#LL63C18-L63C79)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [github.com/kubernetes/kubernetes](https://github.com/kubernetes/kubernetes/blob/master/go.mod)
+			- kube-proxy
+				- is built in [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#LL63C18-L63C79)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [github.com/kubernetes/kubernetes](https://github.com/kubernetes/kubernetes/blob/master/go.mod)
+			- kubeadm
+				- is built in [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#LL63C18-L63C79)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [github.com/kubernetes/kubernetes](https://github.com/kubernetes/kubernetes/blob/master/go.mod)
+			- kubectl
+				- is built in [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#LL63C18-L63C79)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [github.com/kubernetes/kubernetes](https://github.com/kubernetes/kubernetes/blob/master/go.mod)
+			- kubelet
+				- is built in [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes/blob/master/Dockerfile#LL63C18-L63C79)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [github.com/kubernetes/kubernetes](https://github.com/kubernetes/kubernetes/blob/master/go.mod)
+	- [rancher/rke2-upgrade](https://hub.docker.com/r/rancher/rke2-upgrade/tags)
+		- is built by [rancher/rke2-upgrade repo](https://github.com/rancher/rke2-upgrade)
+		- [based](https://github.com/rancher/rke2-upgrade/blob/master/Dockerfile#LL24C15-L24C15) on [alpine](https://hub.docker.com/_/alpine/tags)
+		- is built by [drone docker plugin](https://github.com/rancher/rke2-upgrade/blob/master/.drone.yml#LL18C24-L18C24)
+		- has 2 binaries that we build
+			- rke2
+				- is copied from [rancher/rke2/releases/download](https://github.com/rancher/rke2-upgrade/blob/master/Dockerfile#LL12C69-L12C99)
+				- is built by [rancher/rke2](https://github.com/rancher/rke2/blob/master/Makefile#L20)
+				- using [rancher/rke2/scripts/build-binary](https://github.com/rancher/rke2/blob/master/scripts/build-binary#LL47C26-L47C36)
+				- according to [rancher/rke2](https://github.com/rancher/rke2/blob/master/go.mod)
+			- kubectl
+				- is copied from [storage.googleapis.com/kubernetes-release/release](https://storage.googleapis.com/kubernetes-release/release/v1.24.14/bin/linux/amd64/kubectl)
+				- is built by [kubernets/kubernetes](https://github.com/kubernetes/kubernetes)
+				- according to [kubernetes/kubernetes](https://github.com/kubernetes/kubernetes/blob/master/go.mod)
+	- [rancher/hardened-build-base](https://hub.docker.com/r/rancher/hardened-build-base/tags)
+		- built by [rancher/image-build-base repo](https://github.com/rancher/image-build-base)
+		- [based](https://github.com/rancher/image-build-base/blob/master/Dockerfile.amd64#L11) on [golang alpine](https://hub.docker.com/_/golang/tags?page=1&name=1.20.3-alpine3.17)
+		- contains 0 binaries that we build
+	- [rancher/hardened-calico](https://hub.docker.com/r/rancher/hardened-calico/tags)
+		- is built by [rancher/image-build-calico repo](https://github.com/rancher/image-build-calico)
+		- [based](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L204) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- contains 19 binaries that we build
+			- runit
+				- this is built by [rancher/image-build-calico](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L153)
+				- using make
+					- the git repo is not easily available
+					- we download the sourcecode from http://smarden.org/runit/runit-2.1.2.tar.gz
+					- we unpack it and use the src/install script it ships with to compile it
+					- the program is written in c and we compile it with gcc and make
+					- the makefile ships with the code
+			- ebtables-legacy
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L35)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot ebtables config](https://github.com/buildroot/buildroot/blob/master/package/ebtables/ebtables.mk#L22)
+			- ebtablesd
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L35)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot ebtables config](https://github.com/buildroot/buildroot/blob/master/package/ebtables/ebtables.mk#LL44C62-L44C62)
+			- ebtablesu
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L35)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot ebtables config](https://github.com/buildroot/buildroot/blob/master/package/ebtables/ebtables.mk#LL44C62-L44C62)
+			- iptables-apply
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L35)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot iptables config](https://github.com/buildroot/buildroot/blob/master/package/iptables/iptables.mk#L3)
+			- xtables-legacy-multi
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L35)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot xtables-addons config](https://github.com/buildroot/buildroot/blob/bab89b35f018a332c7d42ed6e6cb8d72fdeac4b2/package/xtables-addons/xtables-addons.mk#L3)
+			- xtables-nft-multi
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L35)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot xtables-addons config](https://github.com/buildroot/buildroot/blob/bab89b35f018a332c7d42ed6e6cb8d72fdeac4b2/package/xtables-addons/xtables-addons.mk#L3)
+			- bird
+				- is [copied](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L164) from [calico/bird](https://hub.docker.com/r/calico/bird/tags)
+				- is built by make using gcc
+					- we do not build this
+					- I am not able to find any code which automatically builds or pushes the image
+				- according to [create_binaries.sh](https://github.com/projectcalico/bird/blob/feature-ipinip/create_binaries.sh#L58)
+			- bird6
+				- is [copied](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L164) from [calico/bird](https://hub.docker.com/r/calico/bird/tags)
+				- is built by make using gcc
+					- we do not build this
+					- I am not able to find any code which automatically builds or pushes the image
+				- according to [create_binaries.sh](https://github.com/projectcalico/bird/blob/feature-ipinip/create_binaries.sh#L58)
+			- birdcl
+				- is [copied](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L164) from [calico/bird](https://hub.docker.com/r/calico/bird/tags)
+				- is built by make using gcc
+					- we do not build this
+					- I am not able to find any code which automatically builds or pushes the image
+				- according to [create_binaries.sh](https://github.com/projectcalico/bird/blob/feature-ipinip/create_binaries.sh#L58)
+			- birdcl6
+				- is [copied](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L164) from [calico/bird](https://hub.docker.com/r/calico/bird/tags)
+				- is built by make using gcc
+					- we do not build this
+					- I am not able to find any code which automatically builds or pushes the image
+				- according to [create_binaries.sh](https://github.com/projectcalico/bird/blob/feature-ipinip/create_binaries.sh#L58)
+			- calicoctl
+				- is built by [rancher/image-build-calico repo](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L47)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [projectcalico/calico go.mod](https://github.com/projectcalico/calico/blob/master/go.mod)
+			- calico
+				- is built by [rancher/image-build-calico](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L68)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [projectcalico/calico](https://github.com/projectcalico/calico/blob/master/go.mod)
+			- calico-ipam
+				- is built by [rancher/image-build-calico](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L68)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [projectcalico/calico](https://github.com/projectcalico/calico/blob/master/go.mod)
+			- install (calico cni plugin)
+				- is built by [rancher/image-build-calico](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L68)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [projectcalico/calico](https://github.com/projectcalico/calico/blob/master/go.mod)
+			- calico-node
+				- is built by [rancher/image-build-calico](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L90)
+				- using [go build](https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies) tool
+				- according to [projectcalico/calico](https://github.com/projectcalico/calico/blob/master/go.mod)
+			- flexvoldriver
+				- is built by [rancher/image-build-calico](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L116)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [projectcalico/calico](https://github.com/projectcalico/calico/blob/master/go.mod)
+			- kube-controllers
+				- is built by [rancher/image-build-calico](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L127)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [projectcalico/calico](https://github.com/projectcalico/calico/blob/master/go.mod)
+			- check-status
+				- is built by [rancher/image-build-calico](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L130)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [projectcalico/calico](https://github.com/projectcalico/calico/blob/master/go.mod)
+	- [rancher/hardened-cni-plugins](https://hub.docker.com/r/rancher/hardened-cni-plugins/tags)
+		- is built by [rancher/image-build-cni-plugins repo](https://github.com/rancher/image-build-cni-plugins/blob/main/Makefile#L32)
+		- [based](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L50) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 18 binary that we build
+			- bandwidth
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- bridge
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- dhcp
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- dummy
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- firewall
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- host-device
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- host-local
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- ipvlan
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- loopback
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- macvlan
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- portmap
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- ptp
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- sbr
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- static
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- tuning
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- vlan
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- vrf
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L18)
+				- using [build_linux.sh](https://github.com/containernetworking/plugins/blob/main/build_linux.sh#L20)
+				- according to [containernetworking/plugins](https://github.com/containernetworking/plugins/blob/main/go.mod)
+			- flannel
+				- is built by [rancher/image-build-cni-plugins](https://github.com/rancher/image-build-cni-plugins/blob/main/Dockerfile#L28)
+				- using `make` and [build_flannel.sh](https://github.com/flannel-io/cni-plugin/blob/main/scripts/build_flannel.sh)
+				- according to [flannel-io/cni-plugin go.mod](https://github.com/flannel-io/cni-plugin/blob/main/go.mod)
+	- [rancher/hardened-coredns](https://hub.docker.com/r/rancher/hardened-coredns/tags)
+		- [built](https://github.com/rancher/image-build-coredns/blob/master/Makefile#L43) by [rancher/image-build-coredns repo](https://github.com/rancher/image-build-coredns)
+		- [based](https://github.com/rancher/image-build-coredns/blob/master/Dockerfile#L53) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 1 bin that we build
+			- coredns
+				- built by [rancher/image-build-coredns](https://github.com/rancher/image-build-coredns/blob/master/Dockerfile#L26)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [coredns/coredns](https://github.com/coredns/coredns/blob/master/go.mod)
+	- [rancher/hardened-cluster-autoscaler](https://hub.docker.com/r/rancher/hardened-cluster-autoscaler/tags)
+		- [built](https://github.com/rancher/image-build-coredns/blob/master/Makefile#L71) by [rancher/image-build-coredns](https://github.com/rancher/image-build-coredns)
+		- [based](https://github.com/rancher/image-build-coredns/blob/master/Dockerfile#L57) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 1 bin that we build
+			- cluster-proportional-autoscaler
+				- built by [rancher/image-build-coredns](https://github.com/rancher/image-build-coredns/blob/master/Dockerfile#L46)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [kubernetes-sig/cluster-proportional-autoscaler](https://github.com/kubernetes-sigs/cluster-proportional-autoscaler/blob/master/go.mod)
+	- [rancher/hardened-dns-node-cache](https://hub.docker.com/r/rancher/hardened-dns-node-cache/tags)
+		- [built](https://github.com/rancher/image-build-dns-nodecache/blob/main/Makefile#L49) by [rancher/image-build-dns-nodecache repo](https://github.com/rancher/image-build-dns-nodecache)
+		- [based](https://github.com/rancher/image-build-dns-nodecache/blob/main/Dockerfile#L37) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 8 bin that we build
+			- ipset
+				- is [copied](https://github.com/rancher/image-build-dns-nodecache/blob/main/Dockerfile#L4) from [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot ipset config](https://github.com/buildroot/buildroot/tree/master/package/ipset)
+			- ebtables-legacy
+				- is [copied](https://github.com/rancher/image-build-dns-nodecache/blob/main/Dockerfile#L4) from [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot ebtables config](https://github.com/buildroot/buildroot/blob/master/package/ebtables/ebtables.mk#L22)
+			- ebtablesd
+				- is [copied](https://github.com/rancher/image-build-dns-nodecache/blob/main/Dockerfile#L4) from [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot ebtables config](https://github.com/buildroot/buildroot/blob/master/package/ebtables/ebtables.mk#LL44C62-L44C62)
+			- ebtablesu
+				- is [copied](https://github.com/rancher/image-build-dns-nodecache/blob/main/Dockerfile#L4) from [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot ebtables config](https://github.com/rancher/image-build-dns-nodecache/blob/main/Dockerfile#L4)
+			- iptables-apply
+				- is [copied](https://github.com/rancher/image-build-dns-nodecache/blob/main/Dockerfile#L4) from [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot iptables config](https://github.com/buildroot/buildroot/blob/master/package/iptables/iptables.mk#L3)
+			- xtables-legacy-multi
+				- is [copied](https://github.com/rancher/image-build-dns-nodecache/blob/main/Dockerfile#L4) from [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot xtables-addons config](https://github.com/buildroot/buildroot/blob/bab89b35f018a332c7d42ed6e6cb8d72fdeac4b2/package/xtables-addons/xtables-addons.mk#L3)
+			- xtables-nft-multi
+				- is [copied](https://github.com/rancher/image-build-dns-nodecache/blob/main/Dockerfile#L4) from [rancher/image-build-kubernetes](https://github.com/rancher/image-build-kubernetes)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot xtables-addons config](https://github.com/buildroot/buildroot/blob/bab89b35f018a332c7d42ed6e6cb8d72fdeac4b2/package/xtables-addons/xtables-addons.mk#L3)
+			- node-cache
+				- is [built](https://github.com/rancher/image-build-dns-nodecache/blob/main/Dockerfile#L33) by [rancher/image-build-dns-nodecache](https://github.com/rancher/image-build-dns-nodecache)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [kubernetes/dns](https://github.com/kubernetes/dns/blob/master/go.mod)
+	- [rancher/hardened-etcd](https://hub.docker.com/r/rancher/hardened-etcd/tags)
+		- is [built](https://github.com/rancher/image-build-etcd/blob/master/Makefile#L37) by [rancher/image-build-etcd repo](https://github.com/rancher/image-build-etcd)
+		- [based](https://github.com/rancher/image-build-etcd/blob/master/Dockerfile#L43) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 2 bin that we build
+			- etcd
+				- is [built](https://github.com/rancher/image-build-etcd/blob/master/Dockerfile#L27) by [rancher/image-build-etcd](https://github.com/rancher/image-build-etcd)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [k3s-io/etcd go.mod](https://github.com/k3s-io/etcd/blob/master/go.mod)
+			- etcdctl
+				- is [built](https://github.com/rancher/image-build-etcd/blob/master/Dockerfile#L27) by [rancher/image-build-etcd](https://github.com/rancher/image-build-etcd)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [k3s-io/etcd go.mod](https://github.com/k3s-io/etcd/blob/master/go.mod)
+	- [rancher/hardened-flannel](https://hub.docker.com/r/rancher/hardened-flannel/tags)
+		- is [built](https://github.com/rancher/image-build-flannel/blob/master/Makefile#L37) by [rancher/image-build-flannel repo](https://github.com/rancher/image-build-flannel)
+		- [based](https://github.com/rancher/image-build-flannel/blob/master/Makefile#L37) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 7 bin that we build
+			- ebtables-legacy
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L35)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot ebtables config](https://github.com/buildroot/buildroot/blob/master/package/ebtables/ebtables.mk#L22)
+			- ebtablesd
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L35)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot ebtables config](https://github.com/buildroot/buildroot/blob/master/package/ebtables/ebtables.mk#LL44C62-L44C62)
+			- ebtablesu
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L35)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot ebtables config](https://github.com/buildroot/buildroot/blob/master/package/ebtables/ebtables.mk#LL44C62-L44C62)
+			- iptables-apply
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L35)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot iptables config](https://github.com/buildroot/buildroot/blob/master/package/iptables/iptables.mk#L3)
+			- xtables-legacy-multi
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L35)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot xtables-addons config](https://github.com/buildroot/buildroot/blob/bab89b35f018a332c7d42ed6e6cb8d72fdeac4b2/package/xtables-addons/xtables-addons.mk#L3)
+			- xtables-nft-multi
+				- is copied from [k3s-io/k3s-root/releases/download](https://github.com/rancher/image-build-calico/blob/master/Dockerfile#L35)
+				- is built by [k3s-io/root](https://github.com/k3s-io/k3s-root/blob/master/scripts/build#L11)
+				- according to [buildroot xtables-addons config](https://github.com/buildroot/buildroot/blob/bab89b35f018a332c7d42ed6e6cb8d72fdeac4b2/package/xtables-addons/xtables-addons.mk#L3)
+			- flanneld
+				- is [built](https://github.com/rancher/image-build-flannel/blob/master/Dockerfile#L27) by [rancher/image-build-flannel](https://github.com/rancher/image-build-flannel)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [flannel-io/flannel go.mod](https://github.com/flannel-io/flannel/blob/master/go.mod)
+	- [rancher/hardened-ib-sriov-cni](https://hub.docker.com/r/rancher/hardened-ib-sriov-cni/tags)
+		- is [built](https://github.com/rancher/image-build-ib-sriov-cni/blob/main/Makefile#L32) by [rancher/image-build-ib-sriov-cni repo](https://github.com/rancher/image-build-ib-sriov-cni)
+		- [based](https://github.com/rancher/image-build-ib-sriov-cni/blob/main/Dockerfile#L19) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 1 bin that we build
+			- ib-sriov
+				- is [built](https://github.com/rancher/image-build-ib-sriov-cni/blob/main/Dockerfile#L16) by [rancher/image-build-ib-sriov-cni](https://github.com/rancher/image-build-ib-sriov-cni)
+				- using [make](https://github.com/k8snetworkplumbingwg/ib-sriov-cni/blob/master/Makefile#L63)
+				- according to [k8snetworkingplumbingwg/ib-sriov-cni go.mod](https://github.com/k8snetworkplumbingwg/ib-sriov-cni/blob/master/go.mod)
+	- [rancher/hardened-k8s-metrics-server](https://hub.docker.com/r/rancher/hardened-k8s-metrics-server/tags)
+		- is [built](https://github.com/rancher/image-build-k8s-metrics-server/blob/master/Makefile#L38) by [rancher/image-build-k8s-metrics-server repo](https://github.com/rancher/image-build-k8s-metrics-server)
+		- [based](https://github.com/rancher/image-build-k8s-metrics-server/blob/master/Dockerfile#L43) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 1 bin that we build
+			- metrics-server
+				- is [built](https://github.com/rancher/image-build-k8s-metrics-server/blob/master/Dockerfile#L35) by [rancher/image-build-k8s-metrics-server](https://github.com/rancher/image-build-k8s-metrics-server)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [kubernetes-sigs/metrics-server go.mod](https://github.com/kubernetes-sigs/metrics-server/blob/master/go.mod)
+	- [rancher/hardened-multus-cni](https://hub.docker.com/r/rancher/hardened-multus-cni/tags)
+		- is [built](https://github.com/rancher/image-build-multus/blob/main/Makefile#L43) by [rancher/image-build-multus repo](https://github.com/rancher/image-build-multus)
+		- [based](https://github.com/rancher/image-build-multus/blob/main/Makefile#L43) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 3 bin that we build
+			- multus
+				- is [built](https://github.com/rancher/image-build-multus/blob/main/Dockerfile#L18) by [rancher/image-build-multus](https://github.com/rancher/image-build-multus)
+				- using [hack/build-go.sh](https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/hack/build-go.sh)
+				- according to [k8snetworkplumbingwg/multus-cni go.mod](https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/go.mod)
+			- multus-daemon
+				- is [built](https://github.com/rancher/image-build-multus/blob/main/Dockerfile#L18) by [rancher/image-build-multus](https://github.com/rancher/image-build-multus)
+				- using [hack/build-go.sh](https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/hack/build-go.sh)
+				- according to [k8snetworkplumbingwg/multus-cni go.mod](https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/go.mod)
+			- generate-kubeconfig
+				- is [built](https://github.com/rancher/image-build-multus/blob/main/Dockerfile#L18) by [rancher/image-build-multus](https://github.com/rancher/image-build-multus)
+				- using [hack/build-go.sh](https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/hack/build-go.sh)
+				- according to [k8snetworkplumbingwg/multus-cni go.mod](https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/go.mod)
+	- [rancher/rke2-cloud-provider](https://hub.docker.com/r/rancher/rke2-cloud-provider/tags)
+		- is [built](https://github.com/rancher/image-build-rke2-cloud-provider/blob/main/Makefile#L31) by [rancher/image-build-rke2-cloud-provider repo](https://github.com/rancher/image-build-rke2-cloud-provider)
+		- [based](https://github.com/rancher/image-build-rke2-cloud-provider/blob/main/Dockerfile#L27) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 1 bin that we build
+			- rke2-cloud-provider
+				- is [built](https://github.com/rancher/image-build-rke2-cloud-provider/blob/main/Dockerfile#L18) by [rancher/image-build-rke2-cloud-provider](https://github.com/rancher/image-build-rke2-cloud-provider)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [rancher/image-build-rke2-cloud-provider go.mod](https://github.com/rancher/image-build-rke2-cloud-provider/blob/main/go.mod)
+	- [rancher/hardened-sriov-cni](https://hub.docker.com/r/rancher/hardened-sriov-cni/tags)
+		- is [built](https://github.com/rancher/image-build-sriov-cni/blob/main/Makefile#L26) by [rancher/image-build-sriov-cni repo](https://github.com/rancher/image-build-sriov-cni)
+			- this was one of the few Dockerfiles that I had to send in build args to make work
+		- [based](https://github.com/rancher/image-build-sriov-cni/blob/main/Dockerfile#L19) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 1 bin that we build
+			- sriov
+				- is [built](https://github.com/rancher/image-build-sriov-cni/blob/main/Dockerfile#L16) by [rancher/image-build-sriov-cni](https://github.com/rancher/image-build-sriov-cni)
+				- using [make](https://github.com/k8snetworkplumbingwg/sriov-cni/blob/master/Makefile#L54)
+				- according to [k8snetworkplumbingwg/sriov-cni go mod](https://github.com/k8snetworkplumbingwg/sriov-cni/blob/master/go.mod)
+	- [rancher/hardened-sriov-network-device-plugin](https://hub.docker.com/r/rancher/hardened-sriov-network-device-plugin/tags)
+		- is [built](https://github.com/rancher/image-build-sriov-network-device-plugin/blob/main/Makefile#L33) by [rancher/image-build-sriov-network-device-plugin repo](https://github.com/rancher/image-build-sriov-network-device-plugin)
+		- [based](https://github.com/rancher/image-build-sriov-network-device-plugin/blob/main/Dockerfile#L19) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 1 bin that we build
+			- sriovdp
+				- is [built](https://github.com/rancher/image-build-sriov-network-device-plugin/blob/main/Dockerfile#L16) by [rancher/image-build-sriov-network-device-plugin repo](https://github.com/rancher/image-build-sriov-network-device-plugin)
+				- using [make](https://github.com/k8snetworkplumbingwg/sriov-network-device-plugin/blob/master/Makefile#L70)
+				- according to [k8snetworkplumbingwg/sriov-network-device-plugin go mod](https://github.com/k8snetworkplumbingwg/sriov-network-device-plugin/blob/master/go.mod)
+	- [rancher/hardened-sriov-network-resources-injector](https://hub.docker.com/r/rancher/hardened-sriov-network-resources-injector/tags)
+		- is [built](https://github.com/rancher/image-build-sriov-network-resources-injector/blob/main/Makefile#L32) by [rancher/image-build-sriov-network-resources-injector repo](https://github.com/rancher/image-build-sriov-network-resources-injector)
+		- [based](https://github.com/rancher/image-build-sriov-network-resources-injector/blob/main/Dockerfile#L17) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 2 bin that we build
+			- webhook
+				- is [built](https://github.com/rancher/image-build-sriov-network-resources-injector/blob/main/Dockerfile#L14) by [rancher/image-build-sriov-network-resources-injector repo](https://github.com/rancher/image-build-sriov-network-resources-injector)
+				- using [make](https://github.com/k8snetworkplumbingwg/network-resources-injector/blob/master/Makefile#L18) to call [build.sh](https://github.com/k8snetworkplumbingwg/network-resources-injector/blob/master/scripts/build.sh) which then uses [go install](https://go.dev/ref/mod#go-install)
+				- according to [k8snetworkplumbingwg/network-resources-injector go mod](https://github.com/k8snetworkplumbingwg/network-resources-injector/blob/master/go.mod)
+			- installer
+				- is [built](https://github.com/rancher/image-build-sriov-network-resources-injector/blob/main/Dockerfile#L14) by [rancher/image-build-sriov-network-resources-injector repo](https://github.com/rancher/image-build-sriov-network-resources-injector)
+				- using [make](https://github.com/k8snetworkplumbingwg/network-resources-injector/blob/master/Makefile#L18) to call [build.sh](https://github.com/k8snetworkplumbingwg/network-resources-injector/blob/master/scripts/build.sh) which then uses [go install](https://go.dev/ref/mod#go-install)
+				- according to [k8snetworkplumbingwg/network-resources-injector go mod](https://github.com/k8snetworkplumbingwg/network-resources-injector/blob/master/go.mod)
+	- [rancher/hardened-sriov-network-operator](https://hub.docker.com/r/rancher/hardened-sriov-network-operator/tags)
+		- is [built](https://github.com/rancher/image-build-sriov-operator/blob/main/Makefile#L35) by [rancher/image-build-sriov-operator repo](https://github.com/rancher/image-build-sriov-operator)
+		- [based](https://github.com/rancher/image-build-sriov-operator/blob/main/Dockerfile.amd64#L48) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 1 bin that we build
+			- manager
+				- is [built](https://github.com/rancher/image-build-sriov-operator/blob/main/Dockerfile.amd64#L24) by [rancher/image-build-sriov-operator repo](https://github.com/rancher/image-build-sriov-operator)
+				- using [make](https://github.com/k8snetworkplumbingwg/sriov-network-operator/blob/master/Makefile#L63) to call [hack/build-go.sh](https://github.com/k8snetworkplumbingwg/sriov-network-operator/blob/master/hack/build-go.sh#L40) which uses `go build`
+				- according to [k8snetworkplumbingwg/sriov-network-operator go mod](https://github.com/k8snetworkplumbingwg/sriov-network-operator/blob/master/go.mod)
+	- [rancher/hardened-sriov-network-config-daemon](https://hub.docker.com/r/rancher/hardened-sriov-network-config-daemon/tags)
+		- is [built](https://github.com/rancher/image-build-sriov-operator/blob/main/Makefile#L64) by [rancher/image-build-sriov-operator repo](https://github.com/rancher/image-build-sriov-operator)
+		- [based](https://github.com/rancher/image-build-sriov-operator/blob/main/Dockerfile.amd64#L29) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 1 bin that we build
+			- sriov-network-config-daemon
+				- is [built](https://github.com/rancher/image-build-sriov-operator/blob/main/Dockerfile.amd64#L26) by [rancher/image-build-sriov-operator repo](https://github.com/rancher/image-build-sriov-operator)
+				- using [make](https://github.com/k8snetworkplumbingwg/sriov-network-operator/blob/master/Makefile#L63) to call [hack/build-go.sh](https://github.com/k8snetworkplumbingwg/sriov-network-operator/blob/master/hack/build-go.sh#L40) which uses `go build`
+				- according to [k8snetworkplumbingwg/sriov-network-operator go mod](https://github.com/k8snetworkplumbingwg/sriov-network-operator/blob/master/go.mod)
+	- [rancher/hardened-sriov-network-webhook](https://hub.docker.com/r/rancher/hardened-sriov-network-webhook/tags)
+		- is [built](https://github.com/rancher/image-build-sriov-operator/blob/main/Makefile#L93) by [rancher/image-build-sriov-operator repo](https://github.com/rancher/image-build-sriov-operator)
+		- [based](https://github.com/rancher/image-build-sriov-operator/blob/main/Dockerfile.amd64#L40) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 1 bin that we build
+			- webhook
+				- is [built](https://github.com/rancher/image-build-sriov-operator/blob/main/Dockerfile.amd64#L25) by [rancher/image-build-sriov-operator repo](https://github.com/rancher/image-build-sriov-operator)
+				- using [make](https://github.com/k8snetworkplumbingwg/sriov-network-operator/blob/master/Makefile#L63) to call [hack/build-go.sh](https://github.com/k8snetworkplumbingwg/sriov-network-operator/blob/master/hack/build-go.sh#L40) which uses `go build`
+				- according to [k8snetworkplumbingwg/sriov-network-operator go mod](https://github.com/k8snetworkplumbingwg/sriov-network-operator/blob/master/go.mod)
+	- [rancher/hardened-whereabouts](https://hub.docker.com/r/rancher/hardened-whereabouts/tags)
+		- is [built](https://github.com/rancher/image-build-whereabouts/blob/main/Makefile#L36) by [rancher/image-build-whereabouts repo](https://github.com/rancher/image-build-whereabouts)
+		- [based](https://github.com/rancher/image-build-whereabouts/blob/main/Dockerfile#L27) on [bci](https://build.opensuse.org/project/show/devel:BCI:SLE-15-SP4)
+		- has 2 bin that we build
+			- whereabouts
+				- is [built](https://github.com/rancher/image-build-whereabouts/blob/main/Dockerfile#L21) by [rancher/image-build-whereabouts repo](https://github.com/rancher/image-build-whereabouts)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [k8snetworkplumbingwg/whereabouts go mod](https://github.com/k8snetworkplumbingwg/whereabouts/blob/master/go.mod)
+			- ip-control-loop
+				- is [built](https://github.com/rancher/image-build-whereabouts/blob/main/Dockerfile#L22) by [rancher/image-build-whereabouts repo](https://github.com/rancher/image-build-whereabouts)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [k8snetworkplumbingwg/whereabouts go mod](https://github.com/k8snetworkplumbingwg/whereabouts/blob/master/go.mod)
+	- [rancher/hardened-node-feature-discovery](https://hub.docker.com/r/rancher/hardened-node-feature-discovery/tags)
+		- is [built](https://github.com/rancher/image-build-node-feature-discovery/blob/main/Makefile#L30) by [rancher/image-build-node-feature-discovery repo](https://github.com/rancher/image-build-node-feature-discovery)
+		- [based](https://github.com/rancher/image-build-node-feature-discovery/blob/main/Makefile#L30) on [bci-minimal](https://build.opensuse.org/package/show/devel:BCI:SLE-15-SP5/minimal-image)
+		- has 5 bin that we build
+			- nfd-master
+				- is [built](https://github.com/rancher/image-build-node-feature-discovery/blob/main/Dockerfile#L33) by [rancher/image-build-node-feature-discovery repo](https://github.com/rancher/image-build-node-feature-discovery)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [kubernetes-sigs/node-feature-discovery go mod](https://github.com/kubernetes-sigs/node-feature-discovery/blob/master/go.mod)
+			- nfd-topology-gc
+				- is [built](https://github.com/rancher/image-build-node-feature-discovery/blob/main/Dockerfile#L33) by [rancher/image-build-node-feature-discovery repo](https://github.com/rancher/image-build-node-feature-discovery)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [kubernetes-sigs/node-feature-discovery go mod](https://github.com/kubernetes-sigs/node-feature-discovery/blob/master/go.mod)
+			- nfd-topology-updater
+				- is [built](https://github.com/rancher/image-build-node-feature-discovery/blob/main/Dockerfile#L33) by [rancher/image-build-node-feature-discovery repo](https://github.com/rancher/image-build-node-feature-discovery)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [kubernetes-sigs/node-feature-discovery go mod](https://github.com/kubernetes-sigs/node-feature-discovery/blob/master/go.mod)
+			- nfd-worker
+				- is [built](https://github.com/rancher/image-build-node-feature-discovery/blob/main/Dockerfile#L33) by [rancher/image-build-node-feature-discovery repo](https://github.com/rancher/image-build-node-feature-discovery)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [kubernetes-sigs/node-feature-discovery go mod](https://github.com/kubernetes-sigs/node-feature-discovery/blob/master/go.mod)
+			- grpc_health_probe
+				- is [built](https://github.com/rancher/image-build-node-feature-discovery/blob/main/Dockerfile#L13) by [rancher/image-build-node-feature-discovery repo](https://github.com/rancher/image-build-node-feature-discovery)
+				- using [go-build-static.sh](https://github.com/rancher/image-build-base/blob/master/scripts/go-build-static.sh)
+				- according to [grpc-ecosystem/grpc-health-probe go mod](https://github.com/grpc-ecosystem/grpc-health-probe/blob/master/go.mod)
+	- [rancher/system-agent-installer-rke2](https://hub.docker.com/r/rancher/system-agent-installer-rke2)
+		- is [built](https://github.com/rancher/system-agent-installer-rke2/blob/main/.drone.yml#L48) by [rancher/system-agent-installer-rke2 repo](https://github.com/rancher/system-agent-installer-rke2)
+		- [based](https://github.com/rancher/system-agent-installer-rke2/blob/main/package/Dockerfile#L1) on [scratch](https://hub.docker.com/_/scratch)
+		- has 1 bin that we build
+			- rke2
+				- is copied from [rancher/rke2/releases/download](https://github.com/rancher/rke2-upgrade/blob/master/Dockerfile#LL12C69-L12C99)
+				- is built by [rancher/rke2](https://github.com/rancher/rke2/blob/master/Makefile#L20)
+				- using [rancher/rke2/scripts/build-binary](https://github.com/rancher/rke2/blob/master/scripts/build-binary#LL47C26-L47C36)
+				- according to [rancher/rke2](https://github.com/rancher/rke2/blob/master/go.mod)
