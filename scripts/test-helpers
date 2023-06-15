@@ -380,9 +380,9 @@ export -f gen-certs
 
 inc-count() {(
     shopt -s extglob
-    local count=$(exec 2>/dev/null; ls -1d $TEST_DIR/$1/+([0-9]) | xargs -n1 basename | sort -n -r | head -1)
+    local count=$(exec 2>/dev/null; ls -1d "$TEST_DIR/$1/+([0-9])" | xargs -n1 basename | sort -n -r | head -1)
     count=$((count+1))
-    mkdir -p $TEST_DIR/$1/$count/metadata
+    mkdir -p "$TEST_DIR/$1/$count/metadata"
     echo $count
 )}
 export -f inc-count
