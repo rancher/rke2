@@ -115,7 +115,7 @@ RUN CHART_VERSION="2.11.100-build2023051509"  CHART_FILE=/charts/rke2-metrics-se
 RUN CHART_VERSION="v3.9.3-build2023010903"    CHART_FILE=/charts/rke2-multus.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="1.5.100"                   CHART_FILE=/charts/rancher-vsphere-cpi.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
 RUN CHART_VERSION="3.0.1-rancher101"          CHART_FILE=/charts/rancher-vsphere-csi.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="0.2.100"                   CHART_FILE=/charts/harvester-cloud-provider.yaml CHART_BOOTSTRAP=true /charts/build-chart.sh
+RUN CHART_VERSION="0.2.200"                   CHART_FILE=/charts/harvester-cloud-provider.yaml CHART_BOOTSTRAP=true /charts/build-chart.sh
 RUN CHART_VERSION="0.1.1600"                  CHART_FILE=/charts/harvester-csi-driver.yaml     CHART_BOOTSTRAP=true /charts/build-chart.sh
 RUN CHART_VERSION="1.7.202"                   CHART_FILE=/charts/rke2-snapshot-controller.yaml CHART_BOOTSTRAP=false /charts/build-chart.sh
 RUN CHART_VERSION="1.7.202"                   CHART_FILE=/charts/rke2-snapshot-controller-crd.yaml CHART_BOOTSTRAP=false /charts/build-chart.sh
