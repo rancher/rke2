@@ -89,7 +89,7 @@ replace (
 require (
 	github.com/Microsoft/hcsshim v0.10.0-rc.8
 	github.com/aws/aws-sdk-go v1.44.197
-	github.com/containerd/continuity v0.3.0
+	github.com/containerd/continuity v0.3.0 // indirect
 	github.com/google/go-containerregistry v0.12.2-0.20230106184643-b063f6aeac72
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.15.0
