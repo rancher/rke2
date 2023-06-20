@@ -4,13 +4,13 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
 
-	"github.com/containerd/continuity/fs"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
@@ -93,7 +93,6 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 
 	refBinDir := binDirForDigest(cfg.DataDir, refDigest)
 	refChartsDir := chartsDirForDigest(cfg.DataDir, refDigest)
-	manifestsDir := manifestsDir(cfg.DataDir)
 	imagesDir := imagesDir(cfg.DataDir)
 
 	if dirExists(refBinDir) && dirExists(refChartsDir) {
@@ -131,18 +130,12 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 			}
 		}
 
-		// preserve manifests directory mode when extracting, if it already exists
-		extractOptions := []extract.Option{}
-		if fi, err := os.Stat(manifestsDir); err == nil {
-			extractOptions = append(extractOptions, extract.WithMode(fi.Mode()))
-		}
-
 		// Extract binaries and charts
 		extractPaths := map[string]string{
 			"/bin":    refBinDir,
 			"/charts": refChartsDir,
 		}
-		if err := extract.ExtractDirs(img, extractPaths, extractOptions...); err != nil {
+		if err := extract.ExtractDirs(img, extractPaths); err != nil {
 			return "", errors.Wrap(err, "failed to extract runtime image")
 		}
 		// Ensure correct permissions on bin dir
@@ -174,19 +167,14 @@ func UpdateManifests(resolver *images.Resolver, nodeConfig *daemonconfig.Node, c
 	refChartsDir := chartsDirForDigest(cfg.DataDir, refDigest)
 	manifestsDir := manifestsDir(cfg.DataDir)
 
-	// Ensure manifests directory exists
-	if err := os.MkdirAll(manifestsDir, 0755); err != nil && !os.IsExist(err) {
-		return err
-	}
-
 	// TODO - instead of copying over then rewriting the manifests, we should template them as we
 	// copy, only overwriting if they're different - and then make a second pass and rewrite any
 	// user-provided manifests that weren't just copied over. This will work better with the deploy
 	// controller's mtime-based change detection.
 
-	// Recursively copy all charts into the manifests directory, since the K3s
+	// Copy all charts into the manifests directory, since the K3s
 	// deploy controller will delete them if they are disabled.
-	if err := fs.CopyDir(manifestsDir, refChartsDir); err != nil {
+	if err := copyDir(manifestsDir, refChartsDir); err != nil {
 		return errors.Wrap(err, "failed to copy runtime charts")
 	}
 
@@ -249,6 +237,62 @@ func preloadBootstrapFromRuntime(imagesDir string, resolver *images.Resolver) (v
 		}
 	}
 	return nil, nil
+}
+
+// copyDir recursively copies files from source to destination. If the target
+// file already exists, the current permissions, ownership, and xattrs will be
+// retained, but the contents will be overwritten.
+func copyDir(target, source string) error {
+	entries, err := os.ReadDir(source)
+	if err != nil {
+		return fmt.Errorf("failed to read %s: %w", source, err)
+	}
+
+	if err := os.MkdirAll(target, 0755); err != nil && !os.IsExist(err) {
+		return err
+	}
+
+	for _, entry := range entries {
+		src := filepath.Join(source, entry.Name())
+		tgt := filepath.Join(target, entry.Name())
+
+		fileInfo, err := entry.Info()
+		if err != nil {
+			return fmt.Errorf("failed to get file info for %s: %w", entry.Name(), err)
+		}
+
+		switch {
+		case entry.IsDir():
+			if err := copyDir(tgt, src); err != nil {
+				return err
+			}
+		case (fileInfo.Mode() & os.ModeType) == 0:
+			if err := copyFile(tgt, src); err != nil {
+				return err
+			}
+		default:
+			logrus.Warnf("Skipping file with unsupported mode: %s: %s", src, fileInfo.Mode())
+		}
+	}
+	return nil
+}
+
+// copyFile copies the the source file to the target, creating or truncating it as necessary.
+func copyFile(target, source string) error {
+	src, err := os.Open(source)
+	if err != nil {
+		return fmt.Errorf("failed to open source %s: %w", source, err)
+	}
+	defer src.Close()
+
+	tgt, err := os.OpenFile(target, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open target %s: %w", target, err)
+	}
+	defer tgt.Close()
+
+	_, err = io.Copy(tgt, src)
+	return err
 }
 
 // setChartValues scans the directory at manifestDir. It attempts to load all manifests
