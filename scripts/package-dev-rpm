@@ -14,11 +14,11 @@ RPM_VERSION="${VERSION}.testing.0"
 TMPDIR=$(mktemp -d -t)
 SCRIPT_LIST=$(mktemp "${TMPDIR}/XXXXXX")
 cleanup() {
-  exit_code=$?
-  trap - EXIT INT
-  rm -rf "${TMPDIR}"
-  git tag -d "${RPM_VERSION}" || true
-  exit ${exit_code}
+    exit_code=$?
+    trap - EXIT INT
+    rm -rf "${TMPDIR}"
+    git tag -d "${RPM_VERSION}" || true
+    exit ${exit_code}
 }
 trap cleanup EXIT INT
 
@@ -49,27 +49,27 @@ git tag "${RPM_VERSION}"
 
 find -L "${TMPDIR}" -name 'build-*' -print >"${SCRIPT_LIST}"
 while IFS= read -r script; do
-  if [ "${USER}" != 'root' ]; then
-    # Use /home/$USER instead of /root when running outside of dapper
-    sed -i -e "s%/root%${HOME}%g" "${script}"
-  fi
+    if [ "${USER}" != 'root' ]; then
+        # Use /home/$USER instead of /root when running outside of dapper
+        sed -i -e "s%/root%${HOME}%g" "${script}"
+    fi
 
-  # Modify rpmbuild flags
-  #   --nodeps  do not check for build dependencies, systemd-rpm-macros should suffice
-  #   -bb       do not build src packages, not needed for commit rpms
-  sed -i  -e 's/^rpmbuild/rpmbuild --nodeps/' \
-          -e '/^rpmbuild/,/.spec$/{s/-ba/-bb/}' -e '/rpmbuild\/SRPMS\/\*/d' \
-          "${script}"
+    # Modify rpmbuild flags
+    #   --nodeps  do not check for build dependencies, systemd-rpm-macros should suffice
+    #   -bb       do not build src packages, not needed for commit rpms
+    sed -i  -e 's/^rpmbuild/rpmbuild --nodeps/' \
+        -e '/^rpmbuild/,/.spec$/{s/-ba/-bb/}' -e '/rpmbuild\/SRPMS\/\*/d' \
+        "${script}"
 
-  # Replace hardcoded paths and remove inline rpm macros
-  sed -i  -e "s%/source%${TMPDIR}%g" -e "s%${TMPDIR}/dist%$DIST_PATH%g" -e '/SRC_PATH=/d' \
-          -e '/rpmmacros/d' \
-          "${script}"
+    # Replace hardcoded paths and remove inline rpm macros
+    sed -i  -e "s%/source%${TMPDIR}%g" -e "s%${TMPDIR}/dist%$DIST_PATH%g" -e '/SRC_PATH=/d' \
+        -e '/rpmmacros/d' \
+        "${script}"
 
-  # Build rpm
-  bash "${script}"
+    # Build rpm
+    bash "${script}"
 done <"${SCRIPT_LIST}"
 
 if [ "${DAPPER_UID:--1}" -ne "-1" ]; then
-  chown -R "$DAPPER_UID:$DAPPER_GID" "${DIST_PATH}"
+    chown -R "$DAPPER_UID:$DAPPER_GID" "${DIST_PATH}"
 fi

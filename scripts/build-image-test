@@ -5,8 +5,8 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-if [ "${GOARCH}" == "s390x" ]; then
-  exit 0
+if [ "${GOARCH}" == "s390x" ] || [ "${GOARCH}" == "arm64" ]; then
+    exit 0
 fi
 
 DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \

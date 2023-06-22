@@ -59,6 +59,8 @@ var (
 		"cluster-dns":                       copyFlag,
 		"cluster-domain":                    copyFlag,
 		"flannel-backend":                   dropFlag,
+		"vpn-auth":                          dropFlag,
+		"vpn-auth-file":                     dropFlag,
 		"token":                             copyFlag,
 		"token-file":                        copyFlag,
 		"write-kubeconfig":                  copyFlag,
