@@ -16,7 +16,16 @@ func TestPodStatus(
 	podAssertReady assert.PodAssertFunc,
 	podAssertStatus assert.PodAssertFunc,
 ) {
-	fmt.Printf("\nFetching pod status\n")
+	fmt.Println("\n***********************************\n")
+	fmt.Printf("Checking pod status\n")
+	defer func() {
+		fmt.Println("\n***********************************\n")
+		fmt.Printf("Cluster pods\n")
+		_, err := shared.Pods(true)
+		if err != nil {
+			fmt.Println("Error retrieving nodes: ", err)
+		}
+	}()
 
 	Eventually(func(g Gomega) {
 		pods, err := shared.Pods(false)

@@ -1,6 +1,9 @@
 package shared
 
 import (
+	"bufio"
+    "encoding/base64"
+    "io/ioutil"
 	"bytes"
 	"fmt"
 	"os"
@@ -79,6 +82,25 @@ func PrintFileContents(f ...string) error {
 		fmt.Println(string(content) + "\n")
 	}
 
+	return nil
+}
+
+func PrintBase64Encoded(filepath string) error {
+	// Open file on disk.
+    file, err := os.Open(filepath)
+	if err != nil {
+		return err
+	}
+    // Read entire file into byte slice.
+    reader := bufio.NewReader(file)
+    content, _ := ioutil.ReadAll(reader)
+    
+    // Encode as base64.
+    encoded := base64.StdEncoding.EncodeToString(content)
+    
+    // Print encoded data to console.
+    // ... The base64 image can be used as a data URI in a browser.
+    fmt.Println(encoded)
 	return nil
 }
 

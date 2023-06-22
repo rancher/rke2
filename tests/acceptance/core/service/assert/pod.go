@@ -82,3 +82,13 @@ func CheckPodStatusRunning(name, namespace, assert string) {
 		g.Expect(res).Should(ContainSubstring(assert))
 	}, "180s", "5s").Should(Succeed())
 }
+
+func ValidatePodIPByLabel(label string, ip string) {
+	// Wait for the applied pod to have an IP
+	Eventually(func() string {
+		cmd := fmt.Sprintf(`kubectl get pods -l %s -o=jsonpath='{range .items[*]}{.status.podIPs[*].ip}{" "}{end}' --kubeconfig=%s`, label, shared.KubeConfigFile)
+		res, _ := shared.RunCommandHost(cmd)
+		ips :=  strings.Split(res, " ") //e2e.PodIPsUsingLabel(kubeConfigFile, "app=client")
+		return ips[0]
+	}, "120s", "10s").Should(ContainSubstring(ip), fmt.Errorf("failed to validate expected: %s on %s", ip, label))
+}

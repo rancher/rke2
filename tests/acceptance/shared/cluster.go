@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 )
 
 var (
@@ -39,10 +39,10 @@ const (
 	RunningAssert = "Running"
 )
 
-// ManageWorkload creates or deletes a workload based on the action: create or delete.
+// ManageWorkload applies or deletes a workload based on the action: create or delete.
 func ManageWorkload(action, workload string) (string, error) {
-	if action != "create" && action != "delete" {
-		return "", fmt.Errorf("invalid action: %s. Must be 'create' or 'delete'", action)
+	if action != "apply" && action != "delete" {
+		return "", fmt.Errorf("invalid action: %s. Must be 'apply' or 'delete'", action)
 	}
 	var res string
 	var err error
@@ -58,10 +58,10 @@ func ManageWorkload(action, workload string) (string, error) {
 	for _, f := range files {
 		filename := filepath.Join(resourceDir, f.Name())
 		if strings.TrimSpace(f.Name()) == workload {
-			if action == "create" {
-				res, err = createWorkload(workload, filename)
+			if action == "apply" {
+				res, err = applyWorkload(workload, filename)
 				if err != nil {
-					return "", fmt.Errorf("failed to create workload %s: %s", workload, err)
+					return "", fmt.Errorf("failed to apply workload %s: %s", workload, err)
 				}
 			} else {
 				res, err = deleteWorkload(workload, filename)
@@ -73,12 +73,12 @@ func ManageWorkload(action, workload string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("workload %s not found", workload)
+	return "", fmt.Errorf("workload %s not found in %s", workload, resourceDir)
 }
 
-// createWorkload creates a workload.
-func createWorkload(workload, filename string) (string, error) {
-	fmt.Println("\nDeploying", workload)
+// applyWorkload applies a workload to the cluster.
+func applyWorkload(workload, filename string) (string, error) {
+	fmt.Println("\nApplying ", workload)
 	return RunCommandHost("kubectl apply -f " + filename + " --kubeconfig=" + KubeConfigFile)
 
 }
@@ -88,12 +88,12 @@ func deleteWorkload(workload, filename string) (string, error) {
 	fmt.Println("\nRemoving", workload)
 	cmd := "kubectl delete -f " + filename + " --kubeconfig=" + KubeConfigFile
 
-	gomega.Eventually(func(g gomega.Gomega) {
+	Eventually(func(g Gomega) {
 		isDeleted, err := IsWorkloadDeleted(workload)
-		g.Expect(err).To(gomega.BeNil())
-		g.Expect(isDeleted).To(gomega.BeTrue(),
+		g.Expect(err).To(BeNil())
+		g.Expect(isDeleted).To(BeTrue(),
 			"Workload should be deleted")
-	}, "60s", "5s").Should(gomega.Succeed())
+	}, "60s", "5s").Should(Succeed())
 
 	return RunCommandHost(cmd)
 }
@@ -213,6 +213,16 @@ func FetchNodeExternalIP() []string {
 	nodeExternalIPs := strings.Split(nodeExternalIP, " ")
 
 	return nodeExternalIPs
+}
+
+// Installs sonobuoy for mixed os validaion.
+func InstallSonobuoy() {
+	scriptsDir := BasePath() + `/acceptance/install`
+	fmt.Println(scriptsDir)
+	cmd := `chmod +x ` + scriptsDir + `/install_sonobuoy.sh && sh ` + scriptsDir + `/install_sonobuoy.sh`
+	fmt.Println(cmd)
+	res, err := RunCommandHost(cmd)
+	Expect(err).NotTo(HaveOccurred(), "failed cmd: " + res)
 }
 
 // RestartCluster restarts the rke2 service on each node given by external IP.

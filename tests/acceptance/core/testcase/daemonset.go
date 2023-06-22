@@ -8,7 +8,7 @@ import (
 
 func TestDaemonset(deployWorkload bool) {
 	if deployWorkload {
-		_, err := shared.ManageWorkload("create", "daemonset.yaml")
+		_, err := shared.ManageWorkload("apply", "daemonset.yaml")
 		Expect(err).NotTo(HaveOccurred(),
 			"Daemonset manifest not deployed")
 	}

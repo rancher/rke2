@@ -10,7 +10,7 @@ import (
 
 func TestServiceClusterIp(deployWorkload bool) {
 	if deployWorkload {
-		_, err := shared.ManageWorkload("create", "clusterip.yaml")
+		_, err := shared.ManageWorkload("apply", "clusterip.yaml")
 		Expect(err).NotTo(HaveOccurred(), "Cluster IP manifest not deployed")
 	}
 
@@ -35,7 +35,7 @@ func TestServiceClusterIp(deployWorkload bool) {
 
 func TestServiceNodePort(deployWorkload bool) {
 	if deployWorkload {
-		_, err := shared.ManageWorkload("create", "nodeport.yaml")
+		_, err := shared.ManageWorkload("apply", "nodeport.yaml")
 		Expect(err).NotTo(HaveOccurred(), "NodePort manifest not deployed")
 	}
 

@@ -75,3 +75,30 @@ module "worker" {
   rke2_channel   = var.rke2_channel
   worker_flags   = var.worker_flags
 }
+
+module "windows_worker" {
+  source     = "./windows_worker"
+  dependency = module.master
+
+  # Basic variables
+  no_of_worker_nodes = var.no_of_windows_worker_nodes
+  username           = var.username
+  password           = var.password
+
+  # AWS variables
+  access_key         = var.access_key
+  ssh_key            = var.ssh_key
+  availability_zone  = var.availability_zone
+  aws_ami            = var.windows_aws_ami
+  aws_user           = "Administrator"
+  ec2_instance_class = var.windows_ec2_instance_class
+  iam_role           = var.iam_role
+  region             = var.region
+  resource_name      = var.resource_name
+  sg_id              = var.sg_id
+  subnets            = var.subnets
+  vpc_id             = var.vpc_id
+
+  # RKE2 variables
+  rke2_version   = var.rke2_version
+}

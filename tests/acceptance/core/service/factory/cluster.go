@@ -13,11 +13,13 @@ import (
 )
 
 type Cluster struct {
-	Status     string
-	ServerIPs  string
-	AgentIPs   string
-	NumServers int
-	NumAgents  int
+	Status     		string
+	ServerIPs  		string
+	AgentIPs   		string
+	WinAgentIPs		string
+	NumServers 		int
+	NumAgents  		int
+	NumWinAgents  	int
 }
 
 var (
@@ -48,6 +50,11 @@ func NewCluster(g GinkgoTInterface) (*Cluster, error) {
 	}
 
 	NumAgents, err := strconv.Atoi(terraform.GetVariableAsStringFromVarFile(g, varDir, "no_of_worker_nodes"))
+	if err != nil {
+		return nil, err
+	}
+
+	NumWinAgents, err := strconv.Atoi(terraform.GetVariableAsStringFromVarFile(g, varDir, "no_of_windows_worker_nodes"))
 	if err != nil {
 		return nil, err
 	}
@@ -89,6 +96,7 @@ func NewCluster(g GinkgoTInterface) (*Cluster, error) {
 
 	ServerIPs := terraform.Output(g, terraformOptions, "master_ips")
 	AgentIPs := terraform.Output(g, terraformOptions, "worker_ips")
+	WinAgentIPs := terraform.Output(g, terraformOptions, "windows_worker_ips")
 
 	shared.AwsUser = terraform.GetVariableAsStringFromVarFile(g, varDir, "aws_user")
 	shared.AccessKey = terraform.GetVariableAsStringFromVarFile(g, varDir, "access_key")
@@ -97,8 +105,10 @@ func NewCluster(g GinkgoTInterface) (*Cluster, error) {
 		Status:     "cluster created",
 		ServerIPs:  ServerIPs,
 		AgentIPs:   AgentIPs,
+		WinAgentIPs: WinAgentIPs,
 		NumServers: NumServers,
 		NumAgents:  NumAgents,
+		NumWinAgents: NumWinAgents,
 	}, nil
 }
 
