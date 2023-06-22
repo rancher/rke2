@@ -5,8 +5,8 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-if [ "${GOARCH}" == "s390x" ]; then
-  exit 0
+if [ "${GOARCH}" != "amd64" ]; then
+    exit 0
 fi
 
 if [ -z "${SKIP_DEV_RPM}" ] && [ -z "${DRONE_TAG}" ]; then

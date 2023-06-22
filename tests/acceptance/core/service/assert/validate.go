@@ -51,8 +51,7 @@ func runAssertion(
 	for {
 		select {
 		case <-timeout:
-			timeoutErr := fmt.Errorf("timeout reached for command:\n%s\n "+
-				"Trying to assert with:\n %s",
+			timeoutErr := fmt.Errorf("timeout reached for command:\n%s\n "+"Trying to assert with:\n %s",
 				cmd, assert)
 			errorsChan <- timeoutErr
 			return timeoutErr

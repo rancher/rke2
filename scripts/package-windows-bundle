@@ -5,8 +5,8 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-if [ "${GOARCH}" == "s390x" ]; then
-  exit 0
+if [ "${GOARCH}" == "s390x" ] || [ "${GOARCH}" == "arm64" ]; then
+    exit 0
 fi
 
 mkdir -p dist/bundle/share/${PROG}-windows
@@ -25,5 +25,5 @@ mkdir -p dist/artifacts
 
 ### (make the tarball)
 if [ -z "${PACKAGE_SKIP_TARBALL}" ]; then
-  tar -czf dist/artifacts/${PROG}.windows-${ARCH}.tar.gz -C dist/bundle $(find dist/bundle -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
+    tar -czf dist/artifacts/${PROG}.windows-${ARCH}.tar.gz -C dist/bundle $(find dist/bundle -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
 fi

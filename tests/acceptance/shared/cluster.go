@@ -1,12 +1,12 @@
 package shared
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/onsi/gomega"
+	"time"
 )
 
 var (
@@ -64,7 +64,7 @@ func ManageWorkload(action, workload string) (string, error) {
 					return "", fmt.Errorf("failed to create workload %s: %s", workload, err)
 				}
 			} else {
-				res, err = deleteWorkload(workload, filename)
+				err = deleteWorkload(workload, filename)
 				if err != nil {
 					return "", fmt.Errorf("failed to delete workload %s: %s", workload, err)
 				}
@@ -84,18 +84,31 @@ func createWorkload(workload, filename string) (string, error) {
 }
 
 // deleteWorkload deletes a workload and asserts that the workload is deleted.
-func deleteWorkload(workload, filename string) (string, error) {
+func deleteWorkload(workload, filename string) error {
 	fmt.Println("\nRemoving", workload)
 	cmd := "kubectl delete -f " + filename + " --kubeconfig=" + KubeConfigFile
 
-	gomega.Eventually(func(g gomega.Gomega) {
-		isDeleted, err := IsWorkloadDeleted(workload)
-		g.Expect(err).To(gomega.BeNil())
-		g.Expect(isDeleted).To(gomega.BeTrue(),
-			"Workload should be deleted")
-	}, "60s", "5s").Should(gomega.Succeed())
+	_, err := RunCommandHost(cmd)
+	if err != nil {
+		return fmt.Errorf("failed to run kubectl delete: %v", err)
+	}
 
-	return RunCommandHost(cmd)
+	timeout := time.After(60 * time.Second)
+	tick := time.Tick(5 * time.Second)
+
+	for {
+		select {
+		case <-timeout:
+			return errors.New("workload deletion timed out")
+		case <-tick:
+			isDeleted, err := IsWorkloadDeleted(workload)
+			if err != nil {
+				fmt.Printf("failed to check if workload is deleted: %v", err)
+			} else if isDeleted {
+				return nil
+			}
+		}
+	}
 }
 
 // IsWorkloadDeleted returns true if the workload is deleted.
