@@ -84,18 +84,23 @@ func TestUpgradeClusterManually(version string) error {
 // upgradeServer upgrades servers in cluster,it will spawn a go routine per server ip.
 func upgradeServer(installType string, serverIPs []string) error {
 	var wg sync.WaitGroup
+	var channel string
 	errCh := make(chan error, len(serverIPs))
 
-	for _, ip := range serverIPs {
-		switch {
-		case customflag.ServiceFlag.InstallType.Version != "":
-			installType = fmt.Sprintf("INSTALL_RKE2_VERSION=%s", customflag.ServiceFlag.InstallType.Version)
-		case customflag.ServiceFlag.InstallType.Commit != "":
-			installType = fmt.Sprintf("INSTALL_RKE2_COMMIT=%s", customflag.ServiceFlag.InstallType.Commit)
-		}
+	switch {
+	case customflag.ServiceFlag.InstallType.Version != nil:
+		installType = fmt.Sprintf("INSTALL_RKE2_VERSION=%s", customflag.ServiceFlag.InstallType.Version)
+	case customflag.ServiceFlag.InstallType.Commit != nil:
+		installType = fmt.Sprintf("INSTALL_RKE2_COMMIT=%s", customflag.ServiceFlag.InstallType.Commit)
+	case customflag.ServiceFlag.InstallType.Channel != "":
+		channel = fmt.Sprintf("INSTALL_RKE2_CHANNEL=%s", customflag.ServiceFlag.InstallType.Channel)
+	case customflag.ServiceFlag.InstallType.Channel == "":
+		channel = fmt.Sprintf("INSTALL_RKE2_CHANNEL=%s", "stable")
+	}
 
-		installRke2Server := "sudo curl -sfL https://get.rke2.io | sudo %s INSTALL_RKE2_TYPE=server sh - "
-		upgradeCommand := fmt.Sprintf(installRke2Server, installType)
+	installRke2Server := "sudo curl -sfL https://get.rke2.io | sudo %s %s INSTALL_RKE2_TYPE=server sh - "
+	for _, ip := range serverIPs {
+		upgradeCommand := fmt.Sprintf(installRke2Server, installType, channel)
 		wg.Add(1)
 		go func(ip, installFlagServer string) {
 			defer wg.Done()
@@ -116,7 +121,7 @@ func upgradeServer(installType string, serverIPs []string) error {
 				close(errCh)
 				return
 			}
-			time.Sleep(30 * time.Second)
+			time.Sleep(20 * time.Second)
 		}(ip, installType)
 	}
 	wg.Wait()
@@ -128,18 +133,23 @@ func upgradeServer(installType string, serverIPs []string) error {
 // upgradeAgent upgrades agents in cluster, it will spawn a go routine per agent ip.
 func upgradeAgent(installType string, agentIPs []string) error {
 	var wg sync.WaitGroup
+	var channel string
 	errCh := make(chan error, len(agentIPs))
 
-	for _, ip := range agentIPs {
-		switch {
-		case customflag.ServiceFlag.InstallType.Version != "":
-			installType = fmt.Sprintf("INSTALL_RKE2_VERSION=%s", customflag.ServiceFlag.InstallType.Version)
-		case customflag.ServiceFlag.InstallType.Commit != "":
-			installType = fmt.Sprintf("INSTALL_RKE2_COMMIT=%s", customflag.ServiceFlag.InstallType.Commit)
-		}
+	switch {
+	case customflag.ServiceFlag.InstallType.Version != nil:
+		installType = fmt.Sprintf("INSTALL_RKE2_VERSION=%s", customflag.ServiceFlag.InstallType.Version)
+	case customflag.ServiceFlag.InstallType.Commit != nil:
+		installType = fmt.Sprintf("INSTALL_RKE2_COMMIT=%s", customflag.ServiceFlag.InstallType.Commit)
+	case customflag.ServiceFlag.InstallType.Channel != "":
+		channel = fmt.Sprintf("INSTALL_RKE2_CHANNEL=%s", customflag.ServiceFlag.InstallType.Channel)
+	case customflag.ServiceFlag.InstallType.Channel == "":
+		channel = fmt.Sprintf("INSTALL_RKE2_CHANNEL=%s", "stable")
+	}
 
-		installRke2Agent := "sudo curl -sfL https://get.rke2.io | sudo %s INSTALL_RKE2_TYPE=agent sh - "
-		upgradeCommand := fmt.Sprintf(installRke2Agent, installType)
+	installRke2Agent := "sudo curl -sfL https://get.rke2.io | sudo %s %s INSTALL_RKE2_TYPE=agent sh - "
+	for _, ip := range agentIPs {
+		upgradeCommand := fmt.Sprintf(installRke2Agent, installType, channel)
 		wg.Add(1)
 		go func(ip, installFlagAgent string) {
 			defer wg.Done()

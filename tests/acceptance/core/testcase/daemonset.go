@@ -11,13 +11,14 @@ func TestDaemonset(deployWorkload bool) {
 		_, err := shared.ManageWorkload("create", "daemonset.yaml")
 		Expect(err).NotTo(HaveOccurred(),
 			"Daemonset manifest not deployed")
-	}
-	nodes, _ := shared.WorkerNodes(false)
-	pods, _ := shared.Pods(false)
 
-	Eventually(func(g Gomega) {
-		count := shared.CountOfStringInSlice("test-daemonset", pods)
-		g.Expect(count).Should(Equal(len(nodes)),
-			"Daemonset pod count does not match node count")
-	}, "420s", "5s").Should(Succeed())
+		nodes, _ := shared.Nodes(false)
+		pods, _ := shared.Pods(false)
+
+		Eventually(func(g Gomega) {
+			count := shared.CountOfStringInSlice("test-daemonset", pods)
+			g.Expect(count).Should(Equal(len(nodes)),
+				"Daemonset pod count does not match node count")
+		}, "420s", "5s").Should(Succeed())
+	}
 }

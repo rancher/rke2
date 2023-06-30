@@ -9,6 +9,8 @@ import (
 )
 
 var Running = "Running"
+var ExecDnsUtils = "kubectl exec -n auto-dns -t dnsutils --kubeconfig="
+var Nslookup = "kubernetes.default.svc.cluster.local"
 
 func TestIngress(deployWorkload bool) {
 	var ingressIps []string
@@ -17,7 +19,8 @@ func TestIngress(deployWorkload bool) {
 		Expect(err).NotTo(HaveOccurred(), "Ingress manifest not deployed")
 	}
 
-	getIngressRunning := "kubectl get pods -n auto-ingress -l k8s-app=nginx-app-ingress  --field-selector=status.phase=Running --kubeconfig="
+	getIngressRunning := "kubectl get pods -n auto-ingress -l k8s-app=nginx-app-ingress  " +
+		"--field-selector=status.phase=Running --kubeconfig="
 	err := assert.ValidateOnHost(getIngressRunning+shared.KubeConfigFile, Running)
 	if err != nil {
 		GinkgoT().Errorf("Error: %v", err)

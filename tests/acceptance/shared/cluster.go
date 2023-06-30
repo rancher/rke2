@@ -35,7 +35,6 @@ type Pod struct {
 }
 
 const (
-	GrepNoExec    = " | grep -v NoSchedule | grep -v NoExecute"
 	RunningAssert = "Running"
 )
 
@@ -101,24 +100,16 @@ func deleteWorkload(workload, filename string) error {
 		case <-timeout:
 			return errors.New("workload deletion timed out")
 		case <-tick:
-			isDeleted, err := IsWorkloadDeleted(workload)
+			res, err := RunCommandHost("kubectl get all -A --kubeconfig=" + KubeConfigFile)
 			if err != nil {
-				fmt.Printf("failed to check if workload is deleted: %v", err)
-			} else if isDeleted {
+				return err
+			}
+			isDeleted := !strings.Contains(res, workload)
+			if isDeleted {
 				return nil
 			}
 		}
 	}
-}
-
-// IsWorkloadDeleted returns true if the workload is deleted.
-func IsWorkloadDeleted(workload string) (bool, error) {
-	res, err := RunCommandHost("kubectl get all -A --kubeconfig=" + KubeConfigFile)
-	if err != nil {
-		return false, err
-	}
-
-	return !strings.Contains(res, workload), nil
 }
 
 // KubectlCommand return results from various commands, it receives an "action" , source and args.
@@ -132,35 +123,7 @@ func IsWorkloadDeleted(workload string) (bool, error) {
 //
 // args   = the rest of your command arguments.
 func KubectlCommand(destination, action, source string, args ...string) (string, error) {
-	var cmd string
-	var res string
-	var err error
 	kubeconfigFlag := " --kubeconfig=" + KubeConfigFile
-
-	if destination == "host" {
-		cmd = addKubectlCommand(action, source, args) + kubeconfigFlag
-		res, err = RunCommandHost(cmd)
-		if err != nil {
-			return "", err
-		}
-	} else if destination == "node" {
-		cmd = addKubectlCommand(action, source, args) + kubeconfigFlag
-		ips := FetchNodeExternalIP()
-		for _, ip := range ips {
-			res, err = RunCommandOnNode(cmd, ip)
-			if err != nil {
-				return "", err
-			}
-		}
-	} else {
-		return "", fmt.Errorf("invalid destination: %s", destination)
-	}
-
-	return res, nil
-}
-
-// addKubectlCommand using a specific action + source maps the args received  to create a kubectl command.
-func addKubectlCommand(action, source string, args []string) string {
 	shortCmd := map[string]string{
 		"get":      "kubectl get",
 		"describe": "kubectl describe",
@@ -174,28 +137,28 @@ func addKubectlCommand(action, source string, args []string) string {
 		cmdPrefix = action
 	}
 
-	return cmdPrefix + " " + source + " " + strings.Join(args, " ")
-}
+	cmd := cmdPrefix + " " + source + " " + strings.Join(args, " ") + kubeconfigFlag
 
-// Nodes returns the list of nodes in the cluster and parses the output with parseNodes.
-func Nodes(print bool) ([]Node, error) {
-	return parseNodes("kubectl get nodes --no-headers -o wide --kubeconfig="+KubeConfigFile, print)
-}
+	var res string
+	var err error
+	if destination == "host" {
+		res, err = RunCommandHost(cmd)
+		if err != nil {
+			return "", err
+		}
+	} else if destination == "node" {
+		ips := FetchNodeExternalIP()
+		for _, ip := range ips {
+			res, err = RunCommandOnNode(cmd, ip)
+			if err != nil {
+				return "", err
+			}
+		}
+	} else {
+		return "", fmt.Errorf("invalid destination: %s", destination)
+	}
 
-// WorkerNodes returns the list of worker nodes in the cluster.
-func WorkerNodes(print bool) ([]Node, error) {
-	return parseNodes("kubectl get node -o jsonpath='{range .items[*]}{@.metadata.name} "+
-		"{@.status.conditions[-1].type} <not retrieved> <not retrieved> "+
-		"{@.status.nodeInfo.kubeletVersion} "+
-		"{@.status.addresses[?(@.type==\"InternalIP\")].address} "+
-		"{@.status.addresses[?(@.type==\"ExternalIP\")].address} "+
-		"{@.spec.taints[*].effect}{\"\\n\"}{end}' "+
-		"--kubeconfig="+KubeConfigFile+GrepNoExec, print)
-}
-
-// Pods returns the list of pods in the cluster and parses the output with parsePods.
-func Pods(print bool) ([]Pod, error) {
-	return parsePods("kubectl get pods -o wide --no-headers -A --kubeconfig="+KubeConfigFile, print)
+	return res, nil
 }
 
 // FetchClusterIP returns the cluster IP and port of the service.
@@ -220,7 +183,8 @@ func FetchClusterIP(
 
 // FetchNodeExternalIP returns the external IP of the nodes.
 func FetchNodeExternalIP() []string {
-	res, _ := RunCommandHost("kubectl get nodes --output=jsonpath='{.items[*].status.addresses[?(@.type==\"ExternalIP\")].address}' " +
+	res, _ := RunCommandHost("kubectl get nodes " +
+		"--output=jsonpath='{.items[*].status.addresses[?(@.type==\"ExternalIP\")].address}' " +
 		"--kubeconfig=" + KubeConfigFile)
 	nodeExternalIP := strings.Trim(res, " ")
 	nodeExternalIPs := strings.Split(nodeExternalIP, " ")
@@ -254,9 +218,11 @@ func FetchIngressIP(namespace string) ([]string, error) {
 	return ingressIPs, nil
 }
 
-func parseNodes(cmd string, print bool) ([]Node, error) {
+// Nodes returns nodes parsed from kubectl get nodes.
+func Nodes(print bool) ([]Node, error) {
 	nodes := make([]Node, 0, 10)
 
+	cmd := "kubectl get nodes --no-headers -o wide --kubeconfig=" + KubeConfigFile
 	res, err := RunCommandHost(cmd)
 	if err != nil {
 		return nil, err
@@ -285,16 +251,17 @@ func parseNodes(cmd string, print bool) ([]Node, error) {
 	return nodes, nil
 }
 
-func parsePods(cmd string, print bool) ([]Pod, error) {
+// Pods returns pods parsed from kubectl get pods.
+func Pods(print bool) ([]Pod, error) {
 	pods := make([]Pod, 0, 10)
 
+	cmd := "kubectl get pods -o wide --no-headers -A --kubeconfig=" + KubeConfigFile
 	res, err := RunCommandHost(cmd)
 	if err != nil {
 		return nil, err
 	}
 
 	podList := strings.TrimSpace(res)
-
 	split := strings.Split(podList, "\n")
 	for _, rec := range split {
 		fields := strings.Fields(rec)
@@ -309,6 +276,7 @@ func parsePods(cmd string, print bool) ([]Pod, error) {
 		}
 		pods = append(pods, p)
 	}
+
 	if print {
 		fmt.Println(podList)
 	}

@@ -21,11 +21,11 @@ func RunCommandHost(cmds ...string) (string, error) {
 	var output, errOut bytes.Buffer
 	for _, cmd := range cmds {
 		c := exec.Command("bash", "-c", cmd)
-
 		c.Stdout = &output
 		c.Stderr = &errOut
 		err := c.Run()
 		if err != nil {
+			fmt.Println(errOut.String())
 			return output.String(), fmt.Errorf("executing command: %s: %w", cmd, err)
 		}
 	}
@@ -33,6 +33,7 @@ func RunCommandHost(cmds ...string) (string, error) {
 	return output.String(), nil
 }
 
+// RunCommandOnNode executes a command on the node trough SSH
 func RunCommandOnNode(cmd string, ServerIP string) (string, error) {
 	if cmd == "" {
 		return "", fmt.Errorf("cmd should not be empty")
@@ -53,8 +54,8 @@ func RunCommandOnNode(cmd string, ServerIP string) (string, error) {
 	stderr = strings.TrimSpace(stderr)
 
 	if stderr != "" && (!strings.Contains(stderr, "error") ||
-		!strings.Contains(stderr, "1") ||
-		!strings.Contains(stderr, "2")) {
+		!strings.Contains(stderr, "exit status 1") ||
+		!strings.Contains(stderr, "exit status 2")) {
 		return stderr, nil
 	} else if stderr != "" {
 		return fmt.Errorf("\ncommand: %s \n failed with error: %v", cmd, stderr).Error(), err
@@ -111,7 +112,9 @@ func GetRke2Version() string {
 func AddHelmRepo(name, url string) (string, error) {
 	InstallHelm := "curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash"
 	addRepo := fmt.Sprintf("helm repo add %s %s", name, url)
-	installRepo := fmt.Sprintf("helm install %s %s/%s -n kube-system", name, name, name)
+	update := "helm repo update"
+	installRepo := fmt.Sprintf("helm install %s %s/%s -n kube-system --kubeconfig=%s",
+		name, name, name, KubeConfigFile)
 
 	nodeExternalIP := FetchNodeExternalIP()
 	for _, ip := range nodeExternalIP {
@@ -120,7 +123,8 @@ func AddHelmRepo(name, url string) (string, error) {
 			return "", err
 		}
 	}
-	return RunCommandHost(addRepo, installRepo)
+
+	return RunCommandHost(addRepo, update, installRepo)
 }
 
 func publicKey(path string) (ssh.AuthMethod, error) {
@@ -179,4 +183,17 @@ func runsshCommand(cmd string, conn *ssh.Client) (string, string, error) {
 	}
 
 	return stdoutStr, stderrStr, nil
+}
+
+// JoinCommands joins the first command with some arg
+func JoinCommands(cmd, kubeconfigFlag string) string {
+	cmds := strings.Split(cmd, ";")
+	joinedCmd := cmds[0] + kubeconfigFlag
+
+	if len(cmds) > 1 {
+		secondCmd := strings.Join(cmds[1:], ",")
+		joinedCmd += " " + secondCmd
+	}
+
+	return joinedCmd
 }

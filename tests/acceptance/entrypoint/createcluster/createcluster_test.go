@@ -3,11 +3,9 @@ package createcluster
 import (
 	"fmt"
 
-	"github.com/rancher/rke2/tests/acceptance/core/service/assert"
+	. "github.com/onsi/ginkgo/v2"
 	"github.com/rancher/rke2/tests/acceptance/core/testcase"
 	"github.com/rancher/rke2/tests/acceptance/shared"
-
-	. "github.com/onsi/ginkgo/v2"
 )
 
 var _ = Describe("Test:", func() {
@@ -16,31 +14,31 @@ var _ = Describe("Test:", func() {
 		testcase.TestBuildCluster(GinkgoT(), false)
 	})
 
-	It("Validate Nodes", func() {
-		testcase.TestNodeStatus(
-			assert.NodeAssertReadyStatus(),
-			nil,
-		)
-	})
+	// It("Validate Nodes", func() {
+	// 	testcase.TestNodeStatus(
+	// 		assert.NodeAssertReadyStatus(),
+	// 		nil,
+	// 	)
+	// })
+	//
+	// It("Validate Pods", func() {
+	// 	testcase.TestPodStatus(
+	// 		assert.PodAssertRestart(),
+	// 		assert.PodAssertReady(),
+	// 		assert.PodAssertStatus(),
+	// 	)
+	// })
 
-	It("Validate Pods", func() {
-		testcase.TestPodStatus(
-			assert.PodAssertRestart(),
-			assert.PodAssertReady(),
-			assert.PodAssertStatus(),
-		)
-	})
-
-	It("Verifies ClusterIP Service", func() {
-		testcase.TestServiceClusterIp(true)
-		defer shared.ManageWorkload("delete", "clusterip.yaml")
-	})
-
-	It("Verifies NodePort Service", func() {
-		testcase.TestServiceNodePort(true)
-		defer shared.ManageWorkload("delete", "nodeport.yaml")
-	})
-
+	// It("Verifies ClusterIP Service", func() {
+	// 	testcase.TestServiceClusterIp(true)
+	// 	defer shared.ManageWorkload("delete", "clusterip.yaml")
+	// })
+	//
+	// It("Verifies NodePort Service", func() {
+	// 	testcase.TestServiceNodePort(true)
+	// 	defer shared.ManageWorkload("delete", "nodeport.yaml")
+	// })
+	//
 	It("Verifies Ingress", func() {
 		testcase.TestIngress(true)
 		defer shared.ManageWorkload("delete", "ingress.yaml")

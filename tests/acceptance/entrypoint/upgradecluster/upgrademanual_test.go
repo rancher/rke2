@@ -11,6 +11,7 @@ import (
 	"github.com/rancher/rke2/tests/acceptance/shared"
 
 	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Test:", func() {
@@ -55,13 +56,14 @@ var _ = Describe("Test:", func() {
 	})
 
 	It("Upgrade manual", func() {
-		_ = testcase.TestUpgradeClusterManually(customflag.ServiceFlag.InstallType.String())
+		err := testcase.TestUpgradeClusterManually(customflag.ServiceFlag.InstallUpgrade.String())
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("Checks Node Status pos upgrade", func() {
 		testcase.TestNodeStatus(
 			assert.NodeAssertReadyStatus(),
-			assert.NodeAssertVersionTypeUpgraded(&customflag.ServiceFlag.InstallType),
+			assert.NodeAssertVersionTypeUpgrade(customflag.ServiceFlag),
 		)
 	})
 

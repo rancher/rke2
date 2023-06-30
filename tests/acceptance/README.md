@@ -89,144 +89,60 @@ Responsibility:       Should not need the knowledge or "external" dependency at 
 
 ```How can I do that?```
 
-- Step 1: Add your desired first version or commit that you want to use on `local.tfvars` file on the vars `rke2_version` and `install_mode`
+- Step 1: Add your desired first version or commit that you want to use on `local.tfvars` file on the vars `k3s_version` and `install_mode`
 - Step 2: Have the commands you need to run and the expected output from them
 - Step 3: Have a version or commit that you want to upgrade to.
-- Step 4: Create your go test file in `acceptance/entrypoint/versionbump/versionbump{mytestname}.go`.
-- Step 5: Get the template from `acceptance/entrypoint/versionbump/versionbump.go` and copy it to your test file.
-- Step 6: Fill the template with your data ( RunCmdNode and RunCmdHost) with your respective commands.
-- Step 7: On the TestConfig field you can add another test case that we already have or a newly created one.
-- Step 8: Create the go test command and the make command to run it.
-- Step 9: Run the command and wait for results.
-- Step 10: (WIP) Export your customizable report.
-
-
--------------------
-- RunCmdNode:
-  Commands like:
-    - $ `curl ...`
-    - $ `sudo chmod ...`
-    - $ `sudo systemctl ...`
-    - $ `grep ...`
-    - $ `rke2 --version`
-
-
-- RunCmdHost:
-  Basically commands like:
-    - $ `kubectl ...`
-    - $ `helm ...`
+- Step 4: On the TestConfig field you can add another test case that we already have or a newly created one.
+- Step 5: You can add a standalone workload deploy if you need
+- Step 6: Just fill the go test or make command with your required values
+- Step 7: Run the command and wait for results.
+- Step 8: (WIP) Export your customizable report.
 
 
 
 Available arguments to create your command with examples:
 ````
-- $ -cmdHost kubectl describe pod -n kube-system local-path-provisioner-,  | grep -i Image"
-- $ -expectedValueHost "v0.0.21"
-- $ -expectedValueUpgradedHost "v0.0.24"
-- $ -cmdNode "rke2 --version"
-- $ -expectedValueNode "v1.25.2+k3s1"
-- $ -expectedValuesUpgradedNode "v1.26.4-rc1+rke2r1"
-- $ -upgradeVersion "v1.26.4-rc1+rke2r1"
-- $ -installVersionOrCommit INSTALL_RKE2_COMMIT=257fa2c54cda332e42b8aae248c152f4d1898218
+- $ -cmd "kubectl describe pod -n kube-system local-path-provisioner- ;  | grep -i Image"
+- $ -expectedValue "v0.0.21"
+- $ -expectedValueUpgrade "v0.0.24"
+- $ -installVersionOrCommit INSTALL_K3S_COMMIT=257fa2c54cda332e42b8aae248c152f4d1898218
 - $ -deployWorkload true
-- $ -testCase TestCaseName
+- $ -testCase "TestLocalPathProvisionerStorage"
+- $ -workloadName "bandwidth-annotations.yaml"
 - $ -description "Description of your test"
-````
 
-Example of an execution considering that the `commands` are already placed or inside your test function or the *template itself (example below the command):
+* All non-boolean arguments is comma separated in case you need to send more than 1.
+
+* If you need to separate another command to run as a single here , separate those with " ; " as this example:
+`-cmd "kubectl describe pod -n kube-system local-path-provisioner- ;  | grep -i Image"`
+```
+
+Example of an execution with multiple values:
 ```bash
  go test -v -timeout=45m -tags=coredns ./entrypoint/versionbump/... \                     
-  -expectedValueHost "v1.9.3"  \       
-  -expectedValueUpgradedHost "v1.10.1" \
-  -expectedValueNode "v1.25.9+rke2r1" \            
-  -expectedValueUpgradedNode "v1.26.4-rc1+rke2r1" \                                  
-  -installVersionOrCommit INSTALL_RKE2_VERSION=v1.25.9+rke2r1
+  -expectedValue "v1.9.3, v1.25.9+rke2r1"  \
+  -expectedValueUpgrade "v1.10.1, v1.26.4-rc1+rke2r1" \
+  -installVersionOrCommit INSTALL_RKE2_VERSION=v1.25.9+rke2r1 \
+  -testCase "TestServiceClusterIp, TestIngress" \
+  -deployWorkload true \
+  -workloadName "ingress.yaml" \
+  -description "Testing ingress and service cluster ip"
   
 ````
-PS: If you need to send more than one command at once split them with  " , "
-
-#### `*template with commands and testcase added:`
-```go
-- Values passed in code.
--------------------------------------------------------
-- util.GetCoreDNSdeployImage
-- testcase.TestCoredns
--------------------------------------------------------
-	
-	
-Value passed in command line 
--------------------------------------------------------
--expectedValueHost "v1.9.3" 
--expectedValueUpgradedHost "v1.10.1" 
--------------------------------------------------------
-
-	
-    template.VersionTemplate(template.VersionTestTemplate{
-	    Description: "Test CoreDNS bump",
-        TestCombination: &template.RunCmd{
-                RunOnHost: []template.TestMap{
-                {
-                    Cmd:                  util.GetCoreDNSdeployImage,
-                    ExpectedValue:        service.ExpectedValueHost,
-                    ExpectedValueUpgrade: service.ExpectedValueUpgradedHost,
-                },
-                },
-		},
-        InstallUpgrade: customflag.installType,
-        TestConfig: &template.TestConfig{
-            TestFunc:       testcase.TestCoredns,
-            DeployWorkload: true,
-        },
-	})
-})
-
+* If you need to separate another command to run as a single here , separate those with " ; " as this example:
+`-cmd "kubectl describe pod -n kube-system local-path-provisioner- ;  | grep -i Image"`
 ````
 
 
-#### You can also run a totally parametrized test with the template, just copy and paste the template and call everything as flags like that:
-- Template
-```` go
-	template.VersionTemplate(GinkgoT(), template.VersionTestTemplate{
-			Description: util.Description,
-			TestCombination: &template.RunCmd{
-				RunOnNode: []template.TestMap{
-					{
-						Cmd:                  util.CmdNode,
-						ExpectedValue:        util.ExpectedValueNode,
-						ExpectedValueUpgrade: util.ExpectedValueUpgradedNode,
-					},
-				},
-				RunOnHost: []template.TestMap{
-					{
-						Cmd:                  util.CmdHost,
-						ExpectedValue:        util.ExpectedValueHost,
-						ExpectedValueUpgrade: util.ExpectedValueUpgradedHost,
-					},
-				},
-			},
-			InstallUpgrade: util.installType,
-			TestConfig: &template.TestConfig{
-				TestFunc:       template.TestCase(util.TestCase.TestFunc),
-				DeployWorkload: util.TestCase.DeployWorkload,
-			},
-		})
-	})
+Example of an execution with less args:
+````bash
+go test -timeout=45m -v -tags=versionbump  ./entrypoint/versionbump/... \
+-cmd "(find /var/lib/rancher/rke2/data/ -type f -name runc -exec {} --version \\;)"  \
+-expectedValue "1.1.7"  \
+-expectedValueUpgrade "1.10.1" \
+-installVersionOrCommit INSTALL_RKE2_VERSION=v1.27.2+rke2r1 \
 ````
 
-- Command
-```bash
-go test -timeout=45m -v -tags=versionbump ./entrypoint/versionbump/...  \   
-  -cmdNode "rke2 --version" \
-  -expectedValueNode "v1.25.3+rke2r1"  \
-  -expectedValueUpgradedNode "v1.25.9+rke2r1" \
-  -cmdHost "kubectl get deploy rke2-coredns-rke2-coredns -n kube-system -o jsonpath='{.spec.template.spec.containers[?(@.name==\"coredns\")].image}'"  \
-  -expectedValueHost "v1.9.3" \
-  -expectedValueUpgradedHost "v1.10.1" \
-  -installVersionOrCommit INSTALL_RKE2_VERSION=v1.25.9+rke2r1 \
-  -testCase "TestCoredns" \
-  -deployWorkload true
-                            
-````
 
 #### We also have this on the `makefile` to make things easier to run just adding the values, please see below on the makefile section
 
@@ -259,8 +175,6 @@ Tests can be run individually per package or per test tags from acceptance packa
 ```bash
 go test -timeout=45m -v ./entrypoint/$PACKAGE_NAME/...
 
-go test -timeout=45m -v ./entrypoint/upgradecluster/... -installVersionOrCommit INSTALL_RKE2_VERSION=v1.25.8+rke2r1 -upgradeVersion v1.25.8+rke2r1
-
 go test -timeout=45m -v -tags=upgrademanual ./entrypoint/upgradecluster/... -installVersionOrCommit INSTALL_RKE2_VERSION=v1.25.8+rke2r1
 
 go test -timeout=45m -v -tags=upgradesuc ./entrypoint/upgradecluster/... -upgradeVersion v1.25.8+rke2r1
@@ -268,7 +182,7 @@ go test -timeout=45m -v -tags=upgradesuc ./entrypoint/upgradecluster/... -upgrad
 ```
 Test flags:
 ```
- ${upgradeVersion} version to upgrade to
+ ${upgradeVersion} version to upgrade to as SUC
     -upgradeVersion v1.26.2+rke2r1
     
  ${installType} type of installation (version or commit) + desired value    
@@ -279,8 +193,6 @@ Test tags:
  -tags=upgradesuc
  -tags=upgrademanual
  -tags=versionbump
- -tags=runc
- -tags=coredns
 ```
 ###  Run with `Makefile` through acceptance package:
 ```bash
@@ -298,13 +210,13 @@ Args:
 - ${TAGTEST}               name of the tag function from suite ( -tags=upgradesuc or -tags=upgrademanual )
 - ${TESTCASE}              name of the testcase to run
 - ${DEPLOYWORKLOAD}        true or false to deploy workload
-- ${CMDHOST}               command to run on host
-- ${VALUEHOST}             value to check on host
-- ${VALUEHOSTUPGRADED}     value to check on host after upgrade
-- ${CMDNODE}               command to run on node
-- ${VALUENODE}             value to check on node
-- ${VALUENODEUPGRADED}     value to check on node after upgrade
+- ${CMD}                   command to run
+- ${VALUE}                 value to check
+- ${VALUEUPGRADE}          value to check  after upgrade
 - ${INSTALLTYPE}           type of installation (version or commit) + desired value
+- &{WORKLOADNAME}          name of the workload to deploy
+- &{DESCRIPTION}           description of the test
+- &{CHANNEL}               channel to use for upgrade
 
 
 
@@ -315,8 +227,6 @@ $ make test-env-down                   # removes the image and container by pref
 $ make test-env-clean                  # removes instances and resources created by testcase
 $ make test-logs                       # prints logs from container the testcase
 $ make test-create                     # runs create cluster test locally
-$ make test-version-runc               # runs version runc test locally
-$ make test-version-coredns            # runs version coredns test locally
 $ make test-upgrade-suc                # runs upgrade via SUC
 $ make test-upgrade-manual             # runs upgrade manually
 $ make test-version-bump               # runs version bump test locally
@@ -343,48 +253,27 @@ $ make test-run
 $ make test-run IMGNAME=x \
   TAGNAME=y \
   TESTDIR=versionbump \
-  CMDNODE="rke2 --version" \
-  VALUENODE="v1.26.2+rke2r1" \
-  CMDHOST="kubectl get image..."  \
-  VALUEHOST="v0.0.21" \
+  CMD="rke2 --version, kubectl get image..." \
+  VALUE="v1.26.2+rke2r1, v0.0.21" \
+  VALUEUPGRADE="v1.27.2+rke2r1, v0.0.24"
   INSTALLTYPE=INSTALL_RKE2_COMMIT=257fa2c54cda332e42b8aae248c152f4d1898218 \ 
   TESTCASE=TestCaseName \
-  DEPLOYWORKLOAD=true
-````
+  DEPLOYWORKLOAD=true \
+  WORKLOADNAME="someWorkload.yaml" \
+  DESCRIPTION="some description" \
+  CHANNEL="stable"
+ ````
 
 ### Examples to run locally:
 ````
 - Run create cluster test:
 $ make test-create
 
+- Run upgrade cluster test SUC:
+$ make test-upgrade-suc UPGRADEVERSION=v1.26.4+rke2r1
+
 - Run upgrade cluster test:
-$ make test-upgrade-manual INSTALLTYPE=v1.26.2+k3s1
-
-
-- Run bump version for coreDNS test
-$ make test-version-bump \
-   CMDNODE='rke2 --version' \
-   VALUENODE="v1.25.3+rke2r1" \
-   VALUENODEUPGRADED="v1.25.9+rke2r1" \
-   CMDHOST='kubectl get deploy rke2-coredns-rke2-coredns -n kube-system -o json, | grep "rancher/hardened-coredns"  \
-   VALUEHOST="v1.9.3" \
-   VALUEHOSTUPGRADED="v1.10.1" \
-   INSTALLTYPE=INSTALL_RKE2_VERSION=v1.25.9+rke2r1 \
-   TESTCASE="TestCoredns" \
-   DEPLOYWORKLOAD=true
-    
-    
-    
-- Run bump version for runc test
-$ make test-version-runc \
-   CMDHOST='kubectl get nodes' \
-   VALUEHOST="Ready" \
-   VALUEHOSTUPGRADED="Ready" \
-   CMDNODE="(find /var/lib/rancher/rke2/data/ -type f -name runc -exec {} --version \\;)"  \
-   VALUENODE="1.1.4" \
-   VALUENODEUPGRADED="1.1.5" \
-   INSTALLTYPE=INSTALL_RKE2_VERSION=v1.25.9+rke2r1
-
+$ make test-upgrade-manual INSTALLTYPE=INSTALL_RKE2_VERSION=v1.26.4+rke2r1
 
 
 - Logs from test

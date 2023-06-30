@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/rancher/rke2/tests/acceptance/core/service/customflag"
@@ -15,28 +16,33 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	flag.Var(&customflag.ServiceFlag.ClusterConfig.Destroy, "destroy", "Destroy cluster after test")
-	flag.StringVar(&template.TestMapFlag.CmdHost, "cmdHost", "", "Comma separated list of commands to execute on host")
-	flag.StringVar(&template.TestMapFlag.ExpectedValueHost, "expectedValueHost", "", "Comma separated list of expected values for host commands")
-	flag.StringVar(&template.TestMapFlag.CmdNode, "cmdNode", "", "Comma separated list of commands to execute on node")
-	flag.StringVar(&template.TestMapFlag.ExpectedValueNode, "expectedValueNode", "", "Comma separated list of expected values for node commands")
-	flag.StringVar(&template.TestMapFlag.ExpectedValueUpgradedHost, "expectedValueUpgradedHost", "", "Expected value of the command ran on Host after upgrading")
-	flag.StringVar(&template.TestMapFlag.ExpectedValueUpgradedNode, "expectedValueUpgradedNode", "", "Expected value of the command ran on Node after upgrading")
+	flag.StringVar(&template.TestMapFlag.Cmd, "cmd", "", "Comma separated list of commands to execute")
+	flag.StringVar(&template.TestMapFlag.ExpectedValue, "expectedValue", "", "Comma separated list of expected values for commands")
+	flag.StringVar(&template.TestMapFlag.ExpectedValueUpgrade, "expectedValueUpgrade", "", "Expected value of the command ran on Node after upgrading")
 	flag.Var(&customflag.ServiceFlag.InstallUpgrade, "installVersionOrCommit", "Install upgrade customflag")
-	flag.StringVar(&template.TestMapFlag.Description, "description", "", "Description of the test")
-	flag.Var(&customflag.ServiceFlag.TestCase, "testCase", "Test case to run")
-	flag.BoolVar(&customflag.ServiceFlag.TestCase.DeployWorkload, "deployWorkload", false, "Deploy workload customflag")
-
+	flag.StringVar(&customflag.ServiceFlag.InstallType.Channel, "channel", "", "channel to use on install or upgrade")
+	flag.Var(&customflag.TestCaseNameFlag, "testCase", "Comma separated list of test case names to run")
+	flag.BoolVar(&customflag.ServiceFlag.TestConfig.DeployWorkload, "deployWorkload", false, "Deploy workload customflag")
+	flag.StringVar(&customflag.ServiceFlag.TestConfig.WorkloadName, "workloadName", "", "Name of the workload to a standalone deploy")
+	flag.Var(&customflag.ServiceFlag.ClusterConfig.Destroy, "destroy", "Destroy cluster after test")
+	flag.StringVar(&customflag.ServiceFlag.TestConfig.Description, "description", "", "Description of the test")
 	flag.Parse()
 
-	testFunc, err := template.AddTestCase(*customflag.ServiceFlag.TestCase.TestFuncName)
+	installVersionOrCommit := strings.Split(customflag.ServiceFlag.InstallUpgrade.String(), ",")
+	customflag.ServiceFlag.InstallUpgrade = installVersionOrCommit
+
+	customflag.ServiceFlag.TestConfig.TestFuncNames = customflag.TestCaseNameFlag
+	testFuncs, err := template.AddTestCases(customflag.ServiceFlag.TestConfig.TestFuncNames)
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 		return
 	}
-
-	if testFunc != nil {
-		customflag.ServiceFlag.TestCase.TestFunc = customflag.TestCaseFlagType(testFunc)
+	if len(testFuncs) > 0 {
+		testCaseFlags := make([]customflag.TestCaseFlag, len(testFuncs))
+		for i, j := range testFuncs {
+			testCaseFlags[i] = customflag.TestCaseFlag(j)
+		}
+		customflag.ServiceFlag.TestConfig.TestFuncs = testCaseFlags
 	}
 
 	os.Exit(m.Run())

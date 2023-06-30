@@ -30,6 +30,7 @@ func validate(exec func(string) (string, error), args ...string) error {
 
 			err := runAssertion(cmd, assert, exec, ticker.C, timeout, errorsChan)
 			if err != nil {
+				fmt.Printf("error from runAssertion:\n %s\n", err)
 				close(errorsChan)
 				return err
 			}
@@ -62,7 +63,12 @@ func runAssertion(
 				errorsChan <- err
 				return fmt.Errorf("error from runCmd:\n %s\n %s", res, err)
 			}
-			fmt.Printf("\nCMD: %s\n\nRESULT: \n%s\n\nAssertion: \n%s\n\n", cmd, res, assert)
+			fmt.Printf("\n---------------------\nCommand:\n"+
+				"%s\n"+
+				"\n---------------------\nResult:\n"+
+				"%s\n"+
+				"\n---------------------\nAssertion:\n"+
+				"%s\n", cmd, res, assert)
 			if strings.Contains(res, assert) {
 				fmt.Printf("Matched with: \n%s\n", res)
 				errorsChan <- nil
