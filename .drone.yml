@@ -7,6 +7,9 @@ platform:
   os: linux
   arch: amd64
 
+clone:
+  retries: 3
+
 steps:
   - name: skipfiles
     image: plugins/git
@@ -206,6 +209,9 @@ platform:
   os: linux
   arch: arm64
 
+clone:
+  retries: 3
+
 steps:
   - name: skipfiles
     image: plugins/git
@@ -371,6 +377,9 @@ platform:
 node:
   arch: s390x
 
+clone:
+  retries: 3
+
 steps:
   - name: skipfiles
     image: alpine/git:v2.30.2-s390x
@@ -474,6 +483,9 @@ platform:
   os: linux
   arch: amd64
 
+clone:
+  retries: 3
+
 steps:
   - name: skipfiles
     image: plugins/git
@@ -531,6 +543,9 @@ name: manifest
 platform:
   os: linux
   arch: amd64
+
+clone:
+  retries: 3
 
 steps:
   - name: skipfiles
