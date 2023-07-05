@@ -275,10 +275,11 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 			"--audit-log-maxbackup=10",
 			"--audit-log-maxsize=100",
 		}
-		args = append(extraArgs, args...)
 		if auditLogFile == "" {
 			auditLogFile = filepath.Join(s.DataDir, "server/logs/audit.log")
+			extraArgs = append(extraArgs, "--audit-log-path="+auditLogFile)
 		}
+		args = append(extraArgs, args...)
 	}
 
 	files := []string{}
