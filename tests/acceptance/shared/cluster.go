@@ -79,7 +79,6 @@ func ManageWorkload(action, workload string) (string, error) {
 func createWorkload(workload, filename string) (string, error) {
 	fmt.Println("\nDeploying", workload)
 	return RunCommandHost("kubectl apply -f " + filename + " --kubeconfig=" + KubeConfigFile)
-
 }
 
 // deleteWorkload deletes a workload and asserts that the workload is deleted.
@@ -164,8 +163,7 @@ func KubectlCommand(destination, action, source string, args ...string) (string,
 // FetchClusterIP returns the cluster IP and port of the service.
 func FetchClusterIP(
 	namespace string,
-	serviceName string,
-) (string, string, error) {
+	serviceName string) (string, string, error) {
 	ip, err := RunCommandHost("kubectl get svc " + serviceName + " -n " + namespace +
 		" -o jsonpath='{.spec.clusterIP}' --kubeconfig=" + KubeConfigFile)
 	if err != nil {

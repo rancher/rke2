@@ -11,39 +11,39 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 )
 
-// processTestCombination runs the tests per ips using processOnNode and processOnHost validation.
+// processCmds runs the tests per ips using processOnNode and processOnHost validation.
 //
 // it will spawn a go routine per testCombination and ip.
+func processCmds(resultChan chan error, wg *sync.WaitGroup, ip string, cmds []string, expectedValues []string) {
+	if len(cmds) != len(expectedValues) {
+		resultChan <- fmt.Errorf("mismatched length commands x expected values")
+		return
+	}
+
+	for i := range cmds {
+		cmd := cmds[i]
+		expectedValue := expectedValues[i]
+		wg.Add(1)
+		go func(ip string, cmd, expectedValue string) {
+			defer wg.Done()
+			defer GinkgoRecover()
+
+			if strings.Contains(cmd, "kubectl") || strings.Contains(cmd, "helm") {
+				processOnHost(resultChan, ip, cmd, expectedValue)
+			} else {
+				processOnNode(resultChan, ip, cmd, expectedValue)
+			}
+		}(ip, cmd, expectedValue)
+	}
+}
+
 func processTestCombination(resultChan chan error, wg *sync.WaitGroup, ips []string, testCombination RunCmd) {
-	for _, ip := range ips {
-		if testCombination.Run != nil {
+	if testCombination.Run != nil {
+		for _, ip := range ips {
 			for _, testMap := range testCombination.Run {
 				cmds := strings.Split(testMap.Cmd, ",")
 				expectedValues := strings.Split(testMap.ExpectedValue, ",")
-				if len(cmds) != len(expectedValues) {
-					resultChan <- fmt.Errorf("mismatched length commands x expected values")
-					return
-				}
-
-				for i := range cmds {
-					cmd := cmds[i]
-					expectedValue := expectedValues[i]
-					if strings.Contains(cmd, "kubectl") || strings.Contains(cmd, "helm") {
-						wg.Add(1)
-						go func(ip string, cmd, expectedValue string) {
-							defer wg.Done()
-							defer GinkgoRecover()
-							processOnHost(resultChan, ip, cmd, expectedValue)
-						}(ip, cmd, expectedValue)
-					} else {
-						wg.Add(1)
-						go func(ip string, cmd, expectedValue string) {
-							defer wg.Done()
-							defer GinkgoRecover()
-							processOnNode(resultChan, ip, cmd, expectedValue)
-						}(ip, cmd, expectedValue)
-					}
-				}
+				processCmds(resultChan, wg, ip, cmds, expectedValues)
 			}
 		}
 	}

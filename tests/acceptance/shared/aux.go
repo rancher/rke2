@@ -33,7 +33,7 @@ func RunCommandHost(cmds ...string) (string, error) {
 	return output.String(), nil
 }
 
-// RunCommandOnNode executes a command on the node trough SSH
+// RunCommandOnNode executes a command on the node SSH
 func RunCommandOnNode(cmd string, ServerIP string) (string, error) {
 	if cmd == "" {
 		return "", fmt.Errorf("cmd should not be empty")

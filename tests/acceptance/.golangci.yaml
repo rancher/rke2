@@ -45,7 +45,6 @@ linters-settings:
       - name: error-strings
       - name: errorf
       - name: exported
-      - name: customflag-parameter
       - name: get-return
       - name: if-return
       - name: increment-decrement

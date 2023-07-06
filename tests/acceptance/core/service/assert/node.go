@@ -25,13 +25,12 @@ func NodeAssertVersionTypeUpgrade(installType customflag.FlagConfig) NodeAssertF
 				g.Expect(node.Version).Should(Equal(version[1]),
 					"Nodes should all be upgraded to the specified version", node.Name)
 			}
-		} else {
-			upgradedVersion := shared.GetRke2Version()
-			fmt.Printf("Asserting Commit: %s\n Version: %s", version[1], upgradedVersion)
-			return func(g Gomega, node shared.Node) {
-				g.Expect(upgradedVersion).Should(ContainSubstring(node.Version),
-					"Nodes should all be upgraded to the specified commit", node.Name)
-			}
+		}
+		upgradedVersion := shared.GetRke2Version()
+		fmt.Printf("Asserting Commit: %s\n Version: %s", version[1], upgradedVersion)
+		return func(g Gomega, node shared.Node) {
+			g.Expect(upgradedVersion).Should(ContainSubstring(node.Version),
+				"Nodes should all be upgraded to the specified commit", node.Name)
 		}
 	}
 

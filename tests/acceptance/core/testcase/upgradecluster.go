@@ -81,11 +81,11 @@ func TestUpgradeClusterManually(version string) error {
 	return nil
 }
 
-// upgradeServer upgrades servers in cluster,it will spawn a go routine per server ip.
-func upgradeServer(installType string, serverIPs []string) error {
+// upgradeNode upgrades a node server or agent type to the specified version
+func upgradeNode(nodeType string, installType string, ips []string) error {
 	var wg sync.WaitGroup
 	var channel string
-	errCh := make(chan error, len(serverIPs))
+	errCh := make(chan error, len(ips))
 
 	switch {
 	case customflag.ServiceFlag.InstallType.Version != nil:
@@ -98,25 +98,25 @@ func upgradeServer(installType string, serverIPs []string) error {
 		channel = fmt.Sprintf("INSTALL_RKE2_CHANNEL=%s", "stable")
 	}
 
-	installRke2Server := "sudo curl -sfL https://get.rke2.io | sudo %s %s INSTALL_RKE2_TYPE=server sh - "
-	for _, ip := range serverIPs {
-		upgradeCommand := fmt.Sprintf(installRke2Server, installType, channel)
+	installRke2Command := "sudo curl -sfL https://get.rke2.io | sudo %s %s INSTALL_RKE2_TYPE=" + nodeType + " sh - "
+	for _, ip := range ips {
+		upgradeCommand := fmt.Sprintf(installRke2Command, installType, channel)
 		wg.Add(1)
-		go func(ip, installFlagServer string) {
+		go func(ip, installFlag string) {
 			defer wg.Done()
 			defer GinkgoRecover()
 
-			fmt.Println("Upgrading server to: " + upgradeCommand)
+			fmt.Println("Upgrading " + nodeType + " to: " + upgradeCommand)
 			if _, err := shared.RunCommandOnNode(upgradeCommand, ip); err != nil {
-				fmt.Printf("\nError upgrading server %s: %v\n\n", ip, err)
+				fmt.Printf("\nError upgrading %s %s: %v\n\n", nodeType, ip, err)
 				errCh <- err
 				close(errCh)
 				return
 			}
 
-			fmt.Println("Restarting server: " + ip)
+			fmt.Println("Restarting " + nodeType + ": " + ip)
 			if _, err := shared.RestartCluster(ip); err != nil {
-				fmt.Printf("\nError restarting server %s: %v\n\n", ip, err)
+				fmt.Printf("\nError restarting %s %s: %v\n\n", nodeType, ip, err)
 				errCh <- err
 				close(errCh)
 				return
@@ -130,51 +130,10 @@ func upgradeServer(installType string, serverIPs []string) error {
 	return nil
 }
 
-// upgradeAgent upgrades agents in cluster, it will spawn a go routine per agent ip.
+func upgradeServer(installType string, serverIPs []string) error {
+	return upgradeNode("server", installType, serverIPs)
+}
+
 func upgradeAgent(installType string, agentIPs []string) error {
-	var wg sync.WaitGroup
-	var channel string
-	errCh := make(chan error, len(agentIPs))
-
-	switch {
-	case customflag.ServiceFlag.InstallType.Version != nil:
-		installType = fmt.Sprintf("INSTALL_RKE2_VERSION=%s", customflag.ServiceFlag.InstallType.Version)
-	case customflag.ServiceFlag.InstallType.Commit != nil:
-		installType = fmt.Sprintf("INSTALL_RKE2_COMMIT=%s", customflag.ServiceFlag.InstallType.Commit)
-	case customflag.ServiceFlag.InstallType.Channel != "":
-		channel = fmt.Sprintf("INSTALL_RKE2_CHANNEL=%s", customflag.ServiceFlag.InstallType.Channel)
-	case customflag.ServiceFlag.InstallType.Channel == "":
-		channel = fmt.Sprintf("INSTALL_RKE2_CHANNEL=%s", "stable")
-	}
-
-	installRke2Agent := "sudo curl -sfL https://get.rke2.io | sudo %s %s INSTALL_RKE2_TYPE=agent sh - "
-	for _, ip := range agentIPs {
-		upgradeCommand := fmt.Sprintf(installRke2Agent, installType, channel)
-		wg.Add(1)
-		go func(ip, installFlagAgent string) {
-			defer wg.Done()
-			defer GinkgoRecover()
-
-			fmt.Println("Upgrading agent to: " + upgradeCommand)
-			if _, err := shared.RunCommandOnNode(upgradeCommand, ip); err != nil {
-				fmt.Printf("\nError upgrading agent %s: %v\n\n", ip, err)
-				errCh <- err
-				close(errCh)
-				return
-			}
-
-			fmt.Println("Restarting agent: " + ip)
-			if _, err := shared.RestartCluster(ip); err != nil {
-				fmt.Printf("\nError restarting agent %s: %v\n\n", ip, err)
-				errCh <- err
-				close(errCh)
-				return
-			}
-			time.Sleep(10 * time.Second)
-		}(ip, installType)
-	}
-	wg.Wait()
-	close(errCh)
-
-	return nil
+	return upgradeNode("agent", installType, agentIPs)
 }

@@ -122,12 +122,11 @@ func (t *UpgradeVersionFlag) String() string {
 
 // Set parses the input string and sets the Version field for SUC upgrades
 func (t *UpgradeVersionFlag) Set(value string) error {
-	if strings.HasPrefix(value, "v") && strings.HasSuffix(value, "rke2r1") {
-		t.Version = value
-	} else {
+	if !strings.HasPrefix(value, "v") && !strings.HasSuffix(value, "rke2r1") {
 		return fmt.Errorf("invalid install format: %s", value)
 	}
 
+	t.Version = value
 	return nil
 }
 
