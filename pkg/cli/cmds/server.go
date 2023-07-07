@@ -142,6 +142,7 @@ var (
 		"etcd-s3-insecure":                  copyFlag,
 		"etcd-s3-timeout":                   copyFlag,
 		"disable-helm-controller":           dropFlag,
+		"helm-job-image":                    copyFlag,
 		"enable-pprof":                      copyFlag,
 		"servicelb-namespace":               copyFlag,
 	})
