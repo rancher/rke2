@@ -41,13 +41,13 @@ resource "aws_instance" "master" {
     ]
   }
   provisioner "file" {
-    source      = "install/install_rke2_master.sh"
-    destination = "/tmp/install_rke2_master.sh"
+    source      = "install/rke2_master.sh"
+    destination = "/tmp/rke2_master.sh"
   }
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /tmp/install_rke2_master.sh",
-      "sudo /tmp/install_rke2_master.sh ${var.node_os} ${var.create_lb ? aws_route53_record.aws_route53[0].fqdn : "fake.fqdn.value"} ${var.rke2_version} ${self.public_ip} ${var.rke2_channel} \"${var.server_flags}\" ${var.install_mode} ${var.username} ${var.password} \"${var.install_method}\"",
+      "chmod +x /tmp/rke2_master.sh",
+      "sudo /tmp/rke2_master.sh ${var.node_os} ${var.create_lb ? aws_route53_record.aws_route53[0].fqdn : "fake.fqdn.value"} ${var.rke2_version} ${self.public_ip} ${var.rke2_channel} \"${var.server_flags}\" ${var.install_mode} ${var.username} ${var.password} \"${var.install_method}\"",
     ]
   }
   provisioner "local-exec" {

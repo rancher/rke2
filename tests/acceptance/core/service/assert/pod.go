@@ -65,7 +65,7 @@ func PodAssertStatus() PodAssertFunc {
 				Equal(completedAssert),
 			), pod.Name)
 		} else {
-			g.Expect(pod.Status).Should(Equal(shared.RunningAssert), pod.Name)
+			g.Expect(pod.Status).Should(Equal("Running"), pod.Name)
 		}
 	}
 }

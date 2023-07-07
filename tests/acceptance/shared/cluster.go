@@ -34,10 +34,6 @@ type Pod struct {
 	Node      string
 }
 
-const (
-	RunningAssert = "Running"
-)
-
 // ManageWorkload creates or deletes a workload based on the action: create or delete.
 func ManageWorkload(action, workload string) (string, error) {
 	if action != "create" && action != "delete" {
@@ -216,8 +212,8 @@ func FetchIngressIP(namespace string) ([]string, error) {
 	return ingressIPs, nil
 }
 
-// Nodes returns nodes parsed from kubectl get nodes.
-func Nodes(print bool) ([]Node, error) {
+// ParseNodes returns nodes parsed from kubectl get nodes.
+func ParseNodes(print bool) ([]Node, error) {
 	nodes := make([]Node, 0, 10)
 
 	cmd := "kubectl get nodes --no-headers -o wide --kubeconfig=" + KubeConfigFile
@@ -249,8 +245,8 @@ func Nodes(print bool) ([]Node, error) {
 	return nodes, nil
 }
 
-// Pods returns pods parsed from kubectl get pods.
-func Pods(print bool) ([]Pod, error) {
+// ParsePods returns pods parsed from kubectl get pods.
+func ParsePods(print bool) ([]Pod, error) {
 	pods := make([]Pod, 0, 10)
 
 	cmd := "kubectl get pods -o wide --no-headers -A --kubeconfig=" + KubeConfigFile

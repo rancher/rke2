@@ -12,8 +12,8 @@ func TestDaemonset(deployWorkload bool) {
 		Expect(err).NotTo(HaveOccurred(),
 			"Daemonset manifest not deployed")
 
-		nodes, _ := shared.Nodes(false)
-		pods, _ := shared.Pods(false)
+		nodes, _ := shared.ParseNodes(false)
+		pods, _ := shared.ParsePods(false)
 
 		Eventually(func(g Gomega) {
 			count := shared.CountOfStringInSlice("test-daemonset", pods)

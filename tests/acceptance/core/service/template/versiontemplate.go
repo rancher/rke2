@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	. "github.com/onsi/ginkgo/v2"
 	"github.com/rancher/rke2/tests/acceptance/core/service/customflag"
 	"github.com/rancher/rke2/tests/acceptance/shared"
+
+	. "github.com/onsi/ginkgo/v2"
 )
 
 // VersionTemplate is a template for testing RKE2 versions + test cases and upgrading cluster if needed

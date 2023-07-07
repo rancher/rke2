@@ -26,7 +26,7 @@ func TestIngress(deployWorkload bool) {
 		GinkgoT().Errorf("Error: %v", err)
 	}
 
-	nodes, err := shared.Nodes(false)
+	nodes, err := shared.ParseNodes(false)
 	Expect(err).NotTo(HaveOccurred())
 
 	Eventually(func(Gomega) bool {
