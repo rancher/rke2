@@ -125,6 +125,7 @@ const (
 	CalicoSystemNamespace  = "calico-system"
 	CalicoChart            = "rke2-calico"
 	calicoNode             = "calico-node"
+	calicoLogPath          = "C:\\var\\log\\"
 )
 
 // Setup creates the basic configuration required by the CNI.
@@ -373,6 +374,12 @@ func (c *Calico) overrideCalicoConfigByHelm(restConfig *rest.Config) error {
 }
 
 func startFelix(ctx context.Context, config *CalicoConfig) {
+	outputFile, err := os.Create(calicoLogPath + "felix.log")
+	if err != nil {
+		logrus.Fatalf("error creating felix.log: %v", err)
+		return
+	}
+	defer outputFile.Close()
 	specificEnvs := []string{
 		fmt.Sprintf("FELIX_FELIXHOSTNAME=%s", config.Hostname),
 		fmt.Sprintf("FELIX_VXLANVNI=%s", config.Felix.Vxlanvni),
@@ -386,14 +393,19 @@ func startFelix(ctx context.Context, config *CalicoConfig) {
 	logrus.Infof("Felix Envs: %s", append(generateGeneralCalicoEnvs(config), specificEnvs...))
 	cmd := exec.CommandContext(ctx, "calico-node.exe", args...)
 	cmd.Env = append(generateGeneralCalicoEnvs(config), specificEnvs...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		logrus.Errorf("Felix exited: %v", err)
-	}
+	cmd.Stdout = outputFile
+	cmd.Stderr = outputFile
+	_ = cmd.Run()
+	logrus.Error("Felix exited")
 }
 
 func startCalico(ctx context.Context, config *CalicoConfig) error {
+	outputFile, err := os.Create(calicoLogPath + "calico-node.log")
+	if err != nil {
+		logrus.Errorf("error creating calico-node.log: %v", err)
+		return err
+	}
+	defer outputFile.Close()
 	specificEnvs := []string{
 		fmt.Sprintf("CALICO_NODENAME_FILE=%s", config.NodeNameFile),
 	}
@@ -404,8 +416,8 @@ func startCalico(ctx context.Context, config *CalicoConfig) error {
 	logrus.Infof("Calico Envs: %s", append(generateGeneralCalicoEnvs(config), specificEnvs...))
 	cmd := exec.CommandContext(ctx, "calico-node.exe", args...)
 	cmd.Env = append(generateGeneralCalicoEnvs(config), specificEnvs...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = outputFile
+	cmd.Stderr = outputFile
 	if err := cmd.Run(); err != nil {
 		logrus.Errorf("Calico exited: %v", err)
 		return err
