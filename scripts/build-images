@@ -43,18 +43,18 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.13.2
     ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.13.2
     ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.13.2
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.0.1-build20221011
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.2.0-build20230523
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
-    ${REGISTRY}/rancher/mirrored-calico-operator:v1.29.0
-    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.25.0
-    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.25.0
-    ${REGISTRY}/rancher/mirrored-calico-typha:v3.25.0
-    ${REGISTRY}/rancher/mirrored-calico-node:v3.25.0
-    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.25.0
-    ${REGISTRY}/rancher/mirrored-calico-cni:v3.25.0
-    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.25.0
+    ${REGISTRY}/rancher/mirrored-calico-operator:v1.30.4
+    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.26.1
+    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.26.1
+    ${REGISTRY}/rancher/mirrored-calico-typha:v3.26.1
+    ${REGISTRY}/rancher/mirrored-calico-node:v3.26.1
+    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.26.1
+    ${REGISTRY}/rancher/mirrored-calico-cni:v3.26.1
+    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.26.1
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
