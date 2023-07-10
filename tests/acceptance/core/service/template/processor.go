@@ -16,7 +16,8 @@ import (
 // it will spawn a go routine per testCombination and ip.
 func processCmds(resultChan chan error, wg *sync.WaitGroup, ip string, cmds []string, expectedValues []string) {
 	if len(cmds) != len(expectedValues) {
-		resultChan <- fmt.Errorf("mismatched length commands x expected values")
+		resultChan <- fmt.Errorf("mismatched length commands x expected values:"+
+			" %s x %s", cmds, expectedValues)
 		return
 	}
 

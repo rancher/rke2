@@ -119,7 +119,8 @@ Available arguments to create your command with examples:
 
 Example of an execution with multiple values:
 ```bash
- go test -v -timeout=45m -tags=coredns ./entrypoint/versionbump/... \                     
+ go test -v -timeout=45m -tags=versionbump ./entrypoint/versionbump/... \
+  -cmd "(find /var/lib/rancher/rke2/data/ -type f -name runc -exec {} --version \\;), rke2 -v"  \
   -expectedValue "v1.9.3, v1.25.9+rke2r1"  \
   -expectedValueUpgrade "v1.10.1, v1.26.4-rc1+rke2r1" \
   -installVersionOrCommit INSTALL_RKE2_VERSION=v1.25.9+rke2r1 \

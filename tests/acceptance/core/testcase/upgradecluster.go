@@ -84,23 +84,23 @@ func TestUpgradeClusterManually(version string) error {
 // upgradeNode upgrades a node server or agent type to the specified version
 func upgradeNode(nodeType string, installType string, ips []string) error {
 	var wg sync.WaitGroup
-	var channel string
+	var installFlag string
 	errCh := make(chan error, len(ips))
 
-	switch {
-	case customflag.ServiceFlag.InstallType.Version != nil:
-		installType = fmt.Sprintf("INSTALL_RKE2_VERSION=%s", customflag.ServiceFlag.InstallType.Version)
-	case customflag.ServiceFlag.InstallType.Commit != nil:
-		installType = fmt.Sprintf("INSTALL_RKE2_COMMIT=%s", customflag.ServiceFlag.InstallType.Commit)
-	case customflag.ServiceFlag.InstallType.Channel != "":
+	if strings.HasPrefix(installType, "v") {
+		installFlag = fmt.Sprintf("INSTALL_RKE2_VERSION=%s", installType)
+	} else {
+		installFlag = fmt.Sprintf("INSTALL_RKE2_COMMIT=%s", installType)
+	}
+
+	channel := fmt.Sprintf("INSTALL_RKE2_CHANNEL=%s", "stable")
+	if customflag.ServiceFlag.InstallType.Channel != "" {
 		channel = fmt.Sprintf("INSTALL_RKE2_CHANNEL=%s", customflag.ServiceFlag.InstallType.Channel)
-	case customflag.ServiceFlag.InstallType.Channel == "":
-		channel = fmt.Sprintf("INSTALL_RKE2_CHANNEL=%s", "stable")
 	}
 
 	installRke2Command := "sudo curl -sfL https://get.rke2.io | sudo %s %s INSTALL_RKE2_TYPE=" + nodeType + " sh - "
 	for _, ip := range ips {
-		upgradeCommand := fmt.Sprintf(installRke2Command, installType, channel)
+		upgradeCommand := fmt.Sprintf(installRke2Command, installFlag, channel)
 		wg.Add(1)
 		go func(ip, installFlag string) {
 			defer wg.Done()

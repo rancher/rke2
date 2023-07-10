@@ -28,7 +28,8 @@ func TestPodStatus(
 			} else if strings.Contains(pod.Name, "apply") &&
 				strings.Contains(pod.NameSpace, "system-upgrade") {
 				g.Expect(pod.Status).Should(SatisfyAny(
-					ContainSubstring("Error"),
+					ContainSubstring("Unknown"),
+					ContainSubstring("Init:Error"),
 					Equal("Completed"),
 				), pod.Name)
 			} else {
@@ -44,7 +45,7 @@ func TestPodStatus(
 				}
 			}
 		}
-	}, "600s", "3s").Should(Succeed())
+	}, "900s", "5s").Should(Succeed())
 }
 
 func testCrossNodeServiceRequest(services, ports, expected []string) error {

@@ -23,9 +23,13 @@ func RunCommandHost(cmds ...string) (string, error) {
 		c := exec.Command("bash", "-c", cmd)
 		c.Stdout = &output
 		c.Stderr = &errOut
+		if errOut.Len() > 0 {
+			fmt.Println("returning Stderr if not null, this might not be an error",
+				errOut.String())
+		}
+
 		err := c.Run()
 		if err != nil {
-			fmt.Println(errOut.String())
 			return output.String(), fmt.Errorf("executing command: %s: %w", cmd, err)
 		}
 	}

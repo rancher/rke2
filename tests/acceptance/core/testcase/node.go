@@ -32,7 +32,11 @@ func TestNodeStatus(
 			}
 			if nodeAssertVersion != nil {
 				nodeAssertVersion(g, node)
+
 			}
 		}
-	}, "800s", "3s").Should(Succeed())
+	}, "800s", "5s").Should(Succeed())
+
+	_, err := shared.ParseNodes(true)
+	Expect(err).NotTo(HaveOccurred())
 }

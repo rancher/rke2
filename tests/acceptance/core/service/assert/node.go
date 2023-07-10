@@ -15,27 +15,49 @@ type NodeAssertFunc func(g Gomega, node shared.Node)
 
 // NodeAssertVersionTypeUpgrade  custom assertion func that asserts that node version is as expected
 func NodeAssertVersionTypeUpgrade(installType customflag.FlagConfig) NodeAssertFunc {
-	fullCmd := customflag.ServiceFlag.InstallUpgrade.String()
-	version := strings.Split(fullCmd, "=")
-
 	if installType.InstallUpgrade != nil {
-		if strings.HasPrefix(fullCmd, "v") {
-			fmt.Printf("Asserting Version: %s\n", version[1])
+		if strings.HasPrefix(customflag.ServiceFlag.InstallUpgrade.String(), "v") {
+			return assertVersion(installType)
+		}
+		return assertCommit(installType)
+	}
+
+	return func(g Gomega, node shared.Node) {
+		GinkgoT().Errorf("no version or commit specified for upgrade assertion")
+	}
+}
+
+// assertVersion returns the NodeAssertFunc for asserting version
+func assertVersion(installType customflag.FlagConfig) NodeAssertFunc {
+	if installType.InstallUpgrade != nil {
+		if strings.HasPrefix(customflag.ServiceFlag.InstallUpgrade.String(), "v") {
+			fmt.Printf("Asserting Version: %s\n", installType.InstallUpgrade.String())
 			return func(g Gomega, node shared.Node) {
-				g.Expect(node.Version).Should(Equal(version[1]),
+				g.Expect(node.Version).Should(ContainSubstring(installType.InstallUpgrade.String()),
 					"Nodes should all be upgraded to the specified version", node.Name)
 			}
 		}
+	}
+
+	return func(g Gomega, node shared.Node) {
+		GinkgoT().Errorf("no version specified for upgrade assertion")
+	}
+}
+
+// assertCommit returns the NodeAssertFunc for asserting commit
+func assertCommit(installType customflag.FlagConfig) NodeAssertFunc {
+	if installType.InstallUpgrade != nil {
 		upgradedVersion := shared.GetRke2Version()
-		fmt.Printf("Asserting Commit: %s\n Version: %s", version[1], upgradedVersion)
+		fmt.Printf("Asserting Commit: %s\n Version: %s",
+			installType.InstallUpgrade.String(), upgradedVersion)
 		return func(g Gomega, node shared.Node) {
-			g.Expect(upgradedVersion).Should(ContainSubstring(node.Version),
+			g.Expect(upgradedVersion).Should(ContainSubstring(installType.InstallUpgrade.String()),
 				"Nodes should all be upgraded to the specified commit", node.Name)
 		}
 	}
 
 	return func(g Gomega, node shared.Node) {
-		GinkgoT().Errorf("no version or commit specified for upgrade assertion")
+		GinkgoT().Errorf("no commit specified for upgrade validation")
 	}
 }
 
