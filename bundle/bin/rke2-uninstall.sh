@@ -91,14 +91,9 @@ uninstall_remove_files()
     $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2"
     $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
     $transactional_update rm -rf "${INSTALL_RKE2_ROOT}/share/rke2"
-    rm -rf /etc/rancher/rke2
-    rm -rf /etc/rancher/node
-    rm -d /etc/rancher || true
-    rm -rf /etc/cni
-    rm -rf /opt/cni/bin
-    rm -rf /var/lib/kubelet
-    rm -rf /var/lib/rancher/rke2
-    rm -d /var/lib/rancher || true
+    for dir in /etc/rancher /etc/cni /opt/cni/bin /var/lib/kubelet /var/lib/rancher; do
+      rm -rf "$dir" || true
+    done
 
     if type fapolicyd >/dev/null 2>&1; then
         if [ -f /etc/fapolicyd/rules.d/80-rke2.rules ]; then
