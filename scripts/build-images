@@ -27,8 +27,8 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.25.1-build20230512
-    ${REGISTRY}/rancher/hardened-flannel:v0.22.0-build20230609
+    ${REGISTRY}/rancher/hardened-calico:v3.25.1-build20230607
+    ${REGISTRY}/rancher/hardened-flannel:v0.22.0-build20230612
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
