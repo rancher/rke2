@@ -102,7 +102,7 @@ Responsibility:       Should not need the knowledge or "external" dependency at 
 
 Available arguments to create your command with examples:
 ````
-- $ -cmd "kubectl describe pod -n kube-system local-path-provisioner- ;  | grep -i Image"
+- $ -cmd "kubectl describe pod rke2-canal- -n kube-system  : | grep -i Image"
 - $ -expectedValue "v0.0.21"
 - $ -expectedValueUpgrade "v0.0.24"
 - $ -installVersionOrCommit INSTALL_K3S_COMMIT=257fa2c54cda332e42b8aae248c152f4d1898218
@@ -113,8 +113,8 @@ Available arguments to create your command with examples:
 
 * All non-boolean arguments is comma separated in case you need to send more than 1.
 
-* If you need to separate another command to run as a single here , separate those with " ; " as this example:
-`-cmd "kubectl describe pod -n kube-system local-path-provisioner- ;  | grep -i Image"`
+* If you need to separate another command to run as a single here , separate those with " : " as this example:
+`-cmd "kubectl describe pod rke2-canal- -n kube-system  : | grep -i Image"`
 ```
 
 Example of an execution with multiple values:
@@ -128,12 +128,8 @@ Example of an execution with multiple values:
   -deployWorkload true \
   -workloadName "ingress.yaml" \
   -description "Testing ingress and service cluster ip"
-  
-````
-* If you need to separate another command to run as a single here , separate those with " ; " as this example:
-`-cmd "kubectl describe pod -n kube-system local-path-provisioner- ;  | grep -i Image"`
-````
 
+    ```
 
 Example of an execution with less args:
 ````bash

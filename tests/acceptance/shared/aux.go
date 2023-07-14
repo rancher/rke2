@@ -191,7 +191,7 @@ func runsshCommand(cmd string, conn *ssh.Client) (string, string, error) {
 
 // JoinCommands joins the first command with some arg
 func JoinCommands(cmd, kubeconfigFlag string) string {
-	cmds := strings.Split(cmd, ";")
+	cmds := strings.Split(cmd, ":")
 	joinedCmd := cmds[0] + kubeconfigFlag
 
 	if len(cmds) > 1 {
