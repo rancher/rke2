@@ -16,7 +16,7 @@ fi
 #
 #   - INSTALL_RKE2_CHANNEL
 #     Channel to use for fetching rke2 download URL.
-#     Defaults to 'latest'.
+#     Defaults to 'stable'.
 #
 #   - INSTALL_RKE2_METHOD
 #     The installation method to use.
