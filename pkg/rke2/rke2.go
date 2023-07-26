@@ -105,7 +105,7 @@ func Server(clx *cli.Context, cfg Config) error {
 	dataDir := clx.String("data-dir")
 	lbNamespace := clx.String("servicelb-namespace")
 	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
-		checkStaticManifests(cmds.AgentConfig.ContainerRuntimeEndpoint, dataDir),
+		reconcileStaticPods(cmds.AgentConfig.ContainerRuntimeEndpoint, dataDir),
 		setPSPs(cisMode, lbNamespace),
 		setNetworkPolicies(cisMode, defaultNamespaces),
 		setClusterRoles(),
