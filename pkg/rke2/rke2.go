@@ -104,7 +104,7 @@ func Server(clx *cli.Context, cfg Config) error {
 	}
 	dataDir := clx.String("data-dir")
 	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
-		checkStaticManifests(cmds.AgentConfig.ContainerRuntimeEndpoint, dataDir),
+		reconcileStaticPods(cmds.AgentConfig.ContainerRuntimeEndpoint, dataDir),
 		setNetworkPolicies(cisMode, defaultNamespaces),
 		setClusterRoles(),
 		restrictServiceAccounts(cisMode, defaultNamespaces),
