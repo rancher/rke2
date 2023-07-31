@@ -96,7 +96,7 @@ uninstall_remove_files()
     rm -d /etc/rancher || true
     rm -rf /etc/cni
     rm -rf /opt/cni/bin
-    rm -rf /var/lib/kubelet
+    rm -rf /var/lib/kubelet || true
     rm -rf /var/lib/rancher/rke2
     rm -d /var/lib/rancher || true
 
