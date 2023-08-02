@@ -119,7 +119,7 @@ RUN CHART_VERSION="0.2.200"                   CHART_FILE=/charts/harvester-cloud
 RUN CHART_VERSION="0.1.1600"                  CHART_FILE=/charts/harvester-csi-driver.yaml     CHART_BOOTSTRAP=true /charts/build-chart.sh
 RUN CHART_VERSION="1.7.202"                   CHART_FILE=/charts/rke2-snapshot-controller.yaml CHART_BOOTSTRAP=false /charts/build-chart.sh
 RUN CHART_VERSION="1.7.202"                   CHART_FILE=/charts/rke2-snapshot-controller-crd.yaml CHART_BOOTSTRAP=false /charts/build-chart.sh
-RUN CHART_VERSION="1.7.101"                   CHART_FILE=/charts/rke2-snapshot-validation-webhook.yaml CHART_BOOTSTRAP=false /charts/build-chart.sh
+RUN CHART_VERSION="1.7.300"                   CHART_FILE=/charts/rke2-snapshot-validation-webhook.yaml CHART_BOOTSTRAP=false /charts/build-chart.sh
 RUN rm -vf /charts/*.sh /charts/*.md
 
 # rke2-runtime image
@@ -127,9 +127,9 @@ RUN rm -vf /charts/*.sh /charts/*.md
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM rancher/hardened-kubernetes:v1.27.4-rke2r1-build20230719 AS kubernetes
-FROM rancher/hardened-containerd:v1.7.1-k3s1-build20230606 AS containerd
+FROM rancher/hardened-containerd:v1.7.3-k3s1-build20230802 AS containerd
 FROM rancher/hardened-crictl:v1.26.1-build20230606 AS crictl
-FROM rancher/hardened-runc:v1.1.7-build20230606 AS runc
+FROM rancher/hardened-runc:v1.1.8-build20230802 AS runc
 
 FROM scratch AS runtime-collect
 COPY --from=runc \
