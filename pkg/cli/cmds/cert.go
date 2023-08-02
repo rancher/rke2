@@ -45,9 +45,11 @@ func NewCertCommand() cli.Command {
 			},
 		},
 		"rotate-ca": {
-			"server": copyFlag,
-			"path":   copyFlag,
-			"force":  copyFlag,
+			"server": {
+				Default: "https://127.0.0.1:9345",
+			},
+			"path":  copyFlag,
+			"force": copyFlag,
 			"data-dir": {
 				Usage:   "(data) Folder to hold state",
 				Default: rke2Path,
