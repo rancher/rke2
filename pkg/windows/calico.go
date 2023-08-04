@@ -425,6 +425,7 @@ func startFelix(ctx context.Context, config *CalicoConfig) {
 		fmt.Sprintf("FELIX_FELIXHOSTNAME=%s", config.Hostname),
 		fmt.Sprintf("FELIX_VXLANVNI=%s", config.Felix.Vxlanvni),
 		fmt.Sprintf("FELIX_METADATAADDR=%s", config.Felix.Metadataaddr),
+		fmt.Sprintf("FELIX_DATASTORETYPE=%s", config.DatastoreType),
 	}
 
 	args := []string{
