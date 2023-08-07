@@ -172,15 +172,12 @@ func (c *Calico) initializeConfig(ctx context.Context, nodeConfig *daemonconfig.
 		DNSSearch:             "svc." + nodeConfig.AgentConfig.ClusterDomain,
 		DatastoreType:         "kubernetes",
 		Platform:              platformType,
-		StartUpValidIPTimeout: 90,
 		IP:                    nodeConfig.AgentConfig.NodeIP,
 		IPAutoDetectionMethod: "first-found",
 		Felix: FelixConfig{
-			Metadataaddr:    "none",
-			Vxlanvni:        "4096",
-			MacPrefix:       "0E-2A",
-			LogSeverityFile: "none",
-			LogSeveritySys:  "none",
+			Metadataaddr: "none",
+			Vxlanvni:     "4096",
+			MacPrefix:    "0E-2A",
 		},
 		CNI: CalicoCNIConfig{
 			BinDir:   nodeConfig.AgentConfig.CNIBinDir,
@@ -426,11 +423,18 @@ func startFelix(ctx context.Context, config *CalicoConfig) {
 		return
 	}
 	defer outputFile.Close()
+
 	specificEnvs := []string{
 		fmt.Sprintf("FELIX_FELIXHOSTNAME=%s", config.Hostname),
 		fmt.Sprintf("FELIX_VXLANVNI=%s", config.Felix.Vxlanvni),
-		fmt.Sprintf("FELIX_METADATAADDR=%s", config.Felix.Metadataaddr),
 		fmt.Sprintf("FELIX_DATASTORETYPE=%s", config.DatastoreType),
+	}
+
+	// Add OS variables related to Felix. As they come after, they'll overwrite the previous ones
+	for _, env := range os.Environ() {
+		if strings.HasPrefix(env, "FELIX_") {
+			specificEnvs = append(specificEnvs, env)
+		}
 	}
 
 	args := []string{
@@ -454,6 +458,16 @@ func startCalico(ctx context.Context, config *CalicoConfig) error {
 	defer outputFile.Close()
 	specificEnvs := []string{
 		fmt.Sprintf("CALICO_NODENAME_FILE=%s", config.NodeNameFile),
+		fmt.Sprintf("CALICO_NETWORKING_BACKEND=%s", config.Mode),
+		fmt.Sprintf("CALICO_DATASTORE_TYPE=%s", config.DatastoreType),
+		fmt.Sprintf("IP_AUTODETECTION_METHOD=%s", config.IPAutoDetectionMethod),
+	}
+
+	// Add OS variables related to Calico. As they come after, they'll overwrite the previous ones
+	for _, env := range os.Environ() {
+		if strings.HasPrefix(env, "CALICO_") {
+			specificEnvs = append(specificEnvs, env)
+		}
 	}
 
 	args := []string{
@@ -475,36 +489,10 @@ func generateGeneralCalicoEnvs(config *CalicoConfig) []string {
 	return []string{
 		fmt.Sprintf("KUBE_NETWORK=%s", config.KubeNetwork),
 		fmt.Sprintf("KUBECONFIG=%s", config.KubeConfig.Path),
-		fmt.Sprintf("K8S_SERVICE_CIDR=%s", config.ServiceCIDR),
 		fmt.Sprintf("NODENAME=%s", config.Hostname),
-
-		fmt.Sprintf("CALICO_NETWORKING_BACKEND=%s", config.Mode),
-		fmt.Sprintf("CALICO_DATASTORE_TYPE=%s", config.DatastoreType),
 		fmt.Sprintf("CALICO_K8S_NODE_REF=%s", config.Hostname),
-		fmt.Sprintf("CALICO_LOG_DIR=%s", config.LogDir),
 
-		fmt.Sprintf("DNS_NAME_SERVERS=%s", config.DNSServers),
-		fmt.Sprintf("DNS_SEARCH=%s", config.DNSSearch),
-
-		fmt.Sprintf("ETCD_ENDPOINTS=%s", config.ETCDEndpoints),
-		fmt.Sprintf("ETCD_KEY_FILE=%s", config.ETCDKeyFile),
-		fmt.Sprintf("ETCD_CERT_FILE=%s", config.ETCDCertFile),
-		fmt.Sprintf("ETCD_CA_CERT_FILE=%s", config.ETCDCaCertFile),
-
-		fmt.Sprintf("CNI_BIN_DIR=%s", config.CNI.BinDir),
-		fmt.Sprintf("CNI_CONF_DIR=%s", config.CNI.ConfDir),
-		fmt.Sprintf("CNI_CONF_FILENAME=%s", config.CNI.ConfFileName),
-		fmt.Sprintf("CNI_IPAM_TYPE=%s", config.CNI.IpamType),
-
-		fmt.Sprintf("FELIX_LOGSEVERITYFILE=%s", config.Felix.LogSeverityFile),
-		fmt.Sprintf("FELIX_LOGSEVERITYSYS=%s", config.Felix.LogSeveritySys),
-
-		fmt.Sprintf("STARTUP_VALID_IP_TIMEOUT=90"),
 		fmt.Sprintf("IP=%s", config.IP),
-		fmt.Sprintf("IP_AUTODETECTION_METHOD=%s", config.IPAutoDetectionMethod),
-
 		fmt.Sprintf("USE_POD_CIDR=%t", autoConfigureIpam(config.CNI.IpamType)),
-
-		fmt.Sprintf("VXLAN_VNI=%s", config.Felix.Vxlanvni),
 	}
 }
