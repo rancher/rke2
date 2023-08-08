@@ -63,10 +63,10 @@ type CloudProviderConfig struct {
 }
 
 const (
-	CNINone = "none"
+	CNINone   = "none"
 	CNICalico = "calico"
 	CNICilium = "cilium"
-	CNICanal = "canal"
+	CNICanal  = "canal"
 )
 
 // Bootstrap prepares the binary executor to run components by setting the system default registry
