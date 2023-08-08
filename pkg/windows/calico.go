@@ -401,7 +401,7 @@ func startConfd(ctx context.Context, config *CalicoConfig) {
 
 	args := []string{
 		"-confd",
-		fmt.Sprintf( "-confd-confdir=%s", filepath.Join(config.CNI.BinDir, "confd")),
+		fmt.Sprintf("-confd-confdir=%s", filepath.Join(config.CNI.BinDir, "confd")),
 	}
 
 	logrus.Infof("Confd Envs: %s", append(generateGeneralCalicoEnvs(config), specificEnvs...))
@@ -411,7 +411,7 @@ func startConfd(ctx context.Context, config *CalicoConfig) {
 	cmd.Stderr = outputFile
 	_ = os.Chdir(filepath.Join(config.CNI.BinDir, "confd"))
 	_ = cmd.Run()
-        logrus.Error("Confd exited")
+	logrus.Error("Confd exited")
 }
 
 func startFelix(ctx context.Context, config *CalicoConfig) {
