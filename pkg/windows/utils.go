@@ -46,8 +46,8 @@ func createHnsNetwork(backend string, networkAdapter string) (string, error) {
 		}
 	} else {
 		network = hcsshim.HNSNetwork{
-			Type: "L2Bridge",
-			Name: CalicoHnsNetworkName,
+			Type:               "L2Bridge",
+			Name:               CalicoHnsNetworkName,
 			NetworkAdapterName: networkAdapter,
 			Subnets: []hcsshim.Subnet{
 				{
