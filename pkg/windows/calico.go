@@ -215,7 +215,9 @@ func (c *Calico) writeConfigFiles(CNIConfDir string, NodeName string) error {
 
 // renderCalicoConfig creates the file and then renders the template using Calico Config parameters
 func (c *Calico) renderCalicoConfig(path string, toRender *template.Template) error {
-	os.MkdirAll(filepath.Dir(path), 0755)
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return err
+	}
 	output, err := os.Create(path)
 	if err != nil {
 		return err
@@ -263,6 +265,9 @@ func (c *Calico) createKubeConfig(ctx context.Context, restConfig *rest.Config) 
 
 // Start starts the CNI services on the Windows node.
 func (c *Calico) Start(ctx context.Context) error {
+	if err := os.MkdirAll(calicoLogPath, 0755); err != nil {
+		return fmt.Errorf("error creating %s directory: %v", calicoLogPath, err)
+	}
 	for {
 		if err := startCalico(ctx, c.CNICfg); err != nil {
 			continue
@@ -444,8 +449,7 @@ func startFelix(ctx context.Context, config *CalicoConfig) {
 func startCalico(ctx context.Context, config *CalicoConfig) error {
 	outputFile, err := os.Create(calicoLogPath + "calico-node.log")
 	if err != nil {
-		logrus.Errorf("error creating calico-node.log: %v", err)
-		return err
+		return fmt.Errorf("error creating calico-node.log: %v", err)
 	}
 	defer outputFile.Close()
 	specificEnvs := []string{
