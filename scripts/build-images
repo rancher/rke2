@@ -89,10 +89,10 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
     ${REGISTRY}/rancher/harvester-cloud-provider:v0.2.0
     ${REGISTRY}/rancher/mirrored-kube-vip-kube-vip-iptables:v0.6.0
     ${REGISTRY}/rancher/harvester-csi-driver:v0.1.5
-    ${REGISTRY}/rancher/longhornio-csi-node-driver-registrar:v2.3.0
-    ${REGISTRY}/rancher/longhornio-csi-resizer:v1.2.0
-    ${REGISTRY}/rancher/longhornio-csi-provisioner:v2.1.2
-    ${REGISTRY}/rancher/longhornio-csi-attacher:v3.2.1
+    ${REGISTRY}/rancher/mirrored-longhornio-csi-node-driver-registrar:v2.3.0
+    ${REGISTRY}/rancher/mirrored-longhornio-csi-resizer:v1.2.0
+    ${REGISTRY}/rancher/mirrored-longhornio-csi-provisioner:v2.1.2
+    ${REGISTRY}/rancher/mirrored-longhornio-csi-attacher:v3.2.1
 EOF
 fi
 # Continue to provide a legacy airgap archive set with the default CNI images
