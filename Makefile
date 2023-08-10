@@ -17,7 +17,7 @@ ci-shell: clean .dapper                  ## Launch a shell in the CI environment
 .PHONY: dapper-ci
 dapper-ci: .ci                           ## Used by Drone CI, does the same as "ci" but in a Drone way
 
-.ci: validate build package
+.ci: validate validate-charts build package
 
 .PHONY: build
 build:                                   ## Build using host go tools
@@ -70,6 +70,11 @@ validate:                                ## Run go fmt/vet
 .PHONY: validate-release
 validate-release: 
 	./scripts/validate-release
+
+.PHONY: validate-charts
+validate-charts:
+	./scripts/validate-charts
+
 
 .PHONY: run
 run: build-debug
