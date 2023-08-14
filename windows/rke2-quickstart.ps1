@@ -1,39 +1,41 @@
 <#
 .SYNOPSIS
   A quickstart script to Setup and Install standalone RKE2 in Windows to be used as Worker Nodes.
-  This script enables features, sets up environment variables and adds default configuration that are needed to install rke2 in Windows and join a cluster
+  This script enables features, sets up environment variables and adds default configuration that are needed to install RKE2 in Windows and join a cluster.`
 .DESCRIPTION
   Run the script to setup and install all RKE2 related needs and to join a cluster.
 .Parameter ServerIP
-    Server IP of Primary server where rke2 is already installed and the worker will join.`
+    Server IP of Primary server where RKE2 is already installed and the worker will join.`
 .Parameter Token
     Token of Primary server.`
+.Parameter Mode
+    Installation Mode of RKE2
+    Can be either INSTALL_RKE2_VERSION or INSTALL_RKE2_COMMIT`
 .Parameter Version
-    Version of rke2 to download from github.`
-.Parameter Commit
-    Commit of RKE2 to download from temporary cloud storage.
-    If set, this forces Method=tar in install script.
+    Version of RKE2 or Commit of RKE2 to download from cloud storage.
+    If Commit Mode set, this forces Method=tar in install script.
     * (for developer & QA use only)`
+
 .EXAMPLE
   Usage:
     Invoke-WebRequest ((New-Object System.Net.WebClient).DownloadString('https://github.com/rancher/rke2/blob/master/windows/rke2-quickstart.ps1'))
-    ./rke2-quickstart.ps1 $ServerIP <server-IP> $Token <server-token> $Version <rke2-version>
+    ./rke2-quickstart.ps1 $ServerIP <server-IP> $Token <server-token> $Mode <install-mode> $Version <rke2-version>
 #>
 
 [CmdletBinding()]
 param (
-    [Parameter()]
+    [Parameter(Mandatory=$true)]
     [String]
     $ServerIP,
-    [Parameter()]
+    [Parameter(Mandatory=$true)]
     [String]
     $Version,
-    [Parameter()]
+    [Parameter(Mandatory=$true)]
     [String]
     $Token,
-    [Parameter()]
+    [Parameter(Mandatory=$false)]
     [String]
-    $Commit
+    $Mode
 )
 
 function Write-InfoLog() {
@@ -50,13 +52,23 @@ function Write-DebugLog() {
 
 # Set the version or commit based of cli
 function Set-Version() {
-    if ($Commit) {
-        $Version = "commit $($Commit)"
+    if ($PSBoundParameters.ContainsKey("Mode")) {
+        if (($Mode -like "*VERSION") -or ($Mode -like "*COMMIT")) {
+            $modeArr = $Mode.Split("_")
+            $mode = (Get-Culture).TextInfo.ToTitleCase($modeArr[2].ToLower())
+            $version = "$($mode) $($Version)"
+        } else {
+            Write-InfoLog "Unsupported Install Mode: $($Mode)"
+        }
+    } else {
+        if ($Version -match "rke2r") {
+            $version = "Version $($Version)"
+        } else {
+            $version = "Commit $($Version)"
+        }
     }
-    elseif ($Version) {
-        $Version = $Version
-    }
-    return $Version
+    
+    return $version
 }
 
 function Enable-Features() {
@@ -84,8 +96,9 @@ function Setup-EnvironmentVariables(){
 function Install-rke2(){
     Write-InfoLog "Downloading install script..."
     Invoke-WebRequest -Uri https://raw.githubusercontent.com/rancher/rke2/master/install.ps1 -Outfile C:\Users\Administrator\install.ps1
-    Write-InfoLog "Installing rke2 $Version..."
-    Invoke-Expression -Command "C:\Users\Administrator\install.ps1 -Version $Version"
+    $version = Set-Version
+    Write-InfoLog "Installing rke2 with $version..."
+    Invoke-Expression -Command "C:\Users\Administrator\install.ps1 -$version"
 }
 
 function Start-rke2(){
@@ -99,6 +112,5 @@ function Start-rke2(){
 Enable-Features
 Setup-Config
 Setup-EnvironmentVariables
-Set-Version
 Install-rke2
 Start-rke2
