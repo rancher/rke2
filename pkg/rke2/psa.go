@@ -16,21 +16,21 @@ const (
 // setPSAs sets the default PSA's based on the mode that RKE2 is running in. There is either CIS or non
 // CIS mode. For CIS mode, a default PSA configuration with enforcement for restricted will be applied
 // for non CIS mode, a default PSA configuration will be applied that has privileged restriction
-func setPSAs(cisMode bool) error {
+func setPSAs(cisMode bool, podSecurityConfigFile string) error {
 	logrus.Info("Applying Pod Security Admission Configuration")
-	configDir := filepath.Dir(defaultPSAConfigFile)
+	configDir := filepath.Dir(podSecurityConfigFile)
 	if err := os.MkdirAll(configDir, 0755); err != nil {
 		return err
 	}
 	if !cisMode { // non-CIS mode
 		psaConfig := unrestrictedPSAConfig()
-		if err := ioutil.WriteFile(defaultPSAConfigFile, []byte(psaConfig), 0600); err != nil {
+		if err := ioutil.WriteFile(podSecurityConfigFile, []byte(psaConfig), 0600); err != nil {
 			return errors.Wrapf(err, "psa: failed to write psa unrestricted config")
 		}
 
 	} else { // CIS mode
 		psaConfig := restrictedPSAConfig()
-		if err := ioutil.WriteFile(defaultPSAConfigFile, []byte(psaConfig), 0600); err != nil {
+		if err := ioutil.WriteFile(podSecurityConfigFile, []byte(psaConfig), 0600); err != nil {
 			return errors.Wrapf(err, "psa: failed to write psa restricted config")
 		}
 	}
