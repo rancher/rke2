@@ -23,8 +23,6 @@ replace (
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.7
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 	github.com/opencontainers/selinux => github.com/opencontainers/selinux v1.10.1
-	github.com/rancher/dynamiclistener => github.com/rancher/dynamiclistener v0.3.5
-	github.com/rancher/remotedialer => github.com/rancher/remotedialer v0.2.6-0.20220624190122-ea57207bf2b8
 	github.com/rancher/wrangler => github.com/rancher/wrangler v1.1.1-0.20230425173236-39a4707f0689
 	go.etcd.io/etcd/api/v3 => github.com/k3s-io/etcd/api/v3 v3.5.4-k3s1
 	go.etcd.io/etcd/client/pkg/v3 => github.com/k3s-io/etcd/client/pkg/v3 v3.5.4-k3s1
@@ -96,8 +94,8 @@ require (
 	github.com/google/go-containerregistry v0.12.2-0.20230106184643-b063f6aeac72
 	github.com/gruntwork-io/terratest v0.40.19
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
-	github.com/k3s-io/helm-controller v0.15.2
-	github.com/k3s-io/k3s v1.25.13-0.20230815154106-ce85b9885842 // master
+	github.com/k3s-io/helm-controller v0.15.4
+	github.com/k3s-io/k3s v1.25.13-0.20230816213734-393ac6293f24 // release-1.25
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/onsi/ginkgo/v2 v2.9.4
@@ -106,7 +104,7 @@ require (
 	github.com/rancher/wharfie v0.6.2
 	github.com/rancher/wins v0.1.1
 	github.com/rancher/wrangler v1.1.1
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.6.1
 	github.com/tigera/operator v1.28.1
 	github.com/urfave/cli v1.22.12
@@ -322,7 +320,7 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.39.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
-	github.com/rancher/dynamiclistener v0.3.5 // indirect
+	github.com/rancher/dynamiclistener v0.3.6-rc2 // indirect
 	github.com/rancher/lasso v0.0.0-20221227210133-6ea88ca2fbcc // indirect
 	github.com/rancher/remotedialer v0.3.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
