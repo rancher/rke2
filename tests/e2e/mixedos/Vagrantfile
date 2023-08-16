@@ -24,6 +24,7 @@ def provision(vm, role, role_num, node_num)
   defaultOSConfigure(vm)
 
   if role.include?("windows")
+    vm.provision "shell", path: "../scripts/install-bgp.ps1"
     if !RELEASE_VERSION.empty?
       install_type = "Version=#{RELEASE_VERSION}"
     else 
