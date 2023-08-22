@@ -461,6 +461,7 @@ func startCalico(ctx context.Context, config *CalicoConfig) error {
 		fmt.Sprintf("CALICO_NETWORKING_BACKEND=%s", config.Mode),
 		fmt.Sprintf("CALICO_DATASTORE_TYPE=%s", config.DatastoreType),
 		fmt.Sprintf("IP_AUTODETECTION_METHOD=%s", config.IPAutoDetectionMethod),
+		fmt.Sprintf("VXLAN_VNI=%s", config.Felix.Vxlanvni),
 	}
 
 	// Add OS variables related to Calico. As they come after, they'll overwrite the previous ones
