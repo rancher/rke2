@@ -172,15 +172,12 @@ func (c *Calico) initializeConfig(ctx context.Context, nodeConfig *daemonconfig.
 		DNSSearch:             "svc." + nodeConfig.AgentConfig.ClusterDomain,
 		DatastoreType:         "kubernetes",
 		Platform:              platformType,
-		StartUpValidIPTimeout: 90,
 		IP:                    nodeConfig.AgentConfig.NodeIP,
 		IPAutoDetectionMethod: "first-found",
 		Felix: FelixConfig{
-			Metadataaddr:    "none",
-			Vxlanvni:        "4096",
-			MacPrefix:       "0E-2A",
-			LogSeverityFile: "none",
-			LogSeveritySys:  "none",
+			Metadataaddr: "none",
+			Vxlanvni:     "4096",
+			MacPrefix:    "0E-2A",
 		},
 		CNI: CalicoCNIConfig{
 			BinDir:   nodeConfig.AgentConfig.CNIBinDir,
@@ -215,7 +212,9 @@ func (c *Calico) writeConfigFiles(CNIConfDir string, NodeName string) error {
 
 // renderCalicoConfig creates the file and then renders the template using Calico Config parameters
 func (c *Calico) renderCalicoConfig(path string, toRender *template.Template) error {
-	os.MkdirAll(filepath.Dir(path), 0755)
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return err
+	}
 	output, err := os.Create(path)
 	if err != nil {
 		return err
@@ -263,6 +262,9 @@ func (c *Calico) createKubeConfig(ctx context.Context, restConfig *rest.Config) 
 
 // Start starts the CNI services on the Windows node.
 func (c *Calico) Start(ctx context.Context) error {
+	if err := os.MkdirAll(calicoLogPath, 0755); err != nil {
+		return fmt.Errorf("error creating %s directory: %v", calicoLogPath, err)
+	}
 	for {
 		if err := startCalico(ctx, c.CNICfg); err != nil {
 			continue
@@ -401,7 +403,7 @@ func startConfd(ctx context.Context, config *CalicoConfig) {
 
 	args := []string{
 		"-confd",
-		fmt.Sprintf( "-confd-confdir=%s", filepath.Join(config.CNI.BinDir, "confd")),
+		fmt.Sprintf("-confd-confdir=%s", filepath.Join(config.CNI.BinDir, "confd")),
 	}
 
 	logrus.Infof("Confd Envs: %s", append(generateGeneralCalicoEnvs(config), specificEnvs...))
@@ -411,7 +413,7 @@ func startConfd(ctx context.Context, config *CalicoConfig) {
 	cmd.Stderr = outputFile
 	_ = os.Chdir(filepath.Join(config.CNI.BinDir, "confd"))
 	_ = cmd.Run()
-        logrus.Error("Confd exited")
+	logrus.Error("Confd exited")
 }
 
 func startFelix(ctx context.Context, config *CalicoConfig) {
@@ -421,11 +423,18 @@ func startFelix(ctx context.Context, config *CalicoConfig) {
 		return
 	}
 	defer outputFile.Close()
+
 	specificEnvs := []string{
 		fmt.Sprintf("FELIX_FELIXHOSTNAME=%s", config.Hostname),
 		fmt.Sprintf("FELIX_VXLANVNI=%s", config.Felix.Vxlanvni),
-		fmt.Sprintf("FELIX_METADATAADDR=%s", config.Felix.Metadataaddr),
 		fmt.Sprintf("FELIX_DATASTORETYPE=%s", config.DatastoreType),
+	}
+
+	// Add OS variables related to Felix. As they come after, they'll overwrite the previous ones
+	for _, env := range os.Environ() {
+		if strings.HasPrefix(env, "FELIX_") {
+			specificEnvs = append(specificEnvs, env)
+		}
 	}
 
 	args := []string{
@@ -444,12 +453,22 @@ func startFelix(ctx context.Context, config *CalicoConfig) {
 func startCalico(ctx context.Context, config *CalicoConfig) error {
 	outputFile, err := os.Create(calicoLogPath + "calico-node.log")
 	if err != nil {
-		logrus.Errorf("error creating calico-node.log: %v", err)
-		return err
+		return fmt.Errorf("error creating calico-node.log: %v", err)
 	}
 	defer outputFile.Close()
 	specificEnvs := []string{
 		fmt.Sprintf("CALICO_NODENAME_FILE=%s", config.NodeNameFile),
+		fmt.Sprintf("CALICO_NETWORKING_BACKEND=%s", config.Mode),
+		fmt.Sprintf("CALICO_DATASTORE_TYPE=%s", config.DatastoreType),
+		fmt.Sprintf("IP_AUTODETECTION_METHOD=%s", config.IPAutoDetectionMethod),
+		fmt.Sprintf("VXLAN_VNI=%s", config.Felix.Vxlanvni),
+	}
+
+	// Add OS variables related to Calico. As they come after, they'll overwrite the previous ones
+	for _, env := range os.Environ() {
+		if strings.HasPrefix(env, "CALICO_") {
+			specificEnvs = append(specificEnvs, env)
+		}
 	}
 
 	args := []string{
@@ -471,36 +490,10 @@ func generateGeneralCalicoEnvs(config *CalicoConfig) []string {
 	return []string{
 		fmt.Sprintf("KUBE_NETWORK=%s", config.KubeNetwork),
 		fmt.Sprintf("KUBECONFIG=%s", config.KubeConfig.Path),
-		fmt.Sprintf("K8S_SERVICE_CIDR=%s", config.ServiceCIDR),
 		fmt.Sprintf("NODENAME=%s", config.Hostname),
-
-		fmt.Sprintf("CALICO_NETWORKING_BACKEND=%s", config.Mode),
-		fmt.Sprintf("CALICO_DATASTORE_TYPE=%s", config.DatastoreType),
 		fmt.Sprintf("CALICO_K8S_NODE_REF=%s", config.Hostname),
-		fmt.Sprintf("CALICO_LOG_DIR=%s", config.LogDir),
 
-		fmt.Sprintf("DNS_NAME_SERVERS=%s", config.DNSServers),
-		fmt.Sprintf("DNS_SEARCH=%s", config.DNSSearch),
-
-		fmt.Sprintf("ETCD_ENDPOINTS=%s", config.ETCDEndpoints),
-		fmt.Sprintf("ETCD_KEY_FILE=%s", config.ETCDKeyFile),
-		fmt.Sprintf("ETCD_CERT_FILE=%s", config.ETCDCertFile),
-		fmt.Sprintf("ETCD_CA_CERT_FILE=%s", config.ETCDCaCertFile),
-
-		fmt.Sprintf("CNI_BIN_DIR=%s", config.CNI.BinDir),
-		fmt.Sprintf("CNI_CONF_DIR=%s", config.CNI.ConfDir),
-		fmt.Sprintf("CNI_CONF_FILENAME=%s", config.CNI.ConfFileName),
-		fmt.Sprintf("CNI_IPAM_TYPE=%s", config.CNI.IpamType),
-
-		fmt.Sprintf("FELIX_LOGSEVERITYFILE=%s", config.Felix.LogSeverityFile),
-		fmt.Sprintf("FELIX_LOGSEVERITYSYS=%s", config.Felix.LogSeveritySys),
-
-		fmt.Sprintf("STARTUP_VALID_IP_TIMEOUT=90"),
 		fmt.Sprintf("IP=%s", config.IP),
-		fmt.Sprintf("IP_AUTODETECTION_METHOD=%s", config.IPAutoDetectionMethod),
-
 		fmt.Sprintf("USE_POD_CIDR=%t", autoConfigureIpam(config.CNI.IpamType)),
-
-		fmt.Sprintf("VXLAN_VNI=%s", config.Felix.Vxlanvni),
 	}
 }
