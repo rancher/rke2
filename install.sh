@@ -59,6 +59,10 @@ fi
 #     If set, the install script will skip reloading systemctl daemon after the tar has been extracted and systemd units
 #     have been moved.
 #     Default is not set.
+#
+#   - INSTALL_RKE2_SKIP_FAPOLICY
+#     If set, the install script will skip adding fapolicy rules
+#     Default is not set.
 
 
 # info logs the given argument at info log level.
@@ -655,7 +659,9 @@ do_install() {
         do_install_tar "${INSTALL_RKE2_CHANNEL}"
         ;;
     esac
-    setup_fapolicy_rules
+    if [ -z "${INSTALL_RKE2_SKIP_FAPOLICY}" ]; then
+        setup_fapolicy_rules
+    fi
 }
 
 do_install
