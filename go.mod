@@ -3,7 +3,7 @@ module github.com/rancher/rke2
 go 1.19
 
 replace (
-	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.8.25
+	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.8.22
 	github.com/Mirantis/cri-dockerd => github.com/k3s-io/cri-dockerd v0.3.2-0.20230123224751-84abd1adca2f // k3s-master
 	github.com/benmoss/go-powershell => github.com/k3s-io/go-powershell v0.0.0-20201118222746-51f4c451fbd7
 	github.com/cloudnativelabs/kube-router/v2 => github.com/k3s-io/kube-router/v2 v2.0.1-0.20230508174102-b42e5faded1c
