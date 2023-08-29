@@ -152,6 +152,22 @@ func commandFromK3S(cmd cli.Command, flagOpts K3SFlagSet) (cli.Command, error) {
 				boolFlag.Hidden = true
 			}
 			flag = boolFlag
+		} else if boolTFlag, ok := flag.(cli.BoolTFlag); ok {
+			if opt.Usage != "" {
+				boolTFlag.Usage = opt.Usage
+			}
+			if opt.Hide {
+				boolTFlag.Hidden = true
+			}
+			flag = boolTFlag
+		} else if boolTFlag, ok := flag.(*cli.BoolTFlag); ok {
+			if opt.Usage != "" {
+				boolTFlag.Usage = opt.Usage
+			}
+			if opt.Hide {
+				boolTFlag.Hidden = true
+			}
+			flag = boolTFlag
 		} else if durationFlag, ok := flag.(*cli.DurationFlag); ok {
 			if opt.Usage != "" {
 				durationFlag.Usage = opt.Usage
