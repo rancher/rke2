@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
@@ -267,6 +268,8 @@ func (c *Calico) Start(ctx context.Context) error {
 	}
 	for {
 		if err := startCalico(ctx, c.CNICfg); err != nil {
+			time.Sleep(5 * time.Second)
+			logrus.Errorf("Calico exited: %v. Retrying", err)
 			continue
 		}
 		break
@@ -480,7 +483,6 @@ func startCalico(ctx context.Context, config *CalicoConfig) error {
 	cmd.Stdout = outputFile
 	cmd.Stderr = outputFile
 	if err := cmd.Run(); err != nil {
-		logrus.Errorf("Calico exited: %v", err)
 		return err
 	}
 	return nil
