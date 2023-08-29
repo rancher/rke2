@@ -46,6 +46,7 @@ var (
 		"advertise-address": copyFlag,
 		"advertise-port":    dropFlag,
 		"tls-san":           copyFlag,
+		"tls-san-security":  copyFlag,
 		"data-dir": {
 			Usage:   "(data) Folder to hold state",
 			Default: rke2Path,
