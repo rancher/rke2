@@ -36,6 +36,9 @@ channels:
 - name: v1.27
   latestRegexp: v1\.27\..*
   excludeRegexp: ^[^+]+-
+- name: v1.28
+  latestRegexp: v1\.28\..*
+  excludeRegexp: ^[^+]+-
 github:
   owner: rancher
   repo: rke2
