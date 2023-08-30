@@ -16,6 +16,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/sirupsen/logrus"
+	patch "github.com/sourcegraph/go-diff-patch"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -120,7 +121,15 @@ func writeFile(dest string, content []byte) error {
 
 	existing, err := ioutil.ReadFile(dest)
 	if err == nil && bytes.Equal(existing, content) {
+		logrus.Infof("Static pod manifest %s unchanged", dest)
 		return nil
+	}
+
+	if len(existing) > 0 {
+		diff := patch.GeneratePatch(dest, string(existing), string(content))
+		logrus.WithField("diff", diff).Infof("Static pod manifest %s changed", dest)
+	} else {
+		logrus.Infof("Static pod manifest %s created", dest)
 	}
 
 	// Create the new manifest in a temporary directory up one level from the static pods dir and then

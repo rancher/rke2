@@ -125,6 +125,8 @@ require (
 	sigs.k8s.io/yaml v1.3.0
 )
 
+require github.com/sourcegraph/go-diff-patch v0.0.0-20220818153721-50706a0e22c3
+
 require (
 	cloud.google.com/go v0.97.0 // indirect
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20230106234847-43070de90fa1 // indirect
