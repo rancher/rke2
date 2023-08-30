@@ -83,8 +83,9 @@ var (
 			Destination: &config.CloudProviderConfig,
 		},
 		&cli.StringFlag{
-			Name:   "profile",
-			Usage:  "(security) Validate system configuration against the selected benchmark (valid items: " + rke2.CISProfile123 + " )",
+			Name: "profile",
+			Usage: fmt.Sprintf("(security) Validate system configuration against the selected benchmark (valid items: %s, %s)",
+				rke2.CISProfile, rke2.CISProfile123+"(deprecated)"),
 			EnvVar: "RKE2_CIS_PROFILE",
 		},
 		&cli.StringFlag{
