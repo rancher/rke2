@@ -116,6 +116,11 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		return nil, err
 	}
 
+	containerRuntimeEndpoint := cmds.AgentConfig.ContainerRuntimeEndpoint
+	if containerRuntimeEndpoint == "" {
+		containerRuntimeEndpoint = containerdSock
+	}
+
 	return &podexecutor.StaticPodConfig{
 		Resolver:               resolver,
 		ImagesDir:              agentImagesDir,
@@ -125,6 +130,7 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		DataDir:                dataDir,
 		AuditPolicyFile:        clx.String("audit-policy-file"),
 		KubeletPath:            cfg.KubeletPath,
+		RuntimeEndpoint:        containerRuntimeEndpoint,
 		KubeProxyChan:          make(chan struct{}),
 		DisableETCD:            clx.Bool("disable-etcd"),
 		IsServer:               isServer,

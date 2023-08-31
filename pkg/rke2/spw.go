@@ -1,5 +1,7 @@
 package rke2
 
+// TODO: move this into the podexecutor package, this logic is specific to that executor and should be there instead of here.
+
 import (
 	"context"
 	"os"
