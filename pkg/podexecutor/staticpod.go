@@ -16,10 +16,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/k3s-io/k3s/pkg/agent/cri"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/util"
+	"github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/auth"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
@@ -28,8 +30,10 @@ import (
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	auditv1 "k8s.io/apiserver/pkg/apis/audit/v1"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
+	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -111,10 +115,13 @@ type StaticPodConfig struct {
 	AuditPolicyFile string
 	PSAConfigFile   string
 	KubeletPath     string
+	RuntimeEndpoint string
 	KubeProxyChan   chan struct{}
 	CISMode         bool
 	DisableETCD     bool
 	IsServer        bool
+
+	stopKubelet context.CancelFunc
 }
 
 type CloudProviderConfig struct {
@@ -171,9 +178,11 @@ func (s *StaticPodConfig) Kubelet(ctx context.Context, args []string) error {
 
 	args = append(extraArgs, args...)
 	args, logOut := logging.ExtractFromArgs(args)
+	ctx, cancel := context.WithCancel(ctx)
+	s.stopKubelet = cancel
 
 	go func() {
-		for {
+		wait.PollImmediateInfiniteWithContext(ctx, 5*time.Second, func(ctx context.Context) (bool, error) {
 			cmd := exec.CommandContext(ctx, s.KubeletPath, args...)
 			cmd.Stdout = logOut
 			cmd.Stderr = logOut
@@ -182,11 +191,11 @@ func (s *StaticPodConfig) Kubelet(ctx context.Context, args []string) error {
 			err := cmd.Run()
 			logrus.Errorf("Kubelet exited: %v", err)
 
-			time.Sleep(5 * time.Second)
-		}
+			return false, nil
+		})
 	}()
 
-	go cleanupKubeProxy(s.ManifestsDir, s.KubeProxyChan)
+	go s.cleanupKubeProxy()
 
 	return nil
 }
@@ -239,6 +248,9 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 		return err
 	}
 	if err := images.Pull(s.ImagesDir, images.KubeAPIServer, image); err != nil {
+		return err
+	}
+	if err := staticpod.Remove(s.ManifestsDir, "kube-apiserver"); err != nil {
 		return err
 	}
 
@@ -493,7 +505,7 @@ func (s *StaticPodConfig) CurrentETCDOptions() (opts executor.InitialOptions, er
 }
 
 // ETCD starts the etcd static pod.
-func (s *StaticPodConfig) ETCD(_ context.Context, args executor.ETCDConfig, extraArgs []string) error {
+func (s *StaticPodConfig) ETCD(ctx context.Context, args executor.ETCDConfig, extraArgs []string) error {
 	image, err := s.Resolver.GetReference(images.ETCD)
 	if err != nil {
 		return err
@@ -579,7 +591,70 @@ func (s *StaticPodConfig) ETCD(_ context.Context, args executor.ETCDConfig, extr
 		}
 	}
 
+	// If performing a cluster-reset, ensure that the kubelet and etcd are stopped when the context is cancelled at the end of the cluster-reset process.
+	if args.ForceNewCluster {
+		go func() {
+			<-ctx.Done()
+			logrus.Infof("Shutting down kubelet and etcd")
+			if s.stopKubelet != nil {
+				s.stopKubelet()
+			}
+			if err := s.stopEtcd(); err != nil {
+				logrus.Errorf("Failed to stop etcd: %v", err)
+			}
+		}()
+	}
+
 	return staticpod.Run(s.ManifestsDir, spa)
+}
+
+// stopEtcd searches the container runtime endpoint for the etcd static pod, and terminates it.
+func (s *StaticPodConfig) stopEtcd() error {
+	ctx := context.Background()
+	conn, err := cri.Connection(ctx, s.RuntimeEndpoint)
+	if err != nil {
+		return errors.Wrap(err, "failed to connect to cri")
+	}
+	cRuntime := runtimeapi.NewRuntimeServiceClient(conn)
+	defer conn.Close()
+
+	filter := &runtimeapi.PodSandboxFilter{
+		LabelSelector: map[string]string{
+			"component":                   "etcd",
+			"io.kubernetes.pod.namespace": "kube-system",
+			"tier":                        "control-plane",
+		},
+	}
+	resp, err := cRuntime.ListPodSandbox(ctx, &runtimeapi.ListPodSandboxRequest{Filter: filter})
+	if err != nil {
+		return errors.Wrap(err, "failed to list pods")
+	}
+
+	for _, pod := range resp.Items {
+		if pod.Annotations["kubernetes.io/config.source"] != "file" {
+			continue
+		}
+		if _, err := cRuntime.RemovePodSandbox(ctx, &runtimeapi.RemovePodSandboxRequest{PodSandboxId: pod.Id}); err != nil {
+			return errors.Wrap(err, "failed to terminate pod")
+		}
+	}
+
+	return nil
+}
+
+// cleanupKubeProxy waits to see if kube-proxy is run. If kube-proxy does not run and
+// close the channel within one minute of this goroutine being started by the kubelet
+// runner, then the kube-proxy static pod manifest is removed from disk. The kubelet will
+// clean up the static pod soon after.
+func (s *StaticPodConfig) cleanupKubeProxy() {
+	select {
+	case <-s.KubeProxyChan:
+		return
+	case <-time.After(time.Minute * 1):
+		if err := staticpod.Remove(s.ManifestsDir, "kube-proxy"); err != nil {
+			logrus.Error(err)
+		}
+	}
 }
 
 // chownr recursively changes the ownership of the given
@@ -633,26 +708,4 @@ func writeIfNotExists(path string, content []byte) error {
 	defer file.Close()
 	_, err = file.Write(content)
 	return err
-}
-
-// cleanupKubeProxy waits to see if kube-proxy is run. If kube-proxy does not run and
-// close the channel within one minute of this goroutine being started by the kubelet
-// runner, then the kube-proxy static pod manifest is removed from disk. The kubelet will
-// clean up the static pod soon after.
-func cleanupKubeProxy(path string, c <-chan struct{}) {
-	manifestPath := filepath.Join(path, "kube-proxy.yaml")
-	if _, err := os.Open(manifestPath); err != nil {
-		if os.IsNotExist(err) {
-			return
-		}
-		logrus.Fatalf("unable to check for kube-proxy static pod: %v", err)
-	}
-
-	select {
-	case <-c:
-		return
-	case <-time.After(time.Minute * 1):
-		logrus.Infof("Removing kube-proxy static pod manifest: kube-proxy has been disabled")
-		os.Remove(manifestPath)
-	}
 }
