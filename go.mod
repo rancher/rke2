@@ -396,4 +396,4 @@ require (
 
 replace k8s.io/endpointslice => github.com/k3s-io/kubernetes/staging/src/k8s.io/endpointslice v1.28.1-k3s1
 
-replace github.com/k3s-io/k3s => github.com/k3s-io/k3s v1.28.1-rc1.0.20230829153345-cba9f0d142bb
+replace github.com/k3s-io/k3s => github.com/k3s-io/k3s v1.28.1-rc1.0.20230830035237-0d23cfe038ef
