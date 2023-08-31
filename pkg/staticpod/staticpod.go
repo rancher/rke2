@@ -15,6 +15,7 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -70,6 +71,20 @@ type Args struct {
 	Privileged      bool
 }
 
+// Remove cleans up the static pod manifest for the given command from the specified directory.
+// It does not actually stop or remove the static pod from the container runtime.
+func Remove(dir, command string) error {
+	manifestPath := filepath.Join(dir, command+".yaml")
+	if err := os.Remove(manifestPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return errors.Wrapf(err, "failed to remove %s static pod manifest", command)
+	}
+	logrus.Infof("Removed %s static pod manifest", command)
+	return nil
+}
+
+// Run writes a static pod manifest for the given command into the specified directory.
+// Note that it does not actually run the command; the kubelet is responsible for picking up
+// the manifest and creating container to run it.
 func Run(dir string, args Args) error {
 	if cmds.AgentConfig.EnableSELinux {
 		if args.SecurityContext == nil {
