@@ -105,7 +105,7 @@ func setCISFlags(clx *cli.Context) error {
 
 func validateProfile(clx *cli.Context, role CLIRole) {
 	switch clx.String("profile") {
-	case rke2.CISProfile123:
+	case rke2.CISProfile123, rke2.CISProfile:
 		if err := validateCISReqs(role); err != nil {
 			logrus.Fatal(err)
 		}
