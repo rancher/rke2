@@ -65,6 +65,7 @@ type ExtraEnv struct {
 // Valid CIS Profile versions
 const (
 	CISProfile123          = "cis-1.23"
+	CISProfile             = "cis"
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
 	containerdSock         = "/run/k3s/containerd/containerd.sock"
 	KubeAPIServer          = "kube-apiserver"
@@ -275,7 +276,10 @@ func removeDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems 
 
 func isCISMode(clx *cli.Context) bool {
 	profile := clx.String("profile")
-	return profile == CISProfile123
+	if profile == CISProfile123 {
+		logrus.Warn("cis-1.23 profile is deprecated and will be removed in v1.29. Please use cis instead.")
+	}
+	return profile == CISProfile123 || profile == CISProfile
 }
 
 // TODO: move this into the podexecutor package, this logic is specific to that executor and should be there instead of here.
