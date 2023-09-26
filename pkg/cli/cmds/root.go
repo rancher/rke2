@@ -84,7 +84,7 @@ var (
 		},
 		&cli.StringFlag{
 			Name:   "profile",
-			Usage:  "(security) Validate system configuration against the selected benchmark (valid items: " + rke2.CISProfile123 + " )",
+			Usage:  "(security) Validate system configuration against the selected benchmark (valid items: cis, cis-1.23 (deprecated))",
 			EnvVar: "RKE2_CIS_PROFILE",
 		},
 		&cli.StringFlag{
