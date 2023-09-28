@@ -11,7 +11,6 @@ steps:
   - name: validate-release
     image: rancher/dapper:v0.5.5
     commands:
-      - docker pull --quiet rancher/hardened-build-base:v1.20.8b2
       - dapper -f Dockerfile --target dapper make validate-release
     volumes:
       - name: docker
@@ -31,7 +30,6 @@ steps:
       AWS_SECRET_ACCESS_KEY:
         from_secret: AWS_SECRET_ACCESS_KEY-rke2-ci-uploader     
     commands:
-      - docker pull --quiet rancher/hardened-build-base:v1.20.8b2
       - docker pull --quiet alpine:3.17
       - dapper -f Dockerfile --target dapper make dapper-ci
     volumes:
@@ -60,7 +58,6 @@ steps:
   - name: package-images
     image: rancher/dapper:v0.5.5
     commands:
-      - docker pull --quiet rancher/hardened-build-base:v1.20.8b2
       - dapper -f Dockerfile --target dapper make package-images
     volumes:
       - name: docker
@@ -123,7 +120,6 @@ steps:
   - name: package-windows-images
     image: rancher/dapper:v0.5.5
     commands:
-      - docker pull --quiet rancher/hardened-build-base:v1.20.8b2
       - dapper -f Dockerfile --target dapper make package-windows-images
     when:
       event:
