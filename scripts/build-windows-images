@@ -11,7 +11,7 @@ fi
 
 mkdir -p build
 
-WINDOWS_IMAGES=(${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rancher/pause:${PAUSE_VERSION}-windows-1809-amd64 rancher/pause:${PAUSE_VERSION}-windows-ltsc2022-amd64)
+WINDOWS_IMAGES=(${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 rancher/mirrored-pause:${PAUSE_VERSION}-windows-1809-amd64 rancher/mirrored-pause:${PAUSE_VERSION}-windows-ltsc2022-amd64)
 for IMAGE in "${WINDOWS_IMAGES[@]}"; do
   echo "${IMAGE}" >> build/windows-images.txt
 done
