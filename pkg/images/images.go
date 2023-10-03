@@ -29,7 +29,7 @@ var (
 	DefaultRegistry                    = name.DefaultRegistry
 	DefaultEtcdImage                   = "rancher/hardened-etcd"
 	DefaultKubernetesImage             = "rancher/hardened-kubernetes"
-	DefaultPauseImage                  = "rancher/pause"
+	DefaultPauseImage                  = "rancher/mirrored-pause"
 	DefaultRuntimeImage                = "rancher/rke2-runtime"
 	DefaultCloudControllerManagerImage = "rancher/rke2-cloud-provider"
 )
