@@ -227,7 +227,7 @@ func (c *Calico) renderCalicoConfig(path string, toRender *template.Template) er
 	return nil
 }
 
-// createCalicoKubeConfig creates all needed for Calico to contact kube-api
+// createKubeConfig creates all needed for Calico to contact kube-api
 func (c *Calico) createKubeConfig(ctx context.Context, restConfig *rest.Config) (*CalicoKubeConfig, error) {
 
 	// Fill all information except for the token
