@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -50,6 +51,7 @@ type Args struct {
 	Image           name.Reference
 	Dirs            []string
 	Files           []string
+	CISMode         bool // CIS requires that the manifest be saved with 600 permissions
 	ExcludeFiles    []string
 	HealthExec      []string
 	HealthPort      int32
@@ -123,10 +125,13 @@ func Run(dir string, args Args) error {
 	if err != nil {
 		return err
 	}
-	return writeFile(manifestPath, b)
+	if args.CISMode {
+		return writeFile(manifestPath, b, 0600)
+	}
+	return writeFile(manifestPath, b, 0644)
 }
 
-func writeFile(dest string, content []byte) error {
+func writeFile(dest string, content []byte, perm fs.FileMode) error {
 	name := filepath.Base(dest)
 	dir := filepath.Dir(dest)
 	if err := os.MkdirAll(dir, 0700); err != nil {
@@ -149,7 +154,7 @@ func writeFile(dest string, content []byte) error {
 	defer os.RemoveAll(tmpdir)
 
 	tmp := filepath.Join(tmpdir, name)
-	if err := ioutil.WriteFile(tmp, content, 0644); err != nil {
+	if err := os.WriteFile(tmp, content, perm); err != nil {
 		return err
 	}
 	return os.Rename(tmp, dest)
