@@ -37,7 +37,7 @@ if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.1.9
     ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.14.2
-    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.25.9-f039e2bd380b7eef2f2feea5750676bb36133699
+    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.25.9-e198a2824d309024cb91fb6a984445e73033291d
     ${REGISTRY}/rancher/mirrored-cilium-cilium-etcd-operator:v2.0.7
     ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.14.2
     ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.14.2
