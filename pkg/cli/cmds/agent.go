@@ -28,6 +28,7 @@ var (
 		"node-taint":                        copyFlag,
 		"image-credential-provider-bin-dir": copyFlag,
 		"image-credential-provider-config":  copyFlag,
+		"image-service-endpoint":            copyFlag,
 		"docker":                            dropFlag,
 		"container-runtime-endpoint":        copyFlag,
 		"pause-image":                       dropFlag,
