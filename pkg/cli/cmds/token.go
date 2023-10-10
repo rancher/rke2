@@ -28,7 +28,9 @@ func NewTokenCommand() cli.Command {
 		"rotate": {
 			"token":     copyFlag,
 			"new-token": copyFlag,
-			"server":    copyFlag,
+			"server": {
+				Default: "https://127.0.0.1:9345",
+			},
 		},
 	}
 
