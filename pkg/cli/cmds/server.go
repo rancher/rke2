@@ -102,6 +102,7 @@ var (
 		"image-credential-provider-config":  copyFlag,
 		"docker":                            dropFlag,
 		"container-runtime-endpoint":        copyFlag,
+		"image-service-endpoint":            dropFlag,
 		"pause-image":                       dropFlag,
 		"private-registry":                  copyFlag,
 		"system-default-registry":           copyFlag,
