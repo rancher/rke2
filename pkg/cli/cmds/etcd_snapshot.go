@@ -10,7 +10,7 @@ import (
 const defaultSnapshotRentention = 5
 
 func NewEtcdSnapshotCommand() cli.Command {
-	cmds.ServerConfig.DatastoreEndpoint = "etcd"
+	cmds.ServerConfig.ClusterInit = true
 	k3sOpts := K3SFlagSet{
 		"config":          copyFlag,
 		"debug":           copyFlag,
