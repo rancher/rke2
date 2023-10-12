@@ -17,7 +17,7 @@ func Set(_ *cli.Context, dataDir string) error {
 		return errors.Wrapf(err, "failed to create directory %s", logsDir)
 	}
 
-	cmds.ServerConfig.DatastoreEndpoint = "etcd"
+	cmds.ServerConfig.ClusterInit = true
 	cmds.ServerConfig.DisableNPC = true
 	cmds.ServerConfig.FlannelBackend = "none"
 	cmds.ServerConfig.AdvertisePort = 6443
