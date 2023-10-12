@@ -25,9 +25,16 @@ func NewTokenCommand() cli.Command {
 		"list": {
 			"output": copyFlag,
 		},
+		"rotate": {
+			"token":     copyFlag,
+			"new-token": copyFlag,
+			"server": {
+				Default: "https://127.0.0.1:9345",
+			},
+		},
 	}
 
-	command := cmds.NewTokenCommands(token.Create, token.Delete, token.Generate, token.List)
+	command := cmds.NewTokenCommands(token.Create, token.Delete, token.Generate, token.List, token.Rotate)
 	configfilearg.DefaultParser.ValidFlags[command.Name] = command.Flags
 	for i, subcommand := range command.Subcommands {
 		if s, ok := subCommandOpts[subcommand.Name]; ok {
