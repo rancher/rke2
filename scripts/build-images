@@ -13,11 +13,11 @@ EOF
 
 xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
-    ${REGISTRY}/rancher/hardened-coredns:v1.10.1-build20230607
+    ${REGISTRY}/rancher/hardened-coredns:v1.10.1-build20231010
     ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.8.6-build20230609
-    ${REGISTRY}/rancher/hardened-dns-node-cache:1.22.20-build20230607
-    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20230802
-    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.6.3-build20230607
+    ${REGISTRY}/rancher/hardened-dns-node-cache:1.22.20-build20231010
+    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20231009
+    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.6.3-build20231009
     ${REGISTRY}/rancher/klipper-helm:v0.8.2-build20230815
     ${REGISTRY}/rancher/klipper-lb:v0.4.4
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
@@ -29,8 +29,8 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.26.1-build20230802
-    ${REGISTRY}/rancher/hardened-flannel:v0.22.1-build20230802
+    ${REGISTRY}/rancher/hardened-calico:v3.26.1-build20231009
+    ${REGISTRY}/rancher/hardened-flannel:v0.22.1-build20231009
 EOF
 
 if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ]; then
@@ -47,7 +47,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.14.2
     ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.14.2
     ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.14.2
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.2.0-build20230523
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.2.0-build20231009
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
@@ -73,16 +73,16 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
-    ${REGISTRY}/rancher/hardened-multus-cni:v4.0.2-build20230811
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.2.0-build20230523
-    ${REGISTRY}/rancher/hardened-sriov-network-operator:v1.2.0-build20230607
+    ${REGISTRY}/rancher/hardened-multus-cni:v4.0.2-build20231009
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.2.0-build20231009
+    ${REGISTRY}/rancher/hardened-sriov-network-operator:v1.2.0-build20231010
     ${REGISTRY}/rancher/hardened-sriov-network-config-daemon:v1.2.0-build20230607
-    ${REGISTRY}/rancher/hardened-sriov-network-device-plugin:v3.5.1-build20230607
-    ${REGISTRY}/rancher/hardened-sriov-cni:v2.6.3-build20230607
-    ${REGISTRY}/rancher/hardened-ib-sriov-cni:v1.0.2-build20230607
-    ${REGISTRY}/rancher/hardened-sriov-network-resources-injector:v1.5-build20230607
+    ${REGISTRY}/rancher/hardened-sriov-network-device-plugin:v3.5.1-build20231009
+    ${REGISTRY}/rancher/hardened-sriov-cni:v2.6.3-build20231009
+    ${REGISTRY}/rancher/hardened-ib-sriov-cni:v1.0.2-build20231009
+    ${REGISTRY}/rancher/hardened-sriov-network-resources-injector:v1.5-build20231009
     ${REGISTRY}/rancher/hardened-sriov-network-webhook:v1.2.0-build20230607
-    ${REGISTRY}/rancher/hardened-whereabouts:v0.6.2-build20230717
+    ${REGISTRY}/rancher/hardened-whereabouts:v0.6.2-build20231009
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
