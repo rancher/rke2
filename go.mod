@@ -88,7 +88,7 @@ replace (
 )
 
 require (
-	github.com/Microsoft/hcsshim v0.10.0-rc.7
+	github.com/Microsoft/hcsshim v0.11.1
 	github.com/aws/aws-sdk-go v1.45.1
 	github.com/containerd/continuity v0.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
@@ -98,7 +98,7 @@ require (
 	github.com/gruntwork-io/terratest v0.40.19
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.15.4
-	github.com/k3s-io/k3s v1.25.15-0.20231014081524-1f3880c75638 // release-1.25
+	github.com/k3s-io/k3s v1.25.15-0.20231016211824-ec31704c1ab3 // release-1.25
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/onsi/ginkgo/v2 v2.11.0
@@ -146,7 +146,7 @@ require (
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/GoogleCloudPlatform/k8s-cloud-provider v1.18.1-0.20220218231025-f11817397a1b // indirect
 	github.com/JeffAshton/win_pdh v0.0.0-20161109143554-76bb4ee9f0ab // indirect
-	github.com/Microsoft/go-winio v0.6.0 // indirect
+	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Mirantis/cri-dockerd v0.0.0-00010101000000-000000000000 // indirect
 	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/Rican7/retry v0.1.0 // indirect
