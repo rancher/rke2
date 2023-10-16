@@ -94,7 +94,7 @@ require (
 	github.com/google/go-containerregistry v0.14.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.15.4
-	github.com/k3s-io/k3s v1.28.3-0.20231014062416-9597ea118333 // master
+	github.com/k3s-io/k3s v1.28.3-0.20231016180212-aaf840909608 // master
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/onsi/ginkgo/v2 v2.11.0
