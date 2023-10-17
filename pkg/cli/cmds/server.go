@@ -69,10 +69,10 @@ var (
 		"kube-apiserver-arg":                copyFlag,
 		"etcd-arg":                          copyFlag,
 		"kube-scheduler-arg":                copyFlag,
-		"kube-controller-arg":               dropFlag,
+		"kube-controller-arg":               dropFlag, // deprecated version of kube-controller-manager-arg
 		"kube-controller-manager-arg":       copyFlag,
-		"kube-cloud-controller-manager-arg": dropFlag,
-		"kube-cloud-controller-arg":         dropFlag,
+		"kube-cloud-controller-manager-arg": copyFlag,
+		"kube-cloud-controller-arg":         dropFlag, // deprecated version of kube-cloud-controller-manager-arg
 		"datastore-endpoint":                dropFlag,
 		"datastore-cafile":                  dropFlag,
 		"datastore-certfile":                dropFlag,
