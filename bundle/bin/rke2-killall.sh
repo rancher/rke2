@@ -90,6 +90,7 @@ if [ -d /sys/class/net/nodelocaldns ]; then
 fi
 
 rm -rf /var/lib/cni/ /var/log/pods/ /var/log/containers
+rm -rf /var/lib/kubelet || true
 
 # Delete iptables created by CNI plugins or Kubernetes (kube-proxy)
 iptables-save | grep -v KUBE- | grep -v CNI- | grep -v cali- | grep -v cali: | grep -v CILIUM_ | grep -v flannel | iptables-restore
