@@ -64,8 +64,9 @@ do_unmount_and_remove '/var/lib/rancher/rke2'
 do_unmount_and_remove '/var/lib/kubelet/pods'
 do_unmount_and_remove '/run/netns/cni-'
 
-# Delete old containerd files
+# Delete old containerd files and pod-manfiests
 rm -rf /var/lib/rancher/rke2/agent/containerd/ || true
+rm -rf /var/lib/rancher/rke2/agent/pod-manifests || true
 
 # Delete network interface(s) that match 'master cni0'
 ip link show 2>/dev/null | grep 'master cni0' | while read ignore iface ignore; do
