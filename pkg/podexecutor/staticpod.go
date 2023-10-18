@@ -445,6 +445,8 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, apiReady <-chan s
 			CISMode:       s.CISMode,
 			HealthPort:    10257,
 			HealthProto:   "HTTPS",
+			ReadyPort:     10257,
+			ReadyProto:    "HTTPS",
 			CPURequest:    s.ControlPlaneResources.KubeControllerManagerCPURequest,
 			CPULimit:      s.ControlPlaneResources.KubeControllerManagerCPULimit,
 			MemoryRequest: s.ControlPlaneResources.KubeControllerManagerMemoryRequest,
@@ -457,7 +459,7 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, apiReady <-chan s
 	})
 }
 
-// CloudControllerManager starts the cloud-controller-manager static pod, once the cloud controller manager RBAC
+// CloudControllerManager starts the 	-manager static pod, once the cloud controller manager RBAC
 // (and subsequently, the api server) is available.
 func (s *StaticPodConfig) CloudControllerManager(_ context.Context, ccmRBACReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.CloudControllerManager)
@@ -476,6 +478,8 @@ func (s *StaticPodConfig) CloudControllerManager(_ context.Context, ccmRBACReady
 			CISMode:       s.CISMode,
 			HealthPort:    10258,
 			HealthProto:   "HTTPS",
+			ReadyPort:     10257,
+			ReadyProto:    "HTTPS",
 			CPURequest:    s.ControlPlaneResources.CloudControllerManagerCPURequest,
 			CPULimit:      s.ControlPlaneResources.CloudControllerManagerCPULimit,
 			MemoryRequest: s.ControlPlaneResources.CloudControllerManagerMemoryRequest,
