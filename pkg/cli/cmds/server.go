@@ -105,6 +105,7 @@ var (
 		"pause-image":                       dropFlag,
 		"private-registry":                  copyFlag,
 		"system-default-registry":           copyFlag,
+		"image-service-endpoint":            dropFlag,
 		"node-ip":                           copyFlag,
 		"node-external-ip":                  copyFlag,
 		"resolv-conf":                       copyFlag,
