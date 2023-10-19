@@ -9,6 +9,6 @@ if [ "${GOARCH}" == "s390x" ] || [ "${GOARCH}" == "arm64" ]; then
     exit 0
 fi
 
-mkdir -p dist/win_artifacts
+mkdir -p dist/artifacts
 
-install -s bin/${PROG}.exe dist/win_artifacts/${PROG}-windows-amd64.exe
+install -s bin/${PROG}.exe dist/artifacts/${PROG}-windows-amd64.exe
