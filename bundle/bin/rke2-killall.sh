@@ -89,7 +89,8 @@ if [ -d /sys/class/net/nodelocaldns ]; then
   ip link delete nodelocaldns
 fi
 
-rm -rf /var/lib/cni/ /var/log/pods/ /var/log/containers /var/lib/rancher/rke2/agent/pod-manifests
+rm -rf /var/lib/cni/ /var/log/pods/ /var/log/containers
+grep -rl "tier: control-plane" /var/lib/rancher/rke2/agent/pod-manifests/ | while read MANIFEST; do rm -f $MANIFEST; done
 
 # Delete iptables created by CNI plugins or Kubernetes (kube-proxy)
 iptables-save | grep -v KUBE- | grep -v CNI- | grep -v cali- | grep -v cali: | grep -v CILIUM_ | grep -v flannel | iptables-restore
