@@ -90,7 +90,16 @@ if [ -d /sys/class/net/nodelocaldns ]; then
 fi
 
 rm -rf /var/lib/cni/ /var/log/pods/ /var/log/containers
-grep -rl "tier: control-plane" /var/lib/rancher/rke2/agent/pod-manifests/ | while read MANIFEST; do rm -f $MANIFEST; done
+
+# Remove pod-manifests files for rke2 components
+POD_MANIFESTS_DIR=/var/lib/rancher/rke2/agent/pod-manifests
+
+rm -f ${POD_MANIFESTS_DIR}/etcd.yaml \
+      ${POD_MANIFESTS_DIR}/kube-apiserver.yaml \
+      ${POD_MANIFESTS_DIR}/kube-controller-manager.yaml \
+      ${POD_MANIFESTS_DIR}/cloud-controller-manager.yaml\
+      ${POD_MANIFESTS_DIR}/kube-scheduler.yaml \
+      ${POD_MANIFESTS_DIR}/kube-proxy.yaml
 
 # Delete iptables created by CNI plugins or Kubernetes (kube-proxy)
 iptables-save | grep -v KUBE- | grep -v CNI- | grep -v cali- | grep -v cali: | grep -v CILIUM_ | grep -v flannel | iptables-restore
