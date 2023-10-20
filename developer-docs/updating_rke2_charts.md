@@ -80,7 +80,7 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20220413
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.5.0-build20210915
     ${REGISTRY}/rancher/klipper-helm:v0.6.1-build20210616
-    ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
+    ${REGISTRY}/rancher/pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/mirrored-jettech-kube-webhook-certgen:v1.5.1
     ${REGISTRY}/rancher/nginx-ingress-controller:nginx-0.47.0-hardened1
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
