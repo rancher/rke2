@@ -478,7 +478,7 @@ install_dev_rpm() {
 # and calls yum to install the required packages.
 do_install_rpm() {
     . /etc/os-release
-    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/amazon-linux-release ] || [ "${ID_LIKE%%[ ]*}" = "suse"  ]; then
+    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/rocky-release ] || [ -r /etc/amazon-linux-release ] || [ "${ID_LIKE%%[ ]*}" = "suse"  ]; then
         repodir=/etc/yum.repos.d
         if [ -d /etc/zypp/repos.d ]; then
             repodir=/etc/zypp/repos.d
