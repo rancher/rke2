@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+set -e
+source ./scripts/version.sh
+set +x
+
+info() {
+    echo '[INFO] ' "$@"
+}
+
+warn() {
+    echo '[WARN] ' "$@" >&2
+}
+
+error() {
+    echo '[ERROR] ' "$@" >&2
+}
+
+fatal() {
+    echo '[ERROR] ' "$@" >&2
+    exit 1
+}
+
+cleanup() {
+  exit_code=$?
+  trap - EXIT INT
+  rm -rf  /tmp/tmp.*.tar.gz
+  exit ${exit_code}
+}
+trap cleanup EXIT INT
+
+
+download_chart() {
+    chart_version=$1
+    chart_name=$2
+    bootstrap=$3
+
+    chart_package=${chart_name%%-crd}
+
+    chart_url=${CHART_REPO:="https://rke2-charts.rancher.io"}/assets/${chart_package}/${chart_name}-${chart_version:="v0.0.0"}.tgz
+
+    chart_tmp=$(mktemp --suffix .tar.gz)
+    
+    curl -fsSL "${chart_url}" -o "${chart_tmp}"
+
+    echo $chart_tmp
+}
+
+check_system_registry() {
+    chart_version=$1
+    chart_name=$2
+    chart_tmp=$3
+
+    yaml_tmp=$(mktemp --suffix .yaml)
+    values="global.systemDefaultRegistry=my-registry,global.cattle.systemDefaultRegistry=my-registry,vCenter.clusterId=test-id"
+    helm template test-chart --kube-version ${KUBERNETES_VERSION} --set $values $chart_tmp > $yaml_tmp;
+
+    awk '$1 ~ /^image:/ {
+        if( $2 !~ /my-registry/ && $2 !~ busybox) {
+            print $2
+        }
+    }
+    ' $yaml_tmp
+}
+
+is_supported() {
+kube_version="$1"
+lower_bound="$2"
+upper_bound="$3"
+
+kube_version="${kube_version#[vV]}"
+kube_version_major="${kube_version%%\.*}"
+kube_version_minor="${kube_version#*.}"
+kube_version_minor="${kube_version_minor%.*}"
+kube_version_patch="${kube_version##*.}"
+kube_version_dash="${kube_version_patch##*-}"
+kube_version_patch="${kube_version_patch%-*}"
+
+lower_bound="${lower_bound#[vV]}"
+lower_bound_major="${lower_bound%%\.*}"
+lower_bound_minor="${lower_bound#*.}"
+lower_bound_minor="${lower_bound_minor%.*}"
+lower_bound_patch="${lower_bound##*.}"
+lower_bound_dash="${lower_bound_patch##*-}"
+lower_bound_patch="${lower_bound_patch%-*}"
+
+
+upper_bound="${upper_bound#[vV]}"
+upper_bound_major="${upper_bound%%\.*}"
+upper_bound_minor="${upper_bound#*.}"
+upper_bound_minor="${upper_bound_minor%.*}"
+upper_bound_patch="${upper_bound##*.}"
+upper_bound_dash="${upper_bound_patch##*-}"
+upper_bound_patch="${upper_bound_patch%-*}"
+
+if [ "$lower_bound_major" -le "$kube_version_major"  ] && \
+    [ "$kube_version_major" -le "$upper_bound_major" ] && \
+    [ "$lower_bound_minor" -le "$kube_version_minor"  ] && \
+    [ "$kube_version_minor" -le "$upper_bound_minor" ] && \
+    [ "$lower_bound_patch" -le "$kube_version_patch"  ] && \
+    [ "$kube_version_patch" -le "$upper_bound_patch" ]; then
+    echo 0
+else
+    echo 1
+fi
+}
+
+check_airgap() {
+    chart_version=$1
+    chart_name=$2
+    chart_tmp=$3
+
+    yaml_tmp=$(mktemp --suffix .yaml)
+    values="vCenter.clusterId=test-id"
+    helm template test-chart --kube-version ${KUBERNETES_VERSION} --set $values $chart_tmp > $yaml_tmp;
+
+    chart_folder=$(mktemp -d)
+    tar xfz $chart_tmp -C $chart_folder
+
+    version_annotation=`awk '$1 ~ /catalog.cattle.io\/kube-version:/ {
+        print $3 " " $5
+    }
+    ' $chart_folder/$chart_name/Chart.yaml `
+    if ! [ -z ${version_annotation} ]; then
+        version_annotation=${version_annotation:0:-1}
+        read lower_bound upper_bound <<< $version_annotation
+
+        supported=$(is_supported ${KUBERNETES_VERSION} $lower_bound $upper_bound)
+        if [ $supported = 1 ] ; then
+            warn "Chart $chart_name:$chart_version does not support k8s ${KUBERNETES_VERSION}. Skipping airgap check"
+            return
+        fi
+    fi
+    awk '$1 ~ /^image:/ {
+        gsub(/"/, "", $2)
+        gsub(/^docker.io/, "", $2)
+        print $2
+    }
+    ' $yaml_tmp | \
+    while read image
+    do
+        [ "$image" = "busybox" ] && continue
+        if ! grep -q $image scripts/build-images; then
+            echo $image
+        fi
+    done
+}
+
+declare -A NO_SYSTEM_REGISTRY
+declare -A NOT_FOUND
+
+while read version filename bootstrap; do    
+    chart_name=$(basename "${filename%%.yaml}")
+    chart_tmp=$(download_chart $version $chart_name $bootstrap)
+
+    info "Validating chart $chart_name, version $version..."
+
+    no_system_registry=$(check_system_registry $version $chart_name $chart_tmp)
+    if ! [ -z "$no_system_registry" ]; then 
+        NO_SYSTEM_REGISTRY[$chart_name]=$no_system_registry
+    fi
+
+    not_found=$(check_airgap $version $chart_name $chart_tmp)
+    if ! [ -z "$not_found" ]; then 
+        NOT_FOUND[$chart_name]=$not_found
+    fi
+done <<< $(yq e '.charts[] | [.version, .filename, .bootstrap] | join(" ")' charts/chart_versions.yaml)
+
+failed=0
+
+if [ ${#NO_SYSTEM_REGISTRY[@]} -ge 1 ]; then
+    failed=1
+    for chart in "${!NO_SYSTEM_REGISTRY[@]}"
+    do
+        error "Images not using global.systemDefaultRegistry in chart '$chart': ${NO_SYSTEM_REGISTRY[$chart]}"
+    done
+    error "Please use global.systemDefaultRegistry for above images"
+fi
+
+if [ ${#NOT_FOUND[@]} -ge 1 ]; then
+    failed=1
+    for chart in "${!NOT_FOUND[@]}"
+    do
+        error "Missing images for chart '$chart': ${NOT_FOUND[$chart]}"
+    done
+    error "Please include above images in build-images"
+fi
+
+[ $failed = 1 ] && fatal "Please fix the issues above"
+
+exit 0
