@@ -32,6 +32,7 @@ var (
 		"container-runtime-endpoint":        copyFlag,
 		"image-service-endpoint":            dropFlag,
 		"pause-image":                       dropFlag,
+		"disable-apiserver-lb":              dropFlag,
 		"private-registry":                  copyFlag,
 		"node-ip":                           copyFlag,
 		"node-external-ip":                  copyFlag,
