@@ -25,7 +25,7 @@ RUN if [ "${ARCH}" = "amd64" ]; then \
     	apk --no-cache add mingw-w64-gcc; \
     fi
 
-FROM registry.suse.com/bci/bci-base AS rpm-macros
+FROM registry.suse.com/bci/bci-micro AS rpm-macros
 RUN zypper install -y systemd-rpm-macros
 
 # Dapper/Drone/CI environment
