@@ -107,7 +107,7 @@ ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
 RUN /charts/build-charts.sh
-RUN rm -vf /charts/*.sh /charts/*.md
+RUN rm -vf /charts/*.sh /charts/*.md /charts/chart_versions.yaml
 
 # rke2-runtime image
 # This image includes any host level programs that we might need. All binaries
