@@ -36,17 +36,17 @@ EOF
 if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.1.9
-    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.14.2
-    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.25.9-e198a2824d309024cb91fb6a984445e73033291d
+    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.14.4
+    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.26.6-ff0d5d3f77d610040e93c7c7a430d61a0c0b90c1
     ${REGISTRY}/rancher/mirrored-cilium-cilium-etcd-operator:v2.0.7
-    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.14.2
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.14.2
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.12.0
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui-backend:v0.12.0
-    ${REGISTRY}/rancher/mirrored-cilium-kvstoremesh:v1.14.2
-    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.14.2
-    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.14.2
-    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.14.2
+    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.14.4
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.14.4
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.12.1
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui-backend:v0.12.1
+    ${REGISTRY}/rancher/mirrored-cilium-kvstoremesh:v1.14.4
+    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.14.4
+    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.14.4
+    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.14.4
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.2.0-build20231009
 EOF
 
