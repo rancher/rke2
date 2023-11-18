@@ -21,7 +21,7 @@ replace (
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.8
 	github.com/opencontainers/runtime-spec => github.com/opencontainers/runtime-spec v1.0.3-0.20220909204839-494a5a6aca78
 	github.com/opencontainers/selinux => github.com/opencontainers/selinux v1.10.1
-	github.com/rancher/wrangler => github.com/rancher/wrangler v1.1.1-0.20230425173236-39a4707f0689
+	github.com/rancher/wrangler => github.com/rancher/wrangler v1.1.1-0.20230807182002-35cb42e6a915
 	go.etcd.io/etcd/api/v3 => github.com/k3s-io/etcd/api/v3 v3.5.9-k3s1
 	go.etcd.io/etcd/client/pkg/v3 => github.com/k3s-io/etcd/client/pkg/v3 v3.5.9-k3s1
 	go.etcd.io/etcd/client/v2 => github.com/k3s-io/etcd/client/v2 v2.305.9-k3s1
@@ -95,7 +95,7 @@ require (
 	github.com/google/go-containerregistry v0.14.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.15.4
-	github.com/k3s-io/k3s v1.27.8-0.20231102204138-40ee2725ee94 //release-1.27
+	github.com/k3s-io/k3s v1.27.8-0.20231118034645-e3ea0ae9b119 //release-1.27
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/onsi/ginkgo/v2 v2.11.0
@@ -110,7 +110,7 @@ require (
 	github.com/tigera/operator v1.28.1
 	github.com/urfave/cli v1.22.14
 	golang.org/x/sync v0.3.0
-	golang.org/x/sys v0.13.0
+	golang.org/x/sys v0.14.0
 	google.golang.org/grpc v1.57.0
 	k8s.io/api v0.28.1
 	k8s.io/apimachinery v0.28.1
@@ -249,9 +249,9 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/josharian/native v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/k3s-io/kine v0.10.3 // indirect
+	github.com/k3s-io/kine v0.11.0 // indirect
 	github.com/karrick/godirwalk v1.17.0 // indirect
-	github.com/klauspost/compress v1.16.7 // indirect
+	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.1.0 // indirect
 	github.com/lib/pq v1.10.2 // indirect
 	github.com/libopenstorage/openstorage v1.0.0 // indirect
@@ -284,10 +284,10 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/nats-io/jsm.go v0.0.31-0.20220317133147-fe318f464eee // indirect
-	github.com/nats-io/jwt/v2 v2.4.1 // indirect
-	github.com/nats-io/nats-server/v2 v2.9.18 // indirect
-	github.com/nats-io/nats.go v1.27.1 // indirect
-	github.com/nats-io/nkeys v0.4.4 // indirect
+	github.com/nats-io/jwt/v2 v2.5.3 // indirect
+	github.com/nats-io/nats-server/v2 v2.10.5 // indirect
+	github.com/nats-io/nats.go v1.31.0 // indirect
+	github.com/nats-io/nkeys v0.4.6 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc3 // indirect
@@ -302,8 +302,8 @@ require (
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.10.1 // indirect
-	github.com/rancher/dynamiclistener v0.3.6-rc2 // indirect
-	github.com/rancher/lasso v0.0.0-20221227210133-6ea88ca2fbcc // indirect
+	github.com/rancher/dynamiclistener v0.3.6 // indirect
+	github.com/rancher/lasso v0.0.0-20230830164424-d684fdeb6f29 // indirect
 	github.com/rancher/remotedialer v0.3.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rootless-containers/rootlesskit v1.0.1 // indirect
@@ -315,6 +315,7 @@ require (
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/stoewer/go-strcase v1.2.0 // indirect
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635 // indirect
+	github.com/tidwall/btree v1.6.0 // indirect
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20220101234140-673ab2c3ae75 // indirect
 	github.com/vbatts/tar-split v0.11.5 // indirect
 	github.com/vishvananda/netlink v1.2.1-beta.2 // indirect
@@ -346,13 +347,13 @@ require (
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
-	golang.org/x/crypto v0.14.0 // indirect
+	golang.org/x/crypto v0.15.0 // indirect
 	golang.org/x/mod v0.11.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/oauth2 v0.10.0 // indirect
-	golang.org/x/term v0.13.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
-	golang.org/x/time v0.3.0 // indirect
+	golang.org/x/term v0.14.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/time v0.4.0 // indirect
 	golang.org/x/tools v0.10.0 // indirect
 	golang.zx2c4.com/wireguard v0.0.0-20230325221338-052af4a8072b // indirect
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6 // indirect
