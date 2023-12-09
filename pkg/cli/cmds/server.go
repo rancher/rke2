@@ -104,6 +104,7 @@ var (
 		"container-runtime-endpoint":        copyFlag,
 		"image-service-endpoint":            dropFlag,
 		"pause-image":                       dropFlag,
+		"default-runtime":                   copyFlag,
 		"private-registry":                  copyFlag,
 		"system-default-registry":           copyFlag,
 		"node-ip":                           copyFlag,
