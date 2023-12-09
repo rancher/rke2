@@ -49,40 +49,40 @@ replace (
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230525234035-dd9d682886f9
 	google.golang.org/grpc => google.golang.org/grpc v1.58.3
 	gopkg.in/square/go-jose.v2 => gopkg.in/square/go-jose.v2 v2.6.0
-	k8s.io/api => github.com/k3s-io/kubernetes/staging/src/k8s.io/api v1.28.3-k3s1
-	k8s.io/apiextensions-apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/apiextensions-apiserver v1.28.3-k3s1
-	k8s.io/apimachinery => github.com/k3s-io/kubernetes/staging/src/k8s.io/apimachinery v1.28.3-k3s1
-	k8s.io/apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/apiserver v1.28.3-k3s1
-	k8s.io/cli-runtime => github.com/k3s-io/kubernetes/staging/src/k8s.io/cli-runtime v1.28.3-k3s1
-	k8s.io/client-go => github.com/k3s-io/kubernetes/staging/src/k8s.io/client-go v1.28.3-k3s1
-	k8s.io/cloud-provider => github.com/k3s-io/kubernetes/staging/src/k8s.io/cloud-provider v1.28.3-k3s1
-	k8s.io/cluster-bootstrap => github.com/k3s-io/kubernetes/staging/src/k8s.io/cluster-bootstrap v1.28.3-k3s1
-	k8s.io/code-generator => github.com/k3s-io/kubernetes/staging/src/k8s.io/code-generator v1.28.3-k3s1
-	k8s.io/component-base => github.com/k3s-io/kubernetes/staging/src/k8s.io/component-base v1.28.3-k3s1
-	k8s.io/component-helpers => github.com/k3s-io/kubernetes/staging/src/k8s.io/component-helpers v1.28.3-k3s1
-	k8s.io/controller-manager => github.com/k3s-io/kubernetes/staging/src/k8s.io/controller-manager v1.28.3-k3s1
-	k8s.io/cri-api => github.com/k3s-io/kubernetes/staging/src/k8s.io/cri-api v1.28.3-k3s1
-	k8s.io/csi-translation-lib => github.com/k3s-io/kubernetes/staging/src/k8s.io/csi-translation-lib v1.28.3-k3s1
-	k8s.io/dynamic-resource-allocation => github.com/k3s-io/kubernetes/staging/src/k8s.io/dynamic-resource-allocation v1.28.3-k3s1
-	k8s.io/endpointslice => github.com/k3s-io/kubernetes/staging/src/k8s.io/endpointslice v1.28.3-k3s1
+	k8s.io/api => github.com/k3s-io/kubernetes/staging/src/k8s.io/api v1.28.4-k3s1
+	k8s.io/apiextensions-apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/apiextensions-apiserver v1.28.4-k3s1
+	k8s.io/apimachinery => github.com/k3s-io/kubernetes/staging/src/k8s.io/apimachinery v1.28.4-k3s1
+	k8s.io/apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/apiserver v1.28.4-k3s1
+	k8s.io/cli-runtime => github.com/k3s-io/kubernetes/staging/src/k8s.io/cli-runtime v1.28.4-k3s1
+	k8s.io/client-go => github.com/k3s-io/kubernetes/staging/src/k8s.io/client-go v1.28.4-k3s1
+	k8s.io/cloud-provider => github.com/k3s-io/kubernetes/staging/src/k8s.io/cloud-provider v1.28.4-k3s1
+	k8s.io/cluster-bootstrap => github.com/k3s-io/kubernetes/staging/src/k8s.io/cluster-bootstrap v1.28.4-k3s1
+	k8s.io/code-generator => github.com/k3s-io/kubernetes/staging/src/k8s.io/code-generator v1.28.4-k3s1
+	k8s.io/component-base => github.com/k3s-io/kubernetes/staging/src/k8s.io/component-base v1.28.4-k3s1
+	k8s.io/component-helpers => github.com/k3s-io/kubernetes/staging/src/k8s.io/component-helpers v1.28.4-k3s1
+	k8s.io/controller-manager => github.com/k3s-io/kubernetes/staging/src/k8s.io/controller-manager v1.28.4-k3s1
+	k8s.io/cri-api => github.com/k3s-io/kubernetes/staging/src/k8s.io/cri-api v1.28.4-k3s1
+	k8s.io/csi-translation-lib => github.com/k3s-io/kubernetes/staging/src/k8s.io/csi-translation-lib v1.28.4-k3s1
+	k8s.io/dynamic-resource-allocation => github.com/k3s-io/kubernetes/staging/src/k8s.io/dynamic-resource-allocation v1.28.4-k3s1
+	k8s.io/endpointslice => github.com/k3s-io/kubernetes/staging/src/k8s.io/endpointslice v1.28.4-k3s1
 	k8s.io/klog => github.com/k3s-io/klog v1.0.0-k3s2 // k3s-release-1.x
 	k8s.io/klog/v2 => github.com/k3s-io/klog/v2 v2.100.1-k3s1 // k3s-main
-	k8s.io/kms => github.com/k3s-io/kubernetes/staging/src/k8s.io/kms v1.28.3-k3s1
-	k8s.io/kube-aggregator => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-aggregator v1.28.3-k3s1
-	k8s.io/kube-controller-manager => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-controller-manager v1.28.3-k3s1
-	k8s.io/kube-proxy => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-proxy v1.28.3-k3s1
-	k8s.io/kube-scheduler => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-scheduler v1.28.3-k3s1
-	k8s.io/kubectl => github.com/k3s-io/kubernetes/staging/src/k8s.io/kubectl v1.28.3-k3s1
-	k8s.io/kubelet => github.com/k3s-io/kubernetes/staging/src/k8s.io/kubelet v1.28.3-k3s1
-	k8s.io/kubernetes => github.com/k3s-io/kubernetes v1.28.3-k3s1
-	k8s.io/legacy-cloud-providers => github.com/k3s-io/kubernetes/staging/src/k8s.io/legacy-cloud-providers v1.28.3-k3s1
-	k8s.io/metrics => github.com/k3s-io/kubernetes/staging/src/k8s.io/metrics v1.28.3-k3s1
-	k8s.io/mount-utils => github.com/k3s-io/kubernetes/staging/src/k8s.io/mount-utils v1.28.3-k3s1
-	k8s.io/node-api => github.com/k3s-io/kubernetes/staging/src/k8s.io/node-api v1.28.3-k3s1
-	k8s.io/pod-security-admission => github.com/k3s-io/kubernetes/staging/src/k8s.io/pod-security-admission v1.28.3-k3s1
-	k8s.io/sample-apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-apiserver v1.28.3-k3s1
-	k8s.io/sample-cli-plugin => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-cli-plugin v1.28.3-k3s1
-	k8s.io/sample-controller => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-controller v1.28.3-k3s1
+	k8s.io/kms => github.com/k3s-io/kubernetes/staging/src/k8s.io/kms v1.28.4-k3s1
+	k8s.io/kube-aggregator => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-aggregator v1.28.4-k3s1
+	k8s.io/kube-controller-manager => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-controller-manager v1.28.4-k3s1
+	k8s.io/kube-proxy => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-proxy v1.28.4-k3s1
+	k8s.io/kube-scheduler => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-scheduler v1.28.4-k3s1
+	k8s.io/kubectl => github.com/k3s-io/kubernetes/staging/src/k8s.io/kubectl v1.28.4-k3s1
+	k8s.io/kubelet => github.com/k3s-io/kubernetes/staging/src/k8s.io/kubelet v1.28.4-k3s1
+	k8s.io/kubernetes => github.com/k3s-io/kubernetes v1.28.4-k3s1
+	k8s.io/legacy-cloud-providers => github.com/k3s-io/kubernetes/staging/src/k8s.io/legacy-cloud-providers v1.28.4-k3s1
+	k8s.io/metrics => github.com/k3s-io/kubernetes/staging/src/k8s.io/metrics v1.28.4-k3s1
+	k8s.io/mount-utils => github.com/k3s-io/kubernetes/staging/src/k8s.io/mount-utils v1.28.4-k3s1
+	k8s.io/node-api => github.com/k3s-io/kubernetes/staging/src/k8s.io/node-api v1.28.4-k3s1
+	k8s.io/pod-security-admission => github.com/k3s-io/kubernetes/staging/src/k8s.io/pod-security-admission v1.28.4-k3s1
+	k8s.io/sample-apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-apiserver v1.28.4-k3s1
+	k8s.io/sample-cli-plugin => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-cli-plugin v1.28.4-k3s1
+	k8s.io/sample-controller => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-controller v1.28.4-k3s1
 	mvdan.cc/unparam => mvdan.cc/unparam v0.0.0-20210104141923-aac4ce9116a7
 	vbom.ml/util => github.com/fvbommel/util v0.0.3 // github.com/tigera/operator using old repo
 )
@@ -94,7 +94,7 @@ require (
 	github.com/google/go-containerregistry v0.14.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.15.4
-	github.com/k3s-io/k3s v1.28.4-0.20231121220327-6d3a92a6583a // master
+	github.com/k3s-io/k3s v1.28.5-0.20231209021808-08509a2a9077 // master
 	github.com/libp2p/go-netroute v0.2.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/onsi/ginkgo/v2 v2.11.0
@@ -111,14 +111,14 @@ require (
 	golang.org/x/sync v0.3.0
 	golang.org/x/sys v0.14.0
 	google.golang.org/grpc v1.58.3
-	k8s.io/api v0.28.3
-	k8s.io/apimachinery v0.28.3
-	k8s.io/apiserver v0.28.3
+	k8s.io/api v0.28.4
+	k8s.io/apimachinery v0.28.4
+	k8s.io/apiserver v0.28.4
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/component-base v0.28.3
+	k8s.io/component-base v0.28.4
 	k8s.io/cri-api v0.29.0-alpha.0
 	k8s.io/klog/v2 v2.100.1
-	k8s.io/kubernetes v1.28.3
+	k8s.io/kubernetes v1.28.4
 	k8s.io/utils v0.0.0-20230406110748-d93618cff8a2
 	sigs.k8s.io/yaml v1.3.0
 )
@@ -162,6 +162,7 @@ require (
 	github.com/cloudnativelabs/kube-router/v2 v2.0.0-00010101000000-000000000000 // indirect
 	github.com/container-storage-interface/spec v1.8.0 // indirect
 	github.com/containerd/cgroups v1.1.0 // indirect
+	github.com/containerd/cgroups/v3 v3.0.2 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/containerd/containerd v1.7.3 // indirect
 	github.com/containerd/fifo v1.1.0 // indirect
@@ -373,16 +374,16 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	inet.af/tcpproxy v0.0.0-20200125044825-b6bb9b5b8252 // indirect
-	k8s.io/apiextensions-apiserver v0.28.3 // indirect
-	k8s.io/cloud-provider v0.28.3 // indirect
+	k8s.io/apiextensions-apiserver v0.28.4 // indirect
+	k8s.io/cloud-provider v0.28.4 // indirect
 	k8s.io/cluster-bootstrap v0.0.0 // indirect
-	k8s.io/component-helpers v0.28.3 // indirect
+	k8s.io/component-helpers v0.28.4 // indirect
 	k8s.io/controller-manager v0.25.4 // indirect
 	k8s.io/csi-translation-lib v0.0.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
 	k8s.io/endpointslice v0.0.0 // indirect
 	k8s.io/kms v0.0.0 // indirect
-	k8s.io/kube-aggregator v0.28.3 // indirect
+	k8s.io/kube-aggregator v0.28.4 // indirect
 	k8s.io/kube-controller-manager v0.0.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
 	k8s.io/kube-proxy v0.0.0 // indirect
@@ -391,7 +392,7 @@ require (
 	k8s.io/kubelet v0.0.0 // indirect
 	k8s.io/legacy-cloud-providers v0.0.0 // indirect
 	k8s.io/metrics v0.0.0 // indirect
-	k8s.io/mount-utils v0.28.3 // indirect
+	k8s.io/mount-utils v0.28.4 // indirect
 	k8s.io/pod-security-admission v0.0.0 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.1.2 // indirect
 	sigs.k8s.io/controller-runtime v0.10.1 // indirect
