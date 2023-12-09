@@ -103,6 +103,7 @@ var (
 		"docker":                            dropFlag,
 		"container-runtime-endpoint":        copyFlag,
 		"pause-image":                       dropFlag,
+		"default-runtime":                   copyFlag,
 		"private-registry":                  copyFlag,
 		"system-default-registry":           copyFlag,
 		"image-service-endpoint":            dropFlag,
