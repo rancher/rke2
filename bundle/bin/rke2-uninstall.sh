@@ -67,7 +67,7 @@ uninstall_disable_services()
 uninstall_remove_files()
 {
 
-    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/rocky-release ] || [ -r /etc/amazon-linux-release ]; then
+    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/amazon-linux-release ]; then
         yum remove -y "rke2-*"
 
         rm -f /etc/yum.repos.d/rancher-rke2*.repo
