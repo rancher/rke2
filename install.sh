@@ -478,7 +478,7 @@ install_dev_rpm() {
 # and calls yum to install the required packages.
 do_install_rpm() {
     . /etc/os-release
-    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ "${ID_LIKE%%[ ]*}" = "suse"  ]; then
+    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/amazon-linux-release ] || [ "${ID_LIKE%%[ ]*}" = "suse"  ]; then
         repodir=/etc/yum.repos.d
         if [ -d /etc/zypp/repos.d ]; then
             repodir=/etc/zypp/repos.d
@@ -505,7 +505,10 @@ do_install_rpm() {
                 7|8|9)
                     :
                     ;;
-                *) # In certain cases, like installing on Fedora, maj_ver will end up being something that is not 7 or 8
+                2023) # detect amazon linux 2023 distro
+                    maj_ver="8"
+                    ;;
+                *) # set default distro to centos 7, for edge cases such as fedora
                     maj_ver="7"
                     ;;
             esac
@@ -560,7 +563,7 @@ gpgkey=https://${rpm_site}/public.key
 EOF
     fi
 
-    if rpm -q --quiet rke2-selinux; then 
+    if rpm -q --quiet rke2-selinux; then
             # remove rke2-selinux module in el9 before upgrade to allow container-selinux to upgrade safely
             if check_available_upgrades container-selinux && check_available_upgrades rke2-selinux; then
                 MODULE_PRIORITY=$(semodule --list=full | grep rke2 | cut -f1 -d" ")
@@ -627,7 +630,7 @@ do_install_tar() {
 }
 
 setup_fapolicy_rules() {
-    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/rocky-release ]; then
+    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/rocky-release ] || [ -r /etc/amazon-linux-release ]; then
         verify_fapolicyd || return 0
         # setting rke2 fapolicyd rules
         cat <<-EOF >>"/etc/fapolicyd/rules.d/80-rke2.rules"
