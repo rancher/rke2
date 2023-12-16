@@ -140,6 +140,10 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	}
 	executor.Set(ex)
 
+	// Clear data directories that are no longer in use
+	// Errors from this should not prevent the cluster from starting
+	_ = cleanupDataDir(dataDir)
+
 	// check for force restart file
 	var forceRestart bool
 	if _, err := os.Stat(ForceRestartFile(dataDir)); err != nil {

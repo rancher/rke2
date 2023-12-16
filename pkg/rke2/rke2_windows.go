@@ -72,3 +72,7 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*pebinaryexecuto
 		CNI:             "",
 	}, nil
 }
+
+func cleanupDataDir() error {
+	return nil
+}

@@ -507,3 +507,50 @@ func hostnameFromMetadataEndpoint(ctx context.Context) string {
 
 	return strings.TrimSpace(string(b))
 }
+
+func cleanupDataDir(dataDir string) error {
+	paths, err := getProcessExecutablePaths()
+	activePaths := []string{}
+	if err != nil {
+		return activePaths, err
+	}
+	// Ensures only unique path within the data directory are
+	// captured within the array
+	for _, path := range paths {
+		if !strings.HasPrefix(path, dataDir) {
+			continue
+		}
+		arr := strings.Split(path, "/")
+		rkePath := strings.Join(arr[0:7], "/")
+		if !slices.Contains(activePaths, rkePath) {
+			activePaths = append(activePaths, rkePath)
+		}
+	}
+
+	// Ensures file is a directory, has rke2 within the name, and is not an active path
+	// if the function is unable to clear out the diretory, the error is ignored.
+	err := filepath.WalkDir(path, func(path string, info fs.DirEntry, err error) error {
+		if !info.IsDir() || !string.Contains(path, "rke2") || slices.Contains(activePaths, path) {
+			continue
+		}
+		_ := os.RemoveAll(path)
+	})
+}
+
+func getProcessExecutablePaths() ([]string, error) {
+	path := "/proc"
+	executables := []string{}
+	err := filepath.WalkDir(path, func(path string, dir fs.DirEntry, err error) error {
+		if !dir.IsDir() {
+			return nil
+		}
+		exePath := filepath.Join(path, "exe")
+		exeLinkPath, err := os.Readlink(exePath)
+		if err != nil {
+			return nil
+		}
+		executables = append(executables, exeLinkPath)
+		return nil
+	})
+	return executables, err
+}
