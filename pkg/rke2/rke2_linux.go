@@ -7,10 +7,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -535,6 +538,8 @@ func cleanupDataDir(dataDir string) error {
 		}
 		_ := os.RemoveAll(path)
 	})
+
+	return nil
 }
 
 func getProcessExecutablePaths() ([]string, error) {
