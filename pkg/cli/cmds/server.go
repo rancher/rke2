@@ -115,7 +115,6 @@ var (
 		"flannel-cni-conf":                  dropFlag,
 		"flannel-ipv6-masq":                 dropFlag,
 		"flannel-external-ip":               dropFlag,
-		"multi-cluster-cidr":                hideFlag,
 		"egress-selector-mode":              copyFlag,
 		"kubelet-arg":                       copyFlag,
 		"kube-proxy-arg":                    copyFlag,
