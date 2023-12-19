@@ -1,7 +1,7 @@
 ARG KUBERNETES_VERSION=dev
 
 # Build environment
-FROM rancher/hardened-build-base:v1.20.11b1 AS build
+FROM rancher/hardened-build-base:v1.21.5b2 AS build
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
 RUN set -x && \
@@ -49,7 +49,7 @@ RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
     pip install codespell
 
 RUN python3 -m pip install awscli
-RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.52.2
+RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.55.2
 RUN set -x && \
     apk --no-cache add \
     libarchive-tools \
@@ -113,9 +113,9 @@ RUN rm -vf /charts/*.sh /charts/*.md /charts/chart_versions.yaml
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
-FROM rancher/hardened-kubernetes:v1.28.4-rke2r1-build20231115 AS kubernetes
+FROM rancher/hardened-kubernetes:v1.29.0-rke2r1-build20231213 AS kubernetes
 FROM rancher/hardened-containerd:v1.7.11-k3s2-build20231211 AS containerd
-FROM rancher/hardened-crictl:v1.26.1-build20231010 AS crictl
+FROM rancher/hardened-crictl:v1.29.0-build20231219 AS crictl
 FROM rancher/hardened-runc:v1.1.10-build20231208 AS runc
 
 FROM scratch AS runtime-collect
