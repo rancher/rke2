@@ -12,9 +12,6 @@ import (
 	"github.com/rancher/rke2/tests/e2e"
 )
 
-// This test is desigened for the new secrets-encrypt rotate-keys command,
-// Added in v1.28.0+rke2r1
-
 // Valid nodeOS: generic/ubuntu2204, opensuse/Leap-15.3.x86_64
 var nodeOS = flag.String("nodeOS", "generic/ubuntu2204", "VM operating system")
 var serverCount = flag.Int("serverCount", 3, "number of server nodes")
@@ -23,7 +20,7 @@ var ci = flag.Bool("ci", false, "running on CI")
 // Environment Variables Info:
 // E2E_RELEASE_VERSION=v1.23.1+rke2r1 or nil for latest commit from master
 
-func Test_E2ESecretsEncryption(t *testing.T) {
+func Test_E2ESecretsEncryptionOld(t *testing.T) {
 	RegisterFailHandler(Fail)
 	flag.Parse()
 	suiteConfig, reporterConfig := GinkgoConfiguration()
@@ -92,8 +89,65 @@ var _ = Describe("Verify Secrets Encryption Rotation", Ordered, func() {
 			}
 		})
 
+		It("Prepares for Secrets-Encryption Rotation", func() {
+			cmd := "sudo rke2 secrets-encrypt prepare"
+			res, err := e2e.RunCmdOnNode(cmd, serverNodeNames[0])
+			Expect(err).NotTo(HaveOccurred(), res)
+			for i, nodeName := range serverNodeNames {
+				cmd := "sudo rke2 secrets-encrypt status"
+				res, err := e2e.RunCmdOnNode(cmd, nodeName)
+				Expect(err).NotTo(HaveOccurred(), res)
+				Expect(res).Should(ContainSubstring("Server Encryption Hashes: hash does not match"))
+				if i == 0 {
+					Expect(res).Should(ContainSubstring("Current Rotation Stage: prepare"))
+				} else {
+					Expect(res).Should(ContainSubstring("Current Rotation Stage: start"))
+				}
+			}
+		})
+
+		It("Restarts RKE2 servers", func() {
+			Expect(e2e.RestartCluster(serverNodeNames)).To(Succeed(), e2e.GetVagrantLog(nil))
+		})
+
+		It("Checks node and pod status", func() {
+			Eventually(func(g Gomega) {
+				nodes, err := e2e.ParseNodes(kubeConfigFile, false)
+				g.Expect(err).NotTo(HaveOccurred())
+				for _, node := range nodes {
+					g.Expect(node.Status).Should(Equal("Ready"))
+				}
+			}, "420s", "5s").Should(Succeed())
+
+			Eventually(func(g Gomega) {
+				pods, err := e2e.ParsePods(kubeConfigFile, false)
+				g.Expect(err).NotTo(HaveOccurred())
+				for _, pod := range pods {
+					if strings.Contains(pod.Name, "helm-install") {
+						g.Expect(pod.Status).Should(Equal("Completed"), pod.Name)
+					} else {
+						g.Expect(pod.Status).Should(Equal("Running"), pod.Name)
+					}
+				}
+			}, "420s", "5s").Should(Succeed())
+			_, _ = e2e.ParseNodes(kubeConfigFile, true)
+		})
+
+		It("Verifies encryption prepare stage", func() {
+			cmd := "sudo rke2 secrets-encrypt status"
+			for _, nodeName := range serverNodeNames {
+				Eventually(func(g Gomega) {
+					res, err := e2e.RunCmdOnNode(cmd, nodeName)
+					g.Expect(err).NotTo(HaveOccurred())
+					g.Expect(res).Should(ContainSubstring("Encryption Status: Enabled"))
+					g.Expect(res).Should(ContainSubstring("Current Rotation Stage: prepare"))
+					g.Expect(res).Should(ContainSubstring("Server Encryption Hashes: All hashes match"))
+				}, "420s", "2s").Should(Succeed())
+			}
+		})
+
 		It("Rotates the Secrets-Encryption Keys", func() {
-			cmd := "sudo rke2 secrets-encrypt rotate-keys"
+			cmd := "sudo rke2 secrets-encrypt rotate"
 			res, err := e2e.RunCmdOnNode(cmd, serverNodeNames[0])
 			Expect(err).NotTo(HaveOccurred(), res)
 			for i, nodeName := range serverNodeNames {
@@ -103,9 +157,9 @@ var _ = Describe("Verify Secrets Encryption Rotation", Ordered, func() {
 					g.Expect(err).NotTo(HaveOccurred(), res)
 					g.Expect(res).Should(ContainSubstring("Server Encryption Hashes: hash does not match"))
 					if i == 0 {
-						g.Expect(res).Should(ContainSubstring("Current Rotation Stage: reencrypt_finished"))
+						g.Expect(res).Should(ContainSubstring("Current Rotation Stage: rotate"))
 					} else {
-						g.Expect(res).Should(ContainSubstring("Current Rotation Stage: start"))
+						g.Expect(res).Should(ContainSubstring("Current Rotation Stage: prepare"))
 					}
 				}, "420s", "2s").Should(Succeed())
 			}
@@ -115,7 +169,42 @@ var _ = Describe("Verify Secrets Encryption Rotation", Ordered, func() {
 			Expect(e2e.RestartCluster(serverNodeNames)).To(Succeed(), e2e.GetVagrantLog(nil))
 		})
 
-		It("Verifies reencryption_finished stage", func() {
+		It("Verifies encryption rotate stage", func() {
+			cmd := "sudo rke2 secrets-encrypt status"
+			for _, nodeName := range serverNodeNames {
+				Eventually(func(g Gomega) {
+					res, err := e2e.RunCmdOnNode(cmd, nodeName)
+					g.Expect(err).NotTo(HaveOccurred())
+					g.Expect(res).Should(ContainSubstring("Encryption Status: Enabled"))
+					g.Expect(res).Should(ContainSubstring("Current Rotation Stage: rotate"))
+					g.Expect(res).Should(ContainSubstring("Server Encryption Hashes: All hashes match"))
+				}, "420s", "2s").Should(Succeed())
+			}
+		})
+
+		It("Reencrypts the Secrets-Encryption Keys", func() {
+			cmd := "sudo rke2 secrets-encrypt reencrypt"
+			res, err := e2e.RunCmdOnNode(cmd, serverNodeNames[0])
+			Expect(err).NotTo(HaveOccurred(), res)
+
+			cmd = "sudo rke2 secrets-encrypt status"
+			Eventually(func() (string, error) {
+				return e2e.RunCmdOnNode(cmd, serverNodeNames[0])
+			}, "240s", "10s").Should(ContainSubstring("Current Rotation Stage: reencrypt_finished"))
+
+			for _, nodeName := range serverNodeNames[1:] {
+				res, err := e2e.RunCmdOnNode(cmd, nodeName)
+				Expect(err).NotTo(HaveOccurred(), res)
+				Expect(res).Should(ContainSubstring("Server Encryption Hashes: hash does not match"))
+				Expect(res).Should(ContainSubstring("Current Rotation Stage: rotate"))
+			}
+		})
+
+		It("Restarts RKE2 Servers", func() {
+			Expect(e2e.RestartCluster(serverNodeNames)).To(Succeed(), e2e.GetVagrantLog(nil))
+		})
+
+		It("Verifies Encryption Reencrypt Stage", func() {
 			cmd := "sudo rke2 secrets-encrypt status"
 			for _, nodeName := range serverNodeNames {
 				Eventually(func(g Gomega) {
@@ -124,10 +213,11 @@ var _ = Describe("Verify Secrets Encryption Rotation", Ordered, func() {
 					g.Expect(res).Should(ContainSubstring("Encryption Status: Enabled"))
 					g.Expect(res).Should(ContainSubstring("Current Rotation Stage: reencrypt_finished"))
 					g.Expect(res).Should(ContainSubstring("Server Encryption Hashes: All hashes match"))
-				}, "420s", "2s").Should(Succeed())
+				}, "420s", "5s").Should(Succeed())
 			}
 		})
 	})
+
 })
 
 var failed bool
