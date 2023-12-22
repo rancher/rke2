@@ -51,15 +51,18 @@ check_system_registry() {
     chart_tmp=$3
 
     yaml_tmp=$(mktemp --suffix .yaml)
-    values="global.systemDefaultRegistry=my-registry,global.cattle.systemDefaultRegistry=my-registry,vCenter.clusterId=test-id,rke2-whereabouts.enabled=true"
+    values="global.systemDefaultRegistry=my-registry,global.cattle.systemDefaultRegistry=my-registry,vCenter.clusterId=test-id,global.clusterDNS=10.43.0.10\,2001:cafe:43::a,rke2-whereabouts.enabled=true"
     helm template test-chart --kube-version ${KUBERNETES_VERSION} --set $values $chart_tmp > $yaml_tmp;
 
     awk '$1 ~ /^image:/ {
-        if( $2 !~ /my-registry/ && $2 !~ busybox) {
+        if( $2 !~ /my-registry/ ) {
             print $2
         }
     }
     ' $yaml_tmp
+
+    #clean-up
+    rm -f $yaml_tmp
 }
 
 is_supported() {
@@ -110,7 +113,7 @@ check_airgap() {
     chart_tmp=$3
 
     yaml_tmp=$(mktemp --suffix .yaml)
-    values="vCenter.clusterId=test-id,rke2-whereabouts.enabled=true"
+    values="vCenter.clusterId=test-id,global.clusterDNS=10.43.0.10\,2001:cafe:43::a,rke2-whereabouts.enabled=true"
     helm template test-chart --kube-version ${KUBERNETES_VERSION} --set $values $chart_tmp > $yaml_tmp;
 
     chart_folder=$(mktemp -d)
@@ -120,7 +123,7 @@ check_airgap() {
         print $3 " " $5
     }
     ' $chart_folder/$chart_name/Chart.yaml `
-    if ! [ -z ${version_annotation} ]; then
+    if ! [[ -z ${version_annotation} ]]; then
         version_annotation=${version_annotation:0:-1}
         read lower_bound upper_bound <<< $version_annotation
 
@@ -138,11 +141,13 @@ check_airgap() {
     ' $yaml_tmp | \
     while read image
     do
-        [ "$image" = "busybox" ] && continue
         if ! grep -q $image scripts/build-images; then
             echo $image
         fi
     done
+
+    #clean-up
+    rm -f $yaml_tmp
 }
 
 declare -A NO_SYSTEM_REGISTRY
