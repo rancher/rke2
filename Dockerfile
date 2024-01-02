@@ -42,8 +42,8 @@ RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
         curl -sL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
         tar -xzf - -C /usr/local/bin; \
     fi
-RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
-    curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+RUN curl -sL https://dl.k8s.io/release/$( \
+    curl -sL https://dl.k8s.io/release/stable.txt \
     )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
     chmod a+x /usr/local/bin/kubectl; \
     pip install codespell
