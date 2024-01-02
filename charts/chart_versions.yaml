@@ -11,16 +11,16 @@ charts:
   - version: v3.26.300
     filename: /charts/rke2-calico-crd.yaml
     bootstrap: true
-  - version: 1.24.006
+  - version: 1.24.007
     filename: /charts/rke2-coredns.yaml
     bootstrap: true
   - version: 4.8.200
     filename: /charts/rke2-ingress-nginx.yaml
     bootstrap: false
-  - version: 2.11.100-build2023051510
+  - version: 2.11.100-build2023051511
     filename: /charts/rke2-metrics-server.yaml
     bootstrap: false
-  - version: v4.0.2-build2023081100
+  - version: v4.0.2-build2023081103
     filename: /charts/rke2-multus.yaml
     bootstrap: true
   - version: 1.5.100
