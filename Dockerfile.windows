@@ -29,8 +29,8 @@ RUN set -x && \
     file \
     bash \
     py-pip
-RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
-    curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+RUN curl -sL https://dl.k8s.io/release/$( \
+    curl -sL https://dl.k8s.io/release/stable.txt \
     )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
     chmod a+x /usr/local/bin/kubectl; \
     pip install codespell
