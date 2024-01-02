@@ -49,6 +49,9 @@ ENV CNI_PLUGIN_VERSION="v1.1.1"
 
 RUN mkdir -p rancher
 
+# The charts directory is intentionally empty on windows, but its presence is required to address https://github.com/rancher/rke2/issues/5138
+RUN mkdir -p charts
+
 # We use the containerd-shim-runhcs-v1.exe binary from upstream, as it apparently can't be cross-built on Linux
 COPY Dockerfile ./
 RUN CONTAINERD_VERSION=$(grep "rancher/hardened-containerd" Dockerfile | grep ':v' | cut -d '=' -f 2- | grep -oE "([0-9]+)\.([0-9]+)\.([0-9]+)") \
@@ -101,3 +104,4 @@ FROM scratch AS windows-runtime
 COPY --from=containerd /usr/local/bin/*.exe /bin/
 COPY --from=windows-runtime-collect ./rancher/* /bin/
 COPY --from=windows-runtime-collect ./confd/ /bin/confd
+COPY --from=windows-runtime-collect ./charts /charts/
