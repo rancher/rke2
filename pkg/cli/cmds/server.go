@@ -146,6 +146,7 @@ var (
 		"helm-job-image":                    copyFlag,
 		"enable-pprof":                      copyFlag,
 		"servicelb-namespace":               copyFlag,
+		"disable-default-registry-endpoint": copyFlag,
 	})
 )
 

@@ -1120,8 +1120,8 @@ github.com/k3s-io/etcd/server/v3 v3.5.9-k3s1 h1:B3039IkTPnwQEt4tIMjC6yd6b1Q3Z9ZZ
 github.com/k3s-io/etcd/server/v3 v3.5.9-k3s1/go.mod h1:GgI1fQClQCFIzuVjlvdbMxNbnISt90gdfYyqiAIt65g=
 github.com/k3s-io/helm-controller v0.15.4 h1:l4DWmUWpphbtwmuXGtpr5Rql/2NaCLSv4ZD8HlND9uY=
 github.com/k3s-io/helm-controller v0.15.4/go.mod h1:BgCPBQblj/Ect4Q7/Umf86WvyDjdG/34D+n8wfXtoeM=
-github.com/k3s-io/k3s v1.29.0-rc2.0.20231220202641-3190a5faa28d h1:Q541Y8SUnPUgT5iWy/eX3QUmH+LbnjMtL0F2UalbOkY=
-github.com/k3s-io/k3s v1.29.0-rc2.0.20231220202641-3190a5faa28d/go.mod h1:kqNZimkoe4wnCFoYOs3eIVRXOE38FtICxoS7i2ZK8FA=
+github.com/k3s-io/k3s v1.29.1-0.20240109142041-4a92ced8eeaf h1:PG6Mh7eEoTRT7HbhOYRLD7/+/RnbjqClsX1NbY7KUVU=
+github.com/k3s-io/k3s v1.29.1-0.20240109142041-4a92ced8eeaf/go.mod h1:Rlerntgx+BlHqTW42aIHxJiowAgUw+2fmqSD4pqZJ90=
 github.com/k3s-io/kine v0.11.0 h1:7tS0H9yBDxXiy1BgEEkBWLswwG/q4sARPTHdxOMz1qw=
 github.com/k3s-io/kine v0.11.0/go.mod h1:tjSsWrCetgaGMTfnJW6vzqdT/qOPhF/+nUEaE+eixBA=
 github.com/k3s-io/klog v1.0.0-k3s2/go.mod h1:4Bi6QPql/J/LkTDqv7R/cd3hPo4k2DG6Ptcz060Ez5I=
@@ -1384,6 +1384,8 @@ github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 h1:C3w9PqII01/Oq
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
+github.com/mwitkow/go-http-dialer v0.0.0-20161116154839-378f744fb2b8 h1:BhQQWYKJwXPtAhm12d4gQU4LKS9Yov22yOrDc2QA7ho=
+github.com/mwitkow/go-http-dialer v0.0.0-20161116154839-378f744fb2b8/go.mod h1:ntWhh7pzdiiRKBMxUB5iG+Q2gmZBxGxpX1KyK6N8kX8=
 github.com/mwitkow/go-proto-validators v0.0.0-20180403085117-0950a7990007/go.mod h1:m2XC9Qq0AlmmVksL6FktJCdTYyLk7V3fKyp0sl1yWQo=
 github.com/mwitkow/go-proto-validators v0.2.0/go.mod h1:ZfA1hW+UH/2ZHOWvQ3HnQaU0DtnpXu850MZiy+YUgcc=
 github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f h1:y5//uYreIhSUg3J1GEMiLbxo1LJaP8RfCpH6pymGZus=

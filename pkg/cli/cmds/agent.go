@@ -53,6 +53,7 @@ var (
 		"selinux":                           copyFlag,
 		"lb-server-port":                    copyFlag,
 		"airgap-extra-registry":             copyFlag,
+		"disable-default-registry-endpoint": copyFlag,
 	})
 	deprecatedFlags = []cli.Flag{
 		&cli.StringFlag{
