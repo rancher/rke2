@@ -51,7 +51,7 @@ check_system_registry() {
     chart_tmp=$3
 
     yaml_tmp=$(mktemp --suffix .yaml)
-    values="global.systemDefaultRegistry=my-registry,global.cattle.systemDefaultRegistry=my-registry,vCenter.clusterId=test-id"
+    values="global.systemDefaultRegistry=my-registry,global.cattle.systemDefaultRegistry=my-registry,vCenter.clusterId=test-id,rke2-whereabouts.enabled=true"
     helm template test-chart --kube-version ${KUBERNETES_VERSION} --set $values $chart_tmp > $yaml_tmp;
 
     awk '$1 ~ /^image:/ {
@@ -110,7 +110,7 @@ check_airgap() {
     chart_tmp=$3
 
     yaml_tmp=$(mktemp --suffix .yaml)
-    values="vCenter.clusterId=test-id"
+    values="vCenter.clusterId=test-id,rke2-whereabouts.enabled=true"
     helm template test-chart --kube-version ${KUBERNETES_VERSION} --set $values $chart_tmp > $yaml_tmp;
 
     chart_folder=$(mktemp -d)
