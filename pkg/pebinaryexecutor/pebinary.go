@@ -62,10 +62,11 @@ type CloudProviderConfig struct {
 }
 
 const (
-	CNINone   = "none"
-	CNICalico = "calico"
-	CNICilium = "cilium"
-	CNICanal  = "canal"
+	CNINone    = "none"
+	CNICalico  = "calico"
+	CNICilium  = "cilium"
+	CNICanal   = "canal"
+	CNIFlannel = "flannel"
 )
 
 // Bootstrap prepares the binary executor to run components by setting the system default registry
@@ -111,14 +112,19 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfig
 
 	switch p.CNIName {
 	case "", CNICalico:
+		logrus.Info("Setting up Calico CNI")
 		p.CNIPlugin = &win.Calico{}
-		if err := p.CNIPlugin.Setup(ctx, nodeConfig, restConfig, p.DataDir); err != nil {
-			return err
-		}
+	case CNIFlannel:
+		logrus.Info("Setting up Flannel CNI")
+		p.CNIPlugin = &win.Flannel{}
 	case CNINone:
 		logrus.Info("Skipping CNI setup")
 	default:
 		logrus.Fatal("Unsupported CNI: ", p.CNIName)
+	}
+
+	if err := p.CNIPlugin.Setup(ctx, nodeConfig, restConfig, p.DataDir); err != nil {
+		return err
 	}
 
 	// required to initialize KubeProxy
@@ -191,7 +197,6 @@ func (p *PEBinaryConfig) KubeProxy(ctx context.Context, args []string) error {
 		logrus.Errorf("Failed to reserve VIP for kube-proxy: %s", err)
 	}
 	logrus.Infof("Reserved VIP for kube-proxy: %s", vip)
-
 
 	extraArgs := map[string]string{
 		"network-name": CNIConfig.OverlayNetName,
@@ -290,6 +295,8 @@ func getCNIPluginName(restConfig *rest.Config) (string, error) {
 		switch h.Name {
 		case win.CalicoChart:
 			return CNICalico, nil
+		case win.FlannelChart:
+			return CNIFlannel, nil
 		case "rke2-cilium":
 			return CNICilium, nil
 		case "rke2-canal":

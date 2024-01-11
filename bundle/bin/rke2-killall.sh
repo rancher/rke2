@@ -71,6 +71,7 @@ ip link show 2>/dev/null | grep 'master cni0' | while read ignore iface ignore; 
 done
 ip link delete cni0
 ip link delete flannel.1
+ip link delete flannel.4096
 ip link delete flannel-v6.1
 ip link delete flannel-wg
 ip link delete flannel-wg-v6
