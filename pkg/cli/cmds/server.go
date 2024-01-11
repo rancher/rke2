@@ -17,7 +17,7 @@ const (
 
 var (
 	DisableItems = []string{"rke2-coredns", "rke2-ingress-nginx", "rke2-metrics-server"}
-	CNIItems     = []string{"calico", "canal", "cilium"}
+	CNIItems     = []string{"calico", "canal", "cilium", "flannel"}
 
 	config = rke2.Config{}
 
