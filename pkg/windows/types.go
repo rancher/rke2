@@ -26,26 +26,26 @@ type KubeConfig struct {
 }
 
 type CNICommonConfig struct {
-	Name               string
-	OverlayNetName     string
-	OverlayEncap       string
-	Hostname           string
-	ConfigPath         string
-	CNIConfDir         string
-	CNIBinDir          string
-	ClusterCIDR        string
-	ServiceCIDR        string
-	NodeIP             string
-	VxlanVNI           string
-	VxlanPort          string
-	Interface          string
-	IpamType		   string
-	CNIVersion		   string
-	KubeConfig 		   *KubeConfig
+	Name           string
+	OverlayNetName string
+	OverlayEncap   string
+	Hostname       string
+	ConfigPath     string
+	CNIConfDir     string
+	CNIBinDir      string
+	ClusterCIDR    string
+	ServiceCIDR    string
+	NodeIP         string
+	VxlanVNI       string
+	VxlanPort      string
+	Interface      string
+	IpamType       string
+	CNIVersion     string
+	KubeConfig     *KubeConfig
 }
 
 type CalicoConfig struct {
-	CNICommonConfig // embedded struct
+	CNICommonConfig       // embedded struct
 	KubeNetwork           string
 	DNSServers            string
 	DNSSearch             string
@@ -57,6 +57,10 @@ type CalicoConfig struct {
 	ETCDKeyFile           string
 	ETCDCertFile          string
 	ETCDCaCertFile        string
+}
+
+type FlannelConfig struct {
+	CNICommonConfig // embedded struct
 }
 
 // Stub of Calico configuration used to extract user-provided overrides

@@ -33,12 +33,6 @@ import (
 )
 
 var (
-	replaceSlashWin = template.FuncMap{
-		"replace": func(s string) string {
-			return strings.ReplaceAll(s, "\\", "\\\\")
-		},
-	}
-
 	calicoKubeConfigTemplate = template.Must(template.New("Kubeconfig").Parse(`apiVersion: v1
 kind: Config
 clusters:
@@ -135,6 +129,7 @@ const (
 	calicoNode             = "calico-node"
 )
 
+// GetConfig returns the CNI configuration
 func (c *Calico) GetConfig() *CNICommonConfig {
 	return &c.CNICfg.CNICommonConfig
 }
@@ -166,7 +161,7 @@ func (c *Calico) initializeConfig(ctx context.Context, nodeConfig *daemonconfig.
 
 	c.CNICfg = &CalicoConfig{
 		CNICommonConfig: CNICommonConfig{
-			Name:           "Calico",
+			Name:           "calico",
 			OverlayNetName: "Calico",
 			OverlayEncap:   "vxlan",
 			Hostname:       nodeConfig.AgentConfig.NodeName,
@@ -374,6 +369,7 @@ func (c *Calico) overrideCalicoConfigByHelm(restConfig *rest.Config) error {
 	return nil
 }
 
+// findCalicoInterface finds the interface to use for Calico based on the NodeAddressAutodetectionV4
 func findCalicoInterface(nodeV4 *opv1.NodeAddressAutodetection) (IPAutoDetectionMethod, calicoInterface string, err error) {
 	IPAutoDetectionMethod, err = nodeAddressAutodetection(*nodeV4)
 	if err != nil {
@@ -402,6 +398,7 @@ func findCalicoInterface(nodeV4 *opv1.NodeAddressAutodetection) (IPAutoDetection
 	return
 }
 
+// startConfd starts the confd service (for BGP)
 func startConfd(ctx context.Context, config *CalicoConfig, logPath string) {
 	outputFile := logging.GetLogger(filepath.Join(logPath, "confd.log"), 50)
 
@@ -424,6 +421,7 @@ func startConfd(ctx context.Context, config *CalicoConfig, logPath string) {
 	logrus.Error("Confd exited")
 }
 
+// startFelix starts the felix service
 func startFelix(ctx context.Context, config *CalicoConfig, logPath string) {
 	outputFile := logging.GetLogger(filepath.Join(logPath, "felix.log"), 50)
 
@@ -453,6 +451,7 @@ func startFelix(ctx context.Context, config *CalicoConfig, logPath string) {
 	logrus.Error("Felix exited")
 }
 
+// startCalico starts the calico service
 func startCalico(ctx context.Context, config *CalicoConfig, logPath string) error {
 	outputFile := logging.GetLogger(filepath.Join(logPath, "calico-node.log"), 50)
 
