@@ -17,6 +17,7 @@ import (
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/pkg/errors"
+	"github.com/rancher/rke2/pkg/logging"
 	"github.com/sirupsen/logrus"
 	opv1 "github.com/tigera/operator/api/v1"
 	authv1 "k8s.io/api/authentication/v1"
@@ -131,7 +132,6 @@ const (
 	CalicoSystemNamespace  = "calico-system"
 	CalicoChart            = "rke2-calico"
 	calicoNode             = "calico-node"
-	calicoLogPath          = "C:\\var\\log\\"
 )
 
 // Setup creates the basic configuration required by the CNI.
@@ -263,20 +263,18 @@ func (c *Calico) createKubeConfig(ctx context.Context, restConfig *rest.Config) 
 
 // Start starts the CNI services on the Windows node.
 func (c *Calico) Start(ctx context.Context) error {
-	if err := os.MkdirAll(calicoLogPath, 0755); err != nil {
-		return fmt.Errorf("error creating %s directory: %v", calicoLogPath, err)
-	}
+	logPath := filepath.Join(c.DataDir, "agent", "logs")
 	for {
-		if err := startCalico(ctx, c.CNICfg); err != nil {
+		if err := startCalico(ctx, c.CNICfg, logPath); err != nil {
 			time.Sleep(5 * time.Second)
 			logrus.Errorf("Calico exited: %v. Retrying", err)
 			continue
 		}
 		break
 	}
-	go startFelix(ctx, c.CNICfg)
+	go startFelix(ctx, c.CNICfg, logPath)
 	if c.CNICfg.Mode == "windows-bgp" {
-		go startConfd(ctx, c.CNICfg)
+		go startConfd(ctx, c.CNICfg, logPath)
 	}
 
 	return nil
@@ -392,13 +390,8 @@ func findCalicoInterface(nodeV4 *opv1.NodeAddressAutodetection) (IPAutoDetection
 	return
 }
 
-func startConfd(ctx context.Context, config *CalicoConfig) {
-	outputFile, err := os.Create(calicoLogPath + "confd.log")
-	if err != nil {
-		logrus.Fatalf("error creating confd.log: %v", err)
-		return
-	}
-	defer outputFile.Close()
+func startConfd(ctx context.Context, config *CalicoConfig, logPath string) {
+	outputFile := logging.GetLogger(filepath.Join(logPath, "confd.log"), 50)
 
 	specificEnvs := []string{
 		fmt.Sprintf("PATH=%s", os.Getenv("PATH")),
@@ -419,13 +412,8 @@ func startConfd(ctx context.Context, config *CalicoConfig) {
 	logrus.Error("Confd exited")
 }
 
-func startFelix(ctx context.Context, config *CalicoConfig) {
-	outputFile, err := os.Create(calicoLogPath + "felix.log")
-	if err != nil {
-		logrus.Fatalf("error creating felix.log: %v", err)
-		return
-	}
-	defer outputFile.Close()
+func startFelix(ctx context.Context, config *CalicoConfig, logPath string) {
+	outputFile := logging.GetLogger(filepath.Join(logPath, "felix.log"), 50)
 
 	specificEnvs := []string{
 		fmt.Sprintf("FELIX_FELIXHOSTNAME=%s", config.Hostname),
@@ -453,12 +441,9 @@ func startFelix(ctx context.Context, config *CalicoConfig) {
 	logrus.Error("Felix exited")
 }
 
-func startCalico(ctx context.Context, config *CalicoConfig) error {
-	outputFile, err := os.Create(calicoLogPath + "calico-node.log")
-	if err != nil {
-		return fmt.Errorf("error creating calico-node.log: %v", err)
-	}
-	defer outputFile.Close()
+func startCalico(ctx context.Context, config *CalicoConfig, logPath string) error {
+	outputFile := logging.GetLogger(filepath.Join(logPath, "calico-node.log"), 50)
+
 	specificEnvs := []string{
 		fmt.Sprintf("CALICO_NODENAME_FILE=%s", config.NodeNameFile),
 		fmt.Sprintf("CALICO_NETWORKING_BACKEND=%s", config.Mode),
