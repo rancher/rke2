@@ -220,10 +220,11 @@ func (p *PEBinaryConfig) KubeProxy(ctx context.Context, args []string) error {
 
 	logrus.Infof("Running RKE2 kube-proxy %s", args)
 	go func() {
+		outputFile := logging.GetLogger(filepath.Join(p.DataDir, "agent", "logs", "kube-proxy.log"), 50)
 		for {
 			cmd := exec.CommandContext(ctx, filepath.Join("c:\\", p.DataDir, "bin", "kube-proxy.exe"), args...)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
+			cmd.Stdout = outputFile
+			cmd.Stderr = outputFile
 			err := cmd.Run()
 			logrus.Errorf("kube-proxy exited: %v", err)
 			time.Sleep(5 * time.Second)
