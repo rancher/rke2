@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/Microsoft/hcsshim"
@@ -20,6 +21,14 @@ import (
 	"github.com/sirupsen/logrus"
 	opv1 "github.com/tigera/operator/api/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+)
+
+var (
+	replaceSlashWin = template.FuncMap{
+		"replace": func(s string) string {
+			return strings.ReplaceAll(s, "\\", "\\\\")
+		},
+	}
 )
 
 // createHnsNetwork creates the network that will connect nodes and returns its managementIP
