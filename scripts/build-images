@@ -96,6 +96,11 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
     ${REGISTRY}/rancher/mirrored-longhornio-csi-provisioner:v2.1.2
     ${REGISTRY}/rancher/mirrored-longhornio-csi-attacher:v3.2.1
 EOF
+
+xargs -n1 -t docker image pull --quiet << EOF > build/images-flannel.txt
+    ${REGISTRY}/rancher/hardened-flannel:v0.24.2-build20240122
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.4.0-build20240122
+EOF
 fi
 # Continue to provide a legacy airgap archive set with the default CNI images
 cat build/images-core.txt build/images-canal.txt > build/images.txt
