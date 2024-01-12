@@ -4,56 +4,59 @@
 package windows
 
 import (
+	"context"
+
+	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	opv1 "github.com/tigera/operator/api/v1"
+	"k8s.io/client-go/rest"
 )
 
-type FelixConfig struct {
-	Metadataaddr    string
-	Vxlanvni        string
-	MacPrefix       string
-	LogSeverityFile string
-	LogSeveritySys  string
+type CNIPlugin interface {
+	Setup(ctx context.Context, nodeConfig *daemonconfig.Node, restConfig *rest.Config, dataDir string) error
+	Start(ctx context.Context) error
+	GetConfig() *CNICommonConfig
+	ReserveSourceVip(ctx context.Context) (string, error)
 }
 
-type CalicoCNIConfig struct {
-	BinDir       string
-	ConfDir      string
-	IpamType     string
-	ConfFileName string
-	Version      string
+type KubeConfig struct {
+	CertificateAuthority string
+	Server               string
+	Token                string
+	Path                 string
+}
+
+type CNICommonConfig struct {
+	Name               string
+	OverlayNetName     string
+	OverlayEncap       string
+	Hostname           string
+	ConfigPath         string
+	CNIConfDir         string
+	CNIBinDir          string
+	ClusterCIDR        string
+	ServiceCIDR        string
+	NodeIP             string
+	VxlanVNI           string
+	VxlanPort          string
+	Interface          string
+	IpamType		   string
+	CNIVersion		   string
+	KubeConfig 		   *KubeConfig
 }
 
 type CalicoConfig struct {
-	Name                  string
-	OverlayNetName        string
-	Mode                  string
-	Hostname              string
+	CNICommonConfig // embedded struct
 	KubeNetwork           string
-	ServiceCIDR           string
 	DNSServers            string
 	DNSSearch             string
 	DatastoreType         string
 	NodeNameFile          string
 	Platform              string
-	StartUpValidIPTimeout int
-	IP                    string
 	IPAutoDetectionMethod string
-	LogDir                string
-	Felix                 FelixConfig
-	CNI                   CalicoCNIConfig
 	ETCDEndpoints         string
 	ETCDKeyFile           string
 	ETCDCertFile          string
 	ETCDCaCertFile        string
-	KubeConfig            *CalicoKubeConfig
-	Interface             string
-}
-
-type CalicoKubeConfig struct {
-	CertificateAuthority string
-	Server               string
-	Token                string
-	Path                 string
 }
 
 // Stub of Calico configuration used to extract user-provided overrides
