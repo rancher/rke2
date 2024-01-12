@@ -61,6 +61,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
     ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.26.3
 EOF
 
+if [ "${GOARCH}" != "arm64" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-cpi-release-manager:v1.26.1
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.0.1
@@ -71,6 +72,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.2.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v3.4.0
 EOF
+fi
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
     ${REGISTRY}/rancher/hardened-multus-cni:v4.0.2-build20231009
