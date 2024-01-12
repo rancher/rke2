@@ -69,6 +69,6 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*pebinaryexecuto
 		KubeletPath:     cfg.KubeletPath,
 		DisableETCD:     clx.Bool("disable-etcd"),
 		IsServer:        isServer,
-		CNI:             "",
+		CNIName:         "",
 	}, nil
 }
