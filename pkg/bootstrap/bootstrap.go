@@ -107,10 +107,12 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 		// If we didn't find the requested image in a tarball, pull it from the remote registry.
 		// Note that this will fail (potentially after a long delay) if the registry cannot be reached.
 		if img == nil {
-			registry, err := registries.GetPrivateRegistries(nodeConfig.AgentConfig.PrivateRegistry)
+			registry, err := registries.GetPrivateRegistries(cfg.PrivateRegistry)
 			if err != nil {
-				return "", errors.Wrapf(err, "failed to load private registry configuration from %s", nodeConfig.AgentConfig.PrivateRegistry)
+				return "", errors.Wrapf(err, "failed to load private registry configuration from %s", cfg.PrivateRegistry)
 			}
+			// Override registry config with version provided by (and potentially modified by) k3s agent setup
+			registry.Registry = nodeConfig.AgentConfig.Registry
 
 			// Try to enable Kubelet image credential provider plugins; fall back to legacy docker credentials
 			if agent.ImageCredProvAvailable(&nodeConfig.AgentConfig) {
@@ -124,6 +126,8 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 			}
 
 			logrus.Infof("Pulling runtime image %s", ref.Name())
+			// Make sure that the runtime image is also loaded into containerd
+			images.Pull(imagesDir, images.Runtime, ref)
 			img, err = registry.Image(ref, remote.WithPlatform(v1.Platform{Architecture: runtime.GOARCH, OS: runtime.GOOS}))
 			if err != nil {
 				return "", errors.Wrapf(err, "failed to get runtime image %s", ref.Name())
