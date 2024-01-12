@@ -13,6 +13,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/Microsoft/hcsshim"
 	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/version"
@@ -23,6 +24,7 @@ import (
 	authv1 "k8s.io/api/authentication/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/yaml"
@@ -37,7 +39,7 @@ var (
 		},
 	}
 
-	calicoKubeConfigTemplate = template.Must(template.New("CalicoKubeconfig").Parse(`apiVersion: v1
+	calicoKubeConfigTemplate = template.Must(template.New("Kubeconfig").Parse(`apiVersion: v1
 kind: Config
 clusters:
 - name: kubernetes
@@ -61,11 +63,11 @@ users:
 	calicoConfigTemplate = template.Must(template.New("CalicoConfig").Funcs(replaceSlashWin).Parse(`{
   "name": "{{ .Name }}",
   "windows_use_single_network": true,
-  "cniVersion": "{{ .CNI.Version }}",
+  "cniVersion": "{{ .CNIVersion }}",
   "type": "calico",
-  "mode": "{{ .Mode }}",
-  "vxlan_mac_prefix":  "{{ .Felix.MacPrefix }}",
-  "vxlan_vni": {{ .Felix.Vxlanvni }},
+  "mode": "{{ .OverlayEncap }}",
+  "vxlan_mac_prefix": "0E-2A",
+  "vxlan_vni": {{ .VxlanVNI }},
   "policy": {
     "type": "k8s"
   },
@@ -89,7 +91,7 @@ users:
     "kubeconfig": "{{ replace .KubeConfig.Path }}"
   },
   "ipam": {
-    "type": "{{ .CNI.IpamType }}",
+    "type": "{{ .IpamType }}",
     "subnet": "usePodCidr"
   },
   "policies":  [
@@ -107,7 +109,7 @@ users:
       "Value":  {
         "Type":  "SDNROUTE",
         "DestinationPrefix":  "{{ .ServiceCIDR }}",
-        {{- if eq .Mode "vxlan" }}
+        {{- if eq .OverlayEncap "vxlan" }}
         "NeedEncap": true
 	{{- else }}
         "NeedEncap": false
@@ -120,8 +122,7 @@ users:
 )
 
 type Calico struct {
-	CNICfg  *CalicoConfig
-	DataDir string
+	CNICfg *CalicoConfig
 }
 
 const (
@@ -134,11 +135,13 @@ const (
 	calicoNode             = "calico-node"
 )
 
+func (c *Calico) GetConfig() *CNICommonConfig {
+	return &c.CNICfg.CNICommonConfig
+}
+
 // Setup creates the basic configuration required by the CNI.
 func (c *Calico) Setup(ctx context.Context, nodeConfig *daemonconfig.Node, restConfig *rest.Config, dataDir string) error {
-	c.DataDir = dataDir
-
-	if err := c.initializeConfig(ctx, nodeConfig, restConfig); err != nil {
+	if err := c.initializeConfig(ctx, nodeConfig, restConfig, dataDir); err != nil {
 		return err
 	}
 
@@ -146,7 +149,7 @@ func (c *Calico) Setup(ctx context.Context, nodeConfig *daemonconfig.Node, restC
 		return err
 	}
 
-	if err := c.writeConfigFiles(nodeConfig.AgentConfig.CNIConfDir, nodeConfig.AgentConfig.NodeName); err != nil {
+	if err := c.writeConfigFiles(); err != nil {
 		return err
 	}
 
@@ -155,37 +158,36 @@ func (c *Calico) Setup(ctx context.Context, nodeConfig *daemonconfig.Node, restC
 }
 
 // initializeConfig sets the default configuration in CNIConfig
-func (c *Calico) initializeConfig(ctx context.Context, nodeConfig *daemonconfig.Node, restConfig *rest.Config) error {
+func (c *Calico) initializeConfig(ctx context.Context, nodeConfig *daemonconfig.Node, restConfig *rest.Config, dataDir string) error {
 	platformType, err := platformType()
 	if err != nil {
 		return err
 	}
 
 	c.CNICfg = &CalicoConfig{
-		Name:                  "Calico",
-		OverlayNetName:        "Calico",
-		Hostname:              nodeConfig.AgentConfig.NodeName,
-		NodeNameFile:          filepath.Join("c:\\", c.DataDir, "agent", CalicoNodeNameFileName),
+		CNICommonConfig: CNICommonConfig{
+			Name:           "Calico",
+			OverlayNetName: "Calico",
+			OverlayEncap:   "vxlan",
+			Hostname:       nodeConfig.AgentConfig.NodeName,
+			ConfigPath:     filepath.Join("c:\\", dataDir, "agent"),
+			CNIConfDir:     nodeConfig.AgentConfig.CNIConfDir,
+			CNIBinDir:      nodeConfig.AgentConfig.CNIBinDir,
+			ClusterCIDR:    nodeConfig.AgentConfig.ClusterCIDR.String(),
+			ServiceCIDR:    nodeConfig.AgentConfig.ServiceCIDR.String(),
+			NodeIP:         nodeConfig.AgentConfig.NodeIP,
+			VxlanVNI:       "4096",
+			VxlanPort:      "4789",
+			IpamType:       "calico-ipam",
+			CNIVersion:     "0.3.1",
+		},
+		NodeNameFile:          filepath.Join("c:\\", dataDir, "agent", CalicoNodeNameFileName),
 		KubeNetwork:           "Calico.*",
-		Mode:                  "vxlan",
-		ServiceCIDR:           nodeConfig.AgentConfig.ServiceCIDR.String(),
 		DNSServers:            nodeConfig.AgentConfig.ClusterDNS.String(),
 		DNSSearch:             "svc." + nodeConfig.AgentConfig.ClusterDomain,
 		DatastoreType:         "kubernetes",
 		Platform:              platformType,
-		IP:                    nodeConfig.AgentConfig.NodeIP,
 		IPAutoDetectionMethod: "first-found",
-		Felix: FelixConfig{
-			Metadataaddr: "none",
-			Vxlanvni:     "4096",
-			MacPrefix:    "0E-2A",
-		},
-		CNI: CalicoCNIConfig{
-			BinDir:   nodeConfig.AgentConfig.CNIBinDir,
-			ConfDir:  nodeConfig.AgentConfig.CNIConfDir,
-			IpamType: "calico-ipam",
-			Version:  "0.3.1",
-		},
 	}
 
 	c.CNICfg.KubeConfig, err = c.createKubeConfig(ctx, restConfig)
@@ -193,22 +195,24 @@ func (c *Calico) initializeConfig(ctx context.Context, nodeConfig *daemonconfig.
 		return err
 	}
 
+	logrus.Debugf("Calico Config: %+v", c.CNICfg)
+
 	return nil
 }
 
 // writeConfigFiles writes the three required files by Calico
-func (c *Calico) writeConfigFiles(CNIConfDir string, NodeName string) error {
+func (c *Calico) writeConfigFiles() error {
 
 	// Create CalicoKubeConfig and CIPAutoDetectionMethodalicoConfig files
 	if err := c.renderCalicoConfig(c.CNICfg.KubeConfig.Path, calicoKubeConfigTemplate); err != nil {
 		return err
 	}
 
-	if err := c.renderCalicoConfig(filepath.Join(CNIConfDir, CalicoConfigName), calicoConfigTemplate); err != nil {
+	if err := c.renderCalicoConfig(filepath.Join(c.CNICfg.CNIConfDir, CalicoConfigName), calicoConfigTemplate); err != nil {
 		return err
 	}
 
-	return os.WriteFile(filepath.Join("c:\\", c.DataDir, "agent", CalicoNodeNameFileName), []byte(NodeName), 0644)
+	return os.WriteFile(filepath.Join(c.CNICfg.ConfigPath, CalicoNodeNameFileName), []byte(c.CNICfg.Hostname), 0644)
 }
 
 // renderCalicoConfig creates the file and then renders the template using Calico Config parameters
@@ -228,13 +232,13 @@ func (c *Calico) renderCalicoConfig(path string, toRender *template.Template) er
 }
 
 // createKubeConfig creates all needed for Calico to contact kube-api
-func (c *Calico) createKubeConfig(ctx context.Context, restConfig *rest.Config) (*CalicoKubeConfig, error) {
+func (c *Calico) createKubeConfig(ctx context.Context, restConfig *rest.Config) (*KubeConfig, error) {
 
 	// Fill all information except for the token
-	calicoKubeConfig := CalicoKubeConfig{
+	calicoKubeConfig := KubeConfig{
 		Server:               "https://127.0.0.1:6443",
-		CertificateAuthority: filepath.Join("c:\\", c.DataDir, "agent", "server-ca.crt"),
-		Path:                 filepath.Join("c:\\", c.DataDir, "agent", CalicoKubeConfigName),
+		CertificateAuthority: filepath.Join(c.CNICfg.ConfigPath, "server-ca.crt"),
+		Path:                 filepath.Join(c.CNICfg.ConfigPath, CalicoKubeConfigName),
 	}
 
 	// Generate the token request
@@ -263,7 +267,7 @@ func (c *Calico) createKubeConfig(ctx context.Context, restConfig *rest.Config) 
 
 // Start starts the CNI services on the Windows node.
 func (c *Calico) Start(ctx context.Context) error {
-	logPath := filepath.Join(c.DataDir, "agent", "logs")
+	logPath := filepath.Join(c.CNICfg.ConfigPath, "logs")
 	for {
 		if err := startCalico(ctx, c.CNICfg, logPath); err != nil {
 			time.Sleep(5 * time.Second)
@@ -273,9 +277,17 @@ func (c *Calico) Start(ctx context.Context) error {
 		break
 	}
 	go startFelix(ctx, c.CNICfg, logPath)
-	if c.CNICfg.Mode == "windows-bgp" {
+	if c.CNICfg.OverlayEncap == "windows-bgp" {
 		go startConfd(ctx, c.CNICfg, logPath)
 	}
+
+	// Delete policies in case calico network is being reused
+	policies, _ := hcsshim.HNSListPolicyListRequest()
+	for _, policy := range policies {
+		policy.Delete()
+	}
+
+	logrus.Info("Calico started correctly")
 
 	return nil
 }
@@ -297,8 +309,8 @@ func (c *Calico) generateCalicoNetworks() error {
 			networkAdapter = c.CNICfg.Interface
 		}
 
-		if c.CNICfg.Interface == "" && c.CNICfg.IP != "" {
-			iFace, err := findInterface(c.CNICfg.IP)
+		if c.CNICfg.Interface == "" && c.CNICfg.NodeIP != "" {
+			iFace, err := findInterface(c.CNICfg.NodeIP)
 			if err != nil {
 				return err
 			}
@@ -306,7 +318,7 @@ func (c *Calico) generateCalicoNetworks() error {
 		}
 	}
 
-	mgmt, err := createHnsNetwork(c.CNICfg.Mode, networkAdapter)
+	mgmt, err := createHnsNetwork(c.CNICfg.OverlayEncap, networkAdapter)
 	if err != nil {
 		return err
 	}
@@ -356,7 +368,7 @@ func (c *Calico) overrideCalicoConfigByHelm(restConfig *rest.Config) error {
 	}
 	if bgpEnabled := overrides.Installation.CalicoNetwork.BGP; bgpEnabled != nil {
 		if *bgpEnabled == opv1.BGPEnabled {
-			c.CNICfg.Mode = "windows-bgp"
+			c.CNICfg.OverlayEncap = "windows-bgp"
 		}
 	}
 	return nil
@@ -399,7 +411,7 @@ func startConfd(ctx context.Context, config *CalicoConfig, logPath string) {
 
 	args := []string{
 		"-confd",
-		fmt.Sprintf("-confd-confdir=%s", filepath.Join(config.CNI.BinDir, "confd")),
+		fmt.Sprintf("-confd-confdir=%s", filepath.Join(config.CNIBinDir, "confd")),
 	}
 
 	logrus.Infof("Confd Envs: %s", append(generateGeneralCalicoEnvs(config), specificEnvs...))
@@ -407,7 +419,7 @@ func startConfd(ctx context.Context, config *CalicoConfig, logPath string) {
 	cmd.Env = append(generateGeneralCalicoEnvs(config), specificEnvs...)
 	cmd.Stdout = outputFile
 	cmd.Stderr = outputFile
-	_ = os.Chdir(filepath.Join(config.CNI.BinDir, "confd"))
+	_ = os.Chdir(filepath.Join(config.CNIBinDir, "confd"))
 	_ = cmd.Run()
 	logrus.Error("Confd exited")
 }
@@ -417,7 +429,7 @@ func startFelix(ctx context.Context, config *CalicoConfig, logPath string) {
 
 	specificEnvs := []string{
 		fmt.Sprintf("FELIX_FELIXHOSTNAME=%s", config.Hostname),
-		fmt.Sprintf("FELIX_VXLANVNI=%s", config.Felix.Vxlanvni),
+		fmt.Sprintf("FELIX_VXLANVNI=%s", config.VxlanVNI),
 		fmt.Sprintf("FELIX_DATASTORETYPE=%s", config.DatastoreType),
 	}
 
@@ -446,10 +458,10 @@ func startCalico(ctx context.Context, config *CalicoConfig, logPath string) erro
 
 	specificEnvs := []string{
 		fmt.Sprintf("CALICO_NODENAME_FILE=%s", config.NodeNameFile),
-		fmt.Sprintf("CALICO_NETWORKING_BACKEND=%s", config.Mode),
+		fmt.Sprintf("CALICO_NETWORKING_BACKEND=%s", config.OverlayEncap),
 		fmt.Sprintf("CALICO_DATASTORE_TYPE=%s", config.DatastoreType),
 		fmt.Sprintf("IP_AUTODETECTION_METHOD=%s", config.IPAutoDetectionMethod),
-		fmt.Sprintf("VXLAN_VNI=%s", config.Felix.Vxlanvni),
+		fmt.Sprintf("VXLAN_VNI=%s", config.VxlanVNI),
 	}
 
 	// Add OS variables related to Calico. As they come after, they'll overwrite the previous ones
@@ -476,11 +488,31 @@ func startCalico(ctx context.Context, config *CalicoConfig, logPath string) erro
 func generateGeneralCalicoEnvs(config *CalicoConfig) []string {
 	return []string{
 		fmt.Sprintf("KUBE_NETWORK=%s", config.KubeNetwork),
-		fmt.Sprintf("KUBECONFIG=%s", config.KubeConfig.Path),
+		fmt.Sprintf("KUBECONFIG=%s", filepath.Join(config.ConfigPath, CalicoKubeConfigName)),
 		fmt.Sprintf("NODENAME=%s", config.Hostname),
 		fmt.Sprintf("CALICO_K8S_NODE_REF=%s", config.Hostname),
 
-		fmt.Sprintf("IP=%s", config.IP),
-		fmt.Sprintf("USE_POD_CIDR=%t", autoConfigureIpam(config.CNI.IpamType)),
+		fmt.Sprintf("IP=%s", config.NodeIP),
+		fmt.Sprintf("USE_POD_CIDR=%t", autoConfigureIpam(config.IpamType)),
 	}
+}
+
+// ReserveSourceVip reserves a source VIP for kube-proxy
+func (c *Calico) ReserveSourceVip(ctx context.Context) (string, error) {
+	var vip string
+
+	if err := wait.PollImmediateWithContext(ctx, 5*time.Second, 5*time.Minute, func(ctx context.Context) (bool, error) {
+		// calico-node is creating an endpoint named Calico_ep for this purpose
+		endpoint, err := hcsshim.GetHNSEndpointByName("Calico_ep")
+		if err != nil {
+			logrus.WithError(err).Warning("can't find Calico_ep HNS endpoint, retrying")
+			return false, nil
+		}
+		vip = endpoint.IPAddress.String()
+		return true, nil
+	}); err != nil {
+		return "", err
+	}
+
+	return vip, nil
 }
