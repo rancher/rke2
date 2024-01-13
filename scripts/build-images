@@ -38,7 +38,6 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.1.9
     ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.14.4
     ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.26.6-ff0d5d3f77d610040e93c7c7a430d61a0c0b90c1
-    ${REGISTRY}/rancher/mirrored-cilium-cilium-etcd-operator:v2.0.7
     ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.14.4
     ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.14.4
     ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.12.1
@@ -61,6 +60,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
     ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.26.3
 EOF
 
+if [ "${GOARCH}" != "arm64" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-cpi-release-manager:v1.26.1
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.0.1
@@ -71,6 +71,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.2.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v3.4.0
 EOF
+fi
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
     ${REGISTRY}/rancher/hardened-multus-cni:v4.0.2-build20231009
