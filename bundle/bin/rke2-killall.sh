@@ -79,6 +79,7 @@ ip link delete vxlan.calico
 ip link delete vxlan-v6.calico
 ip link delete cilium_vxlan
 ip link delete cilium_net
+ip link delete cilium_wg0
 ip link delete kube-ipvs0
 
 #Delete the nodeLocal created objects
