@@ -136,7 +136,7 @@ steps:
           - refs/tags/*
 
   - name: publish-image-runtime
-    image: rancher/hardened-build-base:v1.20.13b2
+    image: rancher/hardened-build-base:v1.20.13b1
     commands:
       - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
@@ -312,7 +312,7 @@ steps:
           - refs/tags/*
 
   - name: publish-image-runtime
-    image: rancher/hardened-build-base:v1.20.13b2
+    image: rancher/hardened-build-base:v1.20.13b1
     commands:
       - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - DRONE_TAG=${DRONE_TAG} make publish-image-runtime
