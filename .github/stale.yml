@@ -49,7 +49,7 @@ staleLabel: status/stale
 # Comment to post when marking as stale. Set to `false` to disable
 markComment: >
   This repository uses a bot to automatically label issues which have not had any activity (commit/comment/label) 
-  for 60 days. This helps us manage the community issues better. If the issue is still relevant, please add a comment to the 
+  for 45 days. This helps us manage the community issues better. If the issue is still relevant, please add a comment to the 
   issue so the bot can remove the label and we know it is still valid. If it is no longer relevant (or possibly fixed in the 
   latest release), the bot will automatically close the issue in 14 days. Thank you for your contributions.
 
