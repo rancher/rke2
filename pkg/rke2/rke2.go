@@ -22,6 +22,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
 	"github.com/rancher/rke2/pkg/images"
+	"github.com/rancher/wrangler/pkg/slice"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -114,7 +115,8 @@ func Server(clx *cli.Context, cfg Config) error {
 
 	var leaderControllers rawServer.CustomControllers
 
-	if cisMode {
+	cnis := clx.StringSlice("cni")
+	if cisMode && (len(cnis) == 0 || slice.ContainsString(cnis, "canal")) {
 		leaderControllers = append(leaderControllers, cisnetworkpolicy.Controller)
 	}
 
