@@ -25,6 +25,7 @@ if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ]; then
       --build-arg MAJOR=${VERSION_MAJOR} \
       --build-arg MINOR=${VERSION_MINOR} \
       --build-arg CACHEBUST="$(date +%s%N)" \
+      --platform windows/amd64 \
       --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
       --target windows-runtime \
       --file Dockerfile.windows \
