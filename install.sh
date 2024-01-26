@@ -565,13 +565,13 @@ EOF
 
     if rpm -q --quiet rke2-selinux; then
             # remove rke2-selinux module in el9 before upgrade to allow container-selinux to upgrade safely
-            if check_available_upgrades container-selinux && check_available_upgrades rke2-selinux; then
+            if check_available_upgrades container-selinux && check_available_upgrades rke2-selinux && check_breaking_version container-selinux 2 189; then
                 MODULE_PRIORITY=$(semodule --list=full | grep rke2 | cut -f1 -d" ")
                 if [ -n "${MODULE_PRIORITY}" ]; then
                     semodule -X $MODULE_PRIORITY -r rke2 || true
                 fi
             fi
-        fi
+    fi
 
     if [ -z "${INSTALL_RKE2_VERSION}" ] && [ -z "${INSTALL_RKE2_COMMIT}" ]; then
         ${rpm_installer} install -y "rke2-${INSTALL_RKE2_TYPE}"
@@ -586,6 +586,20 @@ EOF
             ${rpm_installer} install -y "rke2-${INSTALL_RKE2_TYPE}-${rke2_rpm_version}"
         fi
     fi
+}
+
+check_breaking_version() {
+  maj=$2
+  min=$3
+
+  current_maj=$(rpm -qi $1 | awk -F': ' '/Version/ {print $2}' | sed -E -e "s/^([0-9]+)\.([0-9]+).*/\1/")
+  current_min=$(rpm -qi $1 | awk -F': ' '/Version/ {print $2}' | sed -E -e "s/^([0-9]+)\.([0-9]+).*/\2/")
+
+  if [ "${current_maj}" == "${maj}" ] && [ $current_min -le $min ]; then
+    return 0
+  fi
+
+  return 1
 }
 
 check_available_upgrades() {

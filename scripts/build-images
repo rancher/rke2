@@ -19,7 +19,7 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20230802
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.6.3-build20231009
     ${REGISTRY}/rancher/klipper-helm:v0.8.2-build20230815
-    ${REGISTRY}/rancher/klipper-lb:v0.4.4
+    ${REGISTRY}/rancher/klipper-lb:v0.4.5
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v20230312-helm-chart-4.5.2-28-g66a760794
     ${REGISTRY}/rancher/nginx-ingress-controller:nginx-1.9.3-hardened1
@@ -33,12 +33,11 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
     ${REGISTRY}/rancher/hardened-flannel:v0.23.0-build20231109
 EOF
 
-if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ]; then
+if [ "${GOARCH}" != "s390x" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.1.9
     ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.14.4
     ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.26.6-ff0d5d3f77d610040e93c7c7a430d61a0c0b90c1
-    ${REGISTRY}/rancher/mirrored-cilium-cilium-etcd-operator:v2.0.7
     ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.14.4
     ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.14.4
     ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.12.1
@@ -61,6 +60,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
     ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.26.3
 EOF
 
+if [ "${GOARCH}" != "arm64" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-cpi-release-manager:v1.26.1
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.0.1
@@ -71,18 +71,20 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.2.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v3.4.0
 EOF
+fi
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
     ${REGISTRY}/rancher/hardened-multus-cni:v4.0.2-build20231009
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.2.0-build20231009
     ${REGISTRY}/rancher/hardened-sriov-network-operator:v1.2.0-build20231010
-    ${REGISTRY}/rancher/hardened-sriov-network-config-daemon:v1.2.0-build20230607
+    ${REGISTRY}/rancher/hardened-sriov-network-config-daemon:v1.2.0-build20231010
     ${REGISTRY}/rancher/hardened-sriov-network-device-plugin:v3.5.1-build20231009
     ${REGISTRY}/rancher/hardened-sriov-cni:v2.6.3-build20231009
     ${REGISTRY}/rancher/hardened-ib-sriov-cni:v1.0.2-build20231009
     ${REGISTRY}/rancher/hardened-sriov-network-resources-injector:v1.5-build20231009
-    ${REGISTRY}/rancher/hardened-sriov-network-webhook:v1.2.0-build20230607
-    ${REGISTRY}/rancher/hardened-whereabouts:v0.6.2-build20231009
+    ${REGISTRY}/rancher/hardened-sriov-network-webhook:v1.2.0-build20231010
+    ${REGISTRY}/rancher/hardened-whereabouts:v0.6.3-build20240109
+    ${REGISTRY}/rancher/mirrored-library-busybox:1.36.1
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
