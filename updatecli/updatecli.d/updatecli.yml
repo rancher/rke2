@@ -40,7 +40,23 @@ sources:
       versionfilter:
         kind: "regex"
         pattern: '^go1\.20\.2$'
-
+  vsphere-cpi:
+    name: "Get vsphere-cpi chart version"
+    kind: "helmchart"
+    spec:
+      url: https://rancher.github.io/rke2-charts
+      name: rancher-vsphere-cpi
+      versionfilter:
+        kind: "latest"
+  vsphere-csi:
+    name: "Get vsphere-csi chart version"
+    kind: "helmchart"
+    spec:
+      url: https://rancher.github.io/rke2-charts
+      name: rancher-vsphere-csi
+      versionfilter:
+        kind: "latest"
+  
 # Validate read access to local repo
 ## continue to targets if the go version in the validate file doesn't match the goTag source
 conditions:
@@ -66,6 +82,20 @@ targets:
     spec:
       file: "updatecli/validate.yml"
       key: version
+  updateVsphereCPI:
+    name: "Update the vsphere-cpi airgap images"
+    kind: "shell"
+    scmid: "rke2"
+    sourceid: vsphere-cpi
+    spec:
+      command: bash ./updatecli/scripts/update_chart_and_images.sh rancher-vsphere-cpi
+  updateVsphereCSI:
+    name: "Update the vsphere-csi airgap images"
+    kind: "shell"
+    scmid: "rke2"
+    sourceid: vsphere-csi
+    spec:
+      command: bash ./updatecli/scripts/update_chart_and_images.sh rancher-vsphere-csi
 
 # Validate generating a pull request
 actions:
