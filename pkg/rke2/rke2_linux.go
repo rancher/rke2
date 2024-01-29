@@ -532,14 +532,14 @@ func cleanupDataDir(dataDir string) error {
 
 	// Ensures file is a directory, has rke2 within the name, and is not an active path
 	// if the function is unable to clear out the diretory, the error is ignored.
-	err := filepath.WalkDir(path, func(path string, info fs.DirEntry, err error) error {
+	err = filepath.WalkDir(path, func(path string, info fs.DirEntry, err error) error {
 		if !info.IsDir() || !string.Contains(path, "rke2") || slices.Contains(activePaths, path) {
 			continue
 		}
 		_ := os.RemoveAll(path)
 	})
 
-	return nil
+	return err
 }
 
 func getProcessExecutablePaths() ([]string, error) {
