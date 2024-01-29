@@ -515,7 +515,7 @@ func cleanupDataDir(dataDir string) error {
 	paths, err := getProcessExecutablePaths()
 	activePaths := []string{}
 	if err != nil {
-		return activePaths, err
+		return err
 	}
 	// Ensures only unique path within the data directory are
 	// captured within the array
