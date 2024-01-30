@@ -19,6 +19,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	opv1 "github.com/tigera/operator/api/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 // createHnsNetwork creates the network that will connect nodes and returns its managementIP
@@ -101,13 +102,34 @@ func deleteAllNetworks() error {
 		return err
 	}
 
+	var ips []string
+
 	for _, network := range networks {
 		if network.Name != "nat" {
+			logrus.Debugf("Deleting network: %s before starting calico", network.Name)
+			ips = append(ips, network.ManagementIP)
 			_, err = network.Delete()
 			if err != nil {
 				return err
 			}
 		}
+	}
+
+	// HNS overlay networks restart the physical interface when they are deleted. Wait until it comes back before returning
+	// TODO: Replace with non-deprecated PollUntilContextTimeout when our and Kubernetes code migrate to it
+	waitErr := wait.Poll(2*time.Second, 20*time.Second, func() (bool, error) {
+		for _, ip := range ips {
+			logrus.Debugf("Calico is waiting for the interface with ip: %s to come back", ip)
+			_, err := findInterface(ip)
+			if err != nil {
+				return false, nil
+			}
+		}
+		return true, nil
+	})
+
+	if waitErr == wait.ErrWaitTimeout {
+		return fmt.Errorf("timed out waiting for the network interfaces to come back")
 	}
 
 	return nil
