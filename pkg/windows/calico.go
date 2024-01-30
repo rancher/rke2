@@ -295,7 +295,7 @@ func (c *Calico) Start(ctx context.Context) error {
 // generateCalicoNetworks creates the overlay networks for internode networking
 func (c *Calico) generateCalicoNetworks() error {
 	if err := deleteAllNetworks(); err != nil {
-		return err
+		return errors.Wrapf(err, "failed to delete all networks before bootstrapping calico")
 	}
 
 	// There are four ways to select the vxlan interface. In order of priority:
