@@ -1,13 +1,10 @@
 ENV['VAGRANT_NO_PARALLEL'] = 'no'
-NODE_ROLES = (ENV['E2E_NODE_ROLES'] ||
-  ["server-0", "server-1", "server-2", "agent-0" ])
-NODE_BOXES = (ENV['E2E_NODE_BOXES'] ||
-  ['generic/ubuntu2004', 'generic/ubuntu2004', 'generic/ubuntu2004', 'generic/ubuntu2004'])
+NODE_ROLES = (ENV['E2E_NODE_ROLES'] ||  ["server-0", "server-1", "server-2"])
+NODE_BOXES = (ENV['E2E_NODE_BOXES'] ||  ['generic/ubuntu2204', 'generic/ubuntu2204', 'generic/ubuntu2204'])
 GITHUB_BRANCH = (ENV['E2E_GITHUB_BRANCH'] || "master")
 RELEASE_VERSION = (ENV['E2E_RELEASE_VERSION'] || "")
 NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
 NODE_MEMORY = (ENV['E2E_NODE_MEMORY'] || 3072).to_i
-CNI = (ENV['E2E_CNI'] || "canal") # canal, cilium and calico supported
 REGISTRY = (ENV['E2E_REGISTRY'] || "")
 # Virtualbox >= 6.1.28 require `/etc/vbox/network.conf` for expanded private networks,
 # see https://www.virtualbox.org/manual/ch06.html#network_hostonly
@@ -36,34 +33,16 @@ def provision(vm, roles, role_num, node_num)
   if roles.include?("server") && role_num == 0
     vm.provision :rke2, run: 'once' do |rke2|
       rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
-      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
       rke2.config = <<~YAML
         write-kubeconfig-mode: '0644'
         node-external-ip: #{NETWORK_PREFIX}.100
         node-ip: #{NETWORK_PREFIX}.100
         token: vagrant-rke2
-        cni: #{CNI}
       YAML
     end
   elsif roles.include?("server") && role_num != 0
     vm.provision :rke2, run: 'once' do |rke2|
       rke2.env = %W[INSTALL_RKE2_TYPE=server #{install_type}]
-      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
-      rke2.config = <<~YAML
-        write-kubeconfig-mode: '0644'
-        node-external-ip: #{node_ip}
-        node-ip: #{node_ip}
-        server: https://#{NETWORK_PREFIX}.100:9345
-        token: vagrant-rke2
-        cni: #{CNI}
-      YAML
-    end
-  end
-  if roles.include?("agent")
-    vm.provision :rke2, run: 'once' do |rke2|
-      rke2.env = %W[INSTALL_RKE2_TYPE=agent #{install_type}]
-      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
-      rke2.install_path = false
       rke2.config = <<~YAML
         write-kubeconfig-mode: '0644'
         node-external-ip: #{node_ip}
