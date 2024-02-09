@@ -126,7 +126,7 @@ func deleteAllNetworks() error {
 
 	// HNS overlay networks restart the physical interface when they are deleted. Wait until it comes back before returning
 	// TODO: Replace with non-deprecated PollUntilContextTimeout when our and Kubernetes code migrate to it
-	waitErr := wait.Poll(2*time.Second, 20*time.Second, func() (bool, error) {
+	waitErr := wait.Poll(2*time.Second, 30*time.Second, func() (bool, error) {
 		for _, ip := range ips {
 			logrus.Debugf("Calico is waiting for the interface with ip: %s to come back", ip)
 			_, err := findInterface(ip)
