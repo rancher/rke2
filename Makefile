@@ -47,17 +47,9 @@ build-images:                             ## Build all images and image tarballs
 build-windows-images:                     ## Build only the Windows images and tarballs (including airgap)
 	./scripts/build-windows-images
 
-.PHONY: build-image-kubernetes
-build-image-kubernetes:                   ## Build the kubernetes image
-	./scripts/build-image-kubernetes
-
 .PHONY: build-image-runtime
 build-image-runtime:                      ## Build the runtime image
 	./scripts/build-image-runtime
-
-.PHONY: publish-image-kubernetes
-publish-image-kubernetes: build-image-kubernetes
-	./scripts/publish-image-kubernetes
 
 .PHONY: publish-image-runtime
 publish-image-runtime: build-image-runtime
