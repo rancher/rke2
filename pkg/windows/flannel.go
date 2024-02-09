@@ -216,7 +216,7 @@ func (f *Flannel) renderFlannelConfig(path string, toRender *template.Template) 
 	return nil
 }
 
-// createKubeConfig creates all needed for Flannel to contact kube-api
+// createKubeConfigAndClient creates all needed for Flannel to contact kube-api
 func (f *Flannel) createKubeConfigAndClient(ctx context.Context, restConfig *rest.Config) (*KubeConfig, *kubernetes.Clientset, error) {
 
 	// Fill all information except for the token
@@ -254,7 +254,7 @@ func (f *Flannel) Start(ctx context.Context) error {
 	logPath := filepath.Join(f.CNICfg.ConfigPath, "logs", "flanneld.log")
 
 	// Wait for the node to be registered in the cluster
-	wait.PollImmediateWithContext(ctx, 3*time.Second, 5*time.Minute, func(ctx context.Context) (bool, error) {
+	if err := wait.PollImmediateWithContext(ctx, 3*time.Second, 5*time.Minute, func(ctx context.Context) (bool, error) {
 		_, err := f.KubeClient.CoreV1().Nodes().Get(ctx, f.CNICfg.Hostname, metav1.GetOptions{})
 		if err != nil {
 			logrus.WithError(err).Warningf("Flanneld can't start because it can't find node, retrying %s", f.CNICfg.Hostname)
@@ -263,7 +263,9 @@ func (f *Flannel) Start(ctx context.Context) error {
 			logrus.Infof("Node %s registered. Flanneld can start", f.CNICfg.Hostname)
 			return true, nil
 		}
-	})
+	}); err != nil {
+		return err
+	}
 
 	go startFlannel(ctx, f.CNICfg, logPath)
 
@@ -305,7 +307,7 @@ func (f *Flannel) ReserveSourceVip(ctx context.Context) (string, error) {
 	var err error
 
 	logrus.Info("Reserving an IP on flannel HNS network for kube-proxy source vip")
-	wait.PollImmediateWithContext(ctx, 10*time.Second, 5*time.Minute, func(ctx context.Context) (bool, error) {
+	if err := wait.PollImmediateWithContext(ctx, 10*time.Second, 5*time.Minute, func(ctx context.Context) (bool, error) {
 		network, err = hcsshim.GetHNSNetworkByName(f.CNICfg.OverlayNetName)
 		if err != nil || network == nil {
 			logrus.Debugf("can't find flannel HNS network, retrying %s", f.CNICfg.OverlayNetName)
@@ -322,7 +324,9 @@ func (f *Flannel) ReserveSourceVip(ctx context.Context) (string, error) {
 			return true, nil
 		}
 		return false, nil
-	})
+	}); err != nil {
+		return "", err
+	}
 
 	subnet := network.Subnets[0].AddressPrefix
 

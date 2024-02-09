@@ -116,7 +116,8 @@ users:
 )
 
 type Calico struct {
-	CNICfg *CalicoConfig
+	CNICfg     *CalicoConfig
+	KubeClient *kubernetes.Clientset
 }
 
 const (
@@ -161,7 +162,7 @@ func (c *Calico) initializeConfig(ctx context.Context, nodeConfig *daemonconfig.
 
 	c.CNICfg = &CalicoConfig{
 		CNICommonConfig: CNICommonConfig{
-			Name:           "calico",
+			Name:           "Calico",
 			OverlayNetName: "Calico",
 			OverlayEncap:   "vxlan",
 			Hostname:       nodeConfig.AgentConfig.NodeName,
@@ -185,7 +186,7 @@ func (c *Calico) initializeConfig(ctx context.Context, nodeConfig *daemonconfig.
 		IPAutoDetectionMethod: "first-found",
 	}
 
-	c.CNICfg.KubeConfig, err = c.createKubeConfig(ctx, restConfig)
+	c.CNICfg.KubeConfig, c.KubeClient, err = c.createKubeConfigAndClient(ctx, restConfig)
 	if err != nil {
 		return err
 	}
@@ -226,8 +227,8 @@ func (c *Calico) renderCalicoConfig(path string, toRender *template.Template) er
 	return nil
 }
 
-// createCalicoKubeConfig creates all needed for Calico to contact kube-api
-func (c *Calico) createKubeConfig(ctx context.Context, restConfig *rest.Config) (*KubeConfig, error) {
+// createKubeConfigAndClient creates all needed for Calico to contact kube-api
+func (c *Calico) createKubeConfigAndClient(ctx context.Context, restConfig *rest.Config) (*KubeConfig, *kubernetes.Clientset, error) {
 
 	// Fill all information except for the token
 	calicoKubeConfig := KubeConfig{
@@ -247,30 +248,42 @@ func (c *Calico) createKubeConfig(ctx context.Context, restConfig *rest.Config) 
 	// Register the token in the Calico service account
 	client, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	serviceAccounts := client.CoreV1().ServiceAccounts(CalicoSystemNamespace)
 	token, err := serviceAccounts.CreateToken(ctx, calicoNode, &req, metav1.CreateOptions{})
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create token for service account (%s/%s)", CalicoSystemNamespace, calicoNode)
+		return nil, nil, errors.Wrapf(err, "failed to create token for service account (%s/%s)", CalicoSystemNamespace, calicoNode)
 	}
 
 	calicoKubeConfig.Token = token.Status.Token
 
-	return &calicoKubeConfig, nil
+	return &calicoKubeConfig, client, nil
 }
 
 // Start starts the CNI services on the Windows node.
 func (c *Calico) Start(ctx context.Context) error {
 	logPath := filepath.Join(c.CNICfg.ConfigPath, "logs")
-	for {
-		if err := startCalico(ctx, c.CNICfg, logPath); err != nil {
-			time.Sleep(5 * time.Second)
-			logrus.Errorf("Calico exited: %v. Retrying", err)
-			continue
+
+	// Wait for the node to be registered in the cluster
+	if err := wait.PollImmediateWithContext(ctx, 5*time.Second, 5*time.Minute, func(ctx context.Context) (bool, error) {
+		_, err := c.KubeClient.CoreV1().Nodes().Get(ctx, c.CNICfg.Hostname, metav1.GetOptions{})
+		if err != nil {
+			logrus.WithError(err).Warningf("Calico can't start because it can't find node, retrying %s", c.CNICfg.Hostname)
+			return false, nil
 		}
-		break
+
+		logrus.Infof("Node %s registered. Calico can start", c.CNICfg.Hostname)
+
+		if err := startCalico(ctx, c.CNICfg, logPath); err != nil {
+			logrus.Errorf("Calico exited: %v. Retrying", err)
+			return false, nil
+		}
+		return true, nil
+	}); err != nil {
+		return err
 	}
+
 	go startFelix(ctx, c.CNICfg, logPath)
 	if c.CNICfg.OverlayEncap == "windows-bgp" {
 		go startConfd(ctx, c.CNICfg, logPath)
