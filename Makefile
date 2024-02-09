@@ -128,6 +128,10 @@ package-images: build-images		## Package docker images for airgap environment
 package-windows-images: build-windows-images		## Package Windows crane images for airgap environment
 	./scripts/package-windows-images
 
+.PHONY: package-image-runtime
+package-image-runtime: build-image-runtime		## Package runtime image for GH Actions testing
+	./scripts/package-image-runtime
+
 .PHONY: package-bundle
 package-bundle: build-binary					## Package the tarball bundle
 	./scripts/package-bundle

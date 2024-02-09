@@ -1,0 +1,109 @@
+name: Integration Test Coverage
+on: 
+  push:
+    paths-ignore:
+      - "**.md"
+      - "channel.yaml"
+      - "install.sh"
+      - "tests/**"
+      - "!tests/integration**"
+      - ".github/**"
+      - "!.github/workflows/integration.yaml"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "channel.yaml"
+      - "install.sh"
+      - "tests/**"
+      - "!tests/integration**"
+      - "!tests/e2e**"
+      - ".github/**"
+      - "!.github/workflows/integration.yaml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build RKE2 Images and Binary
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+    - uses: actions/setup-go@v5
+      with:
+        go-version-file: 'go.mod'
+        cache-dependency-path: |
+          **/go.sum
+          **/go.mod
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Install OS Packages
+      run: sudo apt-get install -y libarchive-tools
+    - name: Build RKE2 Binary and Runtime Image
+      run: |
+        make build-binary
+        make package-image-runtime
+        cp ./bin/rke2 ./build/images/rke2-binary
+    # Can only upload from a single path, so we need to copy the binary to the image directory
+    - name: Upload RKE2 Binary and Runtime Image
+      uses: actions/upload-artifact@v4
+      with:
+        name: rke2-test-artifacts
+        path: ./build/images/*
+  test:
+    needs: build
+    name: Integration Tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        itest: [etcdsnapshot]
+      max-parallel: 3
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+    - uses: actions/setup-go@v5
+      with:
+        go-version-file: 'go.mod'
+        cache-dependency-path: |
+          **/go.sum
+          **/go.mod
+    - name: Setup Build Directories
+      run: |
+        mkdir -p ./bin ./build/images
+    - name: Download RKE2 Binary and Runtime Image
+      uses: actions/download-artifact@v4
+      with:
+        name: rke2-test-artifacts
+        path: ./build/images
+    - name: Setup Binary
+      run: |
+        mv ./build/images/rke2-binary ./bin/rke2
+        chmod +x ./bin/rke2
+    - name: Run Integration Tests
+      run: | 
+        mkdir -p $GOCOVERDIR
+        sudo -E env "PATH=$PATH" go test -v -timeout=45m ./tests/integration/${{ matrix.itest }}/... -run Integration
+    - name: Generate coverage report
+      run:  go tool covdata textfmt -i $GOCOVERDIR -o ${{ matrix.itest }}.out
+    - name: Upload Results To Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./${{ matrix.itest }}.out
+        flags: inttests # optional
+        verbose: true # optional (default = false)
+    - name: On Failure, Launch Debug Session
+      uses: dereknola/action-upterm@main
+      if: ${{ failure() }}
+      with:
+        ## If no one connects after 5 minutes, shut down server.
+        wait-timeout-minutes: 5
+        limit-access-to-actor: true
