@@ -4,9 +4,9 @@ go 1.21
 
 replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.11.1
-	github.com/Mirantis/cri-dockerd => github.com/k3s-io/cri-dockerd v0.3.4-k3s3
+	github.com/Mirantis/cri-dockerd => github.com/k3s-io/cri-dockerd v0.3.9-k3s2
 	github.com/benmoss/go-powershell => github.com/k3s-io/go-powershell v0.0.0-20201118222746-51f4c451fbd7
-	github.com/cloudnativelabs/kube-router/v2 => github.com/k3s-io/kube-router/v2 v2.0.0-20230925161250-364f994b140b
+	github.com/cloudnativelabs/kube-router/v2 => github.com/k3s-io/kube-router/v2 v2.0.1
 	github.com/containerd/containerd => github.com/k3s-io/containerd v1.7.11-k3s2
 	github.com/containerd/stargz-snapshotter => github.com/k3s-io/stargz-snapshotter v0.13.0-k3s1
 	github.com/docker/distribution => github.com/docker/distribution v2.8.2+incompatible
@@ -94,12 +94,12 @@ replace (
 
 require (
 	github.com/Microsoft/hcsshim v0.11.4
-	github.com/aws/aws-sdk-go v1.45.1
+	github.com/aws/aws-sdk-go v1.45.24
 	github.com/containerd/continuity v0.4.2 // indirect
 	github.com/google/go-containerregistry v0.14.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.15.8
-	github.com/k3s-io/k3s v1.29.2-0.20240209192806-cfc3a124eed6 // master
+	github.com/k3s-io/k3s v1.29.2-0.20240209222238-de825845b2f1 // master
 	github.com/libp2p/go-netroute v0.2.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/onsi/ginkgo/v2 v2.13.2
@@ -263,6 +263,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.4 // indirect
+	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/golang-lru/arc/v2 v2.0.5 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.5 // indirect
@@ -288,7 +289,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/josharian/native v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/k3s-io/kine v0.11.0 // indirect
+	github.com/k3s-io/kine v0.11.4 // indirect
 	github.com/karrick/godirwalk v1.17.0 // indirect
 	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
@@ -313,7 +314,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/marten-seemann/tcp v0.0.0-20210406111302-dfbc87cc63fd // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
-	github.com/mattn/go-sqlite3 v1.14.17 // indirect
+	github.com/mattn/go-sqlite3 v1.14.19 // indirect
 	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
 	github.com/mdlayher/genetlink v1.3.2 // indirect
 	github.com/mdlayher/netlink v1.7.2 // indirect
