@@ -6,6 +6,7 @@ package pebinaryexecutor
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -16,9 +17,13 @@ import (
 
 	"github.com/Microsoft/hcsshim/hcn"
 	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
+	"github.com/k3s-io/k3s/pkg/agent/containerd"
+	"github.com/k3s-io/k3s/pkg/agent/cri"
+	"github.com/k3s-io/k3s/pkg/agent/cridockerd"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
-	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
+	"github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
+	"github.com/natefinch/lumberjack"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/logging"
@@ -72,7 +77,7 @@ const (
 // Bootstrap prepares the binary executor to run components by setting the system default registry
 // and staging the kubelet and containerd binaries.  On servers, it also ensures that manifests are
 // copied in to place and in sync with the system configuration.
-func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
+func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node, cfg cmds.Agent) error {
 	// On servers this is set to an initial value from the CLI when the resolver is created, so that
 	// static pod manifests can be created before the agent bootstrap is complete. The agent itself
 	// really only needs to know about the runtime and pause images, all of which are configured after the
@@ -160,9 +165,9 @@ func (p *PEBinaryConfig) Kubelet(ctx context.Context, args []string) error {
 		cleanArgs = append(cleanArgs, arg)
 	}
 
-	logrus.Infof("Running RKE2 kubelet %v", cleanArgs)
-	go func() {
+	win.ProcessWaitGroup.StartWithContext(ctx, func(ctx context.Context) {
 		for {
+			logrus.Infof("Running RKE2 kubelet %v", cleanArgs)
 			cniCtx, cancel := context.WithCancel(ctx)
 			if p.CNIName != CNINone {
 				go func() {
@@ -179,9 +184,15 @@ func (p *PEBinaryConfig) Kubelet(ctx context.Context, args []string) error {
 				logrus.Errorf("Kubelet exited: %v", err)
 			}
 			cancel()
-			time.Sleep(5 * time.Second)
+
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				time.Sleep(5 * time.Second)
+			}
 		}
-	}()
+	})
 	return nil
 }
 
@@ -201,7 +212,7 @@ func (p *PEBinaryConfig) KubeProxy(ctx context.Context, args []string) error {
 	extraArgs := map[string]string{
 		"network-name": CNIConfig.OverlayNetName,
 		"bind-address": CNIConfig.NodeIP,
-		"source-vip": vip,
+		"source-vip":   vip,
 	}
 
 	if err := hcn.DSRSupported(); err == nil {
@@ -212,20 +223,107 @@ func (p *PEBinaryConfig) KubeProxy(ctx context.Context, args []string) error {
 
 	args = append(getArgs(extraArgs), args...)
 
-	logrus.Infof("Running RKE2 kube-proxy %s", args)
-	go func() {
+	win.ProcessWaitGroup.StartWithContext(ctx, func(ctx context.Context) {
 		outputFile := logging.GetLogger(filepath.Join(p.DataDir, "agent", "logs", "kube-proxy.log"), 50)
 		for {
+			logrus.Infof("Running RKE2 kube-proxy %s", args)
 			cmd := exec.CommandContext(ctx, filepath.Join("c:\\", p.DataDir, "bin", "kube-proxy.exe"), args...)
 			cmd.Stdout = outputFile
 			cmd.Stderr = outputFile
 			err := cmd.Run()
 			logrus.Errorf("kube-proxy exited: %v", err)
-			time.Sleep(5 * time.Second)
+
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				time.Sleep(5 * time.Second)
+			}
 		}
-	}()
+	})
 
 	return nil
+}
+
+// Docker starts cri-dockerd as implemented in the k3s cridockerd package
+func (p *PEBinaryConfig) Docker(ctx context.Context, cfg *config.Node) error {
+	return cridockerd.Run(ctx, cfg)
+}
+
+func (p *PEBinaryConfig) Containerd(ctx context.Context, cfg *config.Node) error {
+	args := getContainerdArgs(cfg)
+	stdOut := io.Writer(os.Stdout)
+	stdErr := io.Writer(os.Stderr)
+
+	if cfg.Containerd.Log != "" {
+		logrus.Infof("Logging containerd to %s", cfg.Containerd.Log)
+		fileOut := &lumberjack.Logger{
+			Filename:   cfg.Containerd.Log,
+			MaxSize:    50,
+			MaxBackups: 3,
+			MaxAge:     28,
+			Compress:   true,
+		}
+
+		// If rke2 is started with --debug, write logs to both the log file and stdout/stderr,
+		// even if a log path is set.
+		if cfg.Containerd.Debug {
+			stdOut = io.MultiWriter(stdOut, fileOut)
+			stdErr = io.MultiWriter(stdErr, fileOut)
+		} else {
+			stdOut = fileOut
+			stdErr = fileOut
+		}
+	}
+
+	win.ProcessWaitGroup.StartWithContext(ctx, func(ctx context.Context) {
+		env := []string{}
+		cenv := []string{}
+
+		for _, e := range os.Environ() {
+			pair := strings.SplitN(e, "=", 2)
+			switch {
+			case pair[0] == "NOTIFY_SOCKET":
+				// elide NOTIFY_SOCKET to prevent spurious notifications to systemd
+			case pair[0] == "CONTAINERD_LOG_LEVEL":
+				// Turn CONTAINERD_LOG_LEVEL variable into log-level flag
+				args = append(args, "--log-level", pair[1])
+			case strings.HasPrefix(pair[0], "CONTAINERD_"):
+				// Strip variables with CONTAINERD_ prefix before passing through
+				// This allows doing things like setting a proxy for image pulls by setting
+				// CONTAINERD_https_proxy=http://proxy.example.com:8080
+				pair[0] = strings.TrimPrefix(pair[0], "CONTAINERD_")
+				cenv = append(cenv, strings.Join(pair, "="))
+			default:
+				env = append(env, strings.Join(pair, "="))
+			}
+		}
+
+		for {
+			logrus.Infof("Running containerd %s", config.ArgString(args[1:]))
+			cmd := exec.CommandContext(ctx, args[0], args[1:]...)
+			cmd.Stdout = stdOut
+			cmd.Stderr = stdErr
+			cmd.Env = append(env, cenv...)
+
+			if err := cmd.Run(); err != nil {
+				logrus.Errorf("containerd exited: %v", err)
+			}
+
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				time.Sleep(5 * time.Second)
+			}
+		}
+	})
+
+	if err := cri.WaitForService(ctx, cfg.Containerd.Address, "containerd"); err != nil {
+		return err
+	}
+
+	return containerd.PreloadImages(ctx, cfg)
 }
 
 // APIServerHandlers isn't supported in the binary executor.
@@ -271,6 +369,14 @@ func addFeatureGate(current, new string) string {
 	return current + "," + new
 }
 
+func getContainerdArgs(cfg *config.Node) []string {
+	args := []string{
+		"containerd",
+		"-c", cfg.Containerd.Config,
+	}
+	return args
+}
+
 // getArgs concerts a map to the correct args list format.
 func getArgs(argsMap map[string]string) []string {
 	var args []string
@@ -307,7 +413,7 @@ func getCNIPluginName(restConfig *rest.Config) (string, error) {
 }
 
 // setWindowsAgentSpecificSettings configures the correct paths needed for Windows
-func setWindowsAgentSpecificSettings(dataDir string, nodeConfig *daemonconfig.Node) {
+func setWindowsAgentSpecificSettings(dataDir string, nodeConfig *config.Node) {
 	nodeConfig.AgentConfig.CNIBinDir = filepath.Join("c:\\", dataDir, "bin")
 	nodeConfig.AgentConfig.CNIConfDir = filepath.Join("c:\\", dataDir, "agent", "etc", "cni")
 }

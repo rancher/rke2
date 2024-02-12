@@ -3,6 +3,8 @@
 
 package windows
 
-func StartService() error {
-	return nil
+func StartService() (bool, error) {
+	return false, nil
 }
+
+func MonitorProcessExit() {}
