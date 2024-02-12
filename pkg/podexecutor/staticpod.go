@@ -16,7 +16,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/k3s-io/k3s/pkg/agent/containerd"
 	"github.com/k3s-io/k3s/pkg/agent/cri"
+	"github.com/k3s-io/k3s/pkg/agent/cridockerd"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
@@ -612,6 +614,16 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, args executor.ETCDConfig, ex
 	}
 
 	return staticpod.Run(s.ManifestsDir, spa)
+}
+
+// Containerd starts the k3s implementation of containerd
+func (s *StaticPodConfig) Containerd(ctx context.Context, config *daemonconfig.Node) error {
+	return containerd.Run(ctx, config)
+}
+
+// Docker starts the k3s implementation of cridockerd
+func (s *StaticPodConfig) Docker(ctx context.Context, config *daemonconfig.Node) error {
+	return cridockerd.Run(ctx, config)
 }
 
 // stopEtcd searches the container runtime endpoint for the etcd static pod, and terminates it.
