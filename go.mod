@@ -2,7 +2,7 @@ module github.com/rancher/rke2
 
 go 1.21
 
-toolchain go1.22.0
+toolchain go1.21.7
 
 replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.11.0
