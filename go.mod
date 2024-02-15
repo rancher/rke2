@@ -2,8 +2,6 @@ module github.com/rancher/rke2
 
 go 1.21
 
-toolchain go1.22.0
-
 replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.11.1
 	github.com/Mirantis/cri-dockerd => github.com/k3s-io/cri-dockerd v0.3.9-k3s2
