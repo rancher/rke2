@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
@@ -266,6 +267,7 @@ func (c *Calico) Start(ctx context.Context) error {
 		return fmt.Errorf("error creating %s directory: %v", calicoLogPath, err)
 	}
 	for {
+		time.Sleep(5 * time.Second)
 		if err := startCalico(ctx, c.CNICfg); err != nil {
 			continue
 		}

@@ -6,6 +6,7 @@ package pebinaryexecutor
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -25,6 +26,7 @@ import (
 	win "github.com/rancher/rke2/pkg/windows"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -153,6 +155,17 @@ func (p *PEBinaryConfig) Kubelet(ctx context.Context, args []string) error {
 	}
 
 	logrus.Infof("Running RKE2 kubelet %v", cleanArgs)
+
+	go func() {
+		wait.PollImmediateWithContext(ctx, 4*time.Second, 3*time.Minute, func(ctx context.Context) (bool, error) {
+			err := logInterfaces()
+			if err != nil {
+				logrus.Infof("TESTING - Error in logInterfaces: %v", err)
+			}
+			return false, nil
+		})
+	}()
+
 	go func() {
 		for {
 			cniCtx, cancel := context.WithCancel(ctx)
@@ -311,4 +324,20 @@ func getCniType(restConfig *rest.Config) (string, error) {
 func setWindowsAgentSpecificSettings(dataDir string, nodeConfig *daemonconfig.Node) {
 	nodeConfig.AgentConfig.CNIBinDir = filepath.Join("c:\\", dataDir, "bin")
 	nodeConfig.AgentConfig.CNIConfDir = filepath.Join("c:\\", dataDir, "agent", "etc", "cni")
+}
+
+func logInterfaces() error {
+	iFaces, err := net.Interfaces()
+	if err != nil {
+		return err
+	}
+
+	for _, iFace := range iFaces {
+		addrs, err := iFace.Addrs()
+		if err != nil {
+			return err
+		}
+		logrus.Infof("TESTING - This is the interface: %s with addresses %v", iFace.Name, addrs)
+	}
+	return nil
 }
