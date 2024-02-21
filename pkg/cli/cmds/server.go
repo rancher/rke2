@@ -73,10 +73,11 @@ var (
 		"kube-controller-manager-arg":       copyFlag,
 		"kube-cloud-controller-manager-arg": copyFlag,
 		"kube-cloud-controller-arg":         dropFlag, // deprecated version of kube-cloud-controller-manager-arg
-		"datastore-endpoint":                dropFlag,
-		"datastore-cafile":                  dropFlag,
-		"datastore-certfile":                dropFlag,
-		"datastore-keyfile":                 dropFlag,
+		"datastore-endpoint":                copyFlag,
+		"datastore-cafile":                  copyFlag,
+		"datastore-certfile":                copyFlag,
+		"datastore-keyfile":                 copyFlag,
+		"kine-tls":                          dropFlag,
 		"default-local-storage-path":        dropFlag,
 		"disable": {
 			Usage: "(components) Do not deploy packaged components and delete any deployed components (valid items: " + strings.Join(DisableItems, ", ") + ")",
