@@ -154,17 +154,18 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	}
 
 	// check for missing db name file on a server running etcd, indicating we're rejoining after cluster reset on a different node
-	if _, err := os.Stat(etcdNameFile(dataDir)); err != nil && os.IsNotExist(err) && isServer && !clx.Bool("disable-etcd") {
+	if _, err := os.Stat(etcdNameFile(dataDir)); err != nil && os.IsNotExist(err) && isServer && !clx.Bool("disable-etcd") && !clx.IsSet("datastore-endpoint") {
 		clusterReset = true
 	}
 
 	disabledItems := map[string]bool{
 		"cloud-controller-manager": !isServer || forceRestart || clx.Bool("disable-cloud-controller"),
-		"etcd":                     !isServer || forceRestart || clx.Bool("disable-etcd"),
+		"etcd":                     !isServer || forceRestart || clx.Bool("disable-etcd") || clx.IsSet("datastore-endpoint"),
 		"kube-apiserver":           !isServer || forceRestart || clx.Bool("disable-apiserver"),
 		"kube-controller-manager":  !isServer || forceRestart || clx.Bool("disable-controller-manager"),
 		"kube-scheduler":           !isServer || forceRestart || clx.Bool("disable-scheduler"),
 	}
+
 	// adding force restart file when cluster reset restore path is passed
 	if clusterResetRestorePath != "" {
 		forceRestartFile := ForceRestartFile(dataDir)
@@ -175,6 +176,7 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 			return err
 		}
 	}
+
 	return removeDisabledPods(dataDir, containerRuntimeEndpoint, disabledItems, clusterReset)
 }
 
