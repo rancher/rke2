@@ -99,7 +99,7 @@ require (
 	github.com/google/go-containerregistry v0.14.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.15.8
-	github.com/k3s-io/k3s v1.29.2-0.20240209222238-de825845b2f1 // master
+	github.com/k3s-io/k3s v1.29.2-rc1.0.20240221202119-fae0d998631e // master
 	github.com/libp2p/go-netroute v0.2.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/onsi/ginkgo/v2 v2.13.2
@@ -116,14 +116,14 @@ require (
 	golang.org/x/sync v0.6.0
 	golang.org/x/sys v0.16.0
 	google.golang.org/grpc v1.60.1
-	k8s.io/api v0.29.1
-	k8s.io/apimachinery v0.29.1
-	k8s.io/apiserver v0.29.1
+	k8s.io/api v0.29.2
+	k8s.io/apimachinery v0.29.2
+	k8s.io/apiserver v0.29.2
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/component-base v0.29.1
-	k8s.io/cri-api v0.29.1-alpha.0
+	k8s.io/component-base v0.29.2
+	k8s.io/cri-api v0.29.2-alpha.0
 	k8s.io/klog/v2 v2.110.1
-	k8s.io/kubernetes v1.29.0
+	k8s.io/kubernetes v1.29.2
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b
 	sigs.k8s.io/yaml v1.4.0
 )
@@ -466,16 +466,16 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	inet.af/tcpproxy v0.0.0-20200125044825-b6bb9b5b8252 // indirect
-	k8s.io/apiextensions-apiserver v0.29.1 // indirect
-	k8s.io/cloud-provider v0.29.1 // indirect
+	k8s.io/apiextensions-apiserver v0.29.2 // indirect
+	k8s.io/cloud-provider v0.29.2 // indirect
 	k8s.io/cluster-bootstrap v0.0.0 // indirect
-	k8s.io/component-helpers v0.29.1 // indirect
+	k8s.io/component-helpers v0.29.2 // indirect
 	k8s.io/controller-manager v0.25.4 // indirect
 	k8s.io/csi-translation-lib v0.0.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
 	k8s.io/endpointslice v0.0.0 // indirect
 	k8s.io/kms v0.0.0 // indirect
-	k8s.io/kube-aggregator v0.29.1 // indirect
+	k8s.io/kube-aggregator v0.29.2 // indirect
 	k8s.io/kube-controller-manager v0.0.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
 	k8s.io/kube-proxy v0.0.0 // indirect
@@ -484,7 +484,7 @@ require (
 	k8s.io/kubelet v0.28.6 // indirect
 	k8s.io/legacy-cloud-providers v0.0.0 // indirect
 	k8s.io/metrics v0.0.0 // indirect
-	k8s.io/mount-utils v0.29.1 // indirect
+	k8s.io/mount-utils v0.29.2 // indirect
 	k8s.io/pod-security-admission v0.0.0 // indirect
 	lukechampine.com/blake3 v1.2.1 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.28.0 // indirect
