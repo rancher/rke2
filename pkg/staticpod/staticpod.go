@@ -28,8 +28,13 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+type typeVolume string
+
 const (
-	extraMountPrefix = "extra-mount"
+	extraMountPrefix            = "extra-mount"
+	socket           typeVolume = "socket"
+	dir              typeVolume = "dir"
+	file             typeVolume = "file"
 )
 
 type ProbeConf struct {
@@ -51,6 +56,7 @@ type Args struct {
 	Image           name.Reference
 	Dirs            []string
 	Files           []string
+	Sockets         []string
 	CISMode         bool // CIS requires that the manifest be saved with 600 permissions
 	ExcludeFiles    []string
 	HealthExec      []string
@@ -278,8 +284,9 @@ func pod(args Args) (*v1.Pod, error) {
 		}
 	}
 
-	addVolumes(p, args.Dirs, true)
-	addVolumes(p, args.Files, false)
+	addVolumes(p, args.Sockets, socket)
+	addVolumes(p, args.Dirs, dir)
+	addVolumes(p, args.Files, file)
 
 	addExtraMounts(p, args.ExtraMounts)
 	addExtraEnv(p, args.ExtraEnv)
@@ -287,14 +294,22 @@ func pod(args Args) (*v1.Pod, error) {
 	return p, nil
 }
 
-func addVolumes(p *v1.Pod, src []string, dir bool) {
+func addVolumes(p *v1.Pod, src []string, volume typeVolume) {
 	var (
-		prefix     = "dir"
-		sourceType = v1.HostPathDirectoryOrCreate
-		readOnly   = false
+		prefix     string
+		sourceType v1.HostPathType
+		readOnly   bool
 	)
-	if !dir {
-		prefix = "file"
+
+	prefix = string(volume)
+	switch volume {
+	case dir:
+		sourceType = v1.HostPathDirectoryOrCreate
+		readOnly = false
+	case socket:
+		sourceType = v1.HostPathSocket
+		readOnly = false
+	default:
 		sourceType = v1.HostPathFile
 		readOnly = true
 	}
