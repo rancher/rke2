@@ -24,10 +24,12 @@ const (
 	namespaceAnnotationNetworkPolicy        = "np.rke2.io"
 	namespaceAnnotationNetworkDNSPolicy     = "np.rke2.io/dns"
 	namespaceAnnotationNetworkIngressPolicy = "np.rke2.io/ingress"
+	namespaceAnnotationNetworkWebhookPolicy = "np.rke2.io/ingress-webhook"
 
 	defaultNetworkPolicyName        = "default-network-policy"
 	defaultNetworkDNSPolicyName     = "default-network-dns-policy"
 	defaultNetworkIngressPolicyName = "default-network-ingress-policy"
+	defaultNetworkWebhookPolicyName = "default-network-ingress-webhook-policy"
 
 	defaultTimeout     = 30
 	cisAnnotationValue = "resolved"
@@ -120,13 +122,47 @@ var networkIngressPolicy = v1.NetworkPolicy{
 					{
 						Protocol: &tcp,
 						Port: &intstr.IntOrString{
-							IntVal: int32(80),
+							Type:   intstr.String,
+							StrVal: "http",
 						},
 					},
 					{
 						Protocol: &tcp,
 						Port: &intstr.IntOrString{
-							IntVal: int32(443),
+							Type:   intstr.String,
+							StrVal: "https",
+						},
+					},
+				},
+			},
+		},
+		Egress: []v1.NetworkPolicyEgressRule{},
+	},
+}
+
+// networkWebhookPolicy allows for https traffic
+// into the kube-system namespace to the ingress controller webhook.
+var networkWebhookPolicy = v1.NetworkPolicy{
+	ObjectMeta: metav1.ObjectMeta{
+		Name: defaultNetworkWebhookPolicyName,
+	},
+	Spec: v1.NetworkPolicySpec{
+		PodSelector: metav1.LabelSelector{
+			MatchLabels: map[string]string{
+				"app.kubernetes.io/name": "rke2-ingress-nginx",
+			},
+		},
+		PolicyTypes: []v1.PolicyType{
+			v1.PolicyTypeIngress,
+		},
+		Ingress: []v1.NetworkPolicyIngressRule{
+			{
+				Ports: []v1.NetworkPolicyPort{
+					{
+						Protocol: &tcp,
+						Port: &intstr.IntOrString{
+							Type:   intstr.String,
+							StrVal: "webhook",
 						},
 					},
 				},
@@ -258,6 +294,46 @@ func setNetworkIngressPolicy(ctx context.Context, cs *kubernetes.Clientset) erro
 	return nil
 }
 
+// setNetworkWebhookPolicy sets the default Ingress Webhook policy allowing the
+// required webhook traffic to ingress nginx pods.
+func setNetworkWebhookPolicy(ctx context.Context, cs *kubernetes.Clientset) error {
+	ns, err := cs.CoreV1().Namespaces().Get(ctx, metav1.NamespaceSystem, metav1.GetOptions{})
+	if err != nil {
+		return fmt.Errorf("networkPolicy: get %s - %w", metav1.NamespaceSystem, err)
+	}
+	if ns.Annotations == nil {
+		ns.Annotations = make(map[string]string)
+	}
+	if _, ok := ns.Annotations[namespaceAnnotationNetworkWebhookPolicy]; !ok {
+		if _, err := cs.NetworkingV1().NetworkPolicies(metav1.NamespaceSystem).Get(ctx, defaultNetworkWebhookPolicyName, metav1.GetOptions{}); err == nil {
+			if err := cs.NetworkingV1().NetworkPolicies(metav1.NamespaceSystem).Delete(ctx, defaultNetworkWebhookPolicyName, metav1.DeleteOptions{}); err != nil {
+				if !apierrors.IsNotFound(err) {
+					return err
+				}
+			}
+		}
+		if _, err := cs.NetworkingV1().NetworkPolicies(metav1.NamespaceSystem).Create(ctx, &networkWebhookPolicy, metav1.CreateOptions{}); err != nil {
+			if !apierrors.IsAlreadyExists(err) {
+				return err
+			}
+		}
+		ns.Annotations[namespaceAnnotationNetworkWebhookPolicy] = cisAnnotationValue
+
+		if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
+			if _, err := cs.CoreV1().Namespaces().Update(ctx, ns, metav1.UpdateOptions{}); err != nil {
+				if apierrors.IsConflict(err) {
+					return updateNamespaceRef(ctx, cs, ns)
+				}
+				return err
+			}
+			return nil
+		}); err != nil {
+			logrus.Fatalf("networkPolicy: update namespace: %s - %s", ns.Name, err.Error())
+		}
+	}
+	return nil
+}
+
 // setNetworkPolicies applies a default network policy across the 3 primary namespaces.
 func setNetworkPolicies(cisMode bool, namespaces []string) cmds.StartupHook {
 	return func(ctx context.Context, wg *sync.WaitGroup, args cmds.StartupHookArgs) error {
@@ -286,6 +362,10 @@ func setNetworkPolicies(cisMode bool, namespaces []string) cmds.StartupHook {
 			}
 
 			if err := setNetworkIngressPolicy(ctx, cs); err != nil {
+				logrus.Fatal(err)
+			}
+
+			if err := setNetworkWebhookPolicy(ctx, cs); err != nil {
 				logrus.Fatal(err)
 			}
 
