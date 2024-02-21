@@ -103,7 +103,7 @@ require (
 	github.com/google/go-containerregistry v0.14.0
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/k3s-io/helm-controller v0.15.8
-	github.com/k3s-io/k3s v1.28.7-0.20240212205628-1ca64a81beea // release-1.28
+	github.com/k3s-io/k3s v1.28.7-rc1.0.20240221212608-4c1b91e3f9cc // release-1.28
 	github.com/libp2p/go-netroute v0.2.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/onsi/ginkgo/v2 v2.13.2
@@ -483,7 +483,7 @@ require (
 	k8s.io/kube-proxy v0.0.0 // indirect
 	k8s.io/kube-scheduler v0.0.0 // indirect
 	k8s.io/kubectl v0.25.4 // indirect
-	k8s.io/kubelet v0.28.6 // indirect
+	k8s.io/kubelet v0.28.7 // indirect
 	k8s.io/legacy-cloud-providers v0.0.0 // indirect
 	k8s.io/metrics v0.0.0 // indirect
 	k8s.io/mount-utils v0.29.0 // indirect
