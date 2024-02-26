@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
+	"github.com/k3s-io/k3s/pkg/util"
 
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -74,9 +75,9 @@ func restrictServiceAccounts(cisMode bool, namespaces []string) cmds.StartupHook
 		go func() {
 			defer wg.Done()
 			<-args.APIServerReady
-			cs, err := newClient(args.KubeConfigSupervisor, nil)
+			cs, err := util.GetClientSet(args.KubeConfigSupervisor)
 			if err != nil {
-				logrus.Fatalf("serviceAccount: new k8s client: %s", err.Error())
+				logrus.Fatalf("serviceAccount: new k8s client: %v", err)
 			}
 			nps := append(namespaces, "kube-node-lease")
 			for _, namespace := range nps {
