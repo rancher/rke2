@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
+	"github.com/k3s-io/k3s/pkg/util"
 	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -33,9 +34,9 @@ func cleanupStaticPodsOnSelfDelete(dataDir string) cmds.StartupHook {
 		go func() {
 			defer wg.Done()
 			<-args.APIServerReady
-			cs, err := newClient(args.KubeConfigSupervisor, nil)
+			cs, err := util.GetClientSet(args.KubeConfigSupervisor)
 			if err != nil {
-				logrus.Fatalf("spc: new k8s client: %s", err.Error())
+				logrus.Fatalf("spc: new k8s client: %v", err)
 			}
 			go watchForSelfDelete(ctx, dataDir, cs)
 		}()
