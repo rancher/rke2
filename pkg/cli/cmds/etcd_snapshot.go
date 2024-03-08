@@ -24,6 +24,7 @@ func NewEtcdSnapshotCommand() cli.Command {
 		"name":               copyFlag,
 		"dir":                copyFlag,
 		"snapshot-compress":  copyFlag,
+		"snapshot-retention": copyFlag,
 		"s3":                 copyFlag,
 		"s3-endpoint":        copyFlag,
 		"s3-endpoint-ca":     copyFlag,
@@ -39,9 +40,6 @@ func NewEtcdSnapshotCommand() cli.Command {
 	subcommandOpts := map[string]K3SFlagSet{
 		"ls": {
 			"output": copyFlag,
-		},
-		"prune": {
-			"snapshot-retention": copyFlag,
 		},
 	}
 
