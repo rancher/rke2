@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-BUILD_REGEX="build[0-9]+"
+BUILD_REGEX="[0-9]+"
 
 info() {
     echo '[INFO] ' "$@"
