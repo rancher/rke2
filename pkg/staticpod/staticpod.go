@@ -103,6 +103,15 @@ func Run(dir string, args Args) error {
 		return err
 	}
 
+	// Check to make sure we aren't double mounting directories and the files in those directories
+	for _, dir := range args.Dirs {
+		for _, file := range files {
+			if strings.HasPrefix(file, dir) {
+				logrus.Warnf("file %s is being double mounted with directory %s", file, dir)
+			}
+		}
+	}
+
 	args.Files = append(args.Files, files...)
 	pod, err := pod(args)
 	if err != nil {
@@ -375,6 +384,9 @@ func addExtraEnv(p *v1.Pod, extraEnv []string) {
 	}
 }
 
+// readFiles takes in the arguments passed to the static pod and returns a list of all files
+// embedded in those arguments to be included in the pod manifest as volumes.
+// excludeFiles are not included in the returned list.
 func readFiles(args, excludeFiles []string) ([]string, error) {
 	files := map[string]bool{}
 	excludes := map[string]bool{}
