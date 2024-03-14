@@ -118,7 +118,6 @@ type StaticPodConfig struct {
 	PSAConfigFile   string
 	KubeletPath     string
 	RuntimeEndpoint string
-	KubeProxyChan   chan struct{}
 	CISMode         bool
 	DisableETCD     bool
 	IsServer        bool
@@ -161,6 +160,13 @@ func (s *StaticPodConfig) Bootstrap(_ context.Context, nodeConfig *daemonconfig.
 	if s.IsServer {
 		return bootstrap.UpdateManifests(s.Resolver, nodeConfig, cfg)
 	}
+
+	// Remove the kube-proxy static pod manifest before starting the agent.
+	// If kube-proxy should run, the manifest will be recreated after the apiserver is up.
+	if err := staticpod.Remove(s.ManifestsDir, "kube-proxy"); err != nil {
+		logrus.Error(err)
+	}
+
 	return nil
 }
 
@@ -197,16 +203,11 @@ func (s *StaticPodConfig) Kubelet(ctx context.Context, args []string) error {
 		})
 	}()
 
-	go s.cleanupKubeProxy()
-
 	return nil
 }
 
 // KubeProxy starts Kube Proxy as a static pod.
 func (s *StaticPodConfig) KubeProxy(_ context.Context, args []string) error {
-	// close the channel so that the cleanup goroutine does not remove the pod manifest
-	close(s.KubeProxyChan)
-
 	image, err := s.Resolver.GetReference(images.KubeProxy)
 	if err != nil {
 		return err
@@ -662,21 +663,6 @@ func (s *StaticPodConfig) stopEtcd() error {
 	}
 
 	return nil
-}
-
-// cleanupKubeProxy waits to see if kube-proxy is run. If kube-proxy does not run and
-// close the channel within one minute of this goroutine being started by the kubelet
-// runner, then the kube-proxy static pod manifest is removed from disk. The kubelet will
-// clean up the static pod soon after.
-func (s *StaticPodConfig) cleanupKubeProxy() {
-	select {
-	case <-s.KubeProxyChan:
-		return
-	case <-time.After(time.Minute * 1):
-		if err := staticpod.Remove(s.ManifestsDir, "kube-proxy"); err != nil {
-			logrus.Error(err)
-		}
-	}
 }
 
 // chownr recursively changes the ownership of the given

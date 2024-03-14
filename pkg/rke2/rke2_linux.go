@@ -140,7 +140,6 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		PSAConfigFile:          podSecurityConfigFile,
 		KubeletPath:            cfg.KubeletPath,
 		RuntimeEndpoint:        containerRuntimeEndpoint,
-		KubeProxyChan:          make(chan struct{}),
 		DisableETCD:            clx.Bool("disable-etcd"),
 		IsServer:               isServer,
 		ControlPlaneResources:  *controlPlaneResources,
