@@ -319,9 +319,7 @@ func addVolumes(p *v1.Pod, src []string, dir bool) {
 }
 
 func addExtraMounts(p *v1.Pod, extraMounts []string) {
-	var (
-		sourceType = v1.HostPathDirectoryOrCreate
-	)
+	var sourceType v1.HostPathType
 
 	for i, rawMount := range extraMounts {
 		mount := strings.Split(rawMount, ":")
@@ -335,12 +333,35 @@ func addExtraMounts(p *v1.Pod, extraMounts []string) {
 			case "rw":
 				ro = false
 			default:
-				logrus.Errorf("unknown mount option: %s encountered in extra mount %s for pod %s", mount[2], rawMount, p.Name)
+				logrus.Errorf("Unknown mount option: %s encountered in extra mount %s for pod %s", mount[2], rawMount, p.Name)
 				continue
 			}
+		case 4:
+			sourceType = v1.HostPathType(mount[3])
 		default:
-			logrus.Errorf("mount for pod %s %s was not valid", p.Name, rawMount)
+			logrus.Errorf("Extra mount for pod %s %s was not valid", p.Name, rawMount)
 			continue
+		}
+
+		// If the source type was not specified, try to auto-detect.
+		// Paths that cannot be stat-ed are handled as DirectoryOrCreate.
+		// Only sockets, directories, and files are supported for auto-detection.
+		if sourceType == v1.HostPathUnset {
+			if info, err := os.Stat(mount[0]); err != nil {
+				if !os.IsNotExist(err) {
+					logrus.Warnf("Failed to stat mount for pod %s %s: %v", p.Name, mount[0], err)
+				}
+				sourceType = v1.HostPathDirectoryOrCreate
+			} else {
+				switch {
+				case info.Mode().Type() == fs.ModeSocket:
+					sourceType = v1.HostPathSocket
+				case info.IsDir():
+					sourceType = v1.HostPathDirectory
+				default:
+					sourceType = v1.HostPathFile
+				}
+			}
 		}
 
 		name := fmt.Sprintf("%s-%d", extraMountPrefix, i)
