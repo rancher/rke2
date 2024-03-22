@@ -327,6 +327,10 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 		dirs = append(dirs, filepath.Dir(auditLogFile))
 		excludeFiles = append(excludeFiles, auditLogFile)
 	}
+	// encryption config is refreshed by the secrets-encryption controller
+	// so we mount the directory to allow the pod to see the updates
+	dirs = append(dirs, filepath.Join(s.DataDir, "server/cred"))
+	excludeFiles = append(excludeFiles, filepath.Join(s.DataDir, "server/cred/encryption-config.json"))
 
 	apiServerArgs := staticpod.Args{
 		Command:       "kube-apiserver",
