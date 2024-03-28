@@ -109,18 +109,19 @@ type StaticPodConfig struct {
 	ControlPlaneProbeConfs
 	ControlPlaneEnv
 	ControlPlaneMounts
-	ManifestsDir    string
-	ImagesDir       string
-	Resolver        *images.Resolver
-	CloudProvider   *CloudProviderConfig
-	DataDir         string
-	AuditPolicyFile string
-	PSAConfigFile   string
-	KubeletPath     string
-	RuntimeEndpoint string
-	CISMode         bool
-	DisableETCD     bool
-	IsServer        bool
+	ManifestsDir     string
+	ImagesDir        string
+	Resolver         *images.Resolver
+	CloudProvider    *CloudProviderConfig
+	DataDir          string
+	AuditPolicyFile  string
+	PSAConfigFile    string
+	KubeletPath      string
+	RuntimeEndpoint  string
+	CISMode          bool
+	DisableETCD      bool
+	ExternalDatabase bool
+	IsServer         bool
 
 	stopKubelet context.CancelFunc
 }
@@ -265,6 +266,11 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 		case "--advertise-port", "--basic-auth-file":
 			// This is an option k3s adds that does not exist upstream
 			args = append(args[:i], args[i+1:]...)
+		case "--etcd-servers":
+			if s.ExternalDatabase {
+				args = append(args[:i], args[i+1:]...)
+				args = append([]string{"--etcd-servers=" + "unixs://" + filepath.Join(s.DataDir, "server", "kine.sock")}, args...)
+			}
 		case "--audit-log-path":
 			auditLogFile = value
 		case "--kubelet-preferred-address-types":
@@ -310,6 +316,12 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
+
+	sockets := []string{}
+	if s.ExternalDatabase {
+		sockets = append(sockets, kineSock(s.DataDir))
+	}
+
 	dirs := onlyExisting(ssldirs)
 	if auditLogFile != "" && auditLogFile != "-" {
 		dirs = append(dirs, filepath.Dir(auditLogFile))
@@ -320,41 +332,44 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 	dirs = append(dirs, filepath.Join(s.DataDir, "server/cred"))
 	excludeFiles = append(excludeFiles, filepath.Join(s.DataDir, "server/cred/encryption-config.json"))
 
+	apiServerArgs := staticpod.Args{
+		Command:       "kube-apiserver",
+		Args:          args,
+		Image:         image,
+		Dirs:          dirs,
+		CISMode:       s.CISMode,
+		CPURequest:    s.ControlPlaneResources.KubeAPIServerCPURequest,
+		CPULimit:      s.ControlPlaneResources.KubeAPIServerCPULimit,
+		MemoryRequest: s.ControlPlaneResources.KubeAPIServerMemoryRequest,
+		MemoryLimit:   s.ControlPlaneResources.KubeAPIServerMemoryLimit,
+		ExtraEnv:      s.ControlPlaneEnv.KubeAPIServer,
+		ExtraMounts:   s.ControlPlaneMounts.KubeAPIServer,
+		ProbeConfs:    s.ControlPlaneProbeConfs.KubeAPIServer,
+		Sockets:       sockets,
+		Files:         files,
+		ExcludeFiles:  excludeFiles,
+		HealthExec: []string{
+			"kubectl",
+			"get",
+			"--server=https://localhost:6443/",
+			"--client-certificate=" + s.DataDir + "/server/tls/client-kube-apiserver.crt",
+			"--client-key=" + s.DataDir + "/server/tls/client-kube-apiserver.key",
+			"--certificate-authority=" + s.DataDir + "/server/tls/server-ca.crt",
+			"--raw=/livez",
+		},
+		ReadyExec: []string{
+			"kubectl",
+			"get",
+			"--server=https://localhost:6443/",
+			"--client-certificate=" + s.DataDir + "/server/tls/client-kube-apiserver.crt",
+			"--client-key=" + s.DataDir + "/server/tls/client-kube-apiserver.key",
+			"--certificate-authority=" + s.DataDir + "/server/tls/server-ca.crt",
+			"--raw=/readyz",
+		},
+	}
+
 	return after(etcdReady, func() error {
-		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command:       "kube-apiserver",
-			Args:          args,
-			Image:         image,
-			Dirs:          dirs,
-			CISMode:       s.CISMode,
-			CPURequest:    s.ControlPlaneResources.KubeAPIServerCPURequest,
-			CPULimit:      s.ControlPlaneResources.KubeAPIServerCPULimit,
-			MemoryRequest: s.ControlPlaneResources.KubeAPIServerMemoryRequest,
-			MemoryLimit:   s.ControlPlaneResources.KubeAPIServerMemoryLimit,
-			ExtraEnv:      s.ControlPlaneEnv.KubeAPIServer,
-			ExtraMounts:   s.ControlPlaneMounts.KubeAPIServer,
-			ProbeConfs:    s.ControlPlaneProbeConfs.KubeAPIServer,
-			Files:         files,
-			ExcludeFiles:  excludeFiles,
-			HealthExec: []string{
-				"kubectl",
-				"get",
-				"--server=https://localhost:6443/",
-				"--client-certificate=" + s.DataDir + "/server/tls/client-kube-apiserver.crt",
-				"--client-key=" + s.DataDir + "/server/tls/client-kube-apiserver.key",
-				"--certificate-authority=" + s.DataDir + "/server/tls/server-ca.crt",
-				"--raw=/livez",
-			},
-			ReadyExec: []string{
-				"kubectl",
-				"get",
-				"--server=https://localhost:6443/",
-				"--client-certificate=" + s.DataDir + "/server/tls/client-kube-apiserver.crt",
-				"--client-key=" + s.DataDir + "/server/tls/client-kube-apiserver.key",
-				"--certificate-authority=" + s.DataDir + "/server/tls/server-ca.crt",
-				"--raw=/readyz",
-			},
-		})
+		return staticpod.Run(s.ManifestsDir, apiServerArgs)
 	})
 }
 
@@ -373,6 +388,12 @@ func (s *StaticPodConfig) Scheduler(_ context.Context, apiReady <-chan struct{},
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
+
+	sockets := []string{}
+	if s.ExternalDatabase {
+		sockets = append(sockets, kineSock(s.DataDir))
+	}
+
 	args = append(permitPortSharingFlag, args...)
 	return after(apiReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
@@ -390,6 +411,7 @@ func (s *StaticPodConfig) Scheduler(_ context.Context, apiReady <-chan struct{},
 			ExtraMounts:   s.ControlPlaneMounts.KubeScheduler,
 			ProbeConfs:    s.ControlPlaneProbeConfs.KubeScheduler,
 			Files:         files,
+			Sockets:       sockets,
 		})
 	})
 }
@@ -438,6 +460,12 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, apiReady <-chan s
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
+
+	sockets := []string{}
+	if s.ExternalDatabase {
+		sockets = append(sockets, kineSock(s.DataDir))
+	}
+
 	return after(apiReady, func() error {
 		extraArgs := []string{
 			"--flex-volume-plugin-dir=/var/lib/kubelet/volumeplugins",
@@ -460,6 +488,7 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, apiReady <-chan s
 			ExtraMounts:   s.ControlPlaneMounts.KubeControllerManager,
 			ProbeConfs:    s.ControlPlaneProbeConfs.KubeControllerManager,
 			Files:         files,
+			Sockets:       sockets,
 		})
 	})
 }
@@ -674,6 +703,10 @@ func chownr(path string, uid, gid int) error {
 		}
 		return err
 	})
+}
+
+func kineSock(dataDir string) string {
+	return filepath.Join(dataDir, "server", "kine.sock")
 }
 
 func etcdNameFile(dataDir string) string {
