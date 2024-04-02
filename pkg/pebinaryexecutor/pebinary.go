@@ -205,7 +205,7 @@ func (p *PEBinaryConfig) KubeProxy(ctx context.Context, args []string) error {
 	CNIConfig := p.CNIPlugin.GetConfig()
 	vip, err := p.CNIPlugin.ReserveSourceVip(ctx)
 	if err != nil || vip == "" {
-		logrus.Errorf("Failed to reserve VIP for kube-proxy: %s", err)
+		logrus.Errorf("Failed to reserve VIP for kube-proxy: %v", err)
 	}
 	logrus.Infof("Reserved VIP for kube-proxy: %s", vip)
 
