@@ -114,9 +114,12 @@ type Flannel struct {
 }
 
 type SourceVipResponse struct {
-	IP4 struct {
-		IP string `json:"ip"`
-	} `json:"ip4"`
+    CniVersion string `json:"cniVersion"`
+    IPs        []struct {
+        Address string `json:"address"`
+        Gateway string `json:"gateway"`
+    } `json:"ips"`
+    DNS struct{} `json:"dns"`
 }
 
 const (
@@ -333,8 +336,8 @@ func (f *Flannel) ReserveSourceVip(ctx context.Context) (string, error) {
 	logrus.Debugf("host-local will use the following subnet: %v to reserve the sourceIP", subnet)
 
 	configData := `{
-		"cniVersion": "0.2.0",
-		"name": "vxlan0",
+		"cniVersion": "1.0.0",
+		"name": "flannel.4096",
 		"ipam": {
 			"type": "host-local",
 			"ranges": [[{"subnet":"` + subnet + `"}]],
@@ -345,9 +348,9 @@ func (f *Flannel) ReserveSourceVip(ctx context.Context) (string, error) {
 	cmd := exec.Command("host-local.exe")
 	cmd.Env = append(os.Environ(),
 		"CNI_COMMAND=ADD",
-		"CNI_CONTAINERID=dummy",
-		"CNI_NETNS=dummy",
-		"CNI_IFNAME=dummy",
+		"CNI_CONTAINERID=kube-proxy",
+		"CNI_NETNS=kube-proxy",
+		"CNI_IFNAME=source-vip",
 		"CNI_PATH="+f.CNICfg.CNIBinDir,
 	)
 
@@ -355,7 +358,7 @@ func (f *Flannel) ReserveSourceVip(ctx context.Context) (string, error) {
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		logrus.WithError(err).Warning("Failed to execute host-local.exe")
-		logrus.Errorf("This is the output: %v", strings.TrimSpace(string(out)))
+		logrus.Infof("This is the output: %v", strings.TrimSpace(string(out)))
 		return "", err
 	}
 
@@ -367,5 +370,9 @@ func (f *Flannel) ReserveSourceVip(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	return strings.TrimSpace(strings.Split(sourceVipResp.IP4.IP, "/")[0]), nil
+	if len(sourceVipResp.IPs) > 0 {
+		return strings.TrimSpace(strings.Split(sourceVipResp.IPs[0].Address, "/")[0]), nil
+	}
+	
+	return "", errors.New("no source vip reserved")
 }
