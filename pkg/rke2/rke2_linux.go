@@ -57,10 +57,19 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		return nil, err
 	}
 
+	// Verify if the user want to use kine as the datastore
+	// and then remove the etcd from the static pod
+	ExternalDatabase := false
+	if cmds.ServerConfig.DatastoreEndpoint != "" {
+		cmds.ServerConfig.ClusterInit = false
+		cmds.ServerConfig.KineTLS = true
+		ExternalDatabase = true
+	} else {
+		managed.RegisterDriver(&etcd.ETCD{})
+	}
+
 	agentManifestsDir := filepath.Join(dataDir, "agent", config.DefaultPodManifestPath)
 	agentImagesDir := filepath.Join(dataDir, "agent", "images")
-
-	managed.RegisterDriver(&etcd.ETCD{})
 
 	if clx.IsSet("cloud-provider-config") || clx.IsSet("cloud-provider-name") {
 		if clx.IsSet("node-external-ip") {
@@ -115,6 +124,7 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 	if err != nil {
 		return nil, err
 	}
+
 	// Adding PSAs
 	podSecurityConfigFile := clx.String("pod-security-admission-config-file")
 	if podSecurityConfigFile == "" {
@@ -141,6 +151,7 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		KubeletPath:            cfg.KubeletPath,
 		RuntimeEndpoint:        containerRuntimeEndpoint,
 		DisableETCD:            clx.Bool("disable-etcd"),
+		ExternalDatabase:       ExternalDatabase,
 		IsServer:               isServer,
 		ControlPlaneResources:  *controlPlaneResources,
 		ControlPlaneProbeConfs: *controlPlaneProbeConfs,
@@ -154,7 +165,7 @@ func parseControlPlaneResources(cfg Config) (*podexecutor.ControlPlaneResources,
 	// resources is a map of the component (kube-apiserver, kube-controller-manager, etc.) to a map[string]*string,
 	// where the key of the downstream map is the `cpu-request`, `cpu-limit`, `memory-request`, or `memory-limit` and
 	// the value corresponds to a pointer to the component resources array
-	var resources = map[string]map[string]*string{
+	resources := map[string]map[string]*string{
 		KubeAPIServer: {
 			CPURequest:    &controlPlaneResources.KubeAPIServerCPURequest,
 			CPULimit:      &controlPlaneResources.KubeAPIServerCPULimit,
@@ -194,7 +205,7 @@ func parseControlPlaneResources(cfg Config) (*podexecutor.ControlPlaneResources,
 	}
 
 	// defaultResources contains a map of default resources for each component, used if not explicitly configured.
-	var defaultResources = map[string]map[string]string{
+	defaultResources := map[string]map[string]string{
 		KubeAPIServer: {
 			CPURequest:    "250m",
 			MemoryRequest: "1024Mi",
@@ -221,7 +232,7 @@ func parseControlPlaneResources(cfg Config) (*podexecutor.ControlPlaneResources,
 		},
 	}
 
-	var parsedRequestsLimits = make(map[string]string)
+	parsedRequestsLimits := make(map[string]string)
 
 	for _, requests := range cfg.ControlPlaneResourceRequests {
 		for _, rawRequest := range strings.Split(requests, ",") {
@@ -261,7 +272,7 @@ func parseControlPlaneProbeConfs(cfg Config) (*podexecutor.ControlPlaneProbeConf
 	var controlPlaneProbes podexecutor.ControlPlaneProbeConfs
 	// probes is a map of the component (kube-apiserver, kube-controller-manager, etc.) probe type, and setting, where
 	// the value corresponds to a pointer to the component probes array.
-	var probes = map[string]map[string]map[string]*int32{
+	probes := map[string]map[string]map[string]*int32{
 		KubeAPIServer: {
 			Liveness: {
 				InitialDelaySeconds: &controlPlaneProbes.KubeAPIServer.Liveness.InitialDelaySeconds,
@@ -385,7 +396,7 @@ func parseControlPlaneProbeConfs(cfg Config) (*podexecutor.ControlPlaneProbeConf
 	}
 
 	// defaultProbeConf contains a map of default probe settings for each type, used if not explicitly configured.
-	var defaultProbeConf = map[string]map[string]int32{
+	defaultProbeConf := map[string]map[string]int32{
 		// https://github.com/kubernetes/kubernetes/blob/v1.24.0/cmd/kubeadm/app/util/staticpod/utils.go#L246
 		Liveness: {
 			InitialDelaySeconds: 10,
@@ -409,7 +420,7 @@ func parseControlPlaneProbeConfs(cfg Config) (*podexecutor.ControlPlaneProbeConf
 		},
 	}
 
-	var parsedProbeConf = make(map[string]int32)
+	parsedProbeConf := make(map[string]int32)
 
 	for _, conf := range cfg.ControlPlaneProbeConf {
 		for _, rawConf := range strings.Split(conf, ",") {
