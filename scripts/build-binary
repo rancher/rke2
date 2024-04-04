@@ -13,6 +13,11 @@ else
     DEBUG_GO_GCFLAGS='-gcflags=all=-N -l'
 fi
 
+if [ -n "${GOCOVER}" ]; then
+    GO_BUILDTAGS="${GO_BUILDTAGS} cover"
+    GO_BUILD_FLAGS="${GO_BUILD_FLAGS} -cover"
+fi
+
 REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
 RELEASE=${PROG}.${GOOS}-${GOARCH}
 

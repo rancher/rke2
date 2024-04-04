@@ -45,7 +45,7 @@ jobs:
       run: sudo apt-get install -y libarchive-tools
     - name: Build RKE2 Binary and Runtime Image
       run: |
-        make build-binary
+        GOCOVER=true make build-binary
         make package-image-runtime
         cp ./bin/rke2 ./build/images/rke2-binary
     # Can only upload from a single path, so we need to copy the binary to the image directory
@@ -64,6 +64,8 @@ jobs:
       matrix:
         itest: [etcdsnapshot]
       max-parallel: 3
+    env:
+      GOCOVERDIR: /tmp/rke2cov
     steps:
     - name: Checkout
       uses: actions/checkout@v4
