@@ -102,6 +102,9 @@ jobs:
         files: ./${{ matrix.itest }}.out
         flags: inttests # optional
         verbose: true # optional (default = false)
+    - name: On Failure, Dump Server Logs
+      if: ${{ failure() }}
+      run: cat ./tests/integration/${{ matrix.itest }}/r2log.txt
     - name: On Failure, Launch Debug Session
       uses: dereknola/action-upterm@main
       if: ${{ failure() }}

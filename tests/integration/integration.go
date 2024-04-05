@@ -171,15 +171,13 @@ func Cleanup(rke2TestLock int) error {
 	if err != nil {
 		return err
 	}
-
-	cmd = exec.Command(uninstall)
-	if err := cmd.Run(); err != nil {
-		return err
-	}
+	// We don't care about the return value of the uninstall script,
+	// as it will always return an error because no rk2e service is running
+	exec.Command(uninstall).Run()
 
 	// Restore the agent/images directory
 	if err := os.MkdirAll("/var/lib/rancher/rke2/agent", 0755); err != nil {
-		return err
+		return fmt.Errorf("failed to make agent directory: %w", err)
 	}
 	cmd = exec.Command("mv", "/tmp/images-backup", "/var/lib/rancher/rke2/agent/images")
 	if res, err := cmd.CombinedOutput(); err != nil {
