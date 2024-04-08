@@ -28,7 +28,6 @@ func Test_UnitInitExecutor(t *testing.T) {
 		{
 			name: "agent",
 			args: args{
-				clx: cli.NewContext(nil, flag.NewFlagSet("test", 0), nil),
 				cfg: Config{
 					ControlPlaneProbeConf:        []string{"kube-proxy-startup-initial-delay-seconds=42"},
 					ControlPlaneResourceLimits:   []string{"kube-proxy-cpu=123m"},
@@ -62,7 +61,6 @@ func Test_UnitInitExecutor(t *testing.T) {
 		{
 			name: "server",
 			args: args{
-				clx: cli.NewContext(nil, flag.NewFlagSet("test", 0), nil),
 				cfg: Config{
 					ControlPlaneProbeConf:        []string{"kube-proxy-startup-initial-delay-seconds=123"},
 					ControlPlaneResourceLimits:   []string{"kube-proxy-cpu=42m"},
@@ -96,7 +94,6 @@ func Test_UnitInitExecutor(t *testing.T) {
 		{
 			name: "bad probe conf",
 			args: args{
-				clx: cli.NewContext(nil, flag.NewFlagSet("test", 0), nil),
 				cfg: Config{
 					ControlPlaneProbeConf: []string{"kube-proxy-startup-initial-delay-seconds=-123"},
 				},
@@ -106,7 +103,6 @@ func Test_UnitInitExecutor(t *testing.T) {
 		{
 			name: "bad control plane limits",
 			args: args{
-				clx: cli.NewContext(nil, flag.NewFlagSet("test", 0), nil),
 				cfg: Config{
 					ControlPlaneResourceLimits: []string{"kube-proxy-cpu"},
 				},
@@ -116,7 +112,6 @@ func Test_UnitInitExecutor(t *testing.T) {
 		{
 			name: "bad control plane requests",
 			args: args{
-				clx: cli.NewContext(nil, flag.NewFlagSet("test", 0), nil),
 				cfg: Config{
 					ControlPlaneResourceRequests: []string{"kube-proxy-memory"},
 				},
@@ -126,6 +121,10 @@ func Test_UnitInitExecutor(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Override the pss location so we attempt to create a file that needs sudo, not what we are testing anyways
+			flagSet := flag.NewFlagSet("test", 0)
+			flagSet.String("pod-security-admission-config-file", "/tmp/pss.yaml", "")
+			tt.args.clx = cli.NewContext(nil, flagSet, nil)
 			got, err := initExecutor(tt.args.clx, tt.args.cfg, tt.args.isServer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("initExecutor() error = %v, wantErr %v", err, tt.wantErr)
