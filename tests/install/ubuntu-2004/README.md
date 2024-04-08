@@ -1,4 +1,4 @@
-RKE2 Install on Ubuntu Focal Fossa
+RKE2 Install on Ubuntu 20.04 Focal Fossa
 ---
 
 Asserting correctness of the RKE2 installer script on [Ubuntu 20.04](https://releases.ubuntu.com/20.04/).

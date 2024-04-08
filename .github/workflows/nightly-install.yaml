@@ -13,10 +13,10 @@ jobs:
       fail-fast: false
       matrix:
         channel: [stable]
-        vm: [centos-7, rocky-8, opensuse-leap, ubuntu-focal, windows-2019, windows-2022]
+        vm: [centos-7, rocky-8, opensuse-leap, ubuntu-2004, windows-2019, windows-2022]
         include:
           - {channel: latest, vm: rocky-8}
-          - {channel: latest, vm: ubuntu-focal}
+          - {channel: latest, vm: ubuntu-2004}
       max-parallel: 2
     defaults:
       run:
