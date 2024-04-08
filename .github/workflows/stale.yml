@@ -15,7 +15,6 @@ jobs:
         with:
           # ensure PRs are exempt
           days-before-pr-stale: -1
-          day-before-pr-closed: -1
           
           days-before-issue-stale: 45
           days-before-issue-close: 14
