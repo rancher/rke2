@@ -1,0 +1,47 @@
+name: Unit Test Coverage
+on:
+  push:
+    paths-ignore:
+      - "**.md"
+      - "channels.yaml"
+      - "install.sh"
+      - "tests/**"
+      - ".github/**"
+      - "!.github/workflows/unittest.yaml"
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "channels.yaml"
+      - "install.sh"
+      - "tests/**"
+      - ".github/**"
+      - "!.github/workflows/unittest.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with: 
+        go-version-file: 'go.mod'
+    - name: Run Unit Tests
+      run: | 
+        go test -coverpkg=./... -coverprofile=coverage.out ./pkg/... -run Unit
+        go tool cover -func coverage.out
+    - name: Upload Results To Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.out
+        flags: unittests # optional
+        verbose: true # optional (default = false)
