@@ -1,0 +1,14 @@
+#!/bin/bash
+set -ex
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+
+if [ "${GOARCH}" == "s390x" ] || [ "${GOARCH}" == "arm64" ]; then
+    exit 0
+fi
+
+docker image save \
+    ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} | \
+    zstd -T0 -16 -f --long=25 --no-progress - -o build/images/${PROG}-images.${PLATFORM}.tar.zst

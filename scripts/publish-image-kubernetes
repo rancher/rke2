@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-set -ex
-
-cd $(dirname $0)/..
-
-source ./scripts/version.sh
-
-docker image push ${REPO}/hardened-kubernetes:${DOCKERIZED_VERSION}-${GOARCH}
