@@ -26,7 +26,9 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v4
         with: {fetch-depth: 1}
+      # Don't cache Windows VMs, they are 5GB each, which would eat our entire 10GB cache
       - name: "Vagrant Cache"
+        if: ${{ !contains(matrix.vm, 'windows') }}
         uses: actions/cache@v4
         with:
           path: |
