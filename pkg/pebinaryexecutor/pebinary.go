@@ -100,7 +100,7 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 	if err != nil {
 		return err
 	}
-	if err := os.Setenv("PATH", execPath+":"+os.Getenv("PATH")); err != nil {
+	if err := os.Setenv("PATH", execPath+";"+os.Getenv("PATH")); err != nil {
 		return err
 	}
 
