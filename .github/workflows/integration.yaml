@@ -33,9 +33,16 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 1
+    - name: Find Go Version for Build
+      id: go-finder
+      run: |
+        GOOS=linux GOARCH=amd64 . ./scripts/version.sh
+        set +x
+        VERSION_GOLANG=$(echo $VERSION_GOLANG | sed 's/go//')
+        echo "VERSION_GOLANG=${VERSION_GOLANG}" >> "$GITHUB_OUTPUT"
     - uses: actions/setup-go@v5
       with:
-        go-version-file: 'go.mod'
+        go-version: ${{ steps.go-finder.outputs.VERSION_GOLANG }}
         cache-dependency-path: |
           **/go.sum
           **/go.mod
