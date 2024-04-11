@@ -258,9 +258,9 @@ func (f *Flannel) Start(ctx context.Context) error {
 
 	// Wait for the node to be registered in the cluster
 	if err := wait.PollImmediateWithContext(ctx, 3*time.Second, 5*time.Minute, func(ctx context.Context) (bool, error) {
+		logrus.Infof("Checking if node %s is already registered before starting flanneld", f.CNICfg.Hostname)
 		_, err := f.KubeClient.CoreV1().Nodes().Get(ctx, f.CNICfg.Hostname, metav1.GetOptions{})
 		if err != nil {
-			logrus.WithError(err).Warningf("Flanneld can't start because it can't find node, retrying %s", f.CNICfg.Hostname)
 			return false, nil
 		} else {
 			logrus.Infof("Node %s registered. Flanneld can start", f.CNICfg.Hostname)
@@ -293,15 +293,25 @@ func startFlannel(ctx context.Context, config *FlannelConfig, logPath string) {
 		fmt.Sprintf("--net-config-path=%s", filepath.Join(config.ConfigPath, FlanneldConfigName)),
 	}
 
-	logrus.Infof("Flanneld Envs: %s and args: %v", specificEnvs, args)
-	cmd := exec.CommandContext(ctx, "flanneld.exe", args...)
-	cmd.Env = append(specificEnvs)
-	cmd.Stdout = outputFile
-	cmd.Stderr = outputFile
-	if err := cmd.Run(); err != nil {
-		logrus.Errorf("Flanneld has an error: %v. Check %s for extra information", err, logPath)
+	// We retry running Flanneld 5 times before giving up
+	maxretries := 5
+	for i:=0; i < maxretries; i++ {
+		logrus.Infof("Running flanneld with envs: %s and args: %v", specificEnvs, args)
+		cmd := exec.CommandContext(ctx, "flanneld.exe", args...)
+		cmd.Env = append(specificEnvs)
+		cmd.Stdout = outputFile
+		cmd.Stderr = outputFile
+		if err := cmd.Run(); err != nil {
+			if errors.Is(err, context.Canceled) {
+				logrus.Error("Context was canceled. Not retrying flanneld")
+				break
+			}
+			logrus.Errorf("Flanneld has an error: %v. Check %s for extra information", err, logPath)
+		}
+		if i < (maxretries - 1) {
+			logrus.Error("Flanneld exited. Retrying.")
+		}
 	}
-	logrus.Error("Flanneld exited")
 }
 
 // ReserveSourceVip reserves an IP that will be used as source VIP by kube-proxy. It uses host-local CNI plugin to reserve the IP
