@@ -38,7 +38,7 @@ var _ = Describe("etcd snapshots", Ordered, func() {
 		})
 		It("saves an etcd snapshot", func() {
 			Expect(testutil.RKE2Cmd("etcd-snapshot", "save")).
-				To(ContainSubstring("Saving etcd snapshot to /var/lib/rancher/rke2/server/db/snapshots/on-demand"))
+				To(And(ContainSubstring("Snapshot on-demand-"), ContainSubstring(" saved.")))
 		})
 		It("list snapshots", func() {
 			Expect(testutil.RKE2Cmd("etcd-snapshot", "ls")).
@@ -51,13 +51,13 @@ var _ = Describe("etcd snapshots", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 			snapshotName := reg.FindString(lsResult)
 			Expect(testutil.RKE2Cmd("etcd-snapshot", "delete", snapshotName)).
-				To(ContainSubstring(fmt.Sprintf("Snapshot %s deleted locally", snapshotName)))
+				To(ContainSubstring(fmt.Sprintf("Snapshot %s deleted", snapshotName)))
 		})
 	})
 	When("saving a custom name", func() {
 		It("saves an etcd snapshot with a custom name", func() {
 			Expect(testutil.RKE2Cmd("etcd-snapshot", "save", "--name", "ALIVEBEEF")).
-				To(ContainSubstring("Saving etcd snapshot to /var/lib/rancher/rke2/server/db/snapshots/ALIVEBEEF"))
+				To(And(ContainSubstring("Snapshot ALIVEBEEF-"), ContainSubstring(" saved.")))
 		})
 		It("deletes that snapshot", func() {
 			lsResult, err := testutil.RKE2Cmd("etcd-snapshot", "ls")
@@ -66,19 +66,19 @@ var _ = Describe("etcd snapshots", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred())
 			snapshotName := reg.FindString(lsResult)
 			Expect(testutil.RKE2Cmd("etcd-snapshot", "delete", snapshotName)).
-				To(ContainSubstring(fmt.Sprintf("Snapshot %s deleted locally", snapshotName)))
+				To(ContainSubstring("Snapshot %s deleted.", snapshotName))
 		})
 	})
 	When("using etcd snapshot prune", func() {
 		It("saves 3 different snapshots", func() {
 			Expect(testutil.RKE2Cmd("etcd-snapshot", "save", "--name", "PRUNE_TEST")).
-				To(ContainSubstring("Saving etcd snapshot to /var/lib/rancher/rke2/server/db/snapshots/PRUNE_TEST"))
+				To(And(ContainSubstring("Snapshot PRUNE_TEST-"), ContainSubstring(" saved.")))
 			time.Sleep(1 * time.Second)
 			Expect(testutil.RKE2Cmd("etcd-snapshot", "save", "--name", "PRUNE_TEST")).
-				To(ContainSubstring("Saving etcd snapshot to /var/lib/rancher/rke2/server/db/snapshots/PRUNE_TEST"))
+				To(And(ContainSubstring("Snapshot PRUNE_TEST-"), ContainSubstring(" saved.")))
 			time.Sleep(1 * time.Second)
 			Expect(testutil.RKE2Cmd("etcd-snapshot", "save", "--name", "PRUNE_TEST")).
-				To(ContainSubstring("Saving etcd snapshot to /var/lib/rancher/rke2/server/db/snapshots/PRUNE_TEST"))
+				To(And(ContainSubstring("Snapshot PRUNE_TEST-"), ContainSubstring(" saved.")))
 			time.Sleep(1 * time.Second)
 		})
 		It("lists all 3 snapshots", func() {
@@ -91,7 +91,7 @@ var _ = Describe("etcd snapshots", Ordered, func() {
 		})
 		It("prunes snapshots down to 2", func() {
 			Expect(testutil.RKE2Cmd("etcd-snapshot", "prune", "--snapshot-retention", "2", "--name", "PRUNE_TEST")).
-				To(ContainSubstring("Applying snapshot retention=2"))
+				To(ContainSubstring(" deleted."))
 			lsResult, err := testutil.RKE2Cmd("etcd-snapshot", "ls")
 			Expect(err).ToNot(HaveOccurred())
 			reg, err := regexp.Compile(`:///var/lib/rancher/rke2/server/db/snapshots/PRUNE_TEST`)
@@ -107,7 +107,7 @@ var _ = Describe("etcd snapshots", Ordered, func() {
 				g.Expect(err).ToNot(HaveOccurred())
 				for _, snapshotName := range reg.FindAllString(lsResult, -1) {
 					g.Expect(testutil.RKE2Cmd("etcd-snapshot", "delete", snapshotName)).
-						To(ContainSubstring(fmt.Sprintf("Snapshot %s deleted locally", snapshotName)))
+						To(ContainSubstring("Snapshot %s deleted.", snapshotName))
 				}
 			}, "20s", "5s").Should(Succeed())
 		})
