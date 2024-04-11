@@ -35,9 +35,20 @@ func NewCertCommand() cli.Command {
 				Default: rke2Path,
 			},
 		},
+		"check": {
+			"alsologtostderr": copyFlag,
+			"config":          copyFlag,
+			"debug":           copyFlag,
+			"log":             copyFlag,
+			"service":         copyFlag,
+			"data-dir": {
+				Usage:   "(data) Folder to hold state",
+				Default: rke2Path,
+			},
+		},
 	}
 
-	command := cmds.NewCertCommands(Rotate, cert.RotateCA)
+	command := cmds.NewCertCommands(Rotate, cert.RotateCA, cert.Check)
 	command.Usage = "Manage RKE2 certificates"
 	configfilearg.DefaultParser.ValidFlags[command.Name] = command.Flags
 	for i, subcommand := range command.Subcommands {
