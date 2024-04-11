@@ -49,16 +49,16 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
-    ${REGISTRY}/rancher/mirrored-calico-operator:v1.32.5
-    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.27.2
-    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.27.2
-    ${REGISTRY}/rancher/mirrored-calico-typha:v3.27.2
-    ${REGISTRY}/rancher/mirrored-calico-node:v3.27.2
-    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.27.2
-    ${REGISTRY}/rancher/mirrored-calico-cni:v3.27.2
-    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.27.2
-    ${REGISTRY}/rancher/mirrored-calico-csi:v3.27.2
-    ${REGISTRY}/rancher/mirrored-calico-node-driver-registrar:v3.27.2
+    ${REGISTRY}/rancher/mirrored-calico-operator:v1.32.7
+    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.27.3
+    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.27.3
+    ${REGISTRY}/rancher/mirrored-calico-typha:v3.27.3
+    ${REGISTRY}/rancher/mirrored-calico-node:v3.27.3
+    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.27.3
+    ${REGISTRY}/rancher/mirrored-calico-cni:v3.27.3
+    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.27.3
+    ${REGISTRY}/rancher/mirrored-calico-csi:v3.27.3
+    ${REGISTRY}/rancher/mirrored-calico-node-driver-registrar:v3.27.3
 EOF
 
 if [ "${GOARCH}" != "arm64" ]; then
