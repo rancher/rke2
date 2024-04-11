@@ -26,6 +26,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
+	hostlocaldisk "github.com/containernetworking/plugins/plugins/ipam/host-local/backend/disk"
+
 	"k8s.io/utils/pointer"
 )
 
@@ -114,19 +116,22 @@ type Flannel struct {
 }
 
 type SourceVipResponse struct {
-    CniVersion string `json:"cniVersion"`
-    IPs        []struct {
-        Address string `json:"address"`
-        Gateway string `json:"gateway"`
-    } `json:"ips"`
-    DNS struct{} `json:"dns"`
+	CniVersion string `json:"cniVersion"`
+	IPs        []struct {
+		Address string `json:"address"`
+		Gateway string `json:"gateway"`
+	} `json:"ips"`
+	DNS struct{} `json:"dns"`
 }
 
 const (
-	FlannelConfigName     = "07-flannel.conflist"
-	FlannelKubeConfigName = "flannel.kubeconfig"
-	FlanneldConfigName    = "flanneld-net-conf.json"
-	FlannelChart          = "rke2-flannel"
+	flannelConfigName      = "07-flannel.conflist"
+	flannelKubeConfigName  = "flannel.kubeconfig"
+	flanneldConfigName     = "flanneld-net-conf.json"
+	FlannelChart           = "rke2-flannel"
+	hostlocalContainerID   = "kube-proxy"
+	hostlocalInterfaceName = "source-vip"
+	hostLocalDataDir       = "/var/lib/cni/networks"
 )
 
 // GetConfig returns the CNI configuration
@@ -186,17 +191,17 @@ func (f *Flannel) initializeConfig(ctx context.Context, nodeConfig *daemonconfig
 func (f *Flannel) writeConfigFiles() error {
 
 	// Create flannelKubeConfig
-	if err := f.renderFlannelConfig(filepath.Join(f.CNICfg.ConfigPath, FlannelKubeConfigName), flannelKubeConfigTemplate); err != nil {
+	if err := f.renderFlannelConfig(filepath.Join(f.CNICfg.ConfigPath, flannelKubeConfigName), flannelKubeConfigTemplate); err != nil {
 		return err
 	}
 
 	// Create flanneld config
-	if err := f.renderFlannelConfig(filepath.Join(f.CNICfg.ConfigPath, FlanneldConfigName), flanneldConfigTemplate); err != nil {
+	if err := f.renderFlannelConfig(filepath.Join(f.CNICfg.ConfigPath, flanneldConfigName), flanneldConfigTemplate); err != nil {
 		return err
 	}
 
 	// Create flannel CNI conflist
-	if err := f.renderFlannelConfig(filepath.Join(f.CNICfg.CNIConfDir, FlannelConfigName), flannelCniConflistTemplate); err != nil {
+	if err := f.renderFlannelConfig(filepath.Join(f.CNICfg.CNIConfDir, flannelConfigName), flannelCniConflistTemplate); err != nil {
 		return err
 	}
 
@@ -285,12 +290,12 @@ func startFlannel(ctx context.Context, config *FlannelConfig, logPath string) {
 	}
 
 	args := []string{
-		fmt.Sprintf("--kubeconfig-file=%s", filepath.Join(config.ConfigPath, FlannelKubeConfigName)),
+		fmt.Sprintf("--kubeconfig-file=%s", filepath.Join(config.ConfigPath, flannelKubeConfigName)),
 		"--ip-masq",
 		"--kube-subnet-mgr",
 		"--iptables-forward-rules=false",
 		fmt.Sprintf("--iface=%s", config.Interface),
-		fmt.Sprintf("--net-config-path=%s", filepath.Join(config.ConfigPath, FlanneldConfigName)),
+		fmt.Sprintf("--net-config-path=%s", filepath.Join(config.ConfigPath, flanneldConfigName)),
 	}
 
 	logrus.Infof("Flanneld Envs: %s and args: %v", specificEnvs, args)
@@ -331,26 +336,38 @@ func (f *Flannel) ReserveSourceVip(ctx context.Context) (string, error) {
 		return "", err
 	}
 
+	// Check if the source vip was already reserved using host-local library
+	hostlocalStore, err := hostlocaldisk.New(f.CNICfg.OverlayNetName, hostLocalDataDir)
+	if err != nil {
+		return "", fmt.Errorf("failed to create host-local store: %w", err)
+	}
+	ips := hostlocalStore.GetByID(hostlocalContainerID, hostlocalInterfaceName)
+	if len(ips) > 0 {
+		logrus.Infof("Source VIP for kube-proxy was already reserved %v", ips)
+		return strings.TrimSpace(strings.Split(ips[0].String(), "/")[0]), nil
+	}
+
+	logrus.Info("No source VIP for kube-proxy reserved. Creating one")
 	subnet := network.Subnets[0].AddressPrefix
 
 	logrus.Debugf("host-local will use the following subnet: %v to reserve the sourceIP", subnet)
 
 	configData := `{
 		"cniVersion": "1.0.0",
-		"name": "flannel.4096",
+		"name": "` + f.CNICfg.OverlayNetName + `",
 		"ipam": {
 			"type": "host-local",
 			"ranges": [[{"subnet":"` + subnet + `"}]],
-			"dataDir": "/var/lib/cni/networks"
+			"dataDir": "` + hostLocalDataDir + `"
 		}
 	}`
 
 	cmd := exec.Command("host-local.exe")
 	cmd.Env = append(os.Environ(),
 		"CNI_COMMAND=ADD",
-		"CNI_CONTAINERID=kube-proxy",
+		"CNI_CONTAINERID="+hostlocalContainerID,
 		"CNI_NETNS=kube-proxy",
-		"CNI_IFNAME=source-vip",
+		"CNI_IFNAME="+hostlocalInterfaceName,
 		"CNI_PATH="+f.CNICfg.CNIBinDir,
 	)
 
@@ -373,6 +390,6 @@ func (f *Flannel) ReserveSourceVip(ctx context.Context) (string, error) {
 	if len(sourceVipResp.IPs) > 0 {
 		return strings.TrimSpace(strings.Split(sourceVipResp.IPs[0].Address, "/")[0]), nil
 	}
-	
+
 	return "", errors.New("no source vip reserved")
 }
