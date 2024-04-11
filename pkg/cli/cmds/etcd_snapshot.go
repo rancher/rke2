@@ -21,6 +21,10 @@ func NewEtcdSnapshotCommand() cli.Command {
 			Usage:   "(data) Folder to hold state",
 			Default: rke2Path,
 		},
+		"server": {
+			Default: "https://127.0.0.1:9345",
+		},
+		"token":              copyFlag,
 		"name":               copyFlag,
 		"dir":                copyFlag,
 		"snapshot-compress":  copyFlag,
