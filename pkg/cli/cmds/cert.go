@@ -48,7 +48,7 @@ func NewCertCommand() cli.Command {
 		},
 	}
 
-	command := cmds.NewCertCommands(Rotate, cert.RotateCA, cert.Check)
+	command := cmds.NewCertCommands(cert.Check, Rotate, cert.RotateCA)
 	command.Usage = "Manage RKE2 certificates"
 	configfilearg.DefaultParser.ValidFlags[command.Name] = command.Flags
 	for i, subcommand := range command.Subcommands {
