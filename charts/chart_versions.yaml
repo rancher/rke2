@@ -29,7 +29,7 @@ charts:
   - version: 1.7.001
     filename: /charts/rancher-vsphere-cpi.yaml
     bootstrap: true
-  - version: 3.1.2-rancher101
+  - version: 3.1.2-rancher300
     filename: /charts/rancher-vsphere-csi.yaml
     bootstrap: true
   - version: 0.2.300
