@@ -275,7 +275,7 @@ func removeDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems 
 func isCISMode(clx *cli.Context) bool {
 	profile := clx.String("profile")
 	if profile == CISProfile123 {
-		logrus.Warn("cis-1.23 profile is deprecated and will be removed in v1.29. Please use cis instead.")
+		logrus.Fatal("cis-1.23 profile is deprecated. Please use \"cis\" instead.")
 	}
 	return profile == CISProfile123 || profile == CISProfile
 }
