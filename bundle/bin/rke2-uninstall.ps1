@@ -272,6 +272,13 @@ function Remove-Containerd () {
     }
 
     if (ctr) {
+        # We create a lockfile to prevent rke2 service from starting kubelet again
+        Create-Lockfile
+        Stop-Process -Name "kubelet"
+        while (-Not(Get-Process -Name "kubelet").HasExited) {
+            Write-LogInfo "Waiting for kubelet process to stop"
+            Start-Sleep -s 5
+        }
         $namespaces = $(Find-Namespaces)
         if (-Not($namespaces)) {
             $ErrorActionPreference = 'SilentlyContinue'
@@ -292,10 +299,23 @@ function Remove-Containerd () {
             foreach ($image in $images) {
                 Remove-Image $ns $image
             }
-            Remove-Namespace $ns
-            # TODO
-            # clean pods with crictl
-            # $CONTAINER_RUNTIME_ENDPOINT = "npipe:\\.\\pipe\\containerd-containerd"
+        }
+
+        # Some resources in the namespace take a while to disappear. Try several times to remove the namespace and give up after 30s 
+        $endTime = (Get-Date).AddSeconds(30)
+        while ((Get-Date) -lt $endTime) {
+            $namespaces = $(Find-Namespaces)
+            if ($namespaces) {
+                foreach ($ns in $namespaces) {
+                    Remove-Namespace $ns
+                }
+            } else {
+                break
+            }
+            Start-Sleep -Seconds 5
+            if ((Get-Date) -ge $endTime) {
+                Write-Output "Unable to remove all namespaces"
+            }
         }
     }
     else {
@@ -343,6 +363,20 @@ function Remove-Container() {
 function Remove-Namespace() {
     $namespace = $args[0]
     Invoke-Ctr -cmd "namespace remove $namespace"
+}
+
+function Create-Lockfile() {
+    # We fetch ctr.exe path and place the lock there
+    $command = Get-Command ctr -ErrorAction SilentlyContinue
+    if ($command) {
+        $executablePath = $command.Source
+        $dataBinDirDirectory = Split-Path -Parent $executablePath
+        $lockFilePath = Join-Path -Path $dataBinDirDirectory -ChildPath "rke2-uninstall.lock"
+        New-Item -ItemType File -Path $lockFilePath -Force
+    } else {
+	# ctr should exist at this point but just in case we add this log
+        Write-Host "ctr.exe not found, container cleanup and RKE2 uninstallation is unlikely to succeed."
+    }
 }
 
 function Invoke-Rke2Uninstall () {
