@@ -34,7 +34,7 @@ func register(ctx context.Context,
 		ctx: ctx,
 		k8s: k8s,
 	}
-	logrus.Debugf("CISNetworkPolicyController: Registering controller hooks")
+	logrus.Debugf("CISNetworkPolicyController: Registering controller hooks for NetworkPolicy %s", flannelHostNetworkPolicyName)
 	nodes.OnChange(ctx, "cisnetworkpolicy-node", h.handle)
 	nodes.OnRemove(ctx, "cisnetworkpolicy-node", h.handle)
 	return nil

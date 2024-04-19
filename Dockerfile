@@ -1,7 +1,7 @@
 ARG KUBERNETES_VERSION=dev
 
 # Build environment
-FROM rancher/hardened-build-base:v1.20.5b2 AS build
+FROM rancher/hardened-build-base:v1.21.9b1 AS build
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
 RUN set -x && \
@@ -18,7 +18,8 @@ RUN set -x && \
     py3-pip \
     pigz \
     tar \
-    yq
+    yq \
+    helm
 
 RUN if [ "${ARCH}" = "amd64" ]; then \
     	apk --no-cache add mingw-w64-gcc; \
@@ -29,7 +30,7 @@ RUN zypper install -y systemd-rpm-macros
 
 # Dapper/Drone/CI environment
 FROM build AS dapper
-ENV DAPPER_ENV GODEBUG REPO TAG DRONE_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY
+ENV DAPPER_ENV GODEBUG GOCOVER REPO TAG DRONE_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
 ENV DAPPER_OUTPUT ./dist ./bin ./build
@@ -41,14 +42,14 @@ RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
         curl -sL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
         tar -xzf - -C /usr/local/bin; \
     fi
-RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
-    curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+RUN curl -sL https://dl.k8s.io/release/$( \
+    curl -sL https://dl.k8s.io/release/stable.txt \
     )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
     chmod a+x /usr/local/bin/kubectl; \
     pip install codespell
 
 RUN python3 -m pip install awscli
-RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.52.2
+RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.55.2
 RUN set -x && \
     apk --no-cache add \
     libarchive-tools \
@@ -105,31 +106,17 @@ ARG KUBERNETES_VERSION=""
 ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
 RUN echo ${CACHEBUST}>/dev/null
-RUN CHART_VERSION="1.13.200"                  CHART_FILE=/charts/rke2-cilium.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="v3.26.1-build2023080200"   CHART_FILE=/charts/rke2-canal.yaml          CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="v3.26.100"                 CHART_FILE=/charts/rke2-calico.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="v3.26.100"                 CHART_FILE=/charts/rke2-calico-crd.yaml     CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="1.24.004"                  CHART_FILE=/charts/rke2-coredns.yaml        CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="4.6.100"                   CHART_FILE=/charts/rke2-ingress-nginx.yaml  CHART_BOOTSTRAP=false  /charts/build-chart.sh
-RUN CHART_VERSION="2.11.100-build2023051509"  CHART_FILE=/charts/rke2-metrics-server.yaml CHART_BOOTSTRAP=false  /charts/build-chart.sh
-RUN CHART_VERSION="v4.0.2-build2023070701"    CHART_FILE=/charts/rke2-multus.yaml         CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="1.5.100"                   CHART_FILE=/charts/rancher-vsphere-cpi.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="3.0.1-rancher101"          CHART_FILE=/charts/rancher-vsphere-csi.yaml CHART_BOOTSTRAP=true   /charts/build-chart.sh
-RUN CHART_VERSION="0.2.200"                   CHART_FILE=/charts/harvester-cloud-provider.yaml CHART_BOOTSTRAP=true /charts/build-chart.sh
-RUN CHART_VERSION="0.1.1600"                  CHART_FILE=/charts/harvester-csi-driver.yaml     CHART_BOOTSTRAP=true /charts/build-chart.sh
-RUN CHART_VERSION="1.7.202"                   CHART_FILE=/charts/rke2-snapshot-controller.yaml CHART_BOOTSTRAP=false /charts/build-chart.sh
-RUN CHART_VERSION="1.7.202"                   CHART_FILE=/charts/rke2-snapshot-controller-crd.yaml CHART_BOOTSTRAP=false /charts/build-chart.sh
-RUN CHART_VERSION="1.7.101"                   CHART_FILE=/charts/rke2-snapshot-validation-webhook.yaml CHART_BOOTSTRAP=false /charts/build-chart.sh
-RUN rm -vf /charts/*.sh /charts/*.md
+RUN /charts/build-charts.sh
+RUN rm -vf /charts/*.sh /charts/*.md /charts/chart_versions.yaml
 
 # rke2-runtime image
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
-FROM rancher/hardened-kubernetes:v1.27.4-rke2r1-build20230719 AS kubernetes
-FROM rancher/hardened-containerd:v1.7.1-k3s1-build20230606 AS containerd
-FROM rancher/hardened-crictl:v1.26.1-build20230606 AS crictl
-FROM rancher/hardened-runc:v1.1.7-build20230606 AS runc
+FROM rancher/hardened-kubernetes:v1.29.4-rke2r1-build20240416 AS kubernetes
+FROM rancher/hardened-containerd:v1.7.11-k3s2-build20231211 AS containerd
+FROM rancher/hardened-crictl:v1.29.0-build20231219 AS crictl
+FROM rancher/hardened-runc:v1.1.12-build20240201 AS runc
 
 FROM scratch AS runtime-collect
 COPY --from=runc \

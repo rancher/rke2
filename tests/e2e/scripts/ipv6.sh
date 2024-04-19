@@ -34,7 +34,7 @@ net.ipv6.conf.eth1.accept_dad=0" > /etc/sysctl.conf
 mkdir -p /var/lib/rancher/rke2/server/manifests
 
 case "$cni" in
-  "canal")
+  *canal*)
     echo "Creating canal chart"
     echo "apiVersion: helm.cattle.io/v1
 kind: HelmChartConfig
@@ -50,7 +50,7 @@ spec:
       ip6AutoDetectionMethod: \"interface=eth1.*\"" >> /var/lib/rancher/rke2/server/manifests/e2e-canal.yaml
   ;;
   
-  "cilium")
+  *cilium*)
     echo "Creating cilium chart"
     echo "apiVersion: helm.cattle.io/v1
 kind: HelmChartConfig
@@ -64,7 +64,7 @@ spec:
       enabled: true">> /var/lib/rancher/rke2/server/manifests/e2e-cilium.yaml
   ;;
   
-  "calico")
+  *calico*)
     echo "Creating calico chart"
     echo "apiVersion: helm.cattle.io/v1
 kind: HelmChartConfig

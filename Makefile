@@ -17,7 +17,7 @@ ci-shell: clean .dapper                  ## Launch a shell in the CI environment
 .PHONY: dapper-ci
 dapper-ci: .ci                           ## Used by Drone CI, does the same as "ci" but in a Drone way
 
-.ci: validate build package
+.ci: validate validate-charts build package
 
 .PHONY: build
 build:                                   ## Build using host go tools
@@ -47,17 +47,9 @@ build-images:                             ## Build all images and image tarballs
 build-windows-images:                     ## Build only the Windows images and tarballs (including airgap)
 	./scripts/build-windows-images
 
-.PHONY: build-image-kubernetes
-build-image-kubernetes:                   ## Build the kubernetes image
-	./scripts/build-image-kubernetes
-
 .PHONY: build-image-runtime
 build-image-runtime:                      ## Build the runtime image
 	./scripts/build-image-runtime
-
-.PHONY: publish-image-kubernetes
-publish-image-kubernetes: build-image-kubernetes
-	./scripts/publish-image-kubernetes
 
 .PHONY: publish-image-runtime
 publish-image-runtime: build-image-runtime
@@ -70,6 +62,11 @@ validate:                                ## Run go fmt/vet
 .PHONY: validate-release
 validate-release: 
 	./scripts/validate-release
+
+.PHONY: validate-charts
+validate-charts:
+	./scripts/validate-charts
+
 
 .PHONY: run
 run: build-debug
@@ -130,6 +127,10 @@ package-images: build-images		## Package docker images for airgap environment
 .PHONY: package-windows-images
 package-windows-images: build-windows-images		## Package Windows crane images for airgap environment
 	./scripts/package-windows-images
+
+.PHONY: package-image-runtime
+package-image-runtime: build-image-runtime		## Package runtime image for GH Actions testing
+	./scripts/package-image-runtime
 
 .PHONY: package-bundle
 package-bundle: build-binary					## Package the tarball bundle

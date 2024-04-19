@@ -6,17 +6,16 @@ on:
 jobs:
   test:
     name: "Smoke Test"
-    # nested virtualization is only available on macOS hosts
-    runs-on: macos-12
+    runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
         channel: [stable]
-        vm: [centos-7, rocky-8, opensuse-microos, opensuse-leap, ubuntu-focal, windows-2019, windows-2022]
+        vm: [centos-7, rocky-8, opensuse-leap, ubuntu-2004, windows-2019, windows-2022]
         include:
           - {channel: latest, vm: rocky-8}
-          - {channel: latest, vm: ubuntu-focal}
+          - {channel: latest, vm: ubuntu-2004}
       max-parallel: 2
     defaults:
       run:
@@ -25,24 +24,27 @@ jobs:
       INSTALL_RKE2_CHANNEL: ${{ matrix.channel }}
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with: {fetch-depth: 1}
+      # Don't cache Windows VMs, they are 5GB each, which would eat our entire 10GB cache
       - name: "Vagrant Cache"
-        uses: actions/cache@v3
+        if: ${{ !contains(matrix.vm, 'windows') }}
+        uses: actions/cache@v4
         with:
           path: |
-            ~/.vagrant.d/boxes
-            ~/.vagrant.d/gems
-          key: install-${{ hashFiles(format('tests/install/{0}/Vagrantfile', matrix.vm)) }}
+             ~/.vagrant.d/boxes
+          key: vagrant-box-${{ matrix.vm }}
         id: vagrant-cache
         continue-on-error: true
+      - name: Set up vagrant and libvirt
+        uses: ./.github/actions/vagrant-setup
       - name: "Vagrant Plugin(s)"
         run: vagrant plugin install vagrant-reload vagrant-rke2
       - name: "Vagrant Up ⏩ Install RKE2"
         run: vagrant up
       - name: "⏳ Node"
         if: ${{ !contains(matrix.vm, 'windows') }}
-        run: vagrant provision --provision-with=rke2-wait-for-node
+        run: vagrant provision --provision-with=rke2-wait-for-cp
       - name: "⏳ Canal"
         if: ${{ !contains(matrix.vm, 'windows') }}
         run: vagrant provision --provision-with=rke2-wait-for-canal

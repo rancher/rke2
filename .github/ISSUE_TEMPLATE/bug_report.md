@@ -23,7 +23,7 @@ Cluster Configuration:
 <!-- A clear and concise description of what the bug is. -->
 
 **Steps To Reproduce:**
-<!-- Steps to reproduce the behavior. Please include as the first step how you installed RKE2 on the node(s) (including all flags or environment variables). If you have customized configuration via systemd drop-ins or overrides (https://coreos.com/os/docs/latest/using-systemd-drop-in-units.html) please include those as well. -->
+<!-- Steps to reproduce the behavior. Please include as the first step how you installed RKE2 on the node(s) (including all flags or environment variables). If you have customized configuration via systemd drop-ins or overrides (https://wiki.archlinux.org/title/systemd#Drop-in_files) please include those as well. -->
 - Installed RKE2: 
 
 **Expected behavior:**

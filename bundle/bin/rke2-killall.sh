@@ -71,6 +71,7 @@ ip link show 2>/dev/null | grep 'master cni0' | while read ignore iface ignore; 
 done
 ip link delete cni0
 ip link delete flannel.1
+ip link delete flannel.4096
 ip link delete flannel-v6.1
 ip link delete flannel-wg
 ip link delete flannel-wg-v6
@@ -78,6 +79,7 @@ ip link delete vxlan.calico
 ip link delete vxlan-v6.calico
 ip link delete cilium_vxlan
 ip link delete cilium_net
+ip link delete cilium_wg0
 ip link delete kube-ipvs0
 
 #Delete the nodeLocal created objects
@@ -90,6 +92,16 @@ if [ -d /sys/class/net/nodelocaldns ]; then
 fi
 
 rm -rf /var/lib/cni/ /var/log/pods/ /var/log/containers
+
+# Remove pod-manifests files for rke2 components
+POD_MANIFESTS_DIR=/var/lib/rancher/rke2/agent/pod-manifests
+
+rm -f ${POD_MANIFESTS_DIR}/etcd.yaml \
+      ${POD_MANIFESTS_DIR}/kube-apiserver.yaml \
+      ${POD_MANIFESTS_DIR}/kube-controller-manager.yaml \
+      ${POD_MANIFESTS_DIR}/cloud-controller-manager.yaml\
+      ${POD_MANIFESTS_DIR}/kube-scheduler.yaml \
+      ${POD_MANIFESTS_DIR}/kube-proxy.yaml
 
 # Delete iptables created by CNI plugins or Kubernetes (kube-proxy)
 iptables-save | grep -v KUBE- | grep -v CNI- | grep -v cali- | grep -v cali: | grep -v CILIUM_ | grep -v flannel | iptables-restore

@@ -21,3 +21,8 @@ def getInstallType(vm, version, branch)
   vm.provision "shell", path:  scripts_location + "/latest_commit.sh", args: [branch, "/tmp/rke2_commits"]
   return "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
 end
+
+def cisPrep(vm)
+  vm.provision "shell", inline: "useradd -r -c 'etcd user' -s /sbin/nologin -M etcd -U"
+  vm.provision "shell", inline: "printf 'vm.panic_on_oom=0\nvm.overcommit_memory=1\nkernel.panic=10\nkernel.panic_on_oops=1' > /etc/sysctl.d/60-rke2-cis.conf; systemctl restart systemd-sysctl"
+end

@@ -108,7 +108,7 @@ EOF
   # SELinux is Enforcing by default.
   # To set SELinux as Disabled on a VM that has already been provisioned:
   #   SELINUX=Disabled vagrant up --provision-with=selinux
-  # To set SELinux as Permissive on a VM that has already been provsioned
+  # To set SELinux as Permissive on a VM that has already been provisioned
   #   SELINUX=Permissive vagrant up --provision-with=selinux
   config.vm.provision "selinux", type: "shell", run: "once" do |sh|
     sh.upload_path = "/tmp/vagrant-selinux"

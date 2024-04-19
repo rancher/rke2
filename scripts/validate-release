@@ -27,10 +27,14 @@ function parse_tag() {
     fi
 }
 
+function get-module-version() {
+  go list -m -f '{{if .Replace}}{{.Replace.Version}}{{else}}{{.Version}}{{end}}' $1
+}
+
 function check_release_branch() {
-    TAG_BRANCH=$(git branch --all -q --contains $GIT_TAG | grep origin | grep -v origin$ | grep -v "HEAD" | sed -e 's/^[[:space:]]*//')
+    TAG_BRANCH=$(git branch --all -q --contains $GIT_TAG | grep origin | grep -vE 'dependabot|updatecli|origin$|HEAD' | sed -e 's/^[[:space:]]*//')
     if [ "$TAG_BRANCH" == "remotes/origin/master" ]; then
-        K8S_VERSION_GO_MOD=$(grep 'k8s.io/kubernetes v' go.mod | head -n1 | awk '{print $2}' | cut -d. -f1-2)
+        K8S_VERSION_GO_MOD=$(get-module-version k8s.io/kubernetes | cut -d. -f1-2)
         if [ "v$MAJOR.$MINOR" == "$K8S_VERSION_GO_MOD" ]; then
             info "Tag $GIT_TAG is cut from master"
             return

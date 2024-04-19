@@ -102,7 +102,7 @@ function Invoke-HNSRequest {
 Write-Host "Beginning the uninstall process"
 
 function Stop-Processes () {
-    $ProcessNames = @('rke2', 'kube-proxy', 'kubelet', 'containerd', 'wins', 'calico-node')
+    $ProcessNames = @('rke2', 'kube-proxy', 'kubelet', 'containerd', 'wins', 'calico-node', 'flanneld')
     foreach ($ProcessName in $ProcessNames) {
         Write-LogInfo "Checking if $ProcessName process exists"
         if ((Get-Process -Name $ProcessName -ErrorAction SilentlyContinue)) {
@@ -147,7 +147,7 @@ function Invoke-CleanServices () {
 
 function Reset-HNS () {
     try {
-        Get-HnsNetwork | Where-Object { $_.Name -eq 'Calico' -or $_.Name -eq 'vxlan0' -or $_.Name -eq 'nat' -or $_.Name -eq 'External' } | Select-Object Name, ID | ForEach-Object {
+        Get-HnsNetwork | Where-Object { $_.Name -eq 'Calico' -or $_.Name -eq 'vxlan0' -or $_.Name -eq 'nat' -or $_.Name -eq 'External' -or $_.Name -eq 'flannel.4096' } | Select-Object Name, ID | ForEach-Object {
             Write-LogInfo "Cleaning up HnsNetwork $($_.Name) ..."
             hnsdiag delete networks $($_.ID)
         }

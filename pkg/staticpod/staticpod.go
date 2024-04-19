@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -26,8 +28,13 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+type typeVolume string
+
 const (
-	extraMountPrefix = "extra-mount"
+	extraMountPrefix            = "extra-mount"
+	socket           typeVolume = "socket"
+	dir              typeVolume = "dir"
+	file             typeVolume = "file"
 )
 
 type ProbeConf struct {
@@ -49,6 +56,8 @@ type Args struct {
 	Image           name.Reference
 	Dirs            []string
 	Files           []string
+	Sockets         []string
+	CISMode         bool // CIS requires that the manifest be saved with 600 permissions
 	ExcludeFiles    []string
 	HealthExec      []string
 	HealthPort      int32
@@ -70,6 +79,20 @@ type Args struct {
 	Privileged      bool
 }
 
+// Remove cleans up the static pod manifest for the given command from the specified directory.
+// It does not actually stop or remove the static pod from the container runtime.
+func Remove(dir, command string) error {
+	manifestPath := filepath.Join(dir, command+".yaml")
+	if err := os.Remove(manifestPath); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return errors.Wrapf(err, "failed to remove %s static pod manifest", command)
+	}
+	logrus.Infof("Removed %s static pod manifest", command)
+	return nil
+}
+
+// Run writes a static pod manifest for the given command into the specified directory.
+// Note that it does not actually run the command; the kubelet is responsible for picking up
+// the manifest and creating container to run it.
 func Run(dir string, args Args) error {
 	if cmds.AgentConfig.EnableSELinux {
 		if args.SecurityContext == nil {
@@ -85,6 +108,8 @@ func Run(dir string, args Args) error {
 	if err != nil {
 		return err
 	}
+
+	// TODO Check to make sure we aren't double mounting directories and the files in those directories
 
 	args.Files = append(args.Files, files...)
 	pod, err := pod(args)
@@ -108,10 +133,13 @@ func Run(dir string, args Args) error {
 	if err != nil {
 		return err
 	}
-	return writeFile(manifestPath, b)
+	if args.CISMode {
+		return writeFile(manifestPath, b, 0600)
+	}
+	return writeFile(manifestPath, b, 0644)
 }
 
-func writeFile(dest string, content []byte) error {
+func writeFile(dest string, content []byte, perm fs.FileMode) error {
 	name := filepath.Base(dest)
 	dir := filepath.Dir(dest)
 	if err := os.MkdirAll(dir, 0700); err != nil {
@@ -134,7 +162,7 @@ func writeFile(dest string, content []byte) error {
 	defer os.RemoveAll(tmpdir)
 
 	tmp := filepath.Join(tmpdir, name)
-	if err := ioutil.WriteFile(tmp, content, 0644); err != nil {
+	if err := os.WriteFile(tmp, content, perm); err != nil {
 		return err
 	}
 	return os.Rename(tmp, dest)
@@ -258,8 +286,9 @@ func pod(args Args) (*v1.Pod, error) {
 		}
 	}
 
-	addVolumes(p, args.Dirs, true)
-	addVolumes(p, args.Files, false)
+	addVolumes(p, args.Sockets, socket)
+	addVolumes(p, args.Dirs, dir)
+	addVolumes(p, args.Files, file)
 
 	addExtraMounts(p, args.ExtraMounts)
 	addExtraEnv(p, args.ExtraEnv)
@@ -267,14 +296,22 @@ func pod(args Args) (*v1.Pod, error) {
 	return p, nil
 }
 
-func addVolumes(p *v1.Pod, src []string, dir bool) {
+func addVolumes(p *v1.Pod, src []string, volume typeVolume) {
 	var (
-		prefix     = "dir"
-		sourceType = v1.HostPathDirectoryOrCreate
-		readOnly   = false
+		prefix     string
+		sourceType v1.HostPathType
+		readOnly   bool
 	)
-	if !dir {
-		prefix = "file"
+
+	prefix = string(volume)
+	switch volume {
+	case dir:
+		sourceType = v1.HostPathDirectoryOrCreate
+		readOnly = false
+	case socket:
+		sourceType = v1.HostPathSocket
+		readOnly = false
+	default:
 		sourceType = v1.HostPathFile
 		readOnly = true
 	}
@@ -299,9 +336,7 @@ func addVolumes(p *v1.Pod, src []string, dir bool) {
 }
 
 func addExtraMounts(p *v1.Pod, extraMounts []string) {
-	var (
-		sourceType = v1.HostPathDirectoryOrCreate
-	)
+	var sourceType v1.HostPathType
 
 	for i, rawMount := range extraMounts {
 		mount := strings.Split(rawMount, ":")
@@ -315,12 +350,35 @@ func addExtraMounts(p *v1.Pod, extraMounts []string) {
 			case "rw":
 				ro = false
 			default:
-				logrus.Errorf("unknown mount option: %s encountered in extra mount %s for pod %s", mount[2], rawMount, p.Name)
+				logrus.Errorf("Unknown mount option: %s encountered in extra mount %s for pod %s", mount[2], rawMount, p.Name)
 				continue
 			}
+		case 4:
+			sourceType = v1.HostPathType(mount[3])
 		default:
-			logrus.Errorf("mount for pod %s %s was not valid", p.Name, rawMount)
+			logrus.Errorf("Extra mount for pod %s %s was not valid", p.Name, rawMount)
 			continue
+		}
+
+		// If the source type was not specified, try to auto-detect.
+		// Paths that cannot be stat-ed are handled as DirectoryOrCreate.
+		// Only sockets, directories, and files are supported for auto-detection.
+		if sourceType == v1.HostPathUnset {
+			if info, err := os.Stat(mount[0]); err != nil {
+				if !os.IsNotExist(err) {
+					logrus.Warnf("Failed to stat mount for pod %s %s: %v", p.Name, mount[0], err)
+				}
+				sourceType = v1.HostPathDirectoryOrCreate
+			} else {
+				switch {
+				case info.Mode().Type() == fs.ModeSocket:
+					sourceType = v1.HostPathSocket
+				case info.IsDir():
+					sourceType = v1.HostPathDirectory
+				default:
+					sourceType = v1.HostPathFile
+				}
+			}
 		}
 
 		name := fmt.Sprintf("%s-%d", extraMountPrefix, i)
@@ -355,6 +413,9 @@ func addExtraEnv(p *v1.Pod, extraEnv []string) {
 	}
 }
 
+// readFiles takes in the arguments passed to the static pod and returns a list of all files
+// embedded in those arguments to be included in the pod manifest as volumes.
+// excludeFiles are not included in the returned list.
 func readFiles(args, excludeFiles []string) ([]string, error) {
 	files := map[string]bool{}
 	excludes := map[string]bool{}

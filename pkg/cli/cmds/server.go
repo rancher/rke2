@@ -17,7 +17,7 @@ const (
 
 var (
 	DisableItems = []string{"rke2-coredns", "rke2-ingress-nginx", "rke2-metrics-server"}
-	CNIItems     = []string{"calico", "canal", "cilium"}
+	CNIItems     = []string{"calico", "canal", "cilium", "flannel"}
 
 	config = rke2.Config{}
 
@@ -46,6 +46,7 @@ var (
 		"advertise-address": copyFlag,
 		"advertise-port":    dropFlag,
 		"tls-san":           copyFlag,
+		"tls-san-security":  copyFlag,
 		"data-dir": {
 			Usage:   "(data) Folder to hold state",
 			Default: rke2Path,
@@ -68,14 +69,15 @@ var (
 		"kube-apiserver-arg":                copyFlag,
 		"etcd-arg":                          copyFlag,
 		"kube-scheduler-arg":                copyFlag,
-		"kube-controller-arg":               dropFlag,
+		"kube-controller-arg":               dropFlag, // deprecated version of kube-controller-manager-arg
 		"kube-controller-manager-arg":       copyFlag,
-		"kube-cloud-controller-manager-arg": dropFlag,
-		"kube-cloud-controller-arg":         dropFlag,
-		"datastore-endpoint":                dropFlag,
-		"datastore-cafile":                  dropFlag,
-		"datastore-certfile":                dropFlag,
-		"datastore-keyfile":                 dropFlag,
+		"kube-cloud-controller-manager-arg": copyFlag,
+		"kube-cloud-controller-arg":         dropFlag, // deprecated version of kube-cloud-controller-manager-arg
+		"datastore-endpoint":                copyFlag,
+		"datastore-cafile":                  copyFlag,
+		"datastore-certfile":                copyFlag,
+		"datastore-keyfile":                 copyFlag,
+		"kine-tls":                          dropFlag,
 		"default-local-storage-path":        dropFlag,
 		"disable": {
 			Usage: "(components) Do not deploy packaged components and delete any deployed components (valid items: " + strings.Join(DisableItems, ", ") + ")",
@@ -101,7 +103,11 @@ var (
 		"image-credential-provider-config":  copyFlag,
 		"docker":                            dropFlag,
 		"container-runtime-endpoint":        copyFlag,
+		"disable-default-registry-endpoint": copyFlag,
+		"embedded-registry":                 copyFlag,
+		"image-service-endpoint":            dropFlag,
 		"pause-image":                       dropFlag,
+		"default-runtime":                   copyFlag,
 		"private-registry":                  copyFlag,
 		"system-default-registry":           copyFlag,
 		"node-ip":                           copyFlag,
@@ -112,7 +118,6 @@ var (
 		"flannel-cni-conf":                  dropFlag,
 		"flannel-ipv6-masq":                 dropFlag,
 		"flannel-external-ip":               dropFlag,
-		"multi-cluster-cidr":                hideFlag,
 		"egress-selector-mode":              copyFlag,
 		"kubelet-arg":                       copyFlag,
 		"kube-proxy-arg":                    copyFlag,

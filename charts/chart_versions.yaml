@@ -1,0 +1,49 @@
+charts:
+  - version: 1.15.400
+    filename: /charts/rke2-cilium.yaml
+    bootstrap: true
+  - version: v3.27.3-build2024040300
+    filename: /charts/rke2-canal.yaml
+    bootstrap: true
+  - version: v3.27.300
+    filename: /charts/rke2-calico.yaml
+    bootstrap: true
+  - version: v3.27.002
+    filename: /charts/rke2-calico-crd.yaml
+    bootstrap: true
+  - version: 1.29.002
+    filename: /charts/rke2-coredns.yaml
+    bootstrap: true
+  - version: 4.9.100
+    filename: /charts/rke2-ingress-nginx.yaml
+    bootstrap: false
+  - version: 3.12.001
+    filename: /charts/rke2-metrics-server.yaml
+    bootstrap: false
+  - version: v4.0.2-build2024020802
+    filename: /charts/rke2-multus.yaml
+    bootstrap: true
+  - version: v0.25.100
+    filename: /charts/rke2-flannel.yaml
+    bootstrap: true
+  - version: 1.7.001
+    filename: /charts/rancher-vsphere-cpi.yaml
+    bootstrap: true
+  - version: 3.1.2-rancher400
+    filename: /charts/rancher-vsphere-csi.yaml
+    bootstrap: true
+  - version: 0.2.300
+    filename: /charts/harvester-cloud-provider.yaml
+    bootstrap: true
+  - version: 0.1.1700
+    filename: /charts/harvester-csi-driver.yaml
+    bootstrap: true
+  - version: 1.7.202
+    filename: /charts/rke2-snapshot-controller.yaml
+    bootstrap: false
+  - version: 1.7.202
+    filename: /charts/rke2-snapshot-controller-crd.yaml
+    bootstrap: false
+  - version: 1.7.302
+    filename: /charts/rke2-snapshot-validation-webhook.yaml
+    bootstrap: false

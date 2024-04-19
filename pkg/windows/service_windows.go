@@ -5,9 +5,6 @@ package windows
 
 import (
 	"os"
-	"time"
-
-	"golang.org/x/sys/windows"
 
 	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/pkg/errors"
@@ -15,12 +12,17 @@ import (
 	"github.com/rancher/wins/pkg/profilings"
 	"github.com/rancher/wrangler/pkg/signals"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/svc"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 type service struct{}
 
-var Service = &service{}
+var (
+	Service          = &service{}
+	ProcessWaitGroup wait.Group
+)
 
 func (h *service) Execute(_ []string, requests <-chan svc.ChangeRequest, statuses chan<- svc.Status) (bool, uint32) {
 	statuses <- svc.Status{State: svc.StartPending}
@@ -40,7 +42,6 @@ func (h *service) Execute(_ []string, requests <-chan svc.ChangeRequest, statuse
 			}
 
 			logrus.Infof("Windows Service is shutting down gracefully")
-			time.Sleep(10 * time.Second) // give context time to cancel
 			statuses <- svc.Status{State: svc.StopPending}
 			statuses <- svc.Status{State: svc.Stopped}
 			return false, 0
@@ -48,22 +49,22 @@ func (h *service) Execute(_ []string, requests <-chan svc.ChangeRequest, statuse
 	}
 	return false, 0
 }
-func StartService() error {
 
+func StartService() (bool, error) {
 	if ok, err := svc.IsWindowsService(); err != nil || !ok {
-		return err
+		return ok, err
 	}
 
 	// ETW tracing
 	etw, err := logs.NewEtwProviderHook(version.Program)
 	if err != nil {
-		return errors.Wrap(err, "could not create ETW provider logrus hook")
+		return false, errors.Wrap(err, "could not create ETW provider logrus hook")
 	}
 	logrus.AddHook(etw)
 
 	el, err := logs.NewEventLogHook(version.Program)
 	if err != nil {
-		return errors.Wrap(err, "could not create eventlog logrus hook")
+		return false, errors.Wrap(err, "could not create eventlog logrus hook")
 	}
 	logrus.AddHook(el)
 
@@ -79,5 +80,10 @@ func StartService() error {
 		}
 	}()
 
-	return nil
+	return true, nil
+}
+
+func MonitorProcessExit() {
+	logrus.Info("Waiting for all processes to exit...")
+	ProcessWaitGroup.Wait()
 }

@@ -31,11 +31,11 @@ REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code;
 PLATFORM=${GOOS}-${GOARCH}
 RELEASE=${PROG}.${PLATFORM}
 # hardcode versions unless set specifically
-KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.27.4}
-KUBERNETES_IMAGE_TAG=${KUBERNETES_IMAGE_TAG:-v1.27.4-rke2r1-build20230719}
-ETCD_VERSION=${ETCD_VERSION:-v3.5.7-k3s1}
+KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.29.4}
+KUBERNETES_IMAGE_TAG=${KUBERNETES_IMAGE_TAG:-v1.29.4-rke2r1-build20240416}
+ETCD_VERSION=${ETCD_VERSION:-v3.5.9-k3s1}
 PAUSE_VERSION=${PAUSE_VERSION:-3.6}
-CCM_VERSION=${CCM_VERSION:-v1.26.3-build20230608}
+CCM_VERSION=${CCM_VERSION:-v1.29.3-build20240412}
 
 if [ -d .git ]; then
     if [ -z "$GIT_TAG" ]; then
@@ -66,5 +66,8 @@ if [[ "${VERSION}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)([-+][a-zA-Z0-9.]+)?[-+]((rk
     RKE2_PATCH=${BASH_REMATCH[5]}
     echo "VERSION=${VERSION} parsed as MAJOR=${MAJOR} MINOR=${MINOR} PATCH=${PATCH} RC=${RC} RKE2_PATCH=${RKE2_PATCH}"
 fi
+
+DEPENDENCIES_URL="https://raw.githubusercontent.com/kubernetes/kubernetes/${KUBERNETES_VERSION}/build/dependencies.yaml"
+VERSION_GOLANG="go"$(curl -sL "${DEPENDENCIES_URL}" | yq e '.dependencies[] | select(.name == "golang: upstream version").version' -)
 
 DOCKERIZED_VERSION="${VERSION/+/-}" # this mimics what kubernetes builds do

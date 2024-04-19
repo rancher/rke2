@@ -16,10 +16,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/k3s-io/k3s/pkg/agent/containerd"
+	"github.com/k3s-io/k3s/pkg/agent/cri"
+	"github.com/k3s-io/k3s/pkg/agent/cridockerd"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/util"
+	"github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/auth"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
@@ -28,8 +32,10 @@ import (
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	auditv1 "k8s.io/apiserver/pkg/apis/audit/v1"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
+	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -103,18 +109,21 @@ type StaticPodConfig struct {
 	ControlPlaneProbeConfs
 	ControlPlaneEnv
 	ControlPlaneMounts
-	ManifestsDir    string
-	ImagesDir       string
-	Resolver        *images.Resolver
-	CloudProvider   *CloudProviderConfig
-	DataDir         string
-	AuditPolicyFile string
-	PSAConfigFile   string
-	KubeletPath     string
-	KubeProxyChan   chan struct{}
-	CISMode         bool
-	DisableETCD     bool
-	IsServer        bool
+	ManifestsDir     string
+	ImagesDir        string
+	Resolver         *images.Resolver
+	CloudProvider    *CloudProviderConfig
+	DataDir          string
+	AuditPolicyFile  string
+	PSAConfigFile    string
+	KubeletPath      string
+	RuntimeEndpoint  string
+	CISMode          bool
+	DisableETCD      bool
+	ExternalDatabase bool
+	IsServer         bool
+
+	stopKubelet context.CancelFunc
 }
 
 type CloudProviderConfig struct {
@@ -152,6 +161,13 @@ func (s *StaticPodConfig) Bootstrap(_ context.Context, nodeConfig *daemonconfig.
 	if s.IsServer {
 		return bootstrap.UpdateManifests(s.Resolver, nodeConfig, cfg)
 	}
+
+	// Remove the kube-proxy static pod manifest before starting the agent.
+	// If kube-proxy should run, the manifest will be recreated after the apiserver is up.
+	if err := staticpod.Remove(s.ManifestsDir, "kube-proxy"); err != nil {
+		logrus.Error(err)
+	}
+
 	return nil
 }
 
@@ -171,9 +187,11 @@ func (s *StaticPodConfig) Kubelet(ctx context.Context, args []string) error {
 
 	args = append(extraArgs, args...)
 	args, logOut := logging.ExtractFromArgs(args)
+	ctx, cancel := context.WithCancel(ctx)
+	s.stopKubelet = cancel
 
 	go func() {
-		for {
+		wait.PollImmediateInfiniteWithContext(ctx, 5*time.Second, func(ctx context.Context) (bool, error) {
 			cmd := exec.CommandContext(ctx, s.KubeletPath, args...)
 			cmd.Stdout = logOut
 			cmd.Stderr = logOut
@@ -182,20 +200,15 @@ func (s *StaticPodConfig) Kubelet(ctx context.Context, args []string) error {
 			err := cmd.Run()
 			logrus.Errorf("Kubelet exited: %v", err)
 
-			time.Sleep(5 * time.Second)
-		}
+			return false, nil
+		})
 	}()
-
-	go cleanupKubeProxy(s.ManifestsDir, s.KubeProxyChan)
 
 	return nil
 }
 
 // KubeProxy starts Kube Proxy as a static pod.
 func (s *StaticPodConfig) KubeProxy(_ context.Context, args []string) error {
-	// close the channel so that the cleanup goroutine does not remove the pod manifest
-	close(s.KubeProxyChan)
-
 	image, err := s.Resolver.GetReference(images.KubeProxy)
 	if err != nil {
 		return err
@@ -208,6 +221,7 @@ func (s *StaticPodConfig) KubeProxy(_ context.Context, args []string) error {
 		Command:       "kube-proxy",
 		Args:          args,
 		Image:         image,
+		CISMode:       s.CISMode,
 		HealthPort:    10256,
 		HealthProto:   "HTTP",
 		CPURequest:    s.ControlPlaneResources.KubeProxyCPURequest,
@@ -241,6 +255,9 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 	if err := images.Pull(s.ImagesDir, images.KubeAPIServer, image); err != nil {
 		return err
 	}
+	if err := staticpod.Remove(s.ManifestsDir, "kube-apiserver"); err != nil {
+		return err
+	}
 
 	auditLogFile := ""
 	kubeletPreferredAddressTypesFound := false
@@ -249,6 +266,11 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 		case "--advertise-port", "--basic-auth-file":
 			// This is an option k3s adds that does not exist upstream
 			args = append(args[:i], args[i+1:]...)
+		case "--etcd-servers":
+			if s.ExternalDatabase {
+				args = append(args[:i], args[i+1:]...)
+				args = append([]string{"--etcd-servers=" + "unixs://" + filepath.Join(s.DataDir, "server", "kine.sock")}, args...)
+			}
 		case "--audit-log-path":
 			auditLogFile = value
 		case "--kubelet-preferred-address-types":
@@ -294,46 +316,60 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
+
+	sockets := []string{}
+	if s.ExternalDatabase {
+		sockets = append(sockets, kineSock(s.DataDir))
+	}
+
 	dirs := onlyExisting(ssldirs)
 	if auditLogFile != "" && auditLogFile != "-" {
 		dirs = append(dirs, filepath.Dir(auditLogFile))
 		excludeFiles = append(excludeFiles, auditLogFile)
 	}
+	// encryption config is refreshed by the secrets-encryption controller
+	// so we mount the directory to allow the pod to see the updates
+	dirs = append(dirs, filepath.Join(s.DataDir, "server/cred"))
+	excludeFiles = append(excludeFiles, filepath.Join(s.DataDir, "server/cred/encryption-config.json"))
+
+	apiServerArgs := staticpod.Args{
+		Command:       "kube-apiserver",
+		Args:          args,
+		Image:         image,
+		Dirs:          dirs,
+		CISMode:       s.CISMode,
+		CPURequest:    s.ControlPlaneResources.KubeAPIServerCPURequest,
+		CPULimit:      s.ControlPlaneResources.KubeAPIServerCPULimit,
+		MemoryRequest: s.ControlPlaneResources.KubeAPIServerMemoryRequest,
+		MemoryLimit:   s.ControlPlaneResources.KubeAPIServerMemoryLimit,
+		ExtraEnv:      s.ControlPlaneEnv.KubeAPIServer,
+		ExtraMounts:   s.ControlPlaneMounts.KubeAPIServer,
+		ProbeConfs:    s.ControlPlaneProbeConfs.KubeAPIServer,
+		Sockets:       sockets,
+		Files:         files,
+		ExcludeFiles:  excludeFiles,
+		HealthExec: []string{
+			"kubectl",
+			"get",
+			"--server=https://localhost:6443/",
+			"--client-certificate=" + s.DataDir + "/server/tls/client-kube-apiserver.crt",
+			"--client-key=" + s.DataDir + "/server/tls/client-kube-apiserver.key",
+			"--certificate-authority=" + s.DataDir + "/server/tls/server-ca.crt",
+			"--raw=/livez",
+		},
+		ReadyExec: []string{
+			"kubectl",
+			"get",
+			"--server=https://localhost:6443/",
+			"--client-certificate=" + s.DataDir + "/server/tls/client-kube-apiserver.crt",
+			"--client-key=" + s.DataDir + "/server/tls/client-kube-apiserver.key",
+			"--certificate-authority=" + s.DataDir + "/server/tls/server-ca.crt",
+			"--raw=/readyz",
+		},
+	}
 
 	return after(etcdReady, func() error {
-		return staticpod.Run(s.ManifestsDir, staticpod.Args{
-			Command:       "kube-apiserver",
-			Args:          args,
-			Image:         image,
-			Dirs:          dirs,
-			CPURequest:    s.ControlPlaneResources.KubeAPIServerCPURequest,
-			CPULimit:      s.ControlPlaneResources.KubeAPIServerCPULimit,
-			MemoryRequest: s.ControlPlaneResources.KubeAPIServerMemoryRequest,
-			MemoryLimit:   s.ControlPlaneResources.KubeAPIServerMemoryLimit,
-			ExtraEnv:      s.ControlPlaneEnv.KubeAPIServer,
-			ExtraMounts:   s.ControlPlaneMounts.KubeAPIServer,
-			ProbeConfs:    s.ControlPlaneProbeConfs.KubeAPIServer,
-			Files:         files,
-			ExcludeFiles:  excludeFiles,
-			HealthExec: []string{
-				"kubectl",
-				"get",
-				"--server=https://localhost:6443/",
-				"--client-certificate=" + s.DataDir + "/server/tls/client-kube-apiserver.crt",
-				"--client-key=" + s.DataDir + "/server/tls/client-kube-apiserver.key",
-				"--certificate-authority=" + s.DataDir + "/server/tls/server-ca.crt",
-				"--raw=/livez",
-			},
-			ReadyExec: []string{
-				"kubectl",
-				"get",
-				"--server=https://localhost:6443/",
-				"--client-certificate=" + s.DataDir + "/server/tls/client-kube-apiserver.crt",
-				"--client-key=" + s.DataDir + "/server/tls/client-kube-apiserver.key",
-				"--certificate-authority=" + s.DataDir + "/server/tls/server-ca.crt",
-				"--raw=/readyz",
-			},
-		})
+		return staticpod.Run(s.ManifestsDir, apiServerArgs)
 	})
 }
 
@@ -352,12 +388,19 @@ func (s *StaticPodConfig) Scheduler(_ context.Context, apiReady <-chan struct{},
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
+
+	sockets := []string{}
+	if s.ExternalDatabase {
+		sockets = append(sockets, kineSock(s.DataDir))
+	}
+
 	args = append(permitPortSharingFlag, args...)
 	return after(apiReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:       "kube-scheduler",
 			Args:          args,
 			Image:         image,
+			CISMode:       s.CISMode,
 			HealthPort:    10259,
 			HealthProto:   "HTTPS",
 			CPURequest:    s.ControlPlaneResources.KubeSchedulerCPURequest,
@@ -368,6 +411,7 @@ func (s *StaticPodConfig) Scheduler(_ context.Context, apiReady <-chan struct{},
 			ExtraMounts:   s.ControlPlaneMounts.KubeScheduler,
 			ProbeConfs:    s.ControlPlaneProbeConfs.KubeScheduler,
 			Files:         files,
+			Sockets:       sockets,
 		})
 	})
 }
@@ -416,6 +460,12 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, apiReady <-chan s
 	if !s.DisableETCD {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
+
+	sockets := []string{}
+	if s.ExternalDatabase {
+		sockets = append(sockets, kineSock(s.DataDir))
+	}
+
 	return after(apiReady, func() error {
 		extraArgs := []string{
 			"--flex-volume-plugin-dir=/var/lib/kubelet/volumeplugins",
@@ -427,6 +477,7 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, apiReady <-chan s
 			Args:          args,
 			Image:         image,
 			Dirs:          onlyExisting(ssldirs),
+			CISMode:       s.CISMode,
 			HealthPort:    10257,
 			HealthProto:   "HTTPS",
 			CPURequest:    s.ControlPlaneResources.KubeControllerManagerCPURequest,
@@ -437,6 +488,7 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, apiReady <-chan s
 			ExtraMounts:   s.ControlPlaneMounts.KubeControllerManager,
 			ProbeConfs:    s.ControlPlaneProbeConfs.KubeControllerManager,
 			Files:         files,
+			Sockets:       sockets,
 		})
 	})
 }
@@ -457,6 +509,7 @@ func (s *StaticPodConfig) CloudControllerManager(_ context.Context, ccmRBACReady
 			Args:          args,
 			Image:         image,
 			Dirs:          onlyExisting(ssldirs),
+			CISMode:       s.CISMode,
 			HealthPort:    10258,
 			HealthProto:   "HTTPS",
 			CPURequest:    s.ControlPlaneResources.CloudControllerManagerCPURequest,
@@ -493,7 +546,7 @@ func (s *StaticPodConfig) CurrentETCDOptions() (opts executor.InitialOptions, er
 }
 
 // ETCD starts the etcd static pod.
-func (s *StaticPodConfig) ETCD(_ context.Context, args executor.ETCDConfig, extraArgs []string) error {
+func (s *StaticPodConfig) ETCD(ctx context.Context, args executor.ETCDConfig, extraArgs []string) error {
 	image, err := s.Resolver.GetReference(images.ETCD)
 	if err != nil {
 		return err
@@ -530,6 +583,7 @@ func (s *StaticPodConfig) ETCD(_ context.Context, args executor.ETCDConfig, extr
 			args.PeerTrust.KeyFile,
 			args.PeerTrust.TrustedCAFile,
 		},
+		CISMode:       s.CISMode,
 		HealthPort:    2381,
 		HealthPath:    "/health?serializable=true",
 		HealthProto:   "HTTP",
@@ -579,7 +633,65 @@ func (s *StaticPodConfig) ETCD(_ context.Context, args executor.ETCDConfig, extr
 		}
 	}
 
+	// If performing a cluster-reset, ensure that the kubelet and etcd are stopped when the context is cancelled at the end of the cluster-reset process.
+	if args.ForceNewCluster {
+		go func() {
+			<-ctx.Done()
+			logrus.Infof("Shutting down kubelet and etcd")
+			if s.stopKubelet != nil {
+				s.stopKubelet()
+			}
+			if err := s.stopEtcd(); err != nil {
+				logrus.Errorf("Failed to stop etcd: %v", err)
+			}
+		}()
+	}
+
 	return staticpod.Run(s.ManifestsDir, spa)
+}
+
+// Containerd starts the k3s implementation of containerd
+func (s *StaticPodConfig) Containerd(ctx context.Context, config *daemonconfig.Node) error {
+	return containerd.Run(ctx, config)
+}
+
+// Docker starts the k3s implementation of cridockerd
+func (s *StaticPodConfig) Docker(ctx context.Context, config *daemonconfig.Node) error {
+	return cridockerd.Run(ctx, config)
+}
+
+// stopEtcd searches the container runtime endpoint for the etcd static pod, and terminates it.
+func (s *StaticPodConfig) stopEtcd() error {
+	ctx := context.Background()
+	conn, err := cri.Connection(ctx, s.RuntimeEndpoint)
+	if err != nil {
+		return errors.Wrap(err, "failed to connect to cri")
+	}
+	cRuntime := runtimeapi.NewRuntimeServiceClient(conn)
+	defer conn.Close()
+
+	filter := &runtimeapi.PodSandboxFilter{
+		LabelSelector: map[string]string{
+			"component":                   "etcd",
+			"io.kubernetes.pod.namespace": "kube-system",
+			"tier":                        "control-plane",
+		},
+	}
+	resp, err := cRuntime.ListPodSandbox(ctx, &runtimeapi.ListPodSandboxRequest{Filter: filter})
+	if err != nil {
+		return errors.Wrap(err, "failed to list pods")
+	}
+
+	for _, pod := range resp.Items {
+		if pod.Annotations["kubernetes.io/config.source"] != "file" {
+			continue
+		}
+		if _, err := cRuntime.RemovePodSandbox(ctx, &runtimeapi.RemovePodSandboxRequest{PodSandboxId: pod.Id}); err != nil {
+			return errors.Wrap(err, "failed to terminate pod")
+		}
+	}
+
+	return nil
 }
 
 // chownr recursively changes the ownership of the given
@@ -591,6 +703,10 @@ func chownr(path string, uid, gid int) error {
 		}
 		return err
 	})
+}
+
+func kineSock(dataDir string) string {
+	return filepath.Join(dataDir, "server", "kine.sock")
 }
 
 func etcdNameFile(dataDir string) string {
@@ -633,26 +749,4 @@ func writeIfNotExists(path string, content []byte) error {
 	defer file.Close()
 	_, err = file.Write(content)
 	return err
-}
-
-// cleanupKubeProxy waits to see if kube-proxy is run. If kube-proxy does not run and
-// close the channel within one minute of this goroutine being started by the kubelet
-// runner, then the kube-proxy static pod manifest is removed from disk. The kubelet will
-// clean up the static pod soon after.
-func cleanupKubeProxy(path string, c <-chan struct{}) {
-	manifestPath := filepath.Join(path, "kube-proxy.yaml")
-	if _, err := os.Open(manifestPath); err != nil {
-		if os.IsNotExist(err) {
-			return
-		}
-		logrus.Fatalf("unable to check for kube-proxy static pod: %v", err)
-	}
-
-	select {
-	case <-c:
-		return
-	case <-time.After(time.Minute * 1):
-		logrus.Infof("Removing kube-proxy static pod manifest: kube-proxy has been disabled")
-		os.Remove(manifestPath)
-	}
 }

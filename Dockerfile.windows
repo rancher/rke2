@@ -1,11 +1,11 @@
-FROM alpine:3.18 AS build
+FROM alpine:3.19 AS build
 
 RUN apk --no-cache add \
     curl \
     unzip
 
 # Dapper/Drone/CI environment
-FROM rancher/hardened-build-base:v1.20.4b11 AS dapper
+FROM rancher/hardened-build-base:v1.21.5b2 AS dapper
 ENV DAPPER_ENV GODEBUG REPO TAG DRONE_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
@@ -29,25 +29,30 @@ RUN set -x && \
     file \
     bash \
     py-pip
-RUN curl -sL https://storage.googleapis.com/kubernetes-release/release/$( \
-    curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+RUN curl -sL https://dl.k8s.io/release/$( \
+    curl -sL https://dl.k8s.io/release/stable.txt \
     )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
     chmod a+x /usr/local/bin/kubectl; \
     pip install codespell
-RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.47.3
+RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.55.2
 WORKDIR /source
 # End Dapper stuff
 
-FROM rancher/hardened-containerd:v1.7.1-k3s1-build20230511-amd64-windows AS containerd
+FROM rancher/hardened-containerd:v1.7.11-k3s2-build20231211-amd64-windows AS containerd
 FROM build as windows-runtime-collect
 ARG KUBERNETES_VERSION=dev
 
 # windows runtime image
-ENV CRICTL_VERSION="v1.27.0"
-ENV CALICO_VERSION="v3.26.1"
-ENV CNI_PLUGIN_VERSION="v1.1.1"
+ENV CRICTL_VERSION="v1.29.0"
+ENV CALICO_VERSION="v3.27.3"
+ENV CNI_PLUGIN_VERSION="v1.4.0"
+ENV FLANNEL_VERSION="v0.25.1"
+ENV CNI_FLANNEL_VERSION="v1.4.0-flannel1"
 
 RUN mkdir -p rancher
+
+# The charts directory is intentionally empty on windows, but its presence is required to address https://github.com/rancher/rke2/issues/5138
+RUN mkdir -p charts
 
 # We use the containerd-shim-runhcs-v1.exe binary from upstream, as it apparently can't be cross-built on Linux
 COPY Dockerfile ./
@@ -84,6 +89,8 @@ RUN sha256sum -c kube-proxy.exe.sha256
 RUN mv kube-proxy.exe rancher/
 
 RUN curl -sLO https://github.com/projectcalico/calico/releases/download/${CALICO_VERSION}/calico-windows-${CALICO_VERSION}.zip
+RUN curl -sL https://github.com/flannel-io/flannel/releases/download/${FLANNEL_VERSION}/flanneld.exe -o rancher/flanneld.exe
+RUN curl -sL https://github.com/flannel-io/cni-plugin/releases/download/${CNI_FLANNEL_VERSION}/flannel-amd64.exe -o rancher/flannel.exe
 RUN curl -sL https://github.com/Microsoft/SDN/raw/master/Kubernetes/windows/hns.psm1 -o rancher/hns.psm1
 
 RUN CONTAINERD_VERSION=$(grep "rancher/hardened-containerd" Dockerfile | grep ':v' | cut -d '=' -f 2- | grep -oE "([0-9]+)\.([0-9]+)\.([0-9]+)") \
@@ -101,3 +108,4 @@ FROM scratch AS windows-runtime
 COPY --from=containerd /usr/local/bin/*.exe /bin/
 COPY --from=windows-runtime-collect ./rancher/* /bin/
 COPY --from=windows-runtime-collect ./confd/ /bin/confd
+COPY --from=windows-runtime-collect ./charts /charts/

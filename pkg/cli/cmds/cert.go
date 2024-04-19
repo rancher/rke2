@@ -6,29 +6,9 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cert"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/configfilearg"
-	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/urfave/cli"
 )
-
-var certSubcommands = []cli.Command{
-	{
-		Name:            "rotate",
-		Usage:           "Rotate " + version.Program + " component certificates on disk",
-		SkipFlagParsing: false,
-		SkipArgReorder:  true,
-		Action:          Rotate,
-		Flags:           cmds.CertRotateCommandFlags,
-	},
-	{
-		Name:            "rotate-ca",
-		Usage:           "Write updated " + version.Program + " CA certificates to the datastore",
-		SkipFlagParsing: false,
-		SkipArgReorder:  true,
-		Action:          cert.RotateCA,
-		Flags:           cmds.CertRotateCACommandFlags,
-	},
-}
 
 func NewCertCommand() cli.Command {
 	k3sOpts := K3SFlagSet{}
@@ -55,9 +35,20 @@ func NewCertCommand() cli.Command {
 				Default: rke2Path,
 			},
 		},
+		"check": {
+			"alsologtostderr": copyFlag,
+			"config":          copyFlag,
+			"debug":           copyFlag,
+			"log":             copyFlag,
+			"service":         copyFlag,
+			"data-dir": {
+				Usage:   "(data) Folder to hold state",
+				Default: rke2Path,
+			},
+		},
 	}
 
-	command := cmds.NewCertCommand(certSubcommands)
+	command := cmds.NewCertCommands(cert.Check, Rotate, cert.RotateCA)
 	command.Usage = "Manage RKE2 certificates"
 	configfilearg.DefaultParser.ValidFlags[command.Name] = command.Flags
 	for i, subcommand := range command.Subcommands {

@@ -30,7 +30,11 @@ var (
 		"image-credential-provider-config":  copyFlag,
 		"docker":                            dropFlag,
 		"container-runtime-endpoint":        copyFlag,
+		"disable-default-registry-endpoint": copyFlag,
+		"image-service-endpoint":            dropFlag,
 		"pause-image":                       dropFlag,
+		"default-runtime":                   copyFlag,
+		"disable-apiserver-lb":              dropFlag,
 		"private-registry":                  copyFlag,
 		"node-ip":                           copyFlag,
 		"node-external-ip":                  copyFlag,
@@ -84,8 +88,15 @@ func agentSubcommands() cli.Commands {
 func AgentRun(clx *cli.Context) error {
 	validateCloudProviderName(clx, Agent)
 	validateProfile(clx, Agent)
-	if err := windows.StartService(); err != nil {
+	isWinService, err := windows.StartService()
+	if err != nil {
 		return err
 	}
-	return rke2.Agent(clx, config)
+
+	err = rke2.Agent(clx, config)
+	if isWinService {
+		windows.MonitorProcessExit()
+	}
+
+	return err
 }

@@ -10,7 +10,7 @@ import (
 const defaultSnapshotRentention = 5
 
 func NewEtcdSnapshotCommand() cli.Command {
-	cmds.ServerConfig.DatastoreEndpoint = "etcd"
+	cmds.ServerConfig.ClusterInit = true
 	k3sOpts := K3SFlagSet{
 		"config":          copyFlag,
 		"debug":           copyFlag,
@@ -21,9 +21,14 @@ func NewEtcdSnapshotCommand() cli.Command {
 			Usage:   "(data) Folder to hold state",
 			Default: rke2Path,
 		},
+		"server": {
+			Default: "https://127.0.0.1:9345",
+		},
+		"token":              copyFlag,
 		"name":               copyFlag,
 		"dir":                copyFlag,
 		"snapshot-compress":  copyFlag,
+		"snapshot-retention": copyFlag,
 		"s3":                 copyFlag,
 		"s3-endpoint":        copyFlag,
 		"s3-endpoint-ca":     copyFlag,
@@ -39,9 +44,6 @@ func NewEtcdSnapshotCommand() cli.Command {
 	subcommandOpts := map[string]K3SFlagSet{
 		"ls": {
 			"output": copyFlag,
-		},
-		"prune": {
-			"snapshot-retention": copyFlag,
 		},
 	}
 
