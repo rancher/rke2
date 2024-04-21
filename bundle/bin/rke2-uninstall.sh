@@ -105,7 +105,7 @@ uninstall_remove_files()
             rm -f /etc/fapolicyd/rules.d/80-rke2.rules
         fi
         fagenrules --load
-        systemctl restart fapolicyd
+        systemctl try-restart fapolicyd
     fi
 }
 
