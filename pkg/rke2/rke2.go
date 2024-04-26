@@ -118,6 +118,8 @@ func Server(clx *cli.Context, cfg Config) error {
 	cnis := clx.StringSlice("cni")
 	if cisMode && (len(cnis) == 0 || slice.ContainsString(cnis, "canal")) {
 		leaderControllers = append(leaderControllers, cisnetworkpolicy.Controller)
+	} else {
+		leaderControllers = append(leaderControllers, cisnetworkpolicy.Cleanup)
 	}
 
 	return server.RunWithControllers(clx, leaderControllers, rawServer.CustomControllers{})
