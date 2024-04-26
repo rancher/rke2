@@ -128,6 +128,103 @@ func CreateCluster(nodeOS string, serverCount int, agentCount int) ([]string, []
 	return serverNodeNames, agentNodeNames, nil
 }
 
+func scpRKE2Artifacts(nodeNames []string) error {
+	binary := []string{
+		"dist/artifacts/rke2.linux-amd64.tar.gz",
+		"dist/artifacts/sha256sum-amd64.txt",
+	}
+	images := []string{
+		"build/images/rke2-images.linux-amd64.tar.zst",
+		"build/images/rke2-runtime.tar",
+	}
+
+	// vagrant scp doesn't allow coping multiple files at once
+	// nor does it allow copying as sudo, so we have to copy each file individually
+	// to /tmp/ and then move them to the correct location
+	for _, node := range nodeNames {
+		for _, artifact := range append(binary, images...) {
+			cmd := fmt.Sprintf(`vagrant scp ../../../%s %s:/tmp/`, artifact, node)
+			if _, err := RunCommand(cmd); err != nil {
+				return err
+			}
+		}
+		if _, err := RunCmdOnNode("mkdir -p /var/lib/rancher/rke2/agent/images", node); err != nil {
+			return err
+		}
+		for _, image := range images {
+			cmd := fmt.Sprintf("mv /tmp/%s /var/lib/rancher/rke2/agent/images/", filepath.Base(image))
+			if _, err := RunCmdOnNode(cmd, node); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// CreateLocalCluster creates a cluster using the locally built RKE2 bundled binary and images.
+// Run at a minimum "make package-bundle" and "make package-image-runtime" first
+// The vagrant-scp plugin must be installed for this function to work.
+func CreateLocalCluster(nodeOS string, serverCount, agentCount int) ([]string, []string, error) {
+
+	serverNodeNames, agentNodeNames, nodeEnvs := genNodeEnvs(nodeOS, serverCount, agentCount)
+
+	var testOptions string
+	var cmd string
+
+	for _, env := range os.Environ() {
+		if strings.HasPrefix(env, "E2E_") {
+			testOptions += " " + env
+		}
+	}
+	testOptions += " E2E_RELEASE_VERSION=skip"
+
+	// Provision the first server node. In GitHub Actions, this also imports the VM image into libvirt, which
+	// takes time and can cause the next vagrant up to fail if it is not given enough time to complete.
+	cmd = fmt.Sprintf(`%s %s vagrant up --no-provision %s &> vagrant.log`, nodeEnvs, testOptions, serverNodeNames[0])
+	fmt.Println(cmd)
+	if _, err := RunCommand(cmd); err != nil {
+		return nil, nil, newNodeError(cmd, serverNodeNames[0], err)
+	}
+
+	// Bring up the rest of the nodes in parallel
+	errg, _ := errgroup.WithContext(context.Background())
+	for _, node := range append(serverNodeNames[1:], agentNodeNames...) {
+		cmd := fmt.Sprintf(`%s %s vagrant up --no-provision %s &>> vagrant.log`, nodeEnvs, testOptions, node)
+		errg.Go(func() error {
+			if _, err := RunCommand(cmd); err != nil {
+				return newNodeError(cmd, node, err)
+			}
+			return nil
+		})
+		// libVirt/Virtualbox needs some time between provisioning nodes
+		time.Sleep(10 * time.Second)
+	}
+	if err := errg.Wait(); err != nil {
+		return nil, nil, err
+	}
+
+	if err := scpRKE2Artifacts(append(serverNodeNames, agentNodeNames...)); err != nil {
+		return nil, nil, err
+	}
+	// Install RKE2 on all nodes in parallel
+	errg, _ = errgroup.WithContext(context.Background())
+	for _, node := range append(serverNodeNames, agentNodeNames...) {
+		cmd = fmt.Sprintf(`%s %s vagrant provision %s &>> vagrant.log`, nodeEnvs, testOptions, node)
+		errg.Go(func() error {
+			if _, err := RunCommand(cmd); err != nil {
+				return newNodeError(cmd, node, err)
+			}
+			return nil
+		})
+		// RKE2 needs some time between joining nodes to avoid learner issues
+		time.Sleep(20 * time.Second)
+	}
+	if err := errg.Wait(); err != nil {
+		return nil, nil, err
+	}
+	return serverNodeNames, agentNodeNames, nil
+}
+
 func DeployWorkload(workload string, kubeconfig string) (string, error) {
 	resourceDir := "../resource_files"
 	files, err := os.ReadDir(resourceDir)
@@ -148,7 +245,7 @@ func DeployWorkload(workload string, kubeconfig string) (string, error) {
 // RestartCluster restarts the rke2 service on each server-agent given
 func RestartCluster(nodeNames []string) error {
 	for _, nodeName := range nodeNames {
-		const cmd = "sudo systemctl restart rke2-*"
+		const cmd = "systemctl restart rke2-*"
 		if _, err := RunCmdOnNode(cmd, nodeName); err != nil {
 			return err
 		}
@@ -239,11 +336,11 @@ func GetVagrantLog(cErr error) string {
 }
 
 func GenKubeConfigFile(serverName string) (string, error) {
-	cmd := fmt.Sprintf("vagrant ssh %s -c \"sudo cat /etc/rancher/rke2/rke2.yaml\"", serverName)
-	kubeConfig, err := RunCommand(cmd)
+	kubeConfig, err := RunCmdOnNode("cat /etc/rancher/rke2/rke2.yaml", serverName)
 	if err != nil {
 		return "", err
 	}
+
 	nodeIP, err := FetchNodeExternalIP(serverName)
 	if err != nil {
 		return "", err
@@ -316,11 +413,15 @@ func ParsePods(kubeconfig string, print bool) ([]Pod, error) {
 	return pods, nil
 }
 
-// RunCmdOnNode executes a command from within the given node
+// RunCmdOnNode executes a command from within the given node as sudo
 func RunCmdOnNode(cmd string, nodename string) (string, error) {
 	communicator := "ssh"
-	runcmd := "vagrant " + communicator + " -c \"" + cmd + "\" " + nodename
-	return RunCommand(runcmd)
+	runcmd := "vagrant " + communicator + " -c \"sudo " + cmd + "\" " + nodename
+	out, err := RunCommand(runcmd)
+	if err != nil {
+		return out, fmt.Errorf("failed to run command: %s on node %s: %s, %v", cmd, nodename, out, err)
+	}
+	return out, nil
 }
 
 // RunCommand execute a command on the host
@@ -333,7 +434,7 @@ func RunCommand(cmd string) (string, error) {
 // StartCluster starts the rke2 service on each node given
 func StartCluster(nodeNames []string) error {
 	for _, nodeName := range nodeNames {
-		cmd := "sudo systemctl start rke2"
+		cmd := "systemctl start rke2"
 		if strings.Contains(nodeName, "server") {
 			cmd += "-server"
 		}
@@ -350,7 +451,7 @@ func StartCluster(nodeNames []string) error {
 // StopCluster starts the rke2 service on each node given
 func StopCluster(nodeNames []string) error {
 	for _, nodeName := range nodeNames {
-		cmd := "sudo systemctl stop rke2*"
+		cmd := "systemctl stop rke2*"
 		if _, err := RunCmdOnNode(cmd, nodeName); err != nil {
 			return err
 		}
