@@ -1,24 +1,19 @@
-name: Integration Test Coverage
+name: Test Suite
 on: 
   push:
     paths-ignore:
       - "**.md"
       - "channel.yaml"
       - "install.sh"
-      - "tests/**"
-      - "!tests/integration**"
       - ".github/**"
-      - "!.github/workflows/integration.yaml"
+      - "!.github/workflows/test-suite.yaml"
   pull_request:
     paths-ignore:
       - "**.md"
       - "channel.yaml"
       - "install.sh"
-      - "tests/**"
-      - "!tests/integration**"
-      - "!tests/e2e**"
       - ".github/**"
-      - "!.github/workflows/integration.yaml"
+      - "!.github/workflows/test-suite.yaml"
   workflow_dispatch: {}
 
 permissions:
@@ -52,16 +47,17 @@ jobs:
       run: sudo apt-get install -y libarchive-tools
     - name: Build RKE2 Binary and Runtime Image
       run: |
-        GOCOVER=true make build-binary
+        GOCOVER=true make package-bundle
         make package-image-runtime
-        cp ./bin/rke2 ./build/images/rke2-binary
+        cp ./bin/rke2 ./build/images/rke2
+        cp ./dist/artifacts/rke2.linux-amd64.tar.gz ./build/images/rke2.linux-amd64.tar.gz
     # Can only upload from a single path, so we need to copy the binary to the image directory
     - name: Upload RKE2 Binary and Runtime Image
       uses: actions/upload-artifact@v4
       with:
         name: rke2-test-artifacts
         path: ./build/images/*
-  test:
+  itest:
     needs: build
     name: Integration Tests
     runs-on: ubuntu-22.04
@@ -94,7 +90,7 @@ jobs:
         path: ./build/images
     - name: Setup Binary
       run: |
-        mv ./build/images/rke2-binary ./bin/rke2
+        mv ./build/images/rke2 ./bin/rke2
         chmod +x ./bin/rke2
     - name: Run Integration Tests
       run: | 
@@ -113,7 +109,66 @@ jobs:
       if: ${{ failure() }}
       run: cat ./tests/integration/${{ matrix.itest }}/r2log.txt
     - name: On Failure, Launch Debug Session
-      uses: dereknola/action-upterm@main
+      uses: dereknola/action-upterm@v1.1
+      if: ${{ failure() }}
+      with:
+        ## If no one connects after 5 minutes, shut down server.
+        wait-timeout-minutes: 5
+        limit-access-to-actor: true
+
+  e2e:
+    name: "E2E Tests"
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        etest: [dnscache]
+      max-parallel: 3
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v4
+      with: {fetch-depth: 1}
+    
+    - name: Set up vagrant and libvirt
+      uses: ./.github/actions/vagrant-setup
+    - name: "Vagrant Cache"
+      uses: actions/cache@v4
+      with:
+        path: |
+            ~/.vagrant.d/boxes
+        key: vagrant-box-ubuntu-2004
+    - name: "Vagrant Plugin(s)"
+      run: vagrant plugin install vagrant-rke2 vagrant-reload vagrant-scp
+    
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with: 
+        go-version-file: 'go.mod'
+        cache: false
+    - name: Install Kubectl
+      run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    - name: Download RKE2 Binary and Runtime Image
+      uses: actions/download-artifact@v4
+      with:
+        name: rke2-test-artifacts
+        path: ./artifacts
+    - name: Place the artifacts back and compute sha256sum
+      run: |
+        mkdir -p ./dist/artifacts
+        mkdir -p ./build/images
+        mv ./artifacts/rke2-* ./build/images/
+        mv ./artifacts/rke2.linux-amd64.tar.gz ./dist/artifacts/rke2.linux-amd64.tar.gz
+        sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+    - name: Run ${{ matrix.etest }} Test
+      run: | 
+        cd tests/e2e/${{ matrix.etest }}
+        go test -v -timeout=45m ./${{ matrix.etest}}_test.go -ci -local
+    - name: On Failure, Launch Debug Session
+      uses: dereknola/action-upterm@v1.1
       if: ${{ failure() }}
       with:
         ## If no one connects after 5 minutes, shut down server.
