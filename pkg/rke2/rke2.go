@@ -22,7 +22,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
 	"github.com/rancher/rke2/pkg/images"
-	"github.com/rancher/wrangler/pkg/slice"
+	"github.com/rancher/wrangler/v3/pkg/slice"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
