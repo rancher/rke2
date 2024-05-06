@@ -26,8 +26,8 @@ import (
 	"github.com/rancher/wharfie/pkg/extract"
 	"github.com/rancher/wharfie/pkg/registries"
 	"github.com/rancher/wharfie/pkg/tarfile"
-	"github.com/rancher/wrangler/pkg/merr"
-	"github.com/rancher/wrangler/pkg/yaml"
+	"github.com/rancher/wrangler/v3/pkg/merr"
+	"github.com/rancher/wrangler/v3/pkg/yaml"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )

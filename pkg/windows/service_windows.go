@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rancher/wins/pkg/logs"
 	"github.com/rancher/wins/pkg/profilings"
-	"github.com/rancher/wrangler/pkg/signals"
+	"github.com/rancher/wrangler/v3/pkg/signals"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/svc"
