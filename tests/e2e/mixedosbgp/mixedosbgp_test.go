@@ -40,7 +40,7 @@ func createMixedCluster(nodeOS string, serverCount, linuxAgentCount, windowsAgen
 	}
 	windowsAgentNames := []string{}
 	for i := 0; i < linuxAgentCount; i++ {
-		windowsAgentNames = append(windowsAgentNames, "linux-agent-"+strconv.Itoa(i))
+		windowsAgentNames = append(windowsAgentNames, "windows-agent-"+strconv.Itoa(i))
 	}
 	nodeRoles := strings.Join(serverNodeNames, " ") + " " + strings.Join(linuxAgentNames, " ") + " " + strings.Join(windowsAgentNames, " ")
 	nodeRoles = strings.TrimSpace(nodeRoles)
@@ -81,7 +81,8 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 		fmt.Println("CLUSTER CONFIG")
 		fmt.Println("OS:", *nodeOS)
 		fmt.Println("Server Nodes:", serverNodeNames)
-		fmt.Println("Agent Nodes:", linuxAgentNames)
+		fmt.Println("Linux Agent Nodes:", linuxAgentNames)
+		fmt.Println("Windows Agent Nodes:", windowsAgentNames)
 		kubeConfigFile, err = e2e.GenKubeConfigFile(serverNodeNames[0])
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -90,6 +91,7 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 		Eventually(func(g Gomega) {
 			nodes, err := e2e.ParseNodes(kubeConfigFile, false)
 			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(len(serverNodeNames)+len(linuxAgentNames)+len(windowsAgentNames)).Should(Equal(len(nodes)))
 			for _, node := range nodes {
 				g.Expect(node.Status).Should(Equal("Ready"))
 			}
@@ -120,6 +122,11 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 		_, err = e2e.DeployWorkload("windows_app_deployment.yaml", kubeConfigFile)
 		Expect(err).NotTo(HaveOccurred())
 
+		// Often BGP router on windows needs a restart to get the routes properly (known issue in Calico)
+		cmdPowershell := "Restart-Service RemoteAccess"
+		res, err := e2e.RunCmdOnWindowsNode(cmdPowershell, windowsAgentNames[0])
+		Expect(err).NotTo(HaveOccurred(), "failed output:"+res)
+
 		// Wait for the pod_client pods to have an IP
 		Eventually(func() string {
 			ips, _ := e2e.PodIPsUsingLabel(kubeConfigFile, "app=client")
@@ -139,7 +146,7 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output).Should(ContainSubstring("bird"))
 		}
-x
+
 		// Test Linux -> Windows communication
 		fmt.Println("Testing Linux -> Windows communication")
 		cmd := "kubectl exec svc/client-curl --kubeconfig=" + kubeConfigFile + " -- curl -m7 windows-app-svc:3000"

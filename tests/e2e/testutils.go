@@ -323,6 +323,12 @@ func RunCmdOnNode(cmd string, nodename string) (string, error) {
 	return RunCommand(runcmd)
 }
 
+// RunCmdOnWindowsNode executes a command from within the given windows node
+func RunCmdOnWindowsNode(cmd string, nodename string) (string, error) {
+	runcmd := "vagrant ssh -c 'powershell.exe -Command \""+ cmd + "\"' " + nodename
+	return RunCommand(runcmd)
+}
+
 // RunCommand execute a command on the host
 func RunCommand(cmd string) (string, error) {
 	c := exec.Command("bash", "-c", cmd)
