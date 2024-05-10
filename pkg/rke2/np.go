@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/util"
@@ -15,6 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/util/retry"
 )
@@ -221,7 +223,7 @@ func setPoliciesFromTemplates(ctx context.Context, cs kubernetes.Interface, temp
 				}
 				return nil
 			}); err != nil {
-				logrus.Fatalf("Failed to apply network policy %s to namespace %s: %v", template.name, ns.Name, err)
+				return fmt.Errorf("failed to apply network policy %s to namespace %s: %v", template.name, ns.Name, err)
 			}
 		}
 	}
@@ -238,7 +240,6 @@ func setNetworkPolicies(cisMode bool, namespaces []string) cmds.StartupHook {
 			return nil
 		}
 
-		logrus.Info("Applying network policies...")
 		go func() {
 			defer wg.Done()
 			<-args.APIServerReady
@@ -246,19 +247,25 @@ func setNetworkPolicies(cisMode bool, namespaces []string) cmds.StartupHook {
 			if err != nil {
 				logrus.Fatalf("np: new k8s client: %v", err)
 			}
-			for _, namespace := range namespaces {
-				if err := setPoliciesFromTemplates(ctx, cs, defaultNamespacePolicies, namespace); err != nil {
-					logrus.Fatal(err)
-				}
-				if namespace == metav1.NamespaceSystem {
-					if err := setPoliciesFromTemplates(ctx, cs, defaultKubeSystemPolicies, namespace); err != nil {
-						logrus.Fatal(err)
+
+			go wait.PollImmediateInfiniteWithContext(ctx, 5*time.Second, func(ctx context.Context) (bool, error) {
+				logrus.Info("Applying network policies...")
+				for _, namespace := range namespaces {
+					if err := setPoliciesFromTemplates(ctx, cs, defaultNamespacePolicies, namespace); err != nil {
+						logrus.Errorf("Network policy apply failed, will retry: %v", err)
+						return false, nil
+					}
+					if namespace == metav1.NamespaceSystem {
+						if err := setPoliciesFromTemplates(ctx, cs, defaultKubeSystemPolicies, namespace); err != nil {
+							logrus.Errorf("Network policy apply failed, will retry: %v", err)
+							return false, nil
+						}
 					}
 				}
-			}
-			logrus.Info("Applying network policies complete")
+				logrus.Info("Applying network policies complete")
+				return true, nil
+			})
 		}()
-
 		return nil
 	}
 }
