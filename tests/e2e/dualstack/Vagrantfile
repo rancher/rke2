@@ -28,12 +28,12 @@ def provision(vm, roles, role_num, node_num)
     :libvirt__ipv6_address => "#{NETWORK6_PREFIX}::1",
     :libvirt__ipv6_prefix => "64"
     
-  vagrant_defaults = File.exists?("./vagrantdefaults.rb") ? "./vagrantdefaults.rb" : "../vagrantdefaults.rb"
+  vagrant_defaults = File.exist?("./vagrantdefaults.rb") ? "./vagrantdefaults.rb" : "../vagrantdefaults.rb"
   load vagrant_defaults
   
   defaultOSConfigure(vm)
   
-  scripts_location = Dir.exists?("./scripts") ? "./scripts" : "../scripts" 
+  scripts_location = Dir.exist?("./scripts") ? "./scripts" : "../scripts" 
   vm.provision "IPv6 Setup", type: "shell", path: scripts_location + "/ipv6.sh", args: [node_ip4, node_ip6, node_ip6_gw, CNI, vm.box]
   
   install_type = getInstallType(vm, RELEASE_VERSION, GITHUB_BRANCH)
