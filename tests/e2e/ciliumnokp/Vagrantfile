@@ -65,7 +65,6 @@ def provision(vm, roles, role_num, node_num)
         node-ip: #{node_ip4},#{node_ip6}
         node-external-ip: #{node_ip4},#{node_ip6}
         token: vagrant-rke2
-        kubelet-arg: "--node-ip=0.0.0.0" # Workaround for https://github.com/kubernetes/kubernetes/issues/111695
       YAML
     end
   end
