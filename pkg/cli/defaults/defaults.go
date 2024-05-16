@@ -12,6 +12,10 @@ import (
 )
 
 func Set(_ *cli.Context, dataDir string) error {
+	if err := createDataDir(dataDir, 0755); err != nil {
+		return errors.Wrapf(err, "failed to create directory %s", dataDir)
+	}
+
 	logsDir := filepath.Join(dataDir, "agent", "logs")
 	if err := os.MkdirAll(logsDir, 0755); err != nil {
 		return errors.Wrapf(err, "failed to create directory %s", logsDir)
