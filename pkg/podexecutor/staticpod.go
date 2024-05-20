@@ -317,19 +317,17 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 		files = append(files, etcdNameFile(s.DataDir))
 	}
 
-	sockets := []string{}
-	if s.ExternalDatabase {
-		sockets = append(sockets, kineSock(s.DataDir))
-	}
-
 	dirs := onlyExisting(ssldirs)
 	if auditLogFile != "" && auditLogFile != "-" {
 		dirs = append(dirs, filepath.Dir(auditLogFile))
 		excludeFiles = append(excludeFiles, auditLogFile)
 	}
+
+	// Need to mount the entire server directory so that any files recreated in this directory
+	// after the pod has been started are not masked by a stale mount
 	// encryption config is refreshed by the secrets-encryption controller
 	// so we mount the directory to allow the pod to see the updates
-	dirs = append(dirs, filepath.Join(s.DataDir, "server/cred"))
+	dirs = append(dirs, filepath.Join(s.DataDir, "server"))
 	excludeFiles = append(excludeFiles, filepath.Join(s.DataDir, "server/cred/encryption-config.json"))
 
 	apiServerArgs := staticpod.Args{
@@ -345,7 +343,6 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 		ExtraEnv:      s.ControlPlaneEnv.KubeAPIServer,
 		ExtraMounts:   s.ControlPlaneMounts.KubeAPIServer,
 		ProbeConfs:    s.ControlPlaneProbeConfs.KubeAPIServer,
-		Sockets:       sockets,
 		Files:         files,
 		ExcludeFiles:  excludeFiles,
 		HealthExec: []string{
@@ -389,11 +386,6 @@ func (s *StaticPodConfig) Scheduler(_ context.Context, apiReady <-chan struct{},
 		files = append(files, etcdNameFile(s.DataDir))
 	}
 
-	sockets := []string{}
-	if s.ExternalDatabase {
-		sockets = append(sockets, kineSock(s.DataDir))
-	}
-
 	args = append(permitPortSharingFlag, args...)
 	return after(apiReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
@@ -411,7 +403,6 @@ func (s *StaticPodConfig) Scheduler(_ context.Context, apiReady <-chan struct{},
 			ExtraMounts:   s.ControlPlaneMounts.KubeScheduler,
 			ProbeConfs:    s.ControlPlaneProbeConfs.KubeScheduler,
 			Files:         files,
-			Sockets:       sockets,
 		})
 	})
 }
@@ -461,11 +452,6 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, apiReady <-chan s
 		files = append(files, etcdNameFile(s.DataDir))
 	}
 
-	sockets := []string{}
-	if s.ExternalDatabase {
-		sockets = append(sockets, kineSock(s.DataDir))
-	}
-
 	return after(apiReady, func() error {
 		extraArgs := []string{
 			"--flex-volume-plugin-dir=/var/lib/kubelet/volumeplugins",
@@ -488,7 +474,6 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, apiReady <-chan s
 			ExtraMounts:   s.ControlPlaneMounts.KubeControllerManager,
 			ProbeConfs:    s.ControlPlaneProbeConfs.KubeControllerManager,
 			Files:         files,
-			Sockets:       sockets,
 		})
 	})
 }
