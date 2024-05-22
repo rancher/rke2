@@ -62,6 +62,31 @@ type ExtraEnv struct {
 	CloudControllerManager cli.StringSlice
 }
 
+var (
+	DisableItems = []string{"rke2-coredns", "rke2-metrics-server", "rke2-snapshot-controller", "rke2-snapshot-controller-crd", "rke2-snapshot-validation-webhook"}
+	CNIItems     = []string{"calico", "canal", "cilium", "flannel"}
+	IngressItems = []string{"ingress-nginx"}
+
+	CNIFlag = &cli.StringSliceFlag{
+		Name:   "cni",
+		Usage:  "(networking) CNI Plugins to deploy, one of none, " + strings.Join(CNIItems, ", ") + "; optionally with multus as the first value to enable the multus meta-plugin (default: canal)",
+		EnvVar: "RKE2_CNI",
+		Value:  &cli.StringSlice{},
+	}
+	IngressControllerFlag = &cli.StringSliceFlag{
+		Name:   "ingress-controller",
+		Usage:  "(networking) Ingress Controllers to deploy, one of none, " + strings.Join(IngressItems, ", ") + "; the first value will be set as the default ingress class (default: ingress-nginx)",
+		EnvVar: "RKE_INGRESS_CONTROLLER",
+		Value:  &cli.StringSlice{},
+		Hidden: true,
+	}
+	ServiceLBFlag = &cli.BoolFlag{
+		Name:   "enable-servicelb",
+		Usage:  "(components) Enable rke2 default cloud controller manager's service controller",
+		EnvVar: "RKE2_ENABLE_SERVICELB",
+	}
+)
+
 // Valid CIS Profile versions
 const (
 	CISProfile123          = "cis-1.23"
@@ -115,7 +140,7 @@ func Server(clx *cli.Context, cfg Config) error {
 
 	var leaderControllers rawServer.CustomControllers
 
-	cnis := clx.StringSlice("cni")
+	cnis := *CNIFlag.Value
 	if cisMode && (len(cnis) == 0 || slice.ContainsString(cnis, "canal")) {
 		leaderControllers = append(leaderControllers, cisnetworkpolicy.Controller)
 	} else {
