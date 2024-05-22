@@ -1,6 +1,7 @@
 package cmds
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
@@ -9,6 +10,7 @@ import (
 	"github.com/rancher/wrangler/pkg/slice"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 const (
@@ -16,22 +18,12 @@ const (
 )
 
 var (
-	DisableItems = []string{"rke2-coredns", "rke2-ingress-nginx", "rke2-metrics-server"}
-	CNIItems     = []string{"calico", "canal", "cilium", "flannel"}
-
 	config = rke2.Config{}
 
 	serverFlag = []cli.Flag{
-		&cli.StringSliceFlag{
-			Name:   "cni",
-			Usage:  "(networking) CNI Plugins to deploy, one of none, " + strings.Join(CNIItems, ", ") + "; optionally with multus as the first value to enable the multus meta-plugin (default: canal)",
-			EnvVar: "RKE2_CNI",
-		},
-		&cli.BoolFlag{
-			Name:   "enable-servicelb",
-			Usage:  "(components) Enable rke2 default cloud controller manager's service controller",
-			EnvVar: "RKE2_ENABLE_SERVICELB",
-		},
+		rke2.CNIFlag,
+		rke2.IngressControllerFlag,
+		rke2.ServiceLBFlag,
 	}
 
 	k3sServerBase = mustCmdFromK3S(cmds.NewServerCommand(ServerRun), K3SFlagSet{
@@ -81,7 +73,7 @@ var (
 		"kine-tls":                          dropFlag,
 		"default-local-storage-path":        dropFlag,
 		"disable": {
-			Usage: "(components) Do not deploy packaged components and delete any deployed components (valid items: " + strings.Join(DisableItems, ", ") + ")",
+			Usage: "(components) Do not deploy packaged components and delete any deployed components (valid items: " + strings.Join(rke2.DisableItems, ", ") + ")",
 		},
 		"disable-scheduler":                 copyFlag,
 		"disable-cloud-controller":          copyFlag,
@@ -166,47 +158,90 @@ func ServerRun(clx *cli.Context) error {
 	validateCloudProviderName(clx, Server)
 	validateProfile(clx, Server)
 	validateCNI(clx)
+	validateIngress(clx)
 	return rke2.Server(clx, config)
 }
 
+// validateCNI validates the CNI selection, and disables any un-selected CNI charts
 func validateCNI(clx *cli.Context) {
-	cnis := []string{}
-	for _, cni := range clx.StringSlice("cni") {
-		for _, v := range strings.Split(cni, ",") {
-			cnis = append(cnis, v)
+	disableExceptSelected(clx, rke2.CNIItems, rke2.CNIFlag, func(values cli.StringSlice) (cli.StringSlice, error) {
+		switch len(values) {
+		case 0:
+			values = append(values, "canal")
+			fallthrough
+		case 1:
+			if values[0] == "multus" {
+				return nil, errors.New("multus must be used alongside another primary cni selection")
+			}
+			clx.Set("disable", "rke2-multus")
+		case 2:
+			if values[0] == "multus" {
+				values = values[1:]
+			} else {
+				return nil, errors.New("may only provide multiple values if multus is the first value")
+			}
+		default:
+			return nil, errors.New("must specify 1 or 2 values")
 		}
-	}
+		return values, nil
+	})
+}
 
-	switch len(cnis) {
-	case 0:
-		cnis = append(cnis, "canal")
-		fallthrough
-	case 1:
-		if cnis[0] == "multus" {
-			logrus.Fatal("invalid value provided for --cni flag: multus must be used alongside another primary cni selection")
+// validateCNI validates the ingress controller selection, and disables any un-selected ingress controller charts
+func validateIngress(clx *cli.Context) {
+	disableExceptSelected(clx, rke2.IngressItems, rke2.IngressControllerFlag, func(values cli.StringSlice) (cli.StringSlice, error) {
+		if len(values) == 0 {
+			values = append(values, "ingress-nginx")
 		}
-		clx.Set("disable", "rke2-multus")
-	case 2:
-		if cnis[0] == "multus" {
-			cnis = cnis[1:]
-		} else {
-			logrus.Fatal("invalid values provided for --cni flag: may only provide multiple values if multus is the first value")
-		}
-	default:
-		logrus.Fatal("invalid values provided for --cni flag: may not provide more than two values")
-	}
+		return values, nil
+	})
+}
 
-	switch {
-	case cnis[0] == "none":
-		fallthrough
-	case slice.ContainsString(CNIItems, cnis[0]):
-		for _, d := range CNIItems {
-			if cnis[0] != d {
-				clx.Set("disable", "rke2-"+d)
-				clx.Set("disable", "rke2-"+d+"-crd")
+// disableExceptSelected takes a list of valid flag values, and a CLI StringSlice flag that holds the user's selected values.
+// Selected values are split to support comma-separated lists, in addition to repeated use of the same flag.
+// Once the list has been split, a validation function is called to allow for custom validation or defaulting of selected values.
+// Finally, charts for any valid items not selected are added to the --disable list.
+// A value of 'none' will cause all valid items to be disabled.
+// Errors from the validation function, or selection of a value not in the valid list, will cause a fatal error to be logged.
+func disableExceptSelected(clx *cli.Context, valid []string, flag *cli.StringSliceFlag, validateFunc func(cli.StringSlice) (cli.StringSlice, error)) {
+	// split comma-separated values
+	values := cli.StringSlice{}
+	if flag.Value != nil {
+		for _, value := range *flag.Value {
+			for _, v := range strings.Split(value, ",") {
+				values = append(values, v)
 			}
 		}
-	default:
-		logrus.Fatal("invalid value provided for --cni flag")
+	}
+
+	// validate the flag after splitting values
+	if v, err := validateFunc(values); err != nil {
+		logrus.Fatalf("Failed to validate --%s flag: %v", flag.Name, err)
+	} else {
+		flag.Value = &v
+	}
+
+	// prepare a list of items to disable, based on all valid components.
+	// we have to use an intermediate set because the flag interface
+	// doesn't allow us to remove flag values once added.
+	disabledCharts := sets.Set[string]{}
+	for _, d := range valid {
+		disabledCharts.Insert("rke2-"+d, "rke2-"+d+"-crd")
+	}
+
+	// re-enable components for any selected flag values
+	for _, d := range *flag.Value {
+		switch {
+		case d == "none":
+			break
+		case slice.ContainsString(valid, d):
+			disabledCharts.Delete("rke2-"+d, "rke2-"+d+"-crd")
+		default:
+			logrus.Fatalf("Invalid value %s for --%s flag: must be one of %s", d, flag.Name, strings.Join(valid, ","))
+		}
+	}
+
+	for _, c := range disabledCharts.UnsortedList() {
+		clx.Set("disable", c)
 	}
 }
