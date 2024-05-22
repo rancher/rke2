@@ -105,25 +105,25 @@ type ControlPlaneProbeConfs struct {
 }
 
 type StaticPodConfig struct {
+	Resolver      *images.Resolver
+	stopKubelet   context.CancelFunc
+	CloudProvider *CloudProviderConfig
 	ControlPlaneResources
-	ControlPlaneProbeConfs
+	DataDir           string
+	RuntimeEndpoint   string
+	ManifestsDir      string
+	IngressController string
+	ImagesDir         string
+	AuditPolicyFile   string
+	PSAConfigFile     string
+	KubeletPath       string
 	ControlPlaneEnv
 	ControlPlaneMounts
-	ManifestsDir     string
-	ImagesDir        string
-	Resolver         *images.Resolver
-	CloudProvider    *CloudProviderConfig
-	DataDir          string
-	AuditPolicyFile  string
-	PSAConfigFile    string
-	KubeletPath      string
-	RuntimeEndpoint  string
+	ControlPlaneProbeConfs
 	CISMode          bool
 	DisableETCD      bool
 	ExternalDatabase bool
 	IsServer         bool
-
-	stopKubelet context.CancelFunc
 }
 
 type CloudProviderConfig struct {
@@ -159,7 +159,7 @@ func (s *StaticPodConfig) Bootstrap(_ context.Context, nodeConfig *daemonconfig.
 		return err
 	}
 	if s.IsServer {
-		return bootstrap.UpdateManifests(s.Resolver, nodeConfig, cfg)
+		return bootstrap.UpdateManifests(s.Resolver, s.IngressController, nodeConfig, cfg)
 	}
 
 	// Remove the kube-proxy static pod manifest before starting the agent.
