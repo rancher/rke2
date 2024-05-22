@@ -162,7 +162,7 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 
 // UpdateManifests copies the staged manifests into the server's manifests dir, and applies
 // cluster configuration values to any HelmChart manifests found in the manifests directory.
-func UpdateManifests(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
+func UpdateManifests(resolver *images.Resolver, ingressController string, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
 	ref, err := resolver.GetReference(images.Runtime)
 	if err != nil {
 		return err
@@ -189,7 +189,7 @@ func UpdateManifests(resolver *images.Resolver, nodeConfig *daemonconfig.Node, c
 
 	// Fix up HelmCharts to pass through configured values.
 	// This needs to be done every time in order to sync values from the CLI
-	if err := setChartValues(manifestsDir, nodeConfig, cfg); err != nil {
+	if err := setChartValues(manifestsDir, ingressController, nodeConfig, cfg); err != nil {
 		return errors.Wrap(err, "failed to rewrite HelmChart manifests to pass through CLI values")
 	}
 	return nil
@@ -309,7 +309,7 @@ func copyFile(target, source string) error {
 // pass through settings to both the Helm job and the chart values.
 // NOTE: This will probably fail if any manifest contains multiple documents. This should
 // not matter for any of our packaged components, but may prevent this from working on user manifests.
-func setChartValues(manifestsDir string, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
+func setChartValues(manifestsDir, ingressController string, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
 	chartValues := map[string]string{
 		"global.clusterCIDR":                  util.JoinIPNets(nodeConfig.AgentConfig.ClusterCIDRs),
 		"global.clusterCIDRv4":                util.JoinIP4Nets(nodeConfig.AgentConfig.ClusterCIDRs),
@@ -318,6 +318,7 @@ func setChartValues(manifestsDir string, nodeConfig *daemonconfig.Node, cfg cmds
 		"global.clusterDomain":                nodeConfig.AgentConfig.ClusterDomain,
 		"global.rke2DataDir":                  cfg.DataDir,
 		"global.serviceCIDR":                  util.JoinIPNets(nodeConfig.AgentConfig.ServiceCIDRs),
+		"global.systemDefaultIngressClass":    ingressController,
 		"global.systemDefaultRegistry":        nodeConfig.AgentConfig.SystemDefaultRegistry,
 		"global.cattle.systemDefaultRegistry": nodeConfig.AgentConfig.SystemDefaultRegistry,
 	}
