@@ -139,6 +139,11 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		containerRuntimeEndpoint = containerdSock
 	}
 
+	var ingressControllerName string
+	if IngressControllerFlag.Value != nil && len(*IngressControllerFlag.Value) > 0 {
+		ingressControllerName = (*IngressControllerFlag.Value)[0]
+	}
+
 	return &podexecutor.StaticPodConfig{
 		Resolver:               resolver,
 		ImagesDir:              agentImagesDir,
@@ -153,6 +158,7 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		DisableETCD:            clx.Bool("disable-etcd"),
 		ExternalDatabase:       ExternalDatabase,
 		IsServer:               isServer,
+		IngressController:      ingressControllerName,
 		ControlPlaneResources:  *controlPlaneResources,
 		ControlPlaneProbeConfs: *controlPlaneProbeConfs,
 		ControlPlaneEnv:        *extraEnv,

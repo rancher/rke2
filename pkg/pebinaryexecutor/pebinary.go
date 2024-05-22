@@ -46,19 +46,20 @@ var (
 )
 
 type PEBinaryConfig struct {
-	ManifestsDir        string
-	ImagesDir           string
-	Resolver            *images.Resolver
+	CNIPlugin           win.CNIPlugin
 	CloudProvider       *CloudProviderConfig
-	CISMode             bool
+	Resolver            *images.Resolver
+	ManifestsDir        string
 	DataDir             string
 	AuditPolicyFile     string
 	KubeletPath         string
+	CNIName             string
+	ImagesDir           string
 	KubeConfigKubeProxy string
+	IngressController   string
+	CISMode             bool
 	DisableETCD         bool
 	IsServer            bool
-	CNIName             string
-	CNIPlugin           win.CNIPlugin
 }
 
 type CloudProviderConfig struct {
@@ -105,7 +106,7 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 	}
 
 	if p.IsServer {
-		return bootstrap.UpdateManifests(p.Resolver, nodeConfig, cfg)
+		return bootstrap.UpdateManifests(p.Resolver, p.IngressController, nodeConfig, cfg)
 	}
 
 	restConfig, err := clientcmd.BuildConfigFromFlags("", nodeConfig.AgentConfig.KubeConfigK3sController)
