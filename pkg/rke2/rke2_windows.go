@@ -58,17 +58,23 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*pebinaryexecuto
 		cfg.KubeletPath = "kubelet"
 	}
 
+	var ingressControllerName string
+	if IngressControllerFlag.Value != nil && len(*IngressControllerFlag.Value) > 0 {
+		ingressControllerName = (*IngressControllerFlag.Value)[0]
+	}
+
 	return &pebinaryexecutor.PEBinaryConfig{
-		Resolver:        resolver,
-		ImagesDir:       agentImagesDir,
-		ManifestsDir:    agentManifestsDir,
-		CISMode:         isCISMode(clx),
-		CloudProvider:   cpConfig,
-		DataDir:         dataDir,
-		AuditPolicyFile: clx.String("audit-policy-file"),
-		KubeletPath:     cfg.KubeletPath,
-		DisableETCD:     clx.Bool("disable-etcd"),
-		IsServer:        isServer,
-		CNIName:         "",
+		Resolver:          resolver,
+		ImagesDir:         agentImagesDir,
+		ManifestsDir:      agentManifestsDir,
+		CISMode:           isCISMode(clx),
+		CloudProvider:     cpConfig,
+		DataDir:           dataDir,
+		AuditPolicyFile:   clx.String("audit-policy-file"),
+		KubeletPath:       cfg.KubeletPath,
+		DisableETCD:       clx.Bool("disable-etcd"),
+		IsServer:          isServer,
+		IngressController: ingressControllerName,
+		CNIName:           "",
 	}, nil
 }
