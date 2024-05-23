@@ -1,4 +1,4 @@
-package dualstack
+package ciliumnokp
 
 import (
 	"flag"
@@ -13,20 +13,16 @@ import (
 	"github.com/rancher/rke2/tests/e2e"
 )
 
-// Valid nodeOS: generic/ubuntu2004, opensuse/Leap-15.3.x86_64
-var nodeOS = flag.String("nodeOS", "generic/ubuntu2004", "VM operating system")
-var serverCount = flag.Int("serverCount", 3, "number of server nodes")
+var nodeOS = flag.String("nodeOS", "generic/ubuntu2310", "VM operating system")
+var serverCount = flag.Int("serverCount", 1, "number of server nodes")
 var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
 
-// Environment Variables Info:
-// E2E_RELEASE_VERSION=v1.23.1+rke2r1 or nil for latest commit from master
-
-func Test_E2EDualStack(t *testing.T) {
+func Test_E2ECiliumNoKP(t *testing.T) {
 	flag.Parse()
 	RegisterFailHandler(Fail)
 	suiteConfig, reporterConfig := GinkgoConfiguration()
-	RunSpecs(t, "Validate dualstack Test Suite", suiteConfig, reporterConfig)
+	RunSpecs(t, "Validate dualstack in Cilium without kube-proxy Test Suite", suiteConfig, reporterConfig)
 }
 
 var (
@@ -36,7 +32,7 @@ var (
 )
 var _ = ReportAfterEach(e2e.GenReport)
 
-var _ = Describe("Verify DualStack Configuration", Ordered, func() {
+var _ = Describe("Verify DualStack in Cilium without kube-proxy configuration", Ordered, func() {
 
 	It("Starts up with no issues", func() {
 		var err error
@@ -88,12 +84,28 @@ var _ = Describe("Verify DualStack Configuration", Ordered, func() {
 			Expect(res).Should(ContainSubstring("fd11:decf:c0ff"))
 		}
 	})
-	It("Verifies that each pod has IPv4 and IPv6", func() {
-		podIPs, err := e2e.GetPodIPs(kubeConfigFile)
-		Expect(err).NotTo(HaveOccurred())
-		for _, pod := range podIPs {
-			Expect(pod.Ipv4).Should(Or(ContainSubstring("10.10.10"), ContainSubstring("10.42."), ContainSubstring("192.168.")), pod.Name)
-			Expect(pod.Ipv6).Should(Or(ContainSubstring("fd11:decf:c0ff"), ContainSubstring("2001:cafe:42")), pod.Name)
+
+	It("Verifies that cilium config is correct", func() {
+		cmdCiliumAgents := "kubectl get pods -l app.kubernetes.io/name=cilium-agent -n kube-system -o=name --kubeconfig=" + kubeConfigFile
+		res, err := e2e.RunCommand(cmdCiliumAgents)
+		Expect(err).NotTo(HaveOccurred(), res)
+		ciliumAgents := strings.Split(strings.TrimSpace(res), "\n")
+		Expect(len(ciliumAgents)).Should(Equal(len(serverNodeNames) + len(agentNodeNames)))
+		for _, ciliumAgent := range ciliumAgents {
+			cmd := "kubectl exec " + ciliumAgent + " -n kube-system  -c cilium-agent --kubeconfig=" + kubeConfigFile + " -- cilium-dbg status --verbose | grep -e 'BPF' -e 'HostPort' -e 'LoadBalancer'"
+			res, err := e2e.RunCommand(cmd)
+			Expect(err).NotTo(HaveOccurred(), res)
+			// We expect the following output and the important parts are HostPort, LoadBalancer, Host Routing and Masquerading
+			// Host Routing:           BPF
+			// Masquerading:           BPF
+			// Clock Source for BPF:   ktime
+			// - LoadBalancer:   Enabled
+			// - HostPort:       Enabled
+			// BPF Maps:   dynamic sizing: on (ratio: 0.002500)
+			Expect(res).Should(ContainSubstring("Host Routing"))
+			Expect(res).Should(ContainSubstring("Masquerading"))
+			Expect(res).Should(ContainSubstring("LoadBalancer:   Enabled"))
+			Expect(res).Should(ContainSubstring("HostPort:       Enabled"))
 		}
 	})
 
@@ -125,6 +137,27 @@ var _ = Describe("Verify DualStack Configuration", Ordered, func() {
 			}
 		}
 	})
+
+	It("Verifies internode connectivity", func() {
+		_, err := e2e.DeployWorkload("pod_client.yaml", kubeConfigFile)
+		Expect(err).NotTo(HaveOccurred())
+
+		// Wait for the pod_client to have an IP
+		Eventually(func() string {
+			ips, _ := e2e.PodIPsUsingLabel(kubeConfigFile, "app=client")
+			return ips[0].Ipv4
+		}, "40s", "5s").Should(ContainSubstring("10.42"), "failed getClientIPs")
+
+		clientIPs, err := e2e.PodIPsUsingLabel(kubeConfigFile, "app=client")
+		Expect(err).NotTo(HaveOccurred())
+		for _, ip := range clientIPs {
+			cmd := "kubectl exec svc/client-curl --kubeconfig=" + kubeConfigFile + " -- curl -m7 " + ip.Ipv4 + "/name.html"
+			Eventually(func() (string, error) {
+				return e2e.RunCommand(cmd)
+			}, "20s", "3s").Should(ContainSubstring("client-deployment"), "failed cmd: "+cmd)
+		}
+	})
+
 	It("Verifies Ingress", func() {
 		_, err := e2e.DeployWorkload("dualstack_ingress.yaml", kubeConfigFile)
 		Expect(err).NotTo(HaveOccurred(), "Ingress manifest not deployed")
@@ -137,11 +170,11 @@ var _ = Describe("Verify DualStack Configuration", Ordered, func() {
 			cmd := fmt.Sprintf("curl  --header host:%s http://%s/name.html", hostName, node.Ipv4)
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "10s", "2s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
+			}, "30s", "2s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
 			cmd = fmt.Sprintf("curl  --header host:%s http://[%s]/name.html", hostName, node.Ipv6)
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "5s", "1s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
+			}, "10s", "1s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
 		}
 	})
 
@@ -157,32 +190,24 @@ var _ = Describe("Verify DualStack Configuration", Ordered, func() {
 			cmd = "curl -L --insecure http://" + node.Ipv4 + ":" + nodeport + "/name.html"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "10s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
+			}, "30s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
 			cmd = "curl -L --insecure http://[" + node.Ipv6 + "]:" + nodeport + "/name.html"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
 			}, "10s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
 		}
 	})
-	It("Verifies podSelector Network Policy", func() {
-		_, err := e2e.DeployWorkload("pod_client.yaml", kubeConfigFile)
-		Expect(err).NotTo(HaveOccurred())
-		cmd := "kubectl exec svc/client-curl --kubeconfig=" + kubeConfigFile + " -- curl -m7 ds-clusterip-svc/name.html"
-		Eventually(func() (string, error) {
-			return e2e.RunCommand(cmd)
-		}, "20s", "3s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
-		_, err = e2e.DeployWorkload("netpol-fail.yaml", kubeConfigFile)
-		Expect(err).NotTo(HaveOccurred())
-		cmd = "kubectl exec svc/client-curl --kubeconfig=" + kubeConfigFile + " -- curl -m7 ds-clusterip-svc/name.html"
-		_, err = e2e.RunCommand(cmd)
-		Expect(err).To(HaveOccurred())
-		_, err = e2e.DeployWorkload("netpol-work.yaml", kubeConfigFile)
-		Expect(err).NotTo(HaveOccurred())
-		cmd = "kubectl exec svc/client-curl --kubeconfig=" + kubeConfigFile + " -- curl -m7 ds-clusterip-svc/name.html"
-		Eventually(func() (string, error) {
-			return e2e.RunCommand(cmd)
-		}, "20s", "3s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
+
+	It("Verifies there are no required iptables", func() {
+		// Check that there are no iptables rules with KUBE-SVC and HOSTPORT
+		cmdiptables := "sudo iptables-save | grep -e 'KUBE-SVC' -e 'HOSTPORT' | wc -l"
+		for i := range serverNodeNames {
+			res, err := e2e.RunCmdOnNode(cmdiptables, serverNodeNames[i])
+			Expect(err).NotTo(HaveOccurred(), res)
+			Expect(res).Should(ContainSubstring("0"))
+		}
 	})
+
 })
 
 var failed bool

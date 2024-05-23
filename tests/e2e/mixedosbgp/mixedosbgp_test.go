@@ -130,13 +130,13 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 		// Wait for the pod_client pods to have an IP
 		Eventually(func() string {
 			ips, _ := e2e.PodIPsUsingLabel(kubeConfigFile, "app=client")
-			return ips[0]
+			return ips[0].Ipv4
 		}, "120s", "10s").Should(ContainSubstring("10.42"), "failed getClientIPs")
 
 		// Wait for the windows_app_deployment pods to have an IP (We must wait 250s because it takes time)
 		Eventually(func() string {
 			ips, _ := e2e.PodIPsUsingLabel(kubeConfigFile, "app=windows-app")
-			return ips[0]
+			return ips[0].Ipv4
 		}, "620s", "10s").Should(ContainSubstring("10.42"), "failed getClientIPs")
 
 		// Verify there are BGP routes
