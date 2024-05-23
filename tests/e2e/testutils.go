@@ -41,6 +41,12 @@ type NodeError struct {
 	Err  error
 }
 
+type objIP struct {
+	Name string
+	Ipv4 string
+	Ipv6 string
+}
+
 func (ne *NodeError) Error() string {
 	return fmt.Sprintf("failed creating cluster: %s: %v", ne.Cmd, ne.Err)
 }
@@ -484,13 +490,43 @@ func UpgradeCluster(serverNodenames []string, agentNodenames []string) error {
 	return nil
 }
 
-// PodIPsUsingLabel returns the IPs of the pods with a label (only single-stack supported)
-func PodIPsUsingLabel(kubeConfigFile string, label string) ([]string, error) {
-	cmd := `kubectl get pods -l ` + label + ` -o=jsonpath='{range .items[*]}{.status.podIPs[*].ip}{" "}{end}' --kubeconfig=` + kubeConfigFile
+// PodIPsUsingLabel returns the IPs of the pods with a label
+func PodIPsUsingLabel(kubeConfigFile string, label string) ([]objIP, error) {
+	cmd := `kubectl get pods -l ` + label + ` -o=jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.podIPs[*].ip}{"\n"}{end}' --kubeconfig=` + kubeConfigFile
+	return getObjIPs(cmd)
+}
+
+// GetPodIPs returns the IPs of all the pods
+func GetPodIPs(kubeConfigFile string) ([]objIP, error) {
+	cmd := `kubectl get pods -A -o=jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.podIPs[*].ip}{"\n"}{end}' --kubeconfig=` + kubeConfigFile
+	return getObjIPs(cmd)
+}
+
+// GetNodeIPs returns the IPs of the nodes
+func GetNodeIPs(kubeConfigFile string) ([]objIP, error) {
+	cmd := `kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.addresses[?(@.type == "ExternalIP")].address}{"\n"}{end}' --kubeconfig=` + kubeConfigFile
+	return getObjIPs(cmd)
+}
+
+// getObjIPs processes the IPs of the requested objects
+func getObjIPs(cmd string) ([]objIP, error) {
+	var objIPs []objIP
 	res, err := RunCommand(cmd)
 	if err != nil {
 		return nil, err
 	}
+	objs := strings.Split(res, "\n")
+	objs = objs[:len(objs)-1]
 
-	return strings.Split(res, " "), nil
+	for _, obj := range objs {
+		fields := strings.Fields(obj)
+		if len(fields) > 2 {
+			objIPs = append(objIPs, objIP{Name: fields[0], Ipv4: fields[1], Ipv6: fields[2]})
+		} else if len(fields) > 1 {
+			objIPs = append(objIPs, objIP{Name: fields[0], Ipv4: fields[1]})
+		} else {
+			objIPs = append(objIPs, objIP{Name: fields[0]})
+		}
+	}
+	return objIPs, nil
 }
