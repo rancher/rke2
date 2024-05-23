@@ -1,10 +1,10 @@
-# 5. Branching Strategy in Github
+# 8. Branching Strategy in Github
 
-Proposal Date: 2024-05-16
+Proposal Date: 2024-05-23
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -16,5 +16,6 @@ All code changes go into the `master` branch. We maintain branches for all curre
 ## Consequences
 
 - Allows for constant development, with code freeze only relevant for the release branches.
-- This requires maintaining one additional branch than the current workflow.
-- Testing would be more constant from the master branch
+- This requires maintaining one additional branch than the current workflow, which also means one additional issue.
+- Testing would be more constant from the master branch.
+- Minor release captain will have to cut the new branch as soon as they bring in that new minor version.
