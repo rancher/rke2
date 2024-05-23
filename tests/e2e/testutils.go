@@ -112,6 +112,7 @@ func CreateCluster(nodeOS string, serverCount int, agentCount int) ([]string, []
 	errg, _ := errgroup.WithContext(context.Background())
 	for _, node := range append(serverNodeNames[1:], agentNodeNames...) {
 		cmd := fmt.Sprintf(`%s %s vagrant up %s &>> vagrant.log`, nodeEnvs, testOptions, node)
+		fmt.Println(cmd)
 		errg.Go(func() error {
 			if _, err := RunCommand(cmd); err != nil {
 				return newNodeError(cmd, node, err)
@@ -426,7 +427,7 @@ func RunCmdOnNode(cmd string, nodename string) (string, error) {
 
 // RunCmdOnWindowsNode executes a command from within the given windows node
 func RunCmdOnWindowsNode(cmd string, nodename string) (string, error) {
-	runcmd := "vagrant ssh -c 'powershell.exe -Command \""+ cmd + "\"' " + nodename
+	runcmd := "vagrant ssh -c 'powershell.exe -Command \"" + cmd + "\"' " + nodename
 	return RunCommand(runcmd)
 }
 
