@@ -60,7 +60,8 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 	// Verify if the user want to use kine as the datastore
 	// and then remove the etcd from the static pod
 	ExternalDatabase := false
-	if cmds.ServerConfig.DatastoreEndpoint != "" {
+	if cmds.ServerConfig.DatastoreEndpoint != "" || (clx.Bool("disable-etcd") && !clx.IsSet("server")) {
+		cmds.ServerConfig.DisableETCD = false
 		cmds.ServerConfig.ClusterInit = false
 		cmds.ServerConfig.KineTLS = true
 		ExternalDatabase = true
