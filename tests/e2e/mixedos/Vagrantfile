@@ -7,6 +7,7 @@ GITHUB_BRANCH = (ENV['E2E_GITHUB_BRANCH'] || "master")
 RELEASE_VERSION = (ENV['E2E_RELEASE_VERSION'] || "")
 NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
 NODE_MEMORY = (ENV['E2E_NODE_MEMORY'] || 3072).to_i
+CNI = (ENV['E2E_CNI'] || "calico")
 # Virtualbox >= 6.1.28 require `/etc/vbox/network.conf` for expanded private networks 
 NETWORK_PREFIX = "10.10.10"
 install_type = ""
@@ -47,7 +48,7 @@ def provision(vm, role, role_num, node_num)
         node-external-ip: #{NETWORK_PREFIX}.100
         node-ip: #{NETWORK_PREFIX}.100
         token: vagrant-rke2
-        cni: calico
+        cni: #{CNI}
       YAML
     end
     vm.provision "Install sonobuoy", type: "shell", path: "../scripts/install_sonobuoy.sh"
@@ -61,7 +62,7 @@ def provision(vm, role, role_num, node_num)
         node-ip: #{node_ip}
         server: https://#{NETWORK_PREFIX}.100:9345
         token: vagrant-rke2
-        cni: calico
+        cni: #{CNI}
       YAML
     end
   end
