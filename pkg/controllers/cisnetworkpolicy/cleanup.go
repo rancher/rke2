@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/k3s-io/k3s/pkg/server"
-	coreclient "github.com/rancher/wrangler/pkg/generated/controllers/core/v1"
+	coreclient "github.com/rancher/wrangler/v3/pkg/generated/controllers/core/v1"
 	"github.com/sirupsen/logrus"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
