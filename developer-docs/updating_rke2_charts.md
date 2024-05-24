@@ -19,8 +19,8 @@ the controllers part of `rke2 server` binary.
 
 ## How to update a chart?
 
-Before going into updating the chart, note a chart update normally means updating the images that this chart is consumin
-g. In general, rke2 is consuming hardened images that are built using a FIPS compliant process. In other words, **do not
+Before going into updating the chart, note a chart update normally means updating the images that this chart is consuming.
+In general, rke2 is consuming hardened images that are built using a FIPS compliant process. In other words, **do not
  use the upstream images**. Instead, refer to the Github project building that image and use the code of the upstream
 project to yield a hardened image. The Github projects building hardened images are under our [github rancher](https://github.com/rancher/)
 and start with the name `image-build-`, for example: [image-build-coredns](https://github.com/rancher/image-build-coredns).
