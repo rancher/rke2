@@ -18,4 +18,4 @@ All code changes go into the `master` branch. We maintain branches for all curre
 - Allows for constant development, with code freeze only relevant for the release branches.
 - This requires maintaining one additional branch than the current workflow, which also means one additional issue.
 - Testing would be more constant from the master branch.
-- Minor release captain will have to cut the new branch as soon as they bring in that new minor version.
+- When a new minor release is available, the creation of the new release branch will be the responsibility of the engineer that merges the PR bumping Kubernetes to the new minor version. It will happen as soon as that PR is merged.
