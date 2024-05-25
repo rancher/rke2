@@ -38,6 +38,7 @@ metadata:
   namespace: "${CHART_NAMESPACE:="kube-system"}"
   annotations:
     helm.cattle.io/chart-url: "${CHART_URL}"
+    rke2.cattle.io/inject-cluster-config: "true"
 spec:
   bootstrap: ${CHART_BOOTSTRAP:=false}
   chartContent: $(base64 -w0 < "${CHART_TMP}")
