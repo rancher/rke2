@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/google/go-containerregistry/pkg/authn"
@@ -20,6 +21,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/daemons/agent"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/util"
+	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/wharfie/pkg/credentialprovider/plugin"
@@ -33,8 +35,11 @@ import (
 )
 
 var (
-	releasePattern = regexp.MustCompile("^v[0-9]")
-	helmChartGVK   = helmv1.SchemeGroupVersion.WithKind("HelmChart")
+	releasePattern      = regexp.MustCompile("^v[0-9]")
+	helmChartGVK        = helmv1.SchemeGroupVersion.WithKind("HelmChart")
+	injectAnnotationKey = version.Program + ".cattle.io/inject-cluster-config"
+	injectEnvKey        = version.ProgramUpper + "_INJECT_CLUSTER_CONFIG"
+	injectDefault       = true
 )
 
 // binDirForDigest returns the path to dataDir/data/refDigest/bin.
@@ -373,6 +378,11 @@ OBJECTS:
 			continue
 		}
 
+		// Ignore object if injection is disabled via annotation or default setting
+		if !isInjectEnabled(unst) {
+			continue
+		}
+
 		var contentChanged bool
 		content := unst.UnstructuredContent()
 
@@ -428,4 +438,20 @@ OBJECTS:
 
 	logrus.Infof("Updated manifest %s to set cluster configuration values", fileName)
 	return nil
+}
+
+func isInjectEnabled(obj *unstructured.Unstructured) bool {
+	if v, ok := obj.GetAnnotations()[injectAnnotationKey]; ok {
+		if b, err := strconv.ParseBool(v); err == nil {
+			return b
+		}
+	}
+	return getInjectDefault()
+}
+
+func getInjectDefault() bool {
+	if b, err := strconv.ParseBool(os.Getenv(injectEnvKey)); err == nil {
+		return b
+	}
+	return injectDefault
 }
