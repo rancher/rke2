@@ -15,8 +15,8 @@ import (
 
 // Valid nodeOS: generic/ubuntu2004, opensuse/Leap-15.3.x86_64
 var nodeOS = flag.String("nodeOS", "generic/ubuntu2004", "operating system for linux nodes")
-var serverCount = flag.Int("serverCount", 3, "number of server nodes")
-var linuxAgentCount = flag.Int("linuxAgentCount", 0, "number of linux agent nodes")
+var serverCount = flag.Int("serverCount", 1, "number of server nodes")
+var linuxAgentCount = flag.Int("linuxAgentCount", 1, "number of linux agent nodes")
 var windowsAgentCount = flag.Int("windowsAgentCount", 1, "number of windows agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
 
@@ -40,7 +40,7 @@ func createMixedCluster(nodeOS string, serverCount, linuxAgentCount, windowsAgen
 	}
 	windowsAgentNames := []string{}
 	for i := 0; i < linuxAgentCount; i++ {
-		windowsAgentNames = append(windowsAgentNames, "linux-agent-"+strconv.Itoa(i))
+		windowsAgentNames = append(windowsAgentNames, "windows-agent-"+strconv.Itoa(i))
 	}
 	nodeRoles := strings.Join(serverNodeNames, " ") + " " + strings.Join(linuxAgentNames, " ") + " " + strings.Join(windowsAgentNames, " ")
 	nodeRoles = strings.TrimSpace(nodeRoles)
@@ -81,7 +81,8 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 		fmt.Println("CLUSTER CONFIG")
 		fmt.Println("OS:", *nodeOS)
 		fmt.Println("Server Nodes:", serverNodeNames)
-		fmt.Println("Agent Nodes:", linuxAgentNames)
+		fmt.Println("Linux Agent Nodes:", linuxAgentNames)
+		fmt.Println("Windows Agent Nodes:", windowsAgentNames)
 		kubeConfigFile, err = e2e.GenKubeConfigFile(serverNodeNames[0])
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -123,13 +124,13 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 		// Wait for the pod_client pods to have an IP
 		Eventually(func() string {
 			ips, _ := e2e.PodIPsUsingLabel(kubeConfigFile, "app=client")
-			return ips[0]
+			return ips[0].Ipv4
 		}, "120s", "10s").Should(ContainSubstring("10.42"), "failed getClientIPs")
 
 		// Wait for the windows_app_deployment pods to have an IP (We must wait 250s because it takes time)
 		Eventually(func() string {
 			ips, _ := e2e.PodIPsUsingLabel(kubeConfigFile, "app=windows-app")
-			return ips[0]
+			return ips[0].Ipv4
 		}, "620s", "10s").Should(ContainSubstring("10.42"), "failed getClientIPs")
 
 		// Test Linux -> Windows communication
