@@ -165,6 +165,15 @@ func (p *PEBinaryConfig) Kubelet(ctx context.Context, args []string) error {
 		cleanArgs = append(cleanArgs, arg)
 	}
 
+	// It should never happen but just in case, we make sure the rke2-uninstall.lock does not exist before starting kubelet
+	lockFile := filepath.Join(p.DataDir, "bin", "rke2-uninstall.lock")
+	if _, err := os.Stat(lockFile); err == nil {
+		// If the file exists, delete it
+		if err := os.Remove(lockFile); err != nil {
+			logrus.Errorf("Failed to remove the %s file: %v", lockFile, err)
+		}
+	}
+
 	win.ProcessWaitGroup.StartWithContext(ctx, func(ctx context.Context) {
 		for {
 			logrus.Infof("Running RKE2 kubelet %v", cleanArgs)
@@ -184,6 +193,12 @@ func (p *PEBinaryConfig) Kubelet(ctx context.Context, args []string) error {
 				logrus.Errorf("Kubelet exited: %v", err)
 			}
 			cancel()
+
+			// If the rke2-uninstall.ps1 script created the lock file, we are removing rke2 and thus we don't restart kubelet
+			if _, err := os.Stat(lockFile); err == nil {
+				logrus.Infof("rke2-uninstall.lock exists. kubelet is not restarted")
+				return
+			}
 
 			select {
 			case <-ctx.Done():
