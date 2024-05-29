@@ -9,12 +9,10 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
 	"regexp"
 	"strings"
 	"text/template"
 	"time"
-	"unsafe"
 
 	"github.com/Microsoft/hcsshim"
 	wapi "github.com/iamacarpet/go-win64api"
@@ -22,7 +20,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	opv1 "github.com/tigera/operator/api/v1"
-	"golang.org/x/sys/windows"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -346,71 +343,4 @@ func findInterface(ip string) (string, error) {
 	}
 
 	return "", fmt.Errorf("no interface has the ip: %s", ip)
-}
-
-// TODO: Remove the below ACL logic in favor of the rancher/permissions repository once that has been created
-
-// Mkdir creates a directory using the given explicitAccess rules for a number of SIDs. If no windows.EXPLICIT_ACCESS
-// rules are provided then the directory will inherit its ACL from the parent directory. If the specified
-// directory already exists or another error is encountered, Mkdir will return false and the relevant error.
-// Upon Successful creation of the directory, Mkdir will return 'true' and a nil error.
-func Mkdir(name string, explicitAccess ...windows.EXPLICIT_ACCESS) error {
-	if name == "" {
-		return fmt.Errorf("must supply a directory name")
-	}
-
-	// check if the file already exists
-	_, err := os.Stat(name)
-	if err == nil {
-		return nil
-	}
-
-	sd, err := windows.NewSecurityDescriptor()
-	if err != nil {
-		return fmt.Errorf("failed to create security descriptor: %v", err)
-	}
-
-	// if we haven't been provided DACL rules
-	// we should defer to the parent directory
-	inheritACL := explicitAccess == nil
-	if explicitAccess != nil && len(explicitAccess) != 0 {
-		acl, err := windows.ACLFromEntries(explicitAccess, nil)
-		if err != nil {
-			return fmt.Errorf("failed to create ACL from explicit access entries: %v", err)
-		}
-
-		err = sd.SetDACL(acl, true, inheritACL)
-		if err != nil {
-			return fmt.Errorf("failed to configure DACL for security desctriptor: %v", err)
-		}
-	}
-
-	// set the protected DACL flag to prevent the DACL of the security descriptor from being modified by inheritable ACEs
-	// (i.e. prevent parent folders from modifying this ACL)
-	if !inheritACL {
-		err = sd.SetControl(windows.SE_DACL_PROTECTED, windows.SE_DACL_PROTECTED)
-		if err != nil {
-			return fmt.Errorf("failed to configure protected DACL for security descriptor: %v", err)
-		}
-	}
-
-	var securityAttribute windows.SecurityAttributes
-	securityAttribute.Length = uint32(unsafe.Sizeof(securityAttribute))
-	inheritHandle := 1
-	if !inheritACL {
-		inheritHandle = 0
-	}
-	securityAttribute.InheritHandle = uint32(inheritHandle)
-	securityAttribute.SecurityDescriptor = sd
-
-	namePntr, err := windows.UTF16PtrFromString(name)
-	if err != nil {
-		return err
-	}
-
-	if err = windows.CreateDirectory(namePntr, &securityAttribute); err != nil {
-		return fmt.Errorf("failed to create directory with custom ACE: %v", err)
-	}
-
-	return nil
 }
