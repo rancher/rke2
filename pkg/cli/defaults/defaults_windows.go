@@ -8,9 +8,10 @@ import (
 	"os"
 	"path/filepath"
 
-	k3swindows "github.com/k3s-io/k3s/pkg/agent/util/acl"
 	"github.com/pkg/errors"
-	rke2windows "github.com/rancher/rke2/pkg/windows"
+	"github.com/rancher/permissions/pkg/access"
+	"github.com/rancher/permissions/pkg/acl"
+	"github.com/rancher/permissions/pkg/sid"
 	"golang.org/x/sys/windows"
 )
 
@@ -31,9 +32,9 @@ func createDataDir(dataDir string, perm os.FileMode) error {
 		return fmt.Errorf("failed  to create data directory %s: %v", dataDir, err)
 	}
 
-	if err = rke2windows.Mkdir(dataDir, []windows.EXPLICIT_ACCESS{
-		k3swindows.GrantSid(windows.GENERIC_ALL, k3swindows.LocalSystemSID()),
-		k3swindows.GrantSid(windows.GENERIC_ALL, k3swindows.BuiltinAdministratorsSID()),
+	if err = acl.Mkdir(dataDir, []windows.EXPLICIT_ACCESS{
+		access.GrantSid(windows.GENERIC_ALL, sid.LocalSystem()),
+		access.GrantSid(windows.GENERIC_ALL, sid.BuiltinAdministrators()),
 	}...); err != nil {
 		return fmt.Errorf("failed to create data directory %s: %v", dataDir, err)
 	}
