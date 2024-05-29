@@ -1698,6 +1698,8 @@ github.com/rancher/dynamiclistener v0.6.0-rc1 h1:Emwf9o7PMLdQNv4lvFx7xJKxDuDa4Y6
 github.com/rancher/dynamiclistener v0.6.0-rc1/go.mod h1:BIPgJ8xFSUyuTyGvRMVt++S1qjD3+7Ptvq1TXl6hcTM=
 github.com/rancher/lasso v0.0.0-20240430201833-6f3def65ffc5 h1:6K4RhfmCy7uxaw9OzCljNLfFcgD/q7SeF+/2gCQ3Tvw=
 github.com/rancher/lasso v0.0.0-20240430201833-6f3def65ffc5/go.mod h1:7WkdfPEvWAdnHVioMUkhpZkshJzjDY62ocHVhcbw89M=
+github.com/rancher/permissions v0.0.0-20240523180510-4001d3d637f7 h1:0Kg2SGoMeU1ll4xPi4DE0+qNHLFO/U5MwtK0WrIdK+o=
+github.com/rancher/permissions v0.0.0-20240523180510-4001d3d637f7/go.mod h1:fsbs0YOsGn1ofPD5p+BuI4qDhbMbSJtTegKt6Ucna+c=
 github.com/rancher/remotedialer v0.2.6-0.20201012155453-8b1b7bb7d05f/go.mod h1:dbzn9NF1JWbGEHL6Q/1KG4KFROILiY/j6wmfF1Np3fk=
 github.com/rancher/remotedialer v0.3.0 h1:y1EO8JCsgZo0RcqTUp6U8FXcBAv27R+TLnWRcpvX1sM=
 github.com/rancher/remotedialer v0.3.0/go.mod h1:BwwztuvViX2JrLLUwDlsYt5DiyUwHLlzynRwkZLAY0Q=
