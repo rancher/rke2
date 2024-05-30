@@ -20,7 +20,7 @@ permissions:
     contents: read
 jobs:
   build-amd64:
-    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64
+    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
       run: |
         dapper -f Dockerfile --target dapper make test
   build-arm64:
-    runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64
+    runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64,hdd=64
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
