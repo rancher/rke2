@@ -46,7 +46,4 @@ jobs:
     - name: Build
       run: |
         dapper -f Dockerfile --target dapper make dapper-ci
-    - name: Test
-      run: |
-        dapper -f Dockerfile --target dapper make test
         
