@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -20,48 +19,11 @@ var linuxAgentCount = flag.Int("linuxAgentCount", 1, "number of linux agent node
 var windowsAgentCount = flag.Int("windowsAgentCount", 1, "number of windows agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
 
-const defaultWindowsOS = "jborean93/WindowsServer2022"
-
 func Test_E2EMixedOSBGPValidation(t *testing.T) {
 	flag.Parse()
 	RegisterFailHandler(Fail)
 	suiteConfig, reporterConfig := GinkgoConfiguration()
 	RunSpecs(t, "Validate MixedOS BGP Test Suite", suiteConfig, reporterConfig)
-}
-
-func createMixedCluster(nodeOS string, serverCount, linuxAgentCount, windowsAgentCount int) ([]string, []string, []string, error) {
-	serverNodeNames := []string{}
-	for i := 0; i < serverCount; i++ {
-		serverNodeNames = append(serverNodeNames, "server-"+strconv.Itoa(i))
-	}
-	linuxAgentNames := []string{}
-	for i := 0; i < linuxAgentCount; i++ {
-		linuxAgentNames = append(linuxAgentNames, "linux-agent-"+strconv.Itoa(i))
-	}
-	windowsAgentNames := []string{}
-	for i := 0; i < linuxAgentCount; i++ {
-		windowsAgentNames = append(windowsAgentNames, "windows-agent-"+strconv.Itoa(i))
-	}
-	nodeRoles := strings.Join(serverNodeNames, " ") + " " + strings.Join(linuxAgentNames, " ") + " " + strings.Join(windowsAgentNames, " ")
-	nodeRoles = strings.TrimSpace(nodeRoles)
-	nodeBoxes := strings.Repeat(nodeOS+" ", serverCount+linuxAgentCount)
-	nodeBoxes += strings.Repeat(defaultWindowsOS+" ", windowsAgentCount)
-	nodeBoxes = strings.TrimSpace(nodeBoxes)
-
-	var testOptions string
-	for _, env := range os.Environ() {
-		if strings.HasPrefix(env, "E2E_") {
-			testOptions += " " + env
-		}
-	}
-
-	cmd := fmt.Sprintf("NODE_ROLES=\"%s\" NODE_BOXES=\"%s\" %s vagrant up &> vagrant.log", nodeRoles, nodeBoxes, testOptions)
-	fmt.Println(cmd)
-	if _, err := e2e.RunCommand(cmd); err != nil {
-		fmt.Println("Error Creating Cluster", err)
-		return nil, nil, nil, err
-	}
-	return serverNodeNames, linuxAgentNames, windowsAgentNames, nil
 }
 
 var (
@@ -76,7 +38,7 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 
 	It("Starts up with no issues", func() {
 		var err error
-		serverNodeNames, linuxAgentNames, windowsAgentNames, err = createMixedCluster(*nodeOS, *serverCount, *linuxAgentCount, *windowsAgentCount)
+		serverNodeNames, linuxAgentNames, windowsAgentNames, err = e2e.CreateMixedCluster(*nodeOS, *serverCount, *linuxAgentCount, *windowsAgentCount)
 		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog(err))
 		fmt.Println("CLUSTER CONFIG")
 		fmt.Println("OS:", *nodeOS)
@@ -91,7 +53,7 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 		Eventually(func(g Gomega) {
 			nodes, err := e2e.ParseNodes(kubeConfigFile, false)
 			g.Expect(err).NotTo(HaveOccurred())
-			g.Expect(len(serverNodeNames)+len(linuxAgentNames)+len(windowsAgentNames)).Should(Equal(len(nodes)))
+			g.Expect(len(serverNodeNames) + len(linuxAgentNames) + len(windowsAgentNames)).Should(Equal(len(nodes)))
 			for _, node := range nodes {
 				g.Expect(node.Status).Should(Equal("Ready"))
 			}
@@ -160,7 +122,6 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 		Eventually(func() (string, error) {
 			return e2e.RunCommand(cmd)
 		}, "20s", "3s").Should(ContainSubstring("Welcome to nginx!"), "failed cmd: "+cmd)
-		
 	})
 	It("Runs the mixed os sonobuoy plugin", func() {
 		cmd := "sonobuoy run --kubeconfig=/etc/rancher/rke2/rke2.yaml --plugin my-sonobuoy-plugins/mixed-workload-e2e/mixed-workload-e2e.yaml --aggregator-node-selector kubernetes.io/os:linux --wait"
