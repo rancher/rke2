@@ -15,7 +15,7 @@ import (
 // Valid nodeOS: generic/ubuntu2004, opensuse/Leap-15.3.x86_64
 var nodeOS = flag.String("nodeOS", "generic/ubuntu2004", "operating system for linux nodes")
 var serverCount = flag.Int("serverCount", 1, "number of server nodes")
-var linuxAgentCount = flag.Int("linuxAgentCount", 1, "number of linux agent nodes")
+var linuxAgentCount = flag.Int("linuxAgentCount", 0, "number of linux agent nodes")
 var windowsAgentCount = flag.Int("windowsAgentCount", 1, "number of windows agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
 var local = flag.Bool("local", false, "deploy a locally built RKE2")
