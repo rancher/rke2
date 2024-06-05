@@ -18,6 +18,7 @@ var serverCount = flag.Int("serverCount", 1, "number of server nodes")
 var linuxAgentCount = flag.Int("linuxAgentCount", 1, "number of linux agent nodes")
 var windowsAgentCount = flag.Int("windowsAgentCount", 1, "number of windows agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
+var local = flag.Bool("local", false, "deploy a locally built RKE2")
 
 func Test_E2EMixedOSValidation(t *testing.T) {
 	flag.Parse()
@@ -38,7 +39,11 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 
 	It("Starts up with no issues", func() {
 		var err error
-		serverNodeNames, linuxAgentNames, windowsAgentNames, err = e2e.CreateMixedCluster(*nodeOS, *serverCount, *linuxAgentCount, *windowsAgentCount)
+		if *local {
+			serverNodeNames, linuxAgentNames, windowsAgentNames, err = e2e.CreateLocalMixedCluster(*nodeOS, *serverCount, *linuxAgentCount, *windowsAgentCount)
+		} else {
+			serverNodeNames, linuxAgentNames, windowsAgentNames, err = e2e.CreateMixedCluster(*nodeOS, *serverCount, *linuxAgentCount, *windowsAgentCount)
+		}
 		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog(err))
 		fmt.Println("CLUSTER CONFIG")
 		fmt.Println("OS:", *nodeOS)

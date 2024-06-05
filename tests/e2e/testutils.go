@@ -79,7 +79,7 @@ func genNodeEnvs(nodeOS string, serverCount, agentCount, windowsAgentCount int) 
 	for i := 0; i < serverCount; i++ {
 		serverNodeNames[i] = "server-" + strconv.Itoa(i)
 	}
-	agentPrefix := ""
+	var agentPrefix string
 	if windowsAgentCount > 0 {
 		agentPrefix = "linux-"
 	}
@@ -204,7 +204,6 @@ func CreateLocalCluster(nodeOS string, serverCount, agentCount int) ([]string, [
 	serverNodeNames, agentNodeNames, _, nodeEnvs := genNodeEnvs(nodeOS, serverCount, agentCount, 0)
 
 	var testOptions string
-	var cmd string
 
 	for _, env := range os.Environ() {
 		if strings.HasPrefix(env, "E2E_") {
@@ -215,7 +214,7 @@ func CreateLocalCluster(nodeOS string, serverCount, agentCount int) ([]string, [
 
 	// Provision the first server node. In GitHub Actions, this also imports the VM image into libvirt, which
 	// takes time and can cause the next vagrant up to fail if it is not given enough time to complete.
-	cmd = fmt.Sprintf(`%s %s vagrant up --no-provision %s &> vagrant.log`, nodeEnvs, testOptions, serverNodeNames[0])
+	cmd := fmt.Sprintf(`%s %s vagrant up --no-provision %s &> vagrant.log`, nodeEnvs, testOptions, serverNodeNames[0])
 	fmt.Println(cmd)
 	if _, err := RunCommand(cmd); err != nil {
 		return nil, nil, newNodeError(cmd, serverNodeNames[0], err)
@@ -258,6 +257,94 @@ func CreateLocalCluster(nodeOS string, serverCount, agentCount int) ([]string, [
 		return nil, nil, err
 	}
 	return serverNodeNames, agentNodeNames, nil
+}
+
+func scpWindowsRKE2Artifacts(nodeNames []string) error {
+	binary := []string{
+		"dist/artifacts/rke2.windows-amd64.tar.gz",
+		"dist/artifacts/sha256sum-windows-amd64.txt",
+		"bin/rke2.exe",
+	}
+	images := []string{
+		"build/images/rke2-images.windows-amd64.tar.zst",
+	}
+
+	// vagrant scp doesn't allow coping multiple files at once
+	// nor does it allow copying as sudo, so we have to copy each file individually
+	// to /temp and then move them to the correct location
+	for _, node := range nodeNames {
+		for _, artifact := range append(binary, images...) {
+			cmd := fmt.Sprintf(`vagrant scp ../../../%s %s:/temp/`, artifact, node)
+			if _, err := RunCommand(cmd); err != nil {
+				return err
+			}
+		}
+		if _, err := RunCmdOnWindowsNode(`mv C:\temp\sha256sum-windows-amd64.txt C:\temp\sha256sum-amd64.txt`, node); err != nil {
+			return err
+		}
+		if _, err := RunCmdOnWindowsNode(`mkdir C:\var\lib\rancher\rke2\agent\images`, node); err != nil {
+			return err
+		}
+
+		for _, image := range images {
+			cmd := fmt.Sprintf("mv C:\\temp\\%s C:\\var\\lib\\rancher\\rke2\\agent\\images\\ ", filepath.Base(image))
+			if _, err := RunCmdOnWindowsNode(cmd, node); err != nil {
+				return err
+			}
+		}
+		if _, err := RunCmdOnWindowsNode(`mkdir C:\usr\local\bin`, node); err != nil {
+			return err
+		}
+		if _, err := RunCmdOnWindowsNode(`mv C:\temp\rke2.exe C:\usr\local\bin\rke2.exe`, node); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func CreateLocalMixedCluster(nodeOS string, serverCount, linuxAgentCount, windowsAgentCount int) ([]string, []string, []string, error) {
+	serverNodeNames, linuxAgentNames, windowsAgentNames, nodeEnvs := genNodeEnvs(nodeOS, serverCount, linuxAgentCount, windowsAgentCount)
+
+	var testOptions string
+	for _, env := range os.Environ() {
+		if strings.HasPrefix(env, "E2E_") {
+			testOptions += " " + env
+		}
+	}
+	testOptions += " E2E_RELEASE_VERSION=skip"
+
+	// Standup all nodes, relying on vagrant-libvirt native parallel provisioning
+	cmd := fmt.Sprintf(`%s %s E2E_STANDUP_PARALLEL=true vagrant up --no-provision &> vagrant.log`, nodeEnvs, testOptions)
+	fmt.Println(cmd)
+	if _, err := RunCommand(cmd); err != nil {
+		return nil, nil, nil, err
+	}
+
+	if err := scpRKE2Artifacts(append(serverNodeNames, linuxAgentNames...)); err != nil {
+		return nil, nil, nil, err
+	}
+	if err := scpWindowsRKE2Artifacts(windowsAgentNames); err != nil {
+		return nil, nil, nil, err
+	}
+	// Install RKE2 on all nodes in parallel
+	errg, _ := errgroup.WithContext(context.Background())
+	allNodes := append(serverNodeNames, linuxAgentNames...)
+	allNodes = append(allNodes, windowsAgentNames...)
+	for _, node := range allNodes {
+		cmd = fmt.Sprintf(`%s %s vagrant provision %s &>> vagrant.log`, nodeEnvs, testOptions, node)
+		errg.Go(func() error {
+			if _, err := RunCommand(cmd); err != nil {
+				return newNodeError(cmd, node, err)
+			}
+			return nil
+		})
+		// RKE2 needs some time between joining nodes to avoid learner issues
+		time.Sleep(20 * time.Second)
+	}
+	if err := errg.Wait(); err != nil {
+		return nil, nil, nil, err
+	}
+	return serverNodeNames, linuxAgentNames, windowsAgentNames, nil
 }
 
 func DeployWorkload(workload string, kubeconfig string) (string, error) {
@@ -355,7 +442,11 @@ func GetVagrantLog(cErr error) string {
 	var nodeErr *NodeError
 	nodeJournal := ""
 	if errors.As(cErr, &nodeErr) {
-		nodeJournal, _ = RunCommand("vagrant ssh " + nodeErr.Node + " -c \"sudo journalctl -u rke2* --no-pager\"")
+		if strings.Contains(nodeErr.Node, "windows-agent") {
+			nodeJournal, _ = RunCmdOnWindowsNode("Get-EventLog -LogName Application -Source 'rke2'", nodeErr.Node)
+		} else {
+			nodeJournal, _ = RunCmdOnNode("sudo journalctl -u rke2* --no-pager", nodeErr.Node)
+		}
 		nodeJournal = "\nNode Journal Logs:\n" + nodeJournal
 	}
 
@@ -450,8 +541,7 @@ func ParsePods(kubeconfig string, print bool) ([]Pod, error) {
 
 // RunCmdOnNode executes a command from within the given node as sudo
 func RunCmdOnNode(cmd string, nodename string) (string, error) {
-	communicator := "ssh"
-	runcmd := "vagrant " + communicator + " -c \"sudo " + cmd + "\" " + nodename
+	runcmd := "vagrant ssh -c \"sudo " + cmd + "\" " + nodename
 	out, err := RunCommand(runcmd)
 	if err != nil {
 		return out, fmt.Errorf("failed to run command: %s on node %s: %s, %v", cmd, nodename, out, err)
@@ -462,7 +552,11 @@ func RunCmdOnNode(cmd string, nodename string) (string, error) {
 // RunCmdOnWindowsNode executes a command from within the given windows node
 func RunCmdOnWindowsNode(cmd string, nodename string) (string, error) {
 	runcmd := "vagrant ssh -c 'powershell.exe -Command \"" + cmd + "\"' " + nodename
-	return RunCommand(runcmd)
+	out, err := RunCommand(runcmd)
+	if err != nil {
+		return out, fmt.Errorf("failed to run windows command: %s : out : %v", runcmd, err)
+	}
+	return out, nil
 }
 
 // RunCommand execute a command on the host
