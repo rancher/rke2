@@ -74,30 +74,40 @@ func CountOfStringInSlice(str string, pods []Pod) int {
 }
 
 // genNodeEnvs generates the node and testing environment variables for vagrant up
-func genNodeEnvs(nodeOS string, serverCount, agentCount int) ([]string, []string, string) {
+func genNodeEnvs(nodeOS string, serverCount, agentCount, windowsAgentCount int) ([]string, []string, []string, string) {
 	serverNodeNames := make([]string, serverCount)
 	for i := 0; i < serverCount; i++ {
 		serverNodeNames[i] = "server-" + strconv.Itoa(i)
 	}
+	agentPrefix := ""
+	if windowsAgentCount > 0 {
+		agentPrefix = "linux-"
+	}
 	agentNodeNames := make([]string, agentCount)
 	for i := 0; i < agentCount; i++ {
-		agentNodeNames[i] = "agent-" + strconv.Itoa(i)
+		agentNodeNames[i] = agentPrefix + "agent-" + strconv.Itoa(i)
 	}
 
-	nodeRoles := strings.Join(serverNodeNames, " ") + " " + strings.Join(agentNodeNames, " ")
+	windowsAgentNames := make([]string, windowsAgentCount)
+	for i := 0; i < windowsAgentCount; i++ {
+		windowsAgentNames[i] = "windows-agent-" + strconv.Itoa(i)
+	}
+
+	nodeRoles := strings.Join(serverNodeNames, " ") + " " + strings.Join(agentNodeNames, " ") + strings.Join(windowsAgentNames, " ")
 	nodeRoles = strings.TrimSpace(nodeRoles)
 
 	nodeBoxes := strings.Repeat(nodeOS+" ", serverCount+agentCount)
+	nodeBoxes = nodeBoxes + strings.Repeat("jborean93/WindowsServer2022"+" ", windowsAgentCount)
 	nodeBoxes = strings.TrimSpace(nodeBoxes)
 
 	nodeEnvs := fmt.Sprintf(`E2E_NODE_ROLES="%s" E2E_NODE_BOXES="%s"`, nodeRoles, nodeBoxes)
 
-	return serverNodeNames, agentNodeNames, nodeEnvs
+	return serverNodeNames, agentNodeNames, windowsAgentNames, nodeEnvs
 }
 
 func CreateCluster(nodeOS string, serverCount int, agentCount int) ([]string, []string, error) {
 
-	serverNodeNames, agentNodeNames, nodeEnvs := genNodeEnvs(nodeOS, serverCount, agentCount)
+	serverNodeNames, agentNodeNames, _, nodeEnvs := genNodeEnvs(nodeOS, serverCount, agentCount, 0)
 
 	var testOptions string
 	for _, env := range os.Environ() {
@@ -133,6 +143,25 @@ func CreateCluster(nodeOS string, serverCount int, agentCount int) ([]string, []
 	}
 
 	return serverNodeNames, agentNodeNames, nil
+}
+
+func CreateMixedCluster(nodeOS string, serverCount, linuxAgentCount, windowsAgentCount int) ([]string, []string, []string, error) {
+	serverNodeNames, linuxAgentNames, windowsAgentNames, nodeEnvs := genNodeEnvs(nodeOS, serverCount, linuxAgentCount, windowsAgentCount)
+
+	var testOptions string
+	for _, env := range os.Environ() {
+		if strings.HasPrefix(env, "E2E_") {
+			testOptions += " " + env
+		}
+	}
+
+	cmd := fmt.Sprintf("%s %s vagrant up &> vagrant.log", nodeEnvs, testOptions)
+	fmt.Println(cmd)
+	if _, err := RunCommand(cmd); err != nil {
+		fmt.Println("Error Creating Cluster", err)
+		return nil, nil, nil, err
+	}
+	return serverNodeNames, linuxAgentNames, windowsAgentNames, nil
 }
 
 func scpRKE2Artifacts(nodeNames []string) error {
@@ -173,7 +202,7 @@ func scpRKE2Artifacts(nodeNames []string) error {
 // The vagrant-scp plugin must be installed for this function to work.
 func CreateLocalCluster(nodeOS string, serverCount, agentCount int) ([]string, []string, error) {
 
-	serverNodeNames, agentNodeNames, nodeEnvs := genNodeEnvs(nodeOS, serverCount, agentCount)
+	serverNodeNames, agentNodeNames, _, nodeEnvs := genNodeEnvs(nodeOS, serverCount, agentCount, 0)
 
 	var testOptions string
 	var cmd string
