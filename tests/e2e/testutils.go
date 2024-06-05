@@ -215,34 +215,17 @@ func CreateLocalCluster(nodeOS string, serverCount, agentCount int) ([]string, [
 
 	// Provision the first server node. In GitHub Actions, this also imports the VM image into libvirt, which
 	// takes time and can cause the next vagrant up to fail if it is not given enough time to complete.
-	cmd := fmt.Sprintf(`%s %s vagrant up --no-provision %s &> vagrant.log`, nodeEnvs, testOptions, serverNodeNames[0])
+	cmd := fmt.Sprintf(`%s %s E2E_STANDUP_PARALLEL=true vagrant up --no-provision &> vagrant.log`, nodeEnvs, testOptions)
 	fmt.Println(cmd)
 	if _, err := RunCommand(cmd); err != nil {
 		return nil, nil, newNodeError(cmd, serverNodeNames[0], err)
-	}
-
-	// Bring up the rest of the nodes in parallel
-	errg, _ := errgroup.WithContext(context.Background())
-	for _, node := range append(serverNodeNames[1:], agentNodeNames...) {
-		cmd := fmt.Sprintf(`%s %s vagrant up --no-provision %s &>> vagrant.log`, nodeEnvs, testOptions, node)
-		errg.Go(func() error {
-			if _, err := RunCommand(cmd); err != nil {
-				return newNodeError(cmd, node, err)
-			}
-			return nil
-		})
-		// libVirt/Virtualbox needs some time between provisioning nodes
-		time.Sleep(10 * time.Second)
-	}
-	if err := errg.Wait(); err != nil {
-		return nil, nil, err
 	}
 
 	if err := scpRKE2Artifacts(append(serverNodeNames, agentNodeNames...)); err != nil {
 		return nil, nil, err
 	}
 	// Install RKE2 on all nodes in parallel
-	errg, _ = errgroup.WithContext(context.Background())
+	errg, _ := errgroup.WithContext(context.Background())
 	for _, node := range append(serverNodeNames, agentNodeNames...) {
 		cmd = fmt.Sprintf(`%s %s vagrant provision %s &>> vagrant.log`, nodeEnvs, testOptions, node)
 		errg.Go(func() error {
