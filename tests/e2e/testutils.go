@@ -142,7 +142,6 @@ func scpRKE2Artifacts(nodeNames []string) error {
 	}
 	images := []string{
 		"build/images/rke2-images.linux-amd64.tar.zst",
-		"build/images/rke2-runtime.tar",
 	}
 
 	// vagrant scp doesn't allow coping multiple files at once
