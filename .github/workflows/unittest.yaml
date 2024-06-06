@@ -39,7 +39,7 @@ jobs:
         go-version-file: 'go.mod'
     - name: Run Unit Tests
       run: | 
-        go test -coverpkg=./... -coverprofile=coverage.out ./pkg/... -run Unit
+        GONOPROXY=* GONOSUMDB=* go test -coverpkg=./... -coverprofile=coverage.out ./pkg/... -run Unit
         go tool cover -func coverage.out
     - name: Upload Results To Codecov
       uses: codecov/codecov-action@v4
