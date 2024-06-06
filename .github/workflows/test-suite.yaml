@@ -45,13 +45,16 @@ jobs:
       uses: docker/setup-buildx-action@v3
     - name: Install OS Packages
       run: sudo apt-get install -y libarchive-tools
-    - name: Build RKE2 Binary and Runtime Image
+    # Can only upload from a single path, so we need to copy the binary to the image directory
+    # Additionally, we have a rke2-runtime.tar and a rke2-images.linux-amd64.tar.zst which are the same thing
+    # just compressed. We remove the rke2-runtime.tar as its not used by the install script.
+    - name: Build RKE2 Binary and Compressed Runtime Image
       run: |
         GOCOVER=true make package-bundle
         make package-image-runtime
         cp ./bin/rke2 ./build/images/rke2
         cp ./dist/artifacts/rke2.linux-amd64.tar.gz ./build/images/rke2.linux-amd64.tar.gz
-    # Can only upload from a single path, so we need to copy the binary to the image directory
+        rm ./build/images/rke2-runtime.tar
     - name: Upload RKE2 Binary and Runtime Image
       uses: actions/upload-artifact@v4
       with:
