@@ -26,7 +26,7 @@ jobs:
     name: Unit Tests On Self-Hosted Runner
     if: github.repository == 'rancher/rke2'
     container: ubuntu:22.04
-    runs-on: org-${{ github.repository_owner_id }}-{{ arch }}-k8s
+    runs-on: org-${{ github.repository_owner_id }}-amd64-k8s
     timeout-minutes: 20
     steps:
     - name: Checkout
@@ -50,7 +50,7 @@ jobs:
         verbose: true # optional (default = false)
   test-public:
     # For forks, run unit tests on public runners
-    name: Unit Tests On Public Runners
+    name: Unit Tests On Public Runner
     if: github.repository != 'rancher/rke2'
     runs-on: ubuntu-latest
     timeout-minutes: 20
