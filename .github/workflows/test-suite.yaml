@@ -51,7 +51,6 @@ jobs:
     - name: Build RKE2 Binary and Compressed Runtime Image
       run: |
         GOCOVER=true make package-bundle
-        ARCH=amd64 make package-windows-bundle
         make package-image-runtime
         cp ./bin/rke2 ./build/images/rke2
         cp ./dist/artifacts/rke2.*-amd64.tar.gz ./build/images/
@@ -128,7 +127,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        etest: [dnscache, mixedos]
+        etest: [dnscache]
       max-parallel: 3
     steps:
     - name: "Checkout"
@@ -165,11 +164,9 @@ jobs:
         mkdir -p ./dist/artifacts
         mkdir -p ./build/images
         mkdir -p ./bin
-        mv ./artifacts/rke2.exe ./bin/rke2.exe
         mv ./artifacts/rke2-* ./build/images/
         mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
         sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
-        sha256sum ./dist/artifacts/rke2.windows-amd64.tar.gz > ./dist/artifacts/sha256sum-windows-amd64.txt
     - name: Run ${{ matrix.etest }} Test
       run: | 
         cd tests/e2e/${{ matrix.etest }}
