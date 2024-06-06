@@ -25,18 +25,20 @@ jobs:
     # Use self-hosted runners to reduce load on limited public runners
     name: Unit Tests On Self-Hosted Runner
     if: github.repository == 'rancher/rke2'
-    container: registry.suse.com/bci/golang:1.22
+    container: ubuntu:22.04
     runs-on: org-${{ github.repository_owner_id }}-amd64-k8s
     timeout-minutes: 20
     steps:
+    - name: Install git
+      run: apt-get update && apt-get install -y git
     - name: Checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: 1
-    # - name: Install Go
-    #   uses: actions/setup-go@v5
-    #   with: 
-    #     go-version-file: 'go.mod'
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with: 
+        go-version-file: 'go.mod'
     - name: Run Unit Tests
       run: | 
         GONOPROXY=* GONOSUMDB=* go test -coverpkg=./... -coverprofile=coverage.out ./pkg/... -run Unit
