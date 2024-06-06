@@ -1,4 +1,4 @@
-ENV['VAGRANT_NO_PARALLEL'] = 'no'
+ENV['VAGRANT_NO_PARALLEL'] = ENV['E2E_STANDUP_PARALLEL'] ? nil : 'no'
 NODE_ROLES = (ENV['E2E_NODE_ROLES'] ||
   ["server-etcd-0", "server-cp-0", "server-cp-1", "agent-0"])
 NODE_BOXES = (ENV['E2E_NODE_BOXES'] ||
