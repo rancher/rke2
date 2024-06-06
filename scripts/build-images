@@ -101,8 +101,8 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-flannel.txt
-    ${REGISTRY}/rancher/hardened-flannel:v0.25.2-build20240524
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.4.1-build20240325
+    ${REGISTRY}/rancher/hardened-flannel:v0.25.3-build20240605
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.4.1-build20240430
 EOF
 fi
 # Continue to provide a legacy airgap archive set with the default CNI images
