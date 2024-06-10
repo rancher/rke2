@@ -1,4 +1,4 @@
-ENV['VAGRANT_NO_PARALLEL'] = 'no'
+ENV['VAGRANT_NO_PARALLEL'] = ENV['E2E_STANDUP_PARALLEL'] ? nil : 'no'
 NODE_ROLES = (ENV['E2E_NODE_ROLES'] ||
 ["server-0", "linux-agent-0", "windows-agent-0" ])
 NODE_BOXES = (ENV['E2E_NODE_BOXES'] ||
@@ -22,24 +22,19 @@ def provision(vm, role, role_num, node_num)
   load vagrant_defaults if File.exist?(vagrant_defaults)
 
   defaultOSConfigure(vm)
-
+ 
   if role.include?("windows")
     vm.provision "shell", path: "../scripts/install-bgp.ps1"
-    if !RELEASE_VERSION.empty?
-      install_type = "Version=#{RELEASE_VERSION}"
+    if RELEASE_VERSION == "skip"
+      install_type = "-ArtifactPath 'C:\tmp'" 
+    elsif !RELEASE_VERSION.empty?
+      install_type = "-Version #{RELEASE_VERSION}"
     else 
       vm.provision "shell", path: "../scripts/latest_commit.ps1", args: [GITHUB_BRANCH, "./rke2_commits.txt"]
-      install_type = "Commit=(Get-Content -TotalCount 1 ./rke2_commits.txt)"
+      install_type = "-Commit (Get-Content -TotalCount 1 ./rke2_commits.txt)"
     end
   else
-    if !RELEASE_VERSION.empty?
-      install_type = "INSTALL_RKE2_VERSION=#{RELEASE_VERSION}"
-    else 
-      # Grabs the last 5 commit SHA's from the given branch, then purges any commits that do not have a passing CI build
-      vm.provision "shell", path: "../scripts/latest_commit.sh", args: [GITHUB_BRANCH, "/tmp/rke2_commits"]
-      install_type = "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
-    end
-    vm.provision "shell", inline: "ping -c 2 rke2.io"
+    install_type = getInstallType(vm, RELEASE_VERSION, GITHUB_BRANCH)
     vm.provision "Create Calico Manifest", type: "shell", path: "../scripts/calico_manifest.sh", args: [ "#{NETWORK_PREFIX}.1" ]
   end
 
