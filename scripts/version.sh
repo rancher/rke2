@@ -8,6 +8,7 @@ K3S_PKG=github.com/k3s-io/k3s
 RKE2_PKG=github.com/rancher/rke2
 GO=${GO-go}
 GOARCH=${GOARCH:-$("${GO}" env GOARCH)}
+ARCH=${ARCH:-$("${GO}" env GOARCH)}
 GOOS=${GOOS:-$("${GO}" env GOOS)}
 if [ -z "$GOOS" ]; then
     if [ "${OS}" == "Windows_NT" ]; then
@@ -24,7 +25,7 @@ if [ -z "$GOOS" ]; then
     fi
 fi
 
-GIT_TAG=$DRONE_TAG
+GIT_TAG=$GITHUB_TAG
 TREE_STATE=clean
 COMMIT=$DRONE_COMMIT
 REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
