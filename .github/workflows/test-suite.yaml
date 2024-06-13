@@ -51,7 +51,7 @@ jobs:
         GOCOVER=true make package-bundle
         ARCH=amd64 make package-windows-bundle
         make package-image-runtime
-        cp ./bin/rke2 ./build/images/rke2
+        cp ./bin/rke2* ./build/images/
         cp ./dist/artifacts/rke2.*-amd64.tar.gz ./build/images/
         rm ./build/images/rke2-runtime.tar
     - name: Upload RKE2 Binary and Runtime Image
@@ -182,13 +182,8 @@ jobs:
     name: "E2E Tests Extended"
     if: github.repository == 'rancher/rke2'
     needs: build
-    runs-on: runs-on,runner=16cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
+    runs-on: runs-on,runner=32cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
     timeout-minutes: 40
-    strategy:
-      fail-fast: false
-      matrix:
-        etest: [mixedos]
-      max-parallel: 1
     steps:
     - name: "Checkout"
       uses: actions/checkout@v4
@@ -229,10 +224,10 @@ jobs:
         mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
         sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
         sha256sum ./dist/artifacts/rke2.windows-amd64.tar.gz > ./dist/artifacts/sha256sum-windows-amd64.txt
-    - name: Run ${{ matrix.etest }} Test
+    - name: Run E2E Tests in Parallel
       run: | 
-        cd tests/e2e/${{ matrix.etest }}
-        go test -v -timeout=45m ./${{ matrix.etest}}_test.go -ci -local
+        cd tests/e2e
+        go test -v -timeout=45m -p 3 ./... -run E2E_EXT -ci -local
     - name: On Failure, Launch Debug Session
       uses: dereknola/action-upterm@v1.1
       if: ${{ failure() }}
