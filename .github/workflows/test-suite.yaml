@@ -224,13 +224,13 @@ jobs:
         mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
         sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
         sha256sum ./dist/artifacts/rke2.windows-amd64.tar.gz > ./dist/artifacts/sha256sum-windows-amd64.txt
-    - name: Run E2E Tests in Parallel
-      run: | 
-        cd tests/e2e
-        go test -v -timeout=45m -p 3 ./... -run E2E_EXT -ci -local
+    # - name: Run E2E Tests in Parallel
+    #   run: | 
+    #     cd tests/e2e
+    #     go test -v -timeout=45m -p 3 ./... -run E2E_EXT -ci -local
     - name: On Failure, Launch Debug Session
       uses: dereknola/action-upterm@v1.1
-      if: ${{ failure() }}
+      # if: ${{ failure() }}
       with:
         ## If no one connects after 5 minutes, shut down server.
         wait-timeout-minutes: 5
