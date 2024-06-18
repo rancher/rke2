@@ -64,7 +64,7 @@ uninstall_killall()
     _killall="$(dirname "$0")/rke2-killall.sh"
     log "Running killall script"
     if [ -e "${_killall}" ]; then
-      eval "${_killall}" || error "Failed to execute killall script"
+      eval "${_killall}"
     fi
 }
 
@@ -76,7 +76,7 @@ uninstall_disable_services()
         systemctl disable rke2-agent || true
         systemctl reset-failed rke2-server || true
         systemctl reset-failed rke2-agent || true
-        systemctl daemon-reload || error "Failed to reload systemd daemon"
+        systemctl daemon-reload
     fi
 }
 
@@ -85,8 +85,8 @@ uninstall_remove_files()
 
     if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/amazon-linux-release ]; then
         log "Removing rke2 packages"
-        yum remove -y "rke2-*" || error "Failed to remove rke2 packages"
-        rm -f /etc/yum.repos.d/rancher-rke2*.repo || error "Failed to remove yum repo files"
+        yum remove -y "rke2-*"
+        rm -f /etc/yum.repos.d/rancher-rke2*.repo
     fi
 
     if [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
@@ -97,23 +97,23 @@ uninstall_remove_files()
             if [ "${TRANSACTIONAL_UPDATE=false}" != "true" ] && [ -x /usr/sbin/transactional-update ]; then
                 uninstall_cmd="transactional-update -c --no-selfupdate -d run $uninstall_cmd"
             fi
-            $uninstall_cmd || error "Failed to remove rke2 packages using zypper"
-            rm -f /etc/zypp/repos.d/rancher-rke2*.repo || error "Failed to remove zypp repo files"
+            $uninstall_cmd
+            rm -f /etc/zypp/repos.d/rancher-rke2*.repo
          fi
     fi
 
     log "Removing rke2 files"
-    $transactional_update find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.service -type f -delete || error "Failed to remove rke2 service files"
-    $transactional_update find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.env -type f -delete || error "Failed to remove rke2 env files"
-    find /etc/systemd/system -name rke2-*.service -type f -delete || error "Failed to remove rke2 systemd service files"
-    $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2" || error "Failed to remove rke2 binary"
-    $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh" || error "Failed to remove rke2 killall script"
-    $transactional_update rm -rf "${INSTALL_RKE2_ROOT}/share/rke2" || error "Failed to remove rke2 share directory"
-    rm -rf /etc/rancher/rke2 || error "Failed to remove /etc/rancher/rke2"
-    rm -rf /etc/rancher/node || error "Failed to remove /etc/rancher/node"
+    $transactional_update find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.service -type f -delete
+    $transactional_update find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.env -type f -delete
+    find /etc/systemd/system -name rke2-*.service -type f -delete
+    $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2"
+    $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
+    $transactional_update rm -rf "${INSTALL_RKE2_ROOT}/share/rke2"
+    rm -rf /etc/rancher/rke2
+    rm -rf /etc/rancher/node
     rm -d /etc/rancher || true
-    rm -rf /etc/cni || error "Failed to remove /etc/cni"
-    rm -rf /opt/cni/bin || error "Failed to remove /opt/cni/bin"
+    rm -rf /etc/cni
+    rm -rf /opt/cni/bin
     rm -rf /var/lib/kubelet || true
     rm -rf "${RKE2_DATA_DIR}" || error "Failed to remove /var/lib/rancher/rke2"
     rm -d /var/lib/rancher || true
@@ -121,10 +121,10 @@ uninstall_remove_files()
     if type fapolicyd >/dev/null 2>&1; then
         log "Removing fapolicyd rules"
         if [ -f /etc/fapolicyd/rules.d/80-rke2.rules ]; then
-            rm -f /etc/fapolicyd/rules.d/80-rke2.rules || error "Failed to remove fapolicyd rules"
+            rm -f /etc/fapolicyd/rules.d/80-rke2.rules
         fi
-        fagenrules --load || error "Failed to reload fapolicyd rules"
-        systemctl try-restart fapolicyd || error "Failed to restart fapolicyd"
+        fagenrules --load
+        systemctl try-restart fapolicyd
     fi
 }
 
@@ -134,7 +134,7 @@ uninstall_remove_self()
 {
     cleanup
     log "Removing uninstall script"
-    $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-uninstall.sh" || error "Failed to remove uninstall script"
+    $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-uninstall.sh"
 }
 
 # Define a cleanup function that triggers on exit
