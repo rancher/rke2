@@ -95,7 +95,7 @@ def provision(vm, role, role_num, node_num)
     # end
     # If using libvirt, use virt-viewer for GUI after bring up the node
     vm.provision :rke2, run: 'once' do |rke2|
-      rke2.env = [install_type]
+      rke2.env = install_type
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
       # rke2.skip_start = true
       rke2.config = <<~YAML

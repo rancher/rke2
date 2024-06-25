@@ -93,7 +93,7 @@ func genNodeEnvs(nodeOS string, serverCount, agentCount, windowsAgentCount int) 
 		windowsAgentNames[i] = "windows-agent-" + strconv.Itoa(i)
 	}
 
-	nodeRoles := strings.Join(serverNodeNames, " ") + " " + strings.Join(agentNodeNames, " ") + strings.Join(windowsAgentNames, " ")
+	nodeRoles := strings.Join(serverNodeNames, " ") + " " + strings.Join(agentNodeNames, " ") + " " + strings.Join(windowsAgentNames, " ")
 	nodeRoles = strings.TrimSpace(nodeRoles)
 
 	nodeBoxes := strings.Repeat(nodeOS+" ", serverCount+agentCount)
