@@ -23,7 +23,7 @@ var local = flag.Bool("local", false, "deploy a locally built RKE2")
 // Environment Variables Info:
 // E2E_RELEASE_VERSION=v1.23.1+rke2r1 or nil for latest commit from master
 
-func Test_E2Ednscache(t *testing.T) {
+func Test_E2E_EXT_dnscache(t *testing.T) {
 	flag.Parse()
 	RegisterFailHandler(Fail)
 	suiteConfig, reporterConfig := GinkgoConfiguration()
