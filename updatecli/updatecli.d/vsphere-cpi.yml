@@ -1,0 +1,59 @@
+# This small test makes sure that updatecli is working properly on a repo.
+# To test this:
+#   have "UPDATECLI_GITHUB_ACTOR" env set to your github username
+#   have "UPDATECLI_GITHUB_TOKEN" env set to your github token
+#   have the latest version of updatecli installed
+#   'updatecli diff -v updatecli/values.yaml -c updatecli/updatecli.d/vsphere-cpi.yml'
+# In the future, more useful files should be added to this directory.
+---
+name: "Update vsphere csi/cpi charts and images"
+# Make sure we can pull in github repos from multiple orgs
+scms:
+  rke2:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      username: "{{ requiredEnv .github.username }}"
+      token: '{{ requiredEnv .github.token }}'
+      owner: rancher
+      repository: rke2
+      branch: master
+
+sources:
+  vsphere-cpi:
+    name: "Get vsphere-cpi chart version"
+    kind: "helmchart"
+    spec:
+      url: https://rancher.github.io/rke2-charts
+      name: rancher-vsphere-cpi
+      versionfilter:
+        kind: "latest"
+  
+conditions:
+  vsphereCPIVersionShouldBeUpdated:
+    name: "Check if vsphere-cpi chart should be updated or not"
+    kind: shell
+    sourceid: vsphere-cpi
+    spec:
+      command: bash ./updatecli/scripts/validate_version.sh rancher-vsphere-cpi
+
+targets:
+  updateVsphereCPI:
+    name: "Update the vsphere-cpi airgap images"
+    kind: "shell"
+    scmid: "rke2"
+    sourceid: vsphere-cpi
+    spec:
+      command: bash ./updatecli/scripts/update_chart_and_images.sh rancher-vsphere-cpi
+
+actions:
+  github:
+    kind: "github/pullrequest"
+    scmid: "rke2"
+    spec:
+      automerge: false
+      draft: false
+      mergemethod: squash
+      parent: false
+      title: "Update vsphere-cpi chart"
