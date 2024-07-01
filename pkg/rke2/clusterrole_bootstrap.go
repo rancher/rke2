@@ -102,7 +102,7 @@ func roleBindings() map[string][]rbacv1.RoleBinding {
 // For some reason the core helpers don't have any methods for adding namespaced users, only namespaced service accounts.
 func RoleBindingNamespacedUsers(r *rbacv1helpers.RoleBindingBuilder, namespace string, users ...string) *rbacv1helpers.RoleBindingBuilder {
 	for _, user := range users {
-		r.RoleBinding.Subjects = append(r.RoleBinding.Subjects, rbacv1.Subject{Kind: rbacv1.UserKind, Namespace: namespace, Name: user})
+		r.RoleBinding.Subjects = append(r.RoleBinding.Subjects, rbacv1.Subject{APIGroup: rbacv1.GroupName, Kind: rbacv1.UserKind, Namespace: namespace, Name: user})
 	}
 	return r
 }
@@ -119,7 +119,7 @@ func RoleBindingName(r *rbacv1helpers.RoleBindingBuilder, name string) *rbacv1he
 // For some reason the core helpers don't have any methods for adding namespaced users, only namespaced service accounts.
 func ClusterRoleBindingNamespacedUsers(r *rbacv1helpers.ClusterRoleBindingBuilder, namespace string, users ...string) *rbacv1helpers.ClusterRoleBindingBuilder {
 	for _, user := range users {
-		r.ClusterRoleBinding.Subjects = append(r.ClusterRoleBinding.Subjects, rbacv1.Subject{Kind: rbacv1.UserKind, Namespace: namespace, Name: user})
+		r.ClusterRoleBinding.Subjects = append(r.ClusterRoleBinding.Subjects, rbacv1.Subject{APIGroup: rbacv1.GroupName, Kind: rbacv1.UserKind, Namespace: namespace, Name: user})
 	}
 	return r
 }
