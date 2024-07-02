@@ -47,9 +47,7 @@ def provision(vm, roles, role_num, node_num)
         token: vagrant-rke2
         cluster-cidr: 10.42.0.0/16,2001:cafe:42:0::/56
         service-cidr: 10.43.0.0/16,2001:cafe:43:0::/112
-        bind-address: #{NETWORK4_PREFIX}.100
         cni: #{CNI}
-        kubelet-arg: "--node-ip=0.0.0.0" # Workaround for https://github.com/kubernetes/kubernetes/issues/111695
       YAML
     end
   end
