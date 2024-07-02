@@ -17,7 +17,7 @@ func Set(_ *cli.Context, dataDir string) error {
 	}
 
 	logsDir := filepath.Join(dataDir, "agent", "logs")
-	if err := os.MkdirAll(logsDir, 0755); err != nil {
+	if err := os.MkdirAll(logsDir, 0750); err != nil {
 		return errors.Wrapf(err, "failed to create directory %s", logsDir)
 	}
 
