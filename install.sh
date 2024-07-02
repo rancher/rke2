@@ -359,6 +359,17 @@ stage_local_airgap_tarball() {
         cp -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images.${SUFFIX}.tar.gz" "${TMP_AIRGAP_TARBALL}"
         AIRGAP_TARBALL_FORMAT=gz
     fi
+    # Search for each CNI we support and copy it to the airgap directory
+    CNIS="calico canal cilium flannel"
+    for cni in ${CNIS}; do
+        if [ -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images-${cni}.${SUFFIX}.tar.zst" ]; then
+            info "staging ${cni} CNI image from ${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images-${cni}.${SUFFIX}.tar.zst"
+            cp -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images-${cni}.${SUFFIX}.tar.zst" "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images-${cni}.${SUFFIX}.tar.zst"
+        elif [ -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images-${cni}.${SUFFIX}.tar.gz" ]; then
+            info "staging ${cni} CNI image from ${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images-${cni}.${SUFFIX}.tar.gz"
+            cp -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images-${cni}.${SUFFIX}.tar.gz" "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images-${cni}.${SUFFIX}.tar.gz"
+        fi
+    done
 }
 
 # verify_tarball verifies the downloaded installer checksum.
