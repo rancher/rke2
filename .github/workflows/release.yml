@@ -25,16 +25,16 @@ jobs:
 
     - name: Install Dapper
       run: |
-        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /tmp/dapper
-        chmod +x /tmp/dapper
+        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
+        chmod +x /usr/local/bin/dapper
 
     - name: Validate Release
       run: |
-       /tmp/dapper -f Dockerfile --target dapper make validate-release
+       dapper -f Dockerfile --target dapper make validate-release
 
     - name: Build
       run: |
-        /tmp/dapper -f Dockerfile --target dapper make dapper-ci
+        dapper -f Dockerfile --target dapper make dapper-ci
     
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@main
@@ -45,27 +45,27 @@ jobs:
 
     - name: Package Images
       run: |
-        /tmp/dapper -f Dockerfile --target dapper make package-images
+        dapper -f Dockerfile --target dapper make package-images
     
     - name: Scan Images
       continue-on-error: true
       run: |
-        /tmp/dapper -f Dockerfile --target dapper make scan-images
+        dapper -f Dockerfile --target dapper make scan-images
     
     - name: Test
       run: |
-        /tmp/dapper -f Dockerfile --target dapper make test
+        dapper -f Dockerfile --target dapper make test
 
     - name: Publish Image Runtime
       run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} /tmp/dapper -f Dockerfile --target dapper make publish-image-runtime
+        GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make publish-image-runtime
       env:
         DOCKER_USERNAME: ${{ env.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ env.DOCKER_PASSWORD }}
     
     - name: Checksum Artifacts
       run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} /tmp/dapper -f Dockerfile --target dapper make checksum
+        GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make checksum
 
     - name: Publish Artifacts
       run: |
@@ -78,16 +78,16 @@ jobs:
 
     - name: Install Dapper
       run: |
-        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /tmp/dapper
-        chmod +x /tmp/dapper
+        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
+        chmod +x /usr/local/bin/dapper
 
     - name: Validate Release
       run: |
-       /tmp/dapper -f Dockerfile --target dapper make validate-release
+       dapper -f Dockerfile --target dapper make validate-release
 
     - name: Build
       run: |
-        /tmp/dapper -f Dockerfile --target dapper make dapper-ci
+        dapper -f Dockerfile --target dapper make dapper-ci
     
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@main
@@ -98,23 +98,23 @@ jobs:
 
     - name: Package Images
       run: |
-        /tmp/dapper -f Dockerfile --target dapper make package-images
+        dapper -f Dockerfile --target dapper make package-images
     
     - name: Scan Images
       continue-on-error: true
       run: |
-        /tmp/dapper -f Dockerfile --target dapper make scan-images
+        dapper -f Dockerfile --target dapper make scan-images
 
     - name: Publish Image Runtime
       run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} /tmp/dapper -f Dockerfile --target dapper make publish-image-runtime
+        GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make publish-image-runtime
       env:
         DOCKER_USERNAME: ${{ env.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ env.DOCKER_PASSWORD }}
 
     - name: Checksum
       run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} /tmp/dapper -f Dockerfile --target dapper make checksum
+        GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make checksum
 
     - name: Publish Artifacts
       run: |
