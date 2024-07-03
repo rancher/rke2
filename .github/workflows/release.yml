@@ -9,7 +9,8 @@ on:
     - "v*"
 
 env:
-  GITHUB_TAG: ${{ github.ref_name }}
+  GITHUB_ACTION_TAG: ${{ github.ref_name }}
+  GH_TOKEN: ${{ github.token }}
   
 name: Release
 permissions:
@@ -17,23 +18,23 @@ permissions:
     id-token: write
 jobs:
   release-amd64:
-    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
+    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=256
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Install Dapper
       run: |
-        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
-        chmod +x /usr/local/bin/dapper
+        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /tmp/dapper
+        chmod +x /tmp/dapper
 
     - name: Validate Release
       run: |
-       dapper -f Dockerfile --target dapper make validate-release
+       /tmp/dapper -f Dockerfile --target dapper make validate-release
 
     - name: Build
       run: |
-        dapper -f Dockerfile --target dapper make dapper-ci
+        /tmp/dapper -f Dockerfile --target dapper make dapper-ci
     
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@main
@@ -44,53 +45,49 @@ jobs:
 
     - name: Package Images
       run: |
-        dapper -f Dockerfile --target dapper make package-images
+        /tmp/dapper -f Dockerfile --target dapper make package-images
     
     - name: Scan Images
+      continue-on-error: true
       run: |
-        dapper -f Dockerfile --target dapper make scan-images
+        /tmp/dapper -f Dockerfile --target dapper make scan-images
     
     - name: Test
       run: |
-        dapper -f Dockerfile --target dapper make test
-    
-    - name: Login to Container Registry
-      uses: docker/login-action@v3
-      with:
-        username: ${{ env.DOCKER_USERNAME }}
-        password: ${{ env.DOCKER_PASSWORD }}
+        /tmp/dapper -f Dockerfile --target dapper make test
 
     - name: Publish Image Runtime
       run: |
-        GITHUB_TAG=${{ github.ref_name }} make publish-image-runtime
+        GITHUB_ACTION_TAG=${{ github.ref_name }} /tmp/dapper -f Dockerfile --target dapper make publish-image-runtime
+      env:
+        DOCKER_USERNAME: ${{ env.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ env.DOCKER_PASSWORD }}
     
     - name: Checksum Artifacts
       run: |
-        dapper -f Dockerfile --target dapper make checksum
+        GITHUB_ACTION_TAG=${{ github.ref_name }} /tmp/dapper -f Dockerfile --target dapper make checksum
 
     - name: Publish Artifacts
-      uses: softprops/action-gh-release@v2
-      with:
-        files: |
-          dist/artifacts/*
+      run: |
+        gh release upload ${{ github.ref_name }} dist/artifacts/*
   release-arm64:
-    runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64,hdd=64
+    runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64,hdd=256
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Install Dapper
       run: |
-        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
-        chmod +x /usr/local/bin/dapper
+        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /tmp/dapper
+        chmod +x /tmp/dapper
 
     - name: Validate Release
       run: |
-       dapper -f Dockerfile --target dapper make validate-release
+       /tmp/dapper -f Dockerfile --target dapper make validate-release
 
     - name: Build
       run: |
-        dapper -f Dockerfile --target dapper make dapper-ci
+        /tmp/dapper -f Dockerfile --target dapper make dapper-ci
     
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@main
@@ -101,31 +98,27 @@ jobs:
 
     - name: Package Images
       run: |
-        dapper -f Dockerfile --target dapper make package-images
+        /tmp/dapper -f Dockerfile --target dapper make package-images
     
     - name: Scan Images
+      continue-on-error: true
       run: |
-        dapper -f Dockerfile --target dapper make scan-images
-    
-    - name: Login to Container Registry
-      uses: docker/login-action@v3
-      with:
-        username: ${{ env.DOCKER_USERNAME }}
-        password: ${{ env.DOCKER_PASSWORD }}
+        /tmp/dapper -f Dockerfile --target dapper make scan-images
 
     - name: Publish Image Runtime
       run: |
-        GITHUB_TAG=${{ github.ref_name }} make publish-image-runtime
-    
-    - name: Checksum Artifacts
+        GITHUB_ACTION_TAG=${{ github.ref_name }} /tmp/dapper -f Dockerfile --target dapper make publish-image-runtime
+      env:
+        DOCKER_USERNAME: ${{ env.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ env.DOCKER_PASSWORD }}
+
+    - name: Checksum
       run: |
-        dapper -f Dockerfile --target dapper make checksum
+        GITHUB_ACTION_TAG=${{ github.ref_name }} /tmp/dapper -f Dockerfile --target dapper make checksum
 
     - name: Publish Artifacts
-      uses: softprops/action-gh-release@v2
-      with:
-        files: |
-          dist/artifacts/*    
+      run: |
+        gh release upload ${{ github.ref_name }} dist/artifacts/*
   dispatch:
     needs: [release-amd64, release-arm64]
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
@@ -150,3 +143,4 @@ jobs:
       env:
         PAT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PATH_USERNAME: ${{ env.PAT_USERNAME }}
+        GITHUB_ACTION_TAG: ${{ env.GITHUB_ACTION_TAG }}

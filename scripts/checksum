@@ -5,20 +5,15 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-CHECKSUM_DIR=${CHECKSUM_DIR:-./dist/artifacts}
+CHECKSUM_DIR=${CHECKSUM_DIR:-dist/artifacts}
 
-function checksum(){
+mkdir -p ${CHECKSUM_DIR}
+sumfile="${CHECKSUM_DIR}/sha256sum-${ARCH}.txt"
+echo -n "" > "${sumfile}"
 
-    sumfile="${CHECKSUM_DIR}/sha256sum-${ARCH}.txt"
-    echo -n "" > "${sumfile}"
+files=$(ls ${CHECKSUM_DIR} | grep "${ARCH}" | grep -v "sha256sum-${ARCH}.txt")
+for file in ${files}; do
+  sha256sum "${CHECKSUM_DIR}/${file}" | sed "s;$(dirname ${CHECKSUM_DIR}/${file})/;;g" >> "${sumfile}"
+done
 
-    files=$(ls ${CHECKSUM_DIR})
-    for file in ${files}; do
-      sha256sum "${file}" | sed "s;$(dirname ${file})/;;g" >> "${sumfile}"
-    done
-
-    cat "${sumfile}"
-}
-
-
-checksum
+cat "${sumfile}"

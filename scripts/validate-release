@@ -59,6 +59,6 @@ function check_kubernetes_version() {
 . ./scripts/version.sh
 
 git fetch origin -f --tags
-parse_tag $GITHUB_TAG
+parse_tag $GITHUB_ACTION_TAG
 check_release_branch
 check_kubernetes_version
