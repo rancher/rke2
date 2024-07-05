@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -ex
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+
+CHECKSUM_DIR=${CHECKSUM_DIR:-dist/artifacts}
+
+mkdir -p ${CHECKSUM_DIR}
+sumfile="${CHECKSUM_DIR}/sha256sum-${ARCH}.txt"
+echo -n "" > "${sumfile}"
+
+files=$(ls ${CHECKSUM_DIR} | grep "${ARCH}" | grep -v "sha256sum-${ARCH}.txt")
+for file in ${files}; do
+  sha256sum "${CHECKSUM_DIR}/${file}" | sed "s;$(dirname ${CHECKSUM_DIR}/${file})/;;g" >> "${sumfile}"
+done
+
+cat "${sumfile}"

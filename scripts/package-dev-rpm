@@ -67,7 +67,7 @@ while IFS= read -r script; do
         "${script}"
 
     # Build rpm
-    bash "${script}"
+    TAG=${RPM_VERSION} bash "${script}"
 done <"${SCRIPT_LIST}"
 
 if [ "${DAPPER_UID:--1}" -ne "-1" ]; then

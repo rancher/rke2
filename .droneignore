@@ -1,9 +1,0 @@
-^.*\.md$
-^install\.sh$
-^\.droneignore$
-^\.github\/.*$
-^MAINTAINERS$
-^CODEOWNERS$
-^LICENSE$
-^DCO$
-^channels\.yaml$
