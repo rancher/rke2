@@ -18,7 +18,7 @@ $WarningPreference = 'SilentlyContinue'
 $VerbosePreference = 'SilentlyContinue'
 $DebugPreference = 'SilentlyContinue'
 $InformationPreference = 'SilentlyContinue'
-
+$RKE2_DATA_DIR = if ($env:RKE2_DATA_DIR) { $env:RKE2_DATA_DIR } else { "c:/var/lib/rancher/rke2" };
 Set-StrictMode -Version Latest
 
 function Test-Command($cmdname) {
@@ -322,7 +322,7 @@ function Remove-Containerd () {
             # if there are still namespaces and timeout was reached
             } elseif ($namespaces -and (Get-Date) -ge $endTime) {
                 Write-Output "Warning! Not all resources in containerd namespace $ns were able to be removed. " `
-                "The uninstallation script might not be able to remove all files under /var/lib/rancher/rke2"
+                "The uninstallation script might not be able to remove all files under $RKE2_DATA_DIR"
                 break
             # if there are no namespaces
             } elseif (-not $namespaces) {
@@ -421,7 +421,7 @@ function Create-Lockfile() {
 }
 
 function Invoke-Rke2Uninstall () {
-    $env:PATH += ";$env:CATTLE_AGENT_BIN_PREFIX/bin/;c:\var\lib\rancher\rke2\bin"
+    $env:PATH += ";$env:CATTLE_AGENT_BIN_PREFIX/bin/;$RKE2_DATA_DIR/bin"
     Remove-Containerd
     Stop-Processes
     Invoke-CleanServices
