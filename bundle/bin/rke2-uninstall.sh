@@ -18,6 +18,8 @@ check_target_ro() {
     test $? -ne 0
 }
 
+RKE2_DATA_DIR=${RKE2_DATA_DIR:-/var/lib/rancher/rke2}
+
 . /etc/os-release
 if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ]; then
     # If redhat/oracle family os is detected, double check whether installation mode is yum or tar.
@@ -97,7 +99,7 @@ uninstall_remove_files()
     rm -rf /etc/cni
     rm -rf /opt/cni/bin
     rm -rf /var/lib/kubelet || true
-    rm -rf /var/lib/rancher/rke2
+    rm -rf "${RKE2_DATA_DIR}"
     rm -d /var/lib/rancher || true
 
     if type fapolicyd >/dev/null 2>&1; then
