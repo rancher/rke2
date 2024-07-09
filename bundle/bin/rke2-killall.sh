@@ -50,7 +50,9 @@ do_unmount_and_remove() {
     fi
 }
 
-export PATH=$PATH:/var/lib/rancher/rke2/bin
+RKE2_DATA_DIR=${RKE2_DATA_DIR:-/var/lib/rancher/rke2}
+
+export PATH=$PATH:${RKE2_DATA_DIR}/bin
 
 set -x
 
@@ -60,7 +62,7 @@ systemctl stop rke2-agent.service || true
 killtree $({ set +x; } 2>/dev/null; getshims; set -x)
 
 do_unmount_and_remove '/run/k3s'
-do_unmount_and_remove '/var/lib/rancher/rke2'
+do_unmount_and_remove "${RKE2_DATA_DIR}"
 do_unmount_and_remove '/var/lib/kubelet/pods'
 do_unmount_and_remove '/run/netns/cni-'
 
@@ -95,14 +97,14 @@ fi
 rm -rf /var/lib/cni/ /var/log/pods/ /var/log/containers
 
 # Remove pod-manifests files for rke2 components
-POD_MANIFESTS_DIR=/var/lib/rancher/rke2/agent/pod-manifests
+POD_MANIFESTS_DIR=${RKE2_DATA_DIR}/agent/pod-manifests
 
-rm -f ${POD_MANIFESTS_DIR}/etcd.yaml \
-      ${POD_MANIFESTS_DIR}/kube-apiserver.yaml \
-      ${POD_MANIFESTS_DIR}/kube-controller-manager.yaml \
-      ${POD_MANIFESTS_DIR}/cloud-controller-manager.yaml\
-      ${POD_MANIFESTS_DIR}/kube-scheduler.yaml \
-      ${POD_MANIFESTS_DIR}/kube-proxy.yaml
+rm -f "${POD_MANIFESTS_DIR}/etcd.yaml" \
+      "${POD_MANIFESTS_DIR}/kube-apiserver.yaml" \
+      "${POD_MANIFESTS_DIR}/kube-controller-manager.yaml" \
+      "${POD_MANIFESTS_DIR}/cloud-controller-manager.yaml" \
+      "${POD_MANIFESTS_DIR}/kube-scheduler.yaml" \
+      "${POD_MANIFESTS_DIR}/kube-proxy.yaml"
 
 # Delete iptables created by CNI plugins or Kubernetes (kube-proxy)
 iptables-save | grep -v KUBE- | grep -v CNI- | grep -v cali- | grep -v cali: | grep -v CILIUM_ | grep -v flannel | iptables-restore
