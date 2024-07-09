@@ -1,7 +1,7 @@
 #!/bin/bash
 # Usage: ./run_tests.sh
 # This script runs all the rke2 e2e tests and generates a report with the log
-# The generated log is placed in createreport/rke2_${date}.log
+# The generated log is placed in createreport/rke2_${OS}.log
 #
 # This script must be run inside the rke2 directory where the tests exist
 #
@@ -13,7 +13,8 @@ set -x
 
 # tests to run
 tests=("ciliumnokp" "dnscache" "dualstack" "mixedos" "mixedosbgp" "multus" "secretsencryption" "splitserver" "upgradecluster" "validatecluster")
-date=$(date +%Y%m%d)
+nodeOS=${1:-"generic/ubuntu2310"}
+OS=$(echo "$nodeOS"|cut -d'/' -f2)
 
 E2E_REGISTRY=true && export E2E_REGISTRY
 
@@ -40,21 +41,21 @@ run_tests(){
 	vagrant destroy -f
 
         echo "RUNNING ${tests[$i]} TEST"
-        /usr/local/go/bin/go test -v ${tests[$i]}_test.go -timeout=1h -json -ci |tee -a ../createreport/rke2_${date}.log
+        /usr/local/go/bin/go test -v ${tests[$i]}_test.go -timeout=2h -nodeOS="$nodeOS" -json -ci |tee -a ../createreport/rke2_${OS}.log
         
 	popd
     done
 }
 
-ls createreport/rke2_${date}.log 2>/dev/null && rm createreport/rke2_${date}.log
+ls createreport/rke2_${OS}.log 2>/dev/null && rm createreport/rke2_${OS}.log
 run_tests
 
 # re-run test if first run fails and keep record of repeatedly failed test to debug
-while [ -f createreport/rke2_${date}.log ] && grep -w " FAIL:" createreport/rke2_${date}.log && [ $count -le 2 ]
+while [ -f createreport/rke2_${OS}.log ] && grep -w " FAIL:" createreport/rke2_${OS}.log && [ $count -le 2 ]
 do
-        cp createreport/rke2_${date}.log createreport/rke2_${date}_${count}.log
+        cp createreport/rke2_${OS}.log createreport/rke2_${OS}_${count}.log
         run_tests
 done
 
 # Generate report and upload to s3 bucket
-cd createreport && /usr/local/go/bin/go run -v report-template-bindata.go generate_report.go -f rke2_${date}.log
+cd createreport && /usr/local/go/bin/go run -v report-template-bindata.go generate_report.go -f rke2_${OS}.log
