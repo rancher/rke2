@@ -20,6 +20,7 @@ func Test_NewCommands(t *testing.T) {
 		NewCertCommand(),
 		NewSecretsEncryptCommand(),
 		NewTokenCommand(),
+		NewCompletionCommand(),
 	}
 
 	for _, command := range app.Commands {
