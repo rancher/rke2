@@ -232,6 +232,7 @@ func validateCloudProviderName(clx *cli.Context, role CLIRole) {
 func NewApp() *cli.App {
 	app := cli.NewApp()
 	app.Name = appName
+	app.EnableBashCompletion = true
 	app.Usage = "Rancher Kubernetes Engine 2"
 	app.Version = fmt.Sprintf("%s (%s)", version.Version, version.GitCommit)
 	cli.VersionPrinter = func(c *cli.Context) {

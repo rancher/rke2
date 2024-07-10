@@ -18,6 +18,7 @@ func main() {
 		cmds.NewCertCommand(),
 		cmds.NewSecretsEncryptCommand(),
 		cmds.NewTokenCommand(),
+		cmds.NewCompletionCommand(),
 	}
 
 	if err := app.Run(configfilearg.MustParse(os.Args)); err != nil {
