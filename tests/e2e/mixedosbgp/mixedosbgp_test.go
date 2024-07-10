@@ -12,8 +12,8 @@ import (
 	"github.com/rancher/rke2/tests/e2e"
 )
 
-// Valid nodeOS: generic/ubuntu2004, opensuse/Leap-15.3.x86_64
-var nodeOS = flag.String("nodeOS", "generic/ubuntu2004", "operating system for linux nodes")
+// Valid nodeOS: generic/ubuntu2310, opensuse/Leap-15.3.x86_64
+var nodeOS = flag.String("nodeOS", "generic/ubuntu2310", "operating system for linux nodes")
 var serverCount = flag.Int("serverCount", 1, "number of server nodes")
 var linuxAgentCount = flag.Int("linuxAgentCount", 1, "number of linux agent nodes")
 var windowsAgentCount = flag.Int("windowsAgentCount", 1, "number of windows agent nodes")
