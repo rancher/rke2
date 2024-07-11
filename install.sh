@@ -442,7 +442,7 @@ install_airgap_tarball() {
         info "decompressing airgap tarball to ${INSTALL_RKE2_AGENT_IMAGES_DIR}"
         gzip -dc "${TMP_AIRGAP_TARBALL}" > "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images.${SUFFIX}.tar"
     fi
-    # Search for and install additonal rke2 images
+    # Search for and install additional rke2 images
     find "${INSTALL_RKE2_ARTIFACT_PATH}" -type f -name "rke2-images-*.${SUFFIX}*" \
         -printf "[INFO]  installing airgap image from %p\n"  -exec cp {} "${INSTALL_RKE2_AGENT_IMAGES_DIR}"/ \;
 }
