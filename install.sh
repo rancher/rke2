@@ -359,17 +359,6 @@ stage_local_airgap_tarball() {
         cp -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images.${SUFFIX}.tar.gz" "${TMP_AIRGAP_TARBALL}"
         AIRGAP_TARBALL_FORMAT=gz
     fi
-    # Search for each CNI we support and copy it to the airgap directory
-    CNIS="calico canal cilium flannel"
-    for cni in ${CNIS}; do
-        if [ -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images-${cni}.${SUFFIX}.tar.zst" ]; then
-            info "staging ${cni} CNI image from ${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images-${cni}.${SUFFIX}.tar.zst"
-            cp -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images-${cni}.${SUFFIX}.tar.zst" "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images-${cni}.${SUFFIX}.tar.zst"
-        elif [ -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images-${cni}.${SUFFIX}.tar.gz" ]; then
-            info "staging ${cni} CNI image from ${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images-${cni}.${SUFFIX}.tar.gz"
-            cp -f "${INSTALL_RKE2_ARTIFACT_PATH}/rke2-images-${cni}.${SUFFIX}.tar.gz" "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images-${cni}.${SUFFIX}.tar.gz"
-        fi
-    done
 }
 
 # verify_tarball verifies the downloaded installer checksum.
@@ -453,6 +442,9 @@ install_airgap_tarball() {
         info "decompressing airgap tarball to ${INSTALL_RKE2_AGENT_IMAGES_DIR}"
         gzip -dc "${TMP_AIRGAP_TARBALL}" > "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images.${SUFFIX}.tar"
     fi
+    # Search for and install additonal rke2 images
+    find "${INSTALL_RKE2_ARTIFACT_PATH}" -type f -name "rke2-images-*.${SUFFIX}*" \
+        -printf "[INFO]  installing airgap image from %p\n"  -exec cp {} "${INSTALL_RKE2_AGENT_IMAGES_DIR}"/ \;
 }
 
 # install_dev_rpm orchestrates the installation of RKE2 unsigned development rpms
