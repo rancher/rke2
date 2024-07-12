@@ -647,7 +647,7 @@ setup_fapolicy_rules() {
     if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/rocky-release ] || [ -r /etc/amazon-linux-release ]; then
         verify_fapolicyd || return 0
         # setting rke2 fapolicyd rules
-        cat <<-EOF >>"/etc/fapolicyd/rules.d/80-rke2.rules"
+        cat <<-EOF >"/etc/fapolicyd/rules.d/80-rke2.rules"
 allow perm=any all : dir=/var/lib/rancher/
 allow perm=any all : dir=/opt/cni/
 allow perm=any all : dir=/run/k3s/
