@@ -151,6 +151,10 @@ unit-tests:
 integration-tests:
 	./scripts/test
 
+.PHONY: checksum
+checksum:
+	./scripts/checksum
+
 ./.dapper:
 	@echo Downloading dapper
 	@curl -sL https://releases.rancher.com/dapper/v0.5.8/dapper-$$(uname -s)-$$(uname -m) > .dapper.tmp

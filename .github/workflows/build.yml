@@ -1,0 +1,49 @@
+on:
+  push:
+    paths-ignore:
+      - "**.md"
+      - "channel.yaml"
+      - "install.sh"
+      - "!.github/workflows/test-suite.yaml"
+    branches:
+      - master
+      - release-**
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "channel.yaml"
+      - "install.sh"
+      - "!.github/workflows/test-suite.yaml"
+
+name: Build
+permissions:
+    contents: read
+jobs:
+  build-amd64:
+    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Install Dapper
+      run: |
+        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
+        chmod +x /usr/local/bin/dapper
+    - name: Build
+      run: |
+        dapper -f Dockerfile --target dapper make dapper-ci
+    - name: Test
+      run: |
+        dapper -f Dockerfile --target dapper make test
+  build-arm64:
+    runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64,hdd=64
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Install Dapper
+      run: |
+        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
+        chmod +x /usr/local/bin/dapper
+    - name: Build
+      run: |
+        dapper -f Dockerfile --target dapper make dapper-ci
+        
