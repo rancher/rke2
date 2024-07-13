@@ -116,8 +116,8 @@ setup_env() {
         INSTALL_RKE2_TYPE="${INSTALL_RKE2_EXEC:-server}"
     fi
 
-    # --- use rpm install method if available by default
-    if [ -z "${INSTALL_RKE2_ARTIFACT_PATH}" ] && [ -z "${INSTALL_RKE2_COMMIT}" ] && [ -z "${INSTALL_RKE2_METHOD}" ] && command -v yum >/dev/null 2>&1; then
+    # --- use rpm install method if available by default and architecture is amd64
+    if [ -z "${INSTALL_RKE2_ARTIFACT_PATH}" ] && [ -z "${INSTALL_RKE2_COMMIT}" ] && [ -z "${INSTALL_RKE2_METHOD}" ] && command -v yum >/dev/null 2>&1 && [ "$ARCH" == "amd64" ]; then
         INSTALL_RKE2_METHOD="rpm"
     fi
 
@@ -661,9 +661,9 @@ EOF
 }
 
 do_install() {
+    setup_arch
     setup_env
     check_method_conflict
-    setup_arch
     if [ -z "${INSTALL_RKE2_ARTIFACT_PATH}" ]; then
         verify_downloader curl || verify_downloader wget || fatal "can not find curl or wget for downloading files"
     fi
