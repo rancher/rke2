@@ -65,14 +65,14 @@ EOF
 if [ "${GOARCH}" != "arm64" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-cpi-release-manager:v1.27.0
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.1.2
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v3.1.2
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-node-driver-registrar:v2.8.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-resizer:v1.8.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.10.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.3.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v3.5.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-snapshotter:v6.2.1
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.3.0
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v3.3.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-node-driver-registrar:v2.10.1
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-resizer:v1.10.1
+    ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.12.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.5.1
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v4.0.1
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-snapshotter:v7.0.2
 EOF
 fi
 
