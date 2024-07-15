@@ -1,18 +1,14 @@
 on:
-  push:
+  pull_request:
     paths-ignore:
       - "**.md"
       - "channel.yaml"
       - "install.sh"
       - "!.github/workflows/test-suite.yaml"
-    branches:
-      - master
-      - release-**
 
-name: Branch Merge Build
+name: PR Build
 permissions:
-    contents: write
-    id-token: write
+    contents: read
 jobs:
   build-amd64:
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
@@ -23,18 +19,9 @@ jobs:
       run: |
         curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
         chmod +x /usr/local/bin/dapper
-    - name: "Read secrets"
-      uses: rancher-eio/read-vault-secrets@main
-      with:
-        secrets: |
-          secret/data/github/repo/${{ github.repository }}/aws-access-key-id/credentials token | AWS_ACCESS_KEY_ID ;
-          secret/data/github/repo/${{ github.repository }}/aws-secret-access-key/credentials token | AWS_SECRET_ACCESS_KEY ;
     - name: Build
       run: |
         dapper -f Dockerfile --target dapper make dapper-ci
-      env:
-        AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
     - name: Test
       run: |
         dapper -f Dockerfile --target dapper make test
@@ -47,16 +34,7 @@ jobs:
       run: |
         curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
         chmod +x /usr/local/bin/dapper
-    - name: "Read secrets"
-      uses: rancher-eio/read-vault-secrets@main
-      with:
-        secrets: |
-          secret/data/github/repo/${{ github.repository }}/aws-access-key-id/credentials token | AWS_ACCESS_KEY_ID ;
-          secret/data/github/repo/${{ github.repository }}/aws-secret-access-key/credentials token | AWS_SECRET_ACCESS_KEY ;
     - name: Build
       run: |
         dapper -f Dockerfile --target dapper make dapper-ci
-      env:
-        AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
         
