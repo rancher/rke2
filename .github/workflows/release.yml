@@ -28,13 +28,28 @@ jobs:
         curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
         chmod +x /usr/local/bin/dapper
 
+    - name: Set up buildx
+      uses: docker/setup-buildx-action@v3
+      id: buildx
+      with:
+        driver: docker-container
+        driver-opts: |
+          default-load=true
+        buildkitd-config-inline: |
+          [registry."docker.io"]
+            mirrors = ["mirror.gcr.io"]
+
     - name: Validate Release
       run: |
        dapper -f Dockerfile --target dapper make validate-release
+      env:
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
 
     - name: Build
       run: |
         dapper -f Dockerfile --target dapper make dapper-ci
+      env:
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
     
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@main
@@ -46,26 +61,37 @@ jobs:
     - name: Package Images
       run: |
         dapper -f Dockerfile --target dapper make package-images
+      env:
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
     
     - name: Scan Images
       continue-on-error: true
       run: |
         dapper -f Dockerfile --target dapper make scan-images
+      env:
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
     
     - name: Test
       run: |
         dapper -f Dockerfile --target dapper make test
+      env:
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
 
     - name: Publish Image Runtime
       run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make publish-image-runtime
+        dapper -f Dockerfile --target dapper make publish-image-runtime
       env:
         DOCKER_USERNAME: ${{ env.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ env.DOCKER_PASSWORD }}
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
+        GITHUB_ACTION_TAG: ${{ github.ref_name }}
     
     - name: Checksum Artifacts
       run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make checksum
+        dapper -f Dockerfile --target dapper make checksum
+      env:
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
+        GITHUB_ACTION_TAG: ${{ github.ref_name }}
 
     - name: Publish Artifacts
       run: |
@@ -76,6 +102,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set up buildx
+      uses: docker/setup-buildx-action@v3
+      id: buildx
+      with:
+        driver: docker-container
+        driver-opts: |
+          default-load=true
+        buildkitd-config-inline: |
+          [registry."docker.io"]
+            mirrors = ["mirror.gcr.io"]
+
     - name: Install Dapper
       run: |
         curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
@@ -84,10 +121,14 @@ jobs:
     - name: Validate Release
       run: |
        dapper -f Dockerfile --target dapper make validate-release
+      env:
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
 
     - name: Build
       run: |
         dapper -f Dockerfile --target dapper make dapper-ci
+      env:
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
     
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@main
@@ -99,22 +140,31 @@ jobs:
     - name: Package Images
       run: |
         dapper -f Dockerfile --target dapper make package-images
+      env:
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
     
     - name: Scan Images
       continue-on-error: true
       run: |
         dapper -f Dockerfile --target dapper make scan-images
+      env:
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
 
     - name: Publish Image Runtime
       run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make publish-image-runtime
+        dapper -f Dockerfile --target dapper make publish-image-runtime
       env:
         DOCKER_USERNAME: ${{ env.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ env.DOCKER_PASSWORD }}
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
+        GITHUB_ACTION_TAG: ${{ github.ref_name }}
 
     - name: Checksum
       run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make checksum
+        dapper -f Dockerfile --target dapper make checksum
+      env:
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
+        GITHUB_ACTION_TAG: ${{ github.ref_name }}
 
     - name: Publish Artifacts
       run: |
@@ -125,6 +175,17 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Set up buildx
+      uses: docker/setup-buildx-action@v3
+      id: buildx
+      with:
+        driver: docker-container
+        driver-opts: |
+          default-load=true
+        buildkitd-config-inline: |
+          [registry."docker.io"]
+            mirrors = ["mirror.gcr.io"]
 
     - name: Install Dapper
       run: |
@@ -144,3 +205,4 @@ jobs:
         PAT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PATH_USERNAME: ${{ env.PAT_USERNAME }}
         GITHUB_ACTION_TAG: ${{ env.GITHUB_ACTION_TAG }}
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}

@@ -3,7 +3,7 @@ ARG KUBERNETES_VERSION=dev
 # Build environment
 FROM rancher/hardened-build-base:v1.22.4b1 AS build
 ARG DAPPER_HOST_ARCH
-ENV ARCH $DAPPER_HOST_ARCH
+ENV ARCH="$DAPPER_HOST_ARCH"
 RUN set -x && \
     apk --no-cache add \
     bash \
@@ -31,13 +31,13 @@ RUN zypper install -y systemd-rpm-macros
 
 # Dapper/Drone/CI environment
 FROM build AS dapper
-ENV DAPPER_ENV GODEBUG GOCOVER REPO TAG GITHUB_ACTION_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY DOCKER_USERNAME DOCKER_PASSWORD
 ARG DAPPER_HOST_ARCH
-ENV ARCH $DAPPER_HOST_ARCH
-ENV DAPPER_OUTPUT ./dist ./bin ./build
-ENV DAPPER_DOCKER_SOCKET true
-ENV DAPPER_TARGET dapper
-ENV DAPPER_RUN_ARGS "--privileged --network host -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy"
+ENV ARCH="$DAPPER_HOST_ARCH"
+ENV DAPPER_ENV="GODEBUG GOCOVER REPO TAG GITHUB_ACTION_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY DOCKER_USERNAME DOCKER_PASSWORD"
+ENV DAPPER_OUTPUT="./dist ./bin ./build"
+ENV DAPPER_DOCKER_SOCKET="true"
+ENV DAPPER_TARGET="dapper"
+ENV DAPPER_RUN_ARGS="--privileged --network host -v /home/runner/.docker:/root/.docker -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy"
 RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
         VERSION=0.56.10 OS=linux && \
         curl -sL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
@@ -95,8 +95,8 @@ RUN set -x && \
 RUN go get github.com/onsi/ginkgo/v2 github.com/onsi/gomega/...
 RUN GO111MODULE=off GOBIN=/usr/local/bin go get github.com/go-delve/delve/cmd/dlv
 RUN echo 'alias abort="echo -e '\''q\ny\n'\'' | dlv connect :2345"' >> /root/.bashrc
-ENV PATH=/var/lib/rancher/rke2/bin:$PATH
-ENV KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+ENV PATH="/var/lib/rancher/rke2/bin:$PATH"
+ENV KUBECONFIG="/etc/rancher/rke2/rke2.yaml"
 VOLUME /var/lib/rancher/rke2
 # This makes it so we can run and debug k3s too
 VOLUME /var/lib/rancher/k3s
@@ -156,9 +156,9 @@ COPY build/images/rke2-images.linux-amd64.tar.zst /var/lib/rancher/rke2/agent/im
 COPY build/images.txt /images.txt
 
 # use rke2 bundled binaries
-ENV PATH=/var/lib/rancher/rke2/bin:$PATH
+ENV PATH="/var/lib/rancher/rke2/bin:$PATH"
 # for kubectl
-ENV KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+ENV KUBECONFIG="/etc/rancher/rke2/rke2.yaml"
 # for crictl
 ENV CONTAINER_RUNTIME_ENDPOINT="unix:///run/k3s/containerd/containerd.sock"
 # for ctr
