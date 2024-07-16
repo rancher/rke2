@@ -77,7 +77,7 @@ EOF
 fi
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
-    ${REGISTRY}/rancher/hardened-multus-cni:v4.0.2-build20240418
+    ${REGISTRY}/rancher/hardened-multus-cni:v4.0.2-build20240612
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.4.1-build20240430
     ${REGISTRY}/rancher/hardened-node-feature-discovery:v0.15.4-build20240513
     ${REGISTRY}/rancher/hardened-sriov-network-operator:v1.2.0-build20240327
