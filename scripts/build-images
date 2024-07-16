@@ -7,11 +7,20 @@ source ./scripts/version.sh
 
 ./scripts/build-image-runtime
 
-awk '{print $1}' << EOF > build/images-core.txt
-    ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
-EOF
+echo ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} > build/images-core.txt
 
-xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
+# If not building a release, inspect the images to ensure they exist instead of
+# doing a full pull, and only include the runtime image in the core image list.
+# The core image list is saved to a tarball and used later in tests.
+if [[ $RKE2_PATCH == dev.* ]]; then
+  IMAGE_COMMAND='skopeo inspect --raw docker://$0 >/dev/null && echo $0'
+  IMAGES_CORE=/dev/null
+else
+  IMAGE_COMMAND='docker image pull --quiet $0'
+  IMAGES_CORE=build/images-core.txt
+fi
+
+xargs -n1 sh -xc "$IMAGE_COMMAND" << EOF >> $IMAGES_CORE
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
     ${REGISTRY}/rancher/hardened-coredns:v1.11.1-build20240305
     ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.8.10-build20240124
@@ -29,13 +38,13 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-validation-webhook:v6.2.2
 EOF
 
-xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
+xargs -n1 sh -xc "$IMAGE_COMMAND" << EOF > build/images-canal.txt
     ${REGISTRY}/rancher/hardened-calico:v3.28.0-build20240625
     ${REGISTRY}/rancher/hardened-flannel:v0.25.4-build20240610
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
-xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
+xargs -n1 sh -xc "$IMAGE_COMMAND" << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.1.12
     ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.15.5
     ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.28.3-31ec52ec5f2e4d28a8e19a0bfb872fa48cf7a515
@@ -49,7 +58,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.4.1-build20240325
 EOF
 
-xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
+xargs -n1 sh -xc "$IMAGE_COMMAND" << EOF > build/images-calico.txt
     ${REGISTRY}/rancher/mirrored-calico-operator:v1.32.7
     ${REGISTRY}/rancher/mirrored-calico-ctl:v3.27.3
     ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.27.3
@@ -63,7 +72,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
 EOF
 
 if [ "${GOARCH}" != "arm64" ]; then
-xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
+xargs -n1 sh -xc "$IMAGE_COMMAND" << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-cpi-release-manager:v1.30.1
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.3.0
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v3.3.0
@@ -76,7 +85,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
 EOF
 fi
 
-xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
+xargs -n1 sh -xc "$IMAGE_COMMAND" << EOF > build/images-multus.txt
     ${REGISTRY}/rancher/hardened-multus-cni:v4.0.2-build20240612
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.4.1-build20240430
     ${REGISTRY}/rancher/hardened-node-feature-discovery:v0.15.4-build20240513
@@ -91,7 +100,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
     ${REGISTRY}/rancher/mirrored-library-busybox:1.36.1
 EOF
 
-xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
+xargs -n1 sh -xc "$IMAGE_COMMAND" << EOF > build/images-harvester.txt
     ${REGISTRY}/rancher/harvester-cloud-provider:v0.2.1
     ${REGISTRY}/rancher/mirrored-kube-vip-kube-vip-iptables:v0.6.0
     ${REGISTRY}/rancher/harvester-csi-driver:v0.1.6
@@ -101,7 +110,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
     ${REGISTRY}/rancher/mirrored-longhornio-csi-attacher:v3.2.1
 EOF
 
-xargs -n1 -t docker image pull --quiet << EOF > build/images-flannel.txt
+xargs -n1 sh -xc "$IMAGE_COMMAND" << EOF > build/images-flannel.txt
     ${REGISTRY}/rancher/hardened-flannel:v0.25.4-build20240610
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.4.1-build20240430
 EOF

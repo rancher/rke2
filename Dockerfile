@@ -14,6 +14,7 @@ RUN set -x && \
     rsync \
     gcc \
     bsd-compat-headers \
+    skopeo \
     py-pip \
     py3-pip \
     pigz \
