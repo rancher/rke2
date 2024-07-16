@@ -3,7 +3,7 @@ ARG KUBERNETES_VERSION=dev
 # Build environment
 FROM rancher/hardened-build-base:v1.22.4b1 AS build
 ARG DAPPER_HOST_ARCH
-ENV ARCH $DAPPER_HOST_ARCH
+ENV ARCH="$DAPPER_HOST_ARCH"
 RUN set -x && \
     apk --no-cache add \
     bash \
@@ -31,48 +31,26 @@ RUN zypper install -y systemd-rpm-macros
 
 # Dapper/Drone/CI environment
 FROM build AS dapper
-ENV DAPPER_ENV GODEBUG GOCOVER REPO TAG GITHUB_ACTION_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY DOCKER_USERNAME DOCKER_PASSWORD
 ARG DAPPER_HOST_ARCH
-ENV ARCH $DAPPER_HOST_ARCH
-ENV DAPPER_OUTPUT ./dist ./bin ./build
-ENV DAPPER_DOCKER_SOCKET true
-ENV DAPPER_TARGET dapper
-ENV DAPPER_RUN_ARGS "--privileged --network host -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy"
-RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
-        VERSION=0.56.10 OS=linux && \
-        curl -sL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
-        tar -xzf - -C /usr/local/bin; \
-    fi
-RUN curl -sL https://dl.k8s.io/release/$( \
-    curl -sL https://dl.k8s.io/release/stable.txt \
-    )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
-    chmod a+x /usr/local/bin/kubectl; \
-    pip install codespell
+ENV ARCH="$DAPPER_HOST_ARCH"
+ENV DAPPER_ENV="GODEBUG GOCOVER REPO TAG SKIP_DEV_RPM GITHUB_ACTION_TAG ACTIONS_CACHE_URL ACTIONS_RUNTIME_TOKEN PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION BUILDX_BUILDER DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY DOCKER_USERNAME DOCKER_PASSWORD"
+ENV DAPPER_OUTPUT="./dist ./bin ./build"
+ENV DAPPER_DOCKER_SOCKET="true"
+ENV DAPPER_TARGET="dapper"
+ENV DAPPER_RUN_ARGS="--privileged --network host -v /home/runner/.docker:/root/.docker -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy"
+RUN curl -fsL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.55.2
+RUN VERSION=0.56.10 OS=linux && \
+    curl -fsL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
+    tar -xzvC /usr/local/bin
+RUN VERSION=$(curl -fsL https://dl.k8s.io/release/stable.txt) && \
+    curl -fsL "https://dl.k8s.io/release/${VERSION}/bin/linux/${ARCH}/kubectl" -o /usr/local/bin/kubectl && \
+    chmod a+x /usr/local/bin/kubectl
+RUN VERSION=v0.20.1 ARCH=$(bash -c 'echo ${ARCH/amd64/x86_64}') && \
+    curl -fsL "https://github.com/google/go-containerregistry/releases/download/${VERSION}/go-containerregistry_Linux_${ARCH}.tar.gz" | \
+    tar -zxvC /usr/local/bin crane
 
-RUN python3 -m pip install awscli
-RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.55.2
-RUN set -x && \
-    apk --no-cache add \
-    libarchive-tools \
-    zstd \
-    jq \
-    python3 && \
-    if [ "${ARCH}" != "s390x" ] || [ "${GOARCH}" != "arm64" ]; then \
-    	apk add --no-cache rpm-dev; \
-    fi
-
-RUN GOCR_VERSION="v0.5.1" && \
-    if [ "${ARCH}" = "arm64" ]; then \
-        wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_arm64.tar.gz && \
-        tar -zxvf go-containerregistry_Linux_arm64.tar.gz && \
-        mv crane /usr/local/bin && \
-        chmod a+x /usr/local/bin/crane; \
-    else \
-        wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_x86_64.tar.gz && \
-        tar -zxvf go-containerregistry_Linux_x86_64.tar.gz && \
-        mv crane /usr/local/bin && \
-        chmod a+x /usr/local/bin/crane; \
-    fi
+RUN apk --no-cache add libarchive-tools zstd jq rpm-dev python3
+RUN python3 -m pip install awscli codespell
 
 WORKDIR /source
 
@@ -81,22 +59,13 @@ COPY --from=rpm-macros /usr/lib/rpm/macros.d/macros.systemd /usr/lib/rpm/macros.
 
 # Shell used for debugging
 FROM dapper AS shell
-RUN set -x && \
-    apk --no-cache add \
-    bash-completion \
-    iptables \
-    less \
-    psmisc \
-    rsync \
-    socat \
-    sudo \
-    vim
+RUN apk --no-cache add bash-completion iptables less psmisc rsync socat sudo vim
 # For integration tests
 RUN go get github.com/onsi/ginkgo/v2 github.com/onsi/gomega/...
 RUN GO111MODULE=off GOBIN=/usr/local/bin go get github.com/go-delve/delve/cmd/dlv
 RUN echo 'alias abort="echo -e '\''q\ny\n'\'' | dlv connect :2345"' >> /root/.bashrc
-ENV PATH=/var/lib/rancher/rke2/bin:$PATH
-ENV KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+ENV PATH="/var/lib/rancher/rke2/bin:$PATH"
+ENV KUBECONFIG="/etc/rancher/rke2/rke2.yaml"
 VOLUME /var/lib/rancher/rke2
 # This makes it so we can run and debug k3s too
 VOLUME /var/lib/rancher/k3s
@@ -156,9 +125,9 @@ COPY build/images/rke2-images.linux-amd64.tar.zst /var/lib/rancher/rke2/agent/im
 COPY build/images.txt /images.txt
 
 # use rke2 bundled binaries
-ENV PATH=/var/lib/rancher/rke2/bin:$PATH
+ENV PATH="/var/lib/rancher/rke2/bin:$PATH"
 # for kubectl
-ENV KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+ENV KUBECONFIG="/etc/rancher/rke2/rke2.yaml"
 # for crictl
 ENV CONTAINER_RUNTIME_ENDPOINT="unix:///run/k3s/containerd/containerd.sock"
 # for ctr

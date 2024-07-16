@@ -6,13 +6,13 @@ RUN apk --no-cache add \
 
 # Dapper/Drone/CI environment
 FROM rancher/hardened-build-base:v1.21.5b2 AS dapper
-ENV DAPPER_ENV GODEBUG REPO TAG GITHUB_ACTION_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY
 ARG DAPPER_HOST_ARCH
-ENV ARCH $DAPPER_HOST_ARCH
-ENV DAPPER_OUTPUT ./dist ./bin ./build
-ENV DAPPER_DOCKER_SOCKET true
-ENV DAPPER_TARGET dapper
-ENV DAPPER_RUN_ARGS "--privileged --network host -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build"
+ENV ARCH="$DAPPER_HOST_ARCH"
+ENV DAPPER_ENV="GODEBUG REPO TAG GITHUB_ACTION_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY"
+ENV DAPPER_OUTPUT="./dist ./bin ./build"
+ENV DAPPER_DOCKER_SOCKET="true"
+ENV DAPPER_TARGET="dapper"
+ENV DAPPER_RUN_ARGS="--privileged --network host -v /home/runner/.docker:/root/.docker -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build"
 RUN apk update
 RUN set -x && \
     apk add --no-cache \
@@ -39,7 +39,7 @@ WORKDIR /source
 # End Dapper stuff
 
 FROM rancher/hardened-containerd:v1.7.17-k3s1-build20240605-amd64-windows AS containerd
-FROM build as windows-runtime-collect
+FROM build AS windows-runtime-collect
 ARG KUBERNETES_VERSION=dev
 
 # windows runtime image

@@ -12,7 +12,7 @@ ci-shell: clean .dapper                  ## Launch a shell in the CI environment
 	@echo '# Run "make dapper-ci" to reproduce CI in this shell #'
 	@echo '######################################################'
 	@echo
-	./.dapper -f Dockerfile --target dapper -s
+	./.dapper --bake -f Dockerfile --target dapper -s
 
 .PHONY: dapper-ci
 dapper-ci: .ci                           ## Used by Drone CI, does the same as "ci" but in a Drone way
@@ -157,14 +157,14 @@ checksum:
 
 ./.dapper:
 	@echo Downloading dapper
-	@curl -sL https://releases.rancher.com/dapper/v0.5.8/dapper-$$(uname -s)-$$(uname -m) > .dapper.tmp
+	@curl -sL https://github.com/brandond/dapper/releases/download/v0.7.0-bd5/dapper-$$(uname -s)-$$(uname -m) > .dapper.tmp
 	@@chmod +x .dapper.tmp
 	@./.dapper.tmp -v
 	@mv .dapper.tmp .dapper
 
 in-docker-%: .dapper                     ## Advanced: wraps any target in Docker environment, for example: in-docker-build-debug
 	mkdir -p ./bin/ ./dist/ ./build
-	./.dapper -f Dockerfile --target dapper make $*
+	./.dapper --bake -f Dockerfile --target dapper make $*
 
 .PHONY: help
 help: ## this help

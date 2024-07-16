@@ -14,7 +14,7 @@ echo ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} > build/images-co
 # The core image list is saved to a tarball and used later in tests.
 if [[ $RKE2_PATCH == dev.* ]]; then
   IMAGE_COMMAND='skopeo inspect --raw docker://$0 >/dev/null && echo $0'
-  IMAGES_CORE=/dev/null
+  IMAGES_CORE=/tmp/images-core.txt
 else
   IMAGE_COMMAND='docker image pull --quiet $0'
   IMAGES_CORE=build/images-core.txt
@@ -115,5 +115,8 @@ xargs -n1 sh -xc "$IMAGE_COMMAND" << EOF > build/images-flannel.txt
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.4.1-build20240430
 EOF
 fi
-# Continue to provide a legacy airgap archive set with the default CNI images
-cat build/images-core.txt build/images-canal.txt > build/images.txt
+
+# Continue to provide a legacy airgap archive set with the default CNI images.
+# This file is also used by the airgap image test to confirm that we're capturing
+# the correct files for a cluster with default features.
+cat /tmp/images-core.txt build/images-core.txt build/images-canal.txt > build/images.txt || true
