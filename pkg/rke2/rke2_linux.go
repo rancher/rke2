@@ -19,6 +19,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/cluster/managed"
 	"github.com/k3s-io/k3s/pkg/etcd"
+	"github.com/k3s-io/kine/pkg/endpoint"
 	"github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
@@ -63,8 +64,14 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 	if cmds.ServerConfig.DatastoreEndpoint != "" || (clx.Bool("disable-etcd") && !clx.IsSet("server")) {
 		cmds.ServerConfig.DisableETCD = false
 		cmds.ServerConfig.ClusterInit = false
-		cmds.ServerConfig.KineTLS = true
-		ExternalDatabase = true
+
+		// When the datastore sets a etcd endpoint, rke2 does not need kine with tls and changes
+		// in the --etcd-servers inside podexecutor using ExternalDatabase
+		driver, _ := endpoint.ParseStorageEndpoint(cmds.ServerConfig.DatastoreEndpoint)
+		if !(driver == endpoint.ETCDBackend) {
+			cmds.ServerConfig.KineTLS = true
+			ExternalDatabase = true
+		}
 	} else {
 		managed.RegisterDriver(&etcd.ETCD{})
 	}
