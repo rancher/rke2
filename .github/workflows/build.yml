@@ -27,8 +27,8 @@ jobs:
       uses: rancher-eio/read-vault-secrets@main
       with:
         secrets: |
-          secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials token | AWS_ACCESS_KEY_ID ;
-          secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials token | AWS_SECRET_ACCESS_KEY ;
+          secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials AWS_ACCESS_KEY_ID ;
+          secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials AWS_SECRET_ACCESS_KEY ;
     - name: Build
       run: |
         dapper -f Dockerfile --target dapper make dapper-ci
@@ -51,8 +51,8 @@ jobs:
       uses: rancher-eio/read-vault-secrets@main
       with:
         secrets: |
-          secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials token | AWS_ACCESS_KEY_ID ;
-          secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials token | AWS_SECRET_ACCESS_KEY ;
+          secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials AWS_ACCESS_KEY_ID ;
+          secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials AWS_SECRET_ACCESS_KEY ;
     - name: Build
       run: |
         dapper -f Dockerfile --target dapper make dapper-ci
