@@ -5,7 +5,10 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
+docker buildx build \
+    --load \
+    --cache-from type=gha \
+    --cache-to type=gha,ignore-error=true,mode=max \
     --build-arg TAG=${VERSION} \
     --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
     --build-arg MAJOR=${VERSION_MAJOR} \
@@ -18,8 +21,16 @@ DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
     --file Dockerfile \
     .
 
+mkdir -p build/images
+docker image save \
+    --output build/images/${PROG}-runtime.tar \
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH}
+
 if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ]; then
-  DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
+  docker buildx build \
+      --load \
+      --cache-from type=gha \
+      --cache-to type=gha,ignore-error=true,mode=max \
       --build-arg TAG=${VERSION} \
       --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
       --build-arg MAJOR=${VERSION_MAJOR} \
@@ -30,12 +41,10 @@ if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ]; then
       --file Dockerfile.windows \
       .
   # Only ever used in its compressed form for e2e tests
-  mkdir -p build/images
   docker image save \
     ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-${GOARCH} | \
     zstd -T0 -16 -f --long=25 --no-progress - -o build/images/${PROG}-images.windows-${GOARCH}.tar.zst    
 fi
-mkdir -p build/images
-docker image save \
-    --output build/images/${PROG}-runtime.tar \
-    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH}
+
+# fix builder activity timestamp file ownership getting broken when mounted into the dapper container
+rm ~/.docker/buildx/activity/*

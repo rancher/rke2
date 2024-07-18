@@ -7,10 +7,17 @@ source ./scripts/version.sh
 
 mkdir -p dist/artifacts
 
+# If not building a release, only save the core image tarball
+if [[ $RKE2_PATCH == dev.* ]]; then
+  IMAGE_LISTS=(build/images-core.txt)
+else
+  IMAGE_LISTS=(build/images*.txt)
+fi
+
 # We reorder the tar file so that the metadata files are at the start of the archive, which should make loading
 # the runtime image faster. By default `docker image save` puts these at the end of the archive, which means the entire
 # tarball needs to be read even if you're just loading a single image.
-for FILE in build/images*.txt; do
+for FILE in "${IMAGE_LISTS[@]}" do
     BASE=$(basename ${FILE} .txt)
     DEST=build/images/${PROG}-${BASE}.tar
     docker image save --output ${DEST}.tmp $(<${FILE})

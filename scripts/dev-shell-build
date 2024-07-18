@@ -10,4 +10,4 @@ if [ ! -d build/images ]; then
 fi
 
 # build the dev shell image
-DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build -t ${PROG}-dev --target shell .
+docker buildx build --load -t ${PROG}-dev --target shell .

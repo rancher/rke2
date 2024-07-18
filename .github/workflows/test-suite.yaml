@@ -28,6 +28,15 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 1
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      id: buildx
+      with:
+        version: v0.16.0
+        driver: docker-container
+        buildkitd-config-inline: |
+          [registry."docker.io"]
+            mirrors = ["mirror.gcr.io"]
     - name: Find Go Version for Build
       id: go-finder
       run: |
@@ -39,8 +48,6 @@ jobs:
       uses: ./.github/actions/setup-go
       with:
         go-version: ${{ steps.go-finder.outputs.VERSION_GOLANG }}
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
     - name: Install OS Packages
       run: sudo apt-get install -y libarchive-tools g++-mingw-w64-x86-64 gcc-mingw-w64-x86-64
     # Can only upload from a single path, so we need to copy the binary to the image directory
@@ -48,11 +55,15 @@ jobs:
     # just compressed. We remove the rke2-runtime.tar as its not used by the install script.
     - name: Build RKE2 Binary and Compressed Runtime Image
       run: |
-        GOCOVER=true make package-bundle
+        make package-bundle
         make package-image-runtime
         cp ./bin/rke2 ./build/images/rke2
         cp ./dist/artifacts/rke2.*-amd64.tar.gz ./build/images/
         rm ./build/images/rke2-runtime.tar
+      env:
+        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
+        GOCOVER: "true"
+
     - name: Upload RKE2 Binary and Runtime Image
       uses: actions/upload-artifact@v4
       with:
