@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -ex
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+
+mkdir -p dist/artifacts
+
+gh release upload ${VERSION} dist/artifacts/*
