@@ -112,6 +112,10 @@ dev-peer-enter:                         ## Enter the peer shell on another termi
 publish-manifest-kubernetes: build-image-kubernetes						## Create and push the kubernetes manifest
 	./scripts/publish-manifest-kubernetes
 
+.PHONY: publish-binary
+publish-binary: 						## Upload binaries
+	./scripts/publish-binary
+
 .PHONY: dispatch
 dispatch:								## Send dispatch event to rke2-upgrade repo
 	./scripts/dispatch
