@@ -44,7 +44,7 @@ RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
     fi
 
 RUN curl -sL "https://github.com/cli/cli/releases/download/v2.53.0/gh_2.53.0_linux_${ARCH}.tar.gz" | \ 
-    tar -xzvf - -C /usr/local/bin gh_2.53.0_linux_${ARCH}/bin/gh;
+    tar --strip-components=2 -xzvf - -C /usr/local/bin gh_2.53.0_linux_${ARCH}/bin/gh;
 
 RUN curl -sL https://dl.k8s.io/release/$( \
     curl -sL https://dl.k8s.io/release/stable.txt \
