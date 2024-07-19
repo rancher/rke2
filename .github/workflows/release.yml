@@ -139,7 +139,7 @@ jobs:
       uses: rancher-eio/read-vault-secrets@main
       with:
         secrets: |
-          secret/data/github/repo/${{ github.repository }}/pat_username/credentials token | PAT_USERNAME ;
+          secret/data/github/repo/${{ github.repository }}/pat-username/credentials token | PAT_USERNAME ;
 
     - name: Dispatch
       run: |
