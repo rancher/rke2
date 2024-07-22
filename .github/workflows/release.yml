@@ -63,7 +63,7 @@ jobs:
         DOCKER_USERNAME: ${{ env.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ env.DOCKER_PASSWORD }}
     
-    - name: Pacakge windows images
+    - name: Package windows images
       run: |
         GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make package-windows-images
 
