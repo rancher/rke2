@@ -127,6 +127,31 @@ jobs:
         dapper -f Dockerfile --target dapper make publish-binary
       env:
         GH_TOKEN: ${{ github.token }}
+  manifest:
+    needs: [release-amd64, release-arm64]
+    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Dapper
+      run: |
+        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
+        chmod +x /usr/local/bin/dapper
+
+    - name: "Read secrets"
+      uses: rancher-eio/read-vault-secrets@main
+      with:
+        secrets: |
+          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials username | DOCKER_USERNAME ;
+          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials password | DOCKER_PASSWORD ;
+
+    - name: Manifest
+      run: |
+        GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make publish-manifest-runtime
+      env:
+        DOCKER_USERNAME: ${{ env.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ env.DOCKER_PASSWORD }}
   dispatch:
     needs: [release-amd64, release-arm64]
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
