@@ -112,6 +112,10 @@ dev-peer-enter:                         ## Enter the peer shell on another termi
 publish-manifest-kubernetes: build-image-kubernetes						## Create and push the kubernetes manifest
 	./scripts/publish-manifest-kubernetes
 
+.PHONY: publish-manifest-runtime
+publish-manifest-runtime:  						   ## Create and push the runtime manifest
+	./scripts/publish-manifest-runtime
+
 .PHONY: publish-binary
 publish-binary: 						## Upload binaries
 	./scripts/publish-binary
