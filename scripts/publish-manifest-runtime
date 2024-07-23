@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -ex
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+export DOCKER_CLI_EXPERIMENTAL=enabled
+
+docker manifest create \
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-linux-amd64 \
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-linux-arm64 \
+    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64
+    
+docker manifest annotate ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-linux-amd64 --os linux --arch amd64
+docker manifest annotate ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-linux-arm64 --os linux --arch arm64
+docker manifest annotate ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 --os windows --arch amd64
+
+set +x
+docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+set -x
+
+docker manifest push ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
