@@ -29,6 +29,10 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-validation-webhook:v6.2.2
 EOF
 
+xargs -n1 -t docker image pull --quiet << EOF > build/images-traefik.txt
+    ${REGISTRY}/rancher/mirrored-library-traefik:2.10.7
+EOF
+
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
     ${REGISTRY}/rancher/hardened-calico:v3.28.0-build20240625
     ${REGISTRY}/rancher/hardened-flannel:v0.25.4-build20240610
