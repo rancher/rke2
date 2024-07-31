@@ -21,6 +21,7 @@ import (
 	"github.com/rancher/rke2/pkg/logging"
 	"github.com/sirupsen/logrus"
 	opv1 "github.com/tigera/operator/api/v1"
+	"golang.org/x/sys/windows"
 	authv1 "k8s.io/api/authentication/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -302,8 +303,14 @@ func (c *Calico) Start(ctx context.Context) error {
 
 // generateCalicoNetworks creates the overlay networks for internode networking
 func (c *Calico) generateCalicoNetworks() error {
-	if err := deleteAllNetworks(); err != nil {
-		return errors.Wrapf(err, "failed to delete all networks before bootstrapping calico")
+	nodeRebooted, err := c.isNodeRebooted()
+	if err != nil {
+		return errors.Wrapf(err, "failed to check last node reboot time")
+	}
+	if nodeRebooted {
+		if err = deleteAllNetworks(); err != nil {
+			return errors.Wrapf(err, "failed to delete all networks before bootstrapping calico")
+		}
 	}
 
 	// There are four ways to select the vxlan interface. In order of priority:
@@ -527,4 +534,44 @@ func (c *Calico) ReserveSourceVip(ctx context.Context) (string, error) {
 	}
 
 	return vip, nil
+}
+
+//Get latest stored reboot
+func (c *Calico) getStoredLastBootTime() (string, error) {
+	lastRebootPath := filepath.Join(c.CNICfg.ConfigPath, "lastBootTime.txt")
+	lastStoredBoot, err := os.ReadFile(lastRebootPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return "", nil
+		} else {
+			return "", err
+		}
+	}
+	return string(lastStoredBoot), nil
+}
+
+//Set last boot time on the registry
+func (c *Calico) setStoredLastBootTime(lastBootTime string) error {
+	lastRebootPath := filepath.Join(c.CNICfg.ConfigPath, "lastBootTime.txt")
+	err := os.WriteFile(lastRebootPath, []byte(lastBootTime), 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Check if the node was rebooted
+func (c *Calico) isNodeRebooted() (bool, error) {
+	tickCountSinceBoot := windows.DurationSinceBoot()
+	bootTime := time.Now().Add(-tickCountSinceBoot)
+	lastReboot := bootTime.Format(time.UnixDate)
+	prevLastReboot, err := c.getStoredLastBootTime()
+	if err != nil {
+		return true, err
+	}
+	if lastReboot == prevLastReboot {
+		return false, nil
+	}
+	err = c.setStoredLastBootTime(lastReboot)
+	return true, err
 }
