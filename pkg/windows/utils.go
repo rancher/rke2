@@ -34,6 +34,12 @@ var (
 // createHnsNetwork creates the network that will connect nodes and returns its managementIP
 func createHnsNetwork(backend string, networkAdapter string) (string, error) {
 	var network hcsshim.HNSNetwork
+        // Check if the interface already exists
+	hcsnetwork, err := hcsshim.GetHNSNetworkByName(CalicoHnsNetworkName)
+	if err == nil {
+		return hcsnetwork.ManagementIP, nil
+	}
+
 	if backend == "vxlan" {
 		// Ignoring the return because both true and false without an error represent that the firewall rule was created or already exists
 		if _, err := wapi.FirewallRuleAdd("OverlayTraffic4789UDP", "Overlay network traffic UDP", "", "4789", wapi.NET_FW_IP_PROTOCOL_UDP, wapi.NET_FW_PROFILE2_ALL); err != nil {
