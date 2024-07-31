@@ -20,6 +20,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	opv1 "github.com/tigera/operator/api/v1"
+	"golang.org/x/sys/windows"
+	"golang.org/x/sys/windows/registry"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -31,9 +33,98 @@ var (
 	}
 )
 
+var softwareRegistryKey = "Software\\Rancher"
+var softwareCalicoRegistryKey = softwareRegistryKey+"\\Calico"
+
+
+func ensureRegistryKey() error {
+	k, err := registry.OpenKey(registry.LOCAL_MACHINE, "Software", registry.QUERY_VALUE)
+	if err != nil {
+		return err
+	}
+	defer k.Close()
+
+	softwareK, _, err := registry.CreateKey(k, "Rancher", registry.CREATE_SUB_KEY)
+	if err != nil {
+		return err
+	}
+	defer softwareK.Close()
+
+	calicoK, exist, err := registry.CreateKey(softwareK, "Calico", registry.CREATE_SUB_KEY)
+	if err != nil {
+		return err
+	}
+	calicoK.Close()
+	if !exist {
+		err = setStoredLastBootTime("")
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+//Get latest stored reboot
+func getStoredLastBootTime() (string, error) {
+	calicoK, err := registry.OpenKey(registry.LOCAL_MACHINE, softwareCalicoRegistryKey, registry.QUERY_VALUE)
+	if err != nil {
+		return "", err
+	}
+	defer calicoK.Close()
+
+	lastStoredBoot, _, err := calicoK.GetStringValue("LastBootTime")
+	if err != nil {
+		return "", err
+	}
+	return lastStoredBoot, nil
+}
+
+//Set last boot time on the registry
+func setStoredLastBootTime(lastBootTime string) error {
+	calicoK, err := registry.OpenKey(registry.LOCAL_MACHINE, softwareCalicoRegistryKey, registry.SET_VALUE)
+	if err != nil {
+		return err
+	}
+	defer calicoK.Close()
+
+	err = calicoK.SetStringValue("LastBootTime", lastBootTime)
+	if err != nil {
+		return err
+	}
+	
+	return nil
+}
+
+// Check if the node was rebooted
+func isNodeRebooted() (bool, error) {
+	tickCountSinceBoot := windows.DurationSinceBoot()
+	bootTime := time.Now().Add(-tickCountSinceBoot)
+	lastReboot := bootTime.Format(time.UnixDate)
+	err := ensureRegistryKey()
+	if err != nil {
+		return true, err
+	}
+	prevLastReboot, err := getStoredLastBootTime()
+	if err != nil {
+		return true, err
+	}
+	if lastReboot == prevLastReboot {
+		return false, nil
+	}
+	err = setStoredLastBootTime(lastReboot)
+	return true, err
+}
+
 // createHnsNetwork creates the network that will connect nodes and returns its managementIP
 func createHnsNetwork(backend string, networkAdapter string) (string, error) {
 	var network hcsshim.HNSNetwork
+        // Check if the interface already exists
+	hcsnetwork, err := hcsshim.GetHNSNetworkByName(CalicoHnsNetworkName)
+	if err == nil {
+		return hcsnetwork.ManagementIP, nil
+	}
+
 	if backend == "vxlan" {
 		// Ignoring the return because both true and false without an error represent that the firewall rule was created or already exists
 		if _, err := wapi.FirewallRuleAdd("OverlayTraffic4789UDP", "Overlay network traffic UDP", "", "4789", wapi.NET_FW_IP_PROTOCOL_UDP, wapi.NET_FW_PROFILE2_ALL); err != nil {
@@ -106,6 +197,13 @@ func nodeAddressAutodetection(autoDetect opv1.NodeAddressAutodetection) (string,
 
 // deleteAllNetworks deletes all hns networks
 func deleteAllNetworks() error {
+	nodeRebooted, err := isNodeRebooted()
+	if err != nil {
+		return err
+	}
+	if !nodeRebooted {
+		return nil
+	}
 	networks, err := hcsshim.HNSListNetworkRequest("GET", "", "")
 	if err != nil {
 		return err
