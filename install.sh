@@ -485,7 +485,7 @@ install_dev_rpm() {
 # and calls yum to install the required packages.
 do_install_rpm() {
     . /etc/os-release
-    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/amazon-linux-release ] || [ "${ID_LIKE%%[ ]*}" = "suse"  ]; then
+    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/system-release ] || [ "${ID_LIKE%%[ ]*}" = "suse"  ]; then
         repodir=/etc/yum.repos.d
         if [ -d /etc/zypp/repos.d ]; then
             repodir=/etc/zypp/repos.d
@@ -651,7 +651,7 @@ do_install_tar() {
 }
 
 setup_fapolicy_rules() {
-    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/rocky-release ] || [ -r /etc/amazon-linux-release ]; then
+    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/rocky-release ] || [ -r /etc/system-release ]; then
         verify_fapolicyd || return 0
         # setting rke2 fapolicyd rules
         cat <<-EOF >"/etc/fapolicyd/rules.d/80-rke2.rules"
