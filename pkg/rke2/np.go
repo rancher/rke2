@@ -85,7 +85,7 @@ var defaultKubeSystemPolicies = []policyTemplate{
 		},
 	},
 	{
-		// allows for all http and https traffic into the kube-system namespace to the ingress controller pods
+		// allows for all http and https traffic into the kube-system namespace to the ingress-nginx controller pods
 		name:          "default-network-ingress-policy",
 		annotationKey: "np.rke2.io/ingress",
 		podSelector:   metav1.LabelSelector{MatchLabels: labels.Set{"app.kubernetes.io/name": "rke2-ingress-nginx"}},
@@ -111,7 +111,7 @@ var defaultKubeSystemPolicies = []policyTemplate{
 		},
 	},
 	{
-		// allows for https traffic into the to the ingress controller webhook
+		// allows for https traffic into the to the ingress-nginx controller webhook
 		name:          "default-network-ingress-webhook-policy",
 		annotationKey: "np.rke2.io/ingress-webhook",
 		podSelector:   metav1.LabelSelector{MatchLabels: labels.Set{"app.kubernetes.io/name": "rke2-ingress-nginx"}},
@@ -123,6 +123,32 @@ var defaultKubeSystemPolicies = []policyTemplate{
 						Port: &intstr.IntOrString{
 							Type:   intstr.String,
 							StrVal: "webhook",
+						},
+					},
+				},
+			},
+		},
+	},
+	{
+		// allows for all http and https traffic into the kube-system namespace to the traefik ingress controller pods
+		name:          "default-network-traefik-policy",
+		annotationKey: "np.rke2.io/ingress",
+		podSelector:   metav1.LabelSelector{MatchLabels: labels.Set{"app.kubernetes.io/name": "rke2-traefik"}},
+		ingress: []v1.NetworkPolicyIngressRule{
+			{
+				Ports: []v1.NetworkPolicyPort{
+					{
+						Protocol: &tcp,
+						Port: &intstr.IntOrString{
+							Type:   intstr.String,
+							StrVal: "http",
+						},
+					},
+					{
+						Protocol: &tcp,
+						Port: &intstr.IntOrString{
+							Type:   intstr.String,
+							StrVal: "https",
 						},
 					},
 				},
