@@ -25,6 +25,13 @@ end
 def cisPrep(vm)
   vm.provision "shell", inline: "useradd -r -c 'etcd user' -s /sbin/nologin -M etcd -U"
   vm.provision "shell", inline: "printf 'vm.panic_on_oom=0\nvm.overcommit_memory=1\nkernel.panic=10\nkernel.panic_on_oops=1' > /etc/sysctl.d/60-rke2-cis.conf; systemctl restart systemd-sysctl"
+  if vm.box.to_s.include?("ubuntu")
+    vm.provision "Install kube-bench", type: "shell", inline: <<-SHELL
+    export KBV=0.8.0
+    curl -L "https://github.com/aquasecurity/kube-bench/releases/download/v${KBV}/kube-bench_${KBV}_linux_amd64.deb" -o "kube-bench_${KBV}_linux_amd64.deb"
+    dpkg -i "./kube-bench_${KBV}_linux_amd64.deb"
+    SHELL
+  end
 end
 
 # vagrant cannot scp files as root, so we copy manifests to /tmp and then move them to the correct location
