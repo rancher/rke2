@@ -17,6 +17,11 @@ const (
 // CIS mode. For CIS mode, a default PSA configuration with enforcement for restricted will be applied
 // for non CIS mode, a default PSA configuration will be applied that has privileged restriction
 func setPSAs(cisMode bool) error {
+	if _, err := os.Stat(defaultPSAConfigFile); os.IsExist(err) {
+		logrus.Warnf("existing rke2-pss.yaml found at %s", defaultPSAConfigFile)
+		return nil
+	}
+
 	logrus.Info("Applying Pod Security Admission Configuration")
 	configDir := filepath.Dir(defaultPSAConfigFile)
 	if err := os.MkdirAll(configDir, 0755); err != nil {
