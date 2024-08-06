@@ -20,7 +20,7 @@ var windowsAgentCount = flag.Int("windowsAgentCount", 1, "number of windows agen
 var ci = flag.Bool("ci", false, "running on CI")
 var local = flag.Bool("local", false, "deploy a locally built RKE2")
 
-func Test_E2EMixedOSValidation(t *testing.T) {
+func Test_E2E_EXT_MixedOSValidation(t *testing.T) {
 	flag.Parse()
 	RegisterFailHandler(Fail)
 	suiteConfig, reporterConfig := GinkgoConfiguration()

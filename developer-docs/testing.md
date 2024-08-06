@@ -152,7 +152,7 @@ Currently tested operating systems are:
 ### Format
 
 All E2E tests should be placed under `tests/e2e/<TEST_NAME>`.  
-All E2E test functions should be named: `Test_E2E<TEST_NAME>`.  
+All E2E test functions should be named: `Test_E2E_<TEST_NAME>`.  
 A E2E test consists of two parts:
 1. `Vagrantfile`: a vagrant file which describes and configures the VMs upon which the cluster and test will run
 2. `<TEST_NAME>.go`: A go test file which calls `vagrant up` and controls the actual testing of the cluster
