@@ -31,7 +31,7 @@ killtree() {
 }
 
 getshims() {
-    COLUMNS=2147483647 ps -e -o pid= -o args= | sed -e 's/^ *//; s/\s\s*/\t/;' | grep -w 'rke2/data/[^/]*/bin/containerd-shim' | cut -f1
+    COLUMNS=2147483647 ps -e -o pid= -o args= | sed -e 's/^ *//; s/\s\s*/\t/;' | grep -w "${RKE2_DATA_DIR}"'/data/[^/]*/bin/containerd-shim' | cut -f1
 }
 
 do_unmount_and_remove() {
