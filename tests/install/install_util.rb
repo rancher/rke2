@@ -88,3 +88,36 @@ def kubectlStatus(vm)
     SHELL
   end
 end
+
+def mountDirs(vm)
+  vm.provision "rke2-mount-directory", type: "shell", run: ENV['CI'] == 'true' ? 'never' : 'once' do |sh|
+    sh.inline = <<~SHELL
+    #!/usr/bin/env bash
+    set -eu -o pipefail
+    echo 'Mounting server dir'
+    mount --bind /var/lib/rancher/rke2/server /var/lib/rancher/rke2/server
+    SHELL
+  end
+end
+
+def checkMountPoint(vm)
+  vm.provision "rke2-check-mount", type: "shell", run: ENV['CI'] == 'true' ? 'never' : 'once' do |sh|
+    sh.inline = <<~SHELL
+    #!/usr/bin/env bash
+    set -eu -o pipefail
+    echo 'Check the mount'
+    mount | grep /var/lib/rancher/rke2/server
+    SHELL
+  end
+end
+
+def runKillAllScript(vm)
+  vm.provision "rke2-killall", type: "shell", run: ENV['CI'] == 'true' ? 'never' : 'once' do |sh|
+    sh.inline = <<~SHELL
+    #!/usr/bin/env bash
+    set -eu -o pipefail
+    echo 'Run kill all'
+    rke2-killall.sh
+    SHELL
+  end
+end
