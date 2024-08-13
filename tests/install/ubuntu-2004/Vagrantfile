@@ -46,6 +46,10 @@ Vagrant.configure("2") do |config|
         ps auxZ | grep -E 'etcd|kube|rke2|container|confined' | grep -v grep
       SHELL
     end
+
+    mountDirs(test.vm)
+    runKillAllScript(test.vm)
+    checkMountPoint(test.vm)
   end
 
   config.vm.provision "install-packages", type: "shell", run: "once" do |sh|
