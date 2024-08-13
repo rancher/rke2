@@ -67,3 +67,12 @@ jobs:
       - name: "rke2-procps"
         if: ${{ !contains(matrix.vm, 'windows') }}
         run: vagrant provision --provision-with=rke2-procps
+      - name: "rke2-mount-directory"
+        if: ${{ !contains(matrix.vm, 'windows') }}
+        run: vagrant provision --provision-with=rke2-mount-directory
+      - name: "rke2-killall"
+        if: ${{ !contains(matrix.vm, 'windows') }}
+        run: vagrant provision --provision-with=rke2-killall
+      - name: "rke2-check-mount"
+        if: ${{ !contains(matrix.vm, 'windows') }}
+        run: vagrant provision --provision-with=rke2-check-mount
