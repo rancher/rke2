@@ -41,6 +41,10 @@ Vagrant.configure("2") do |config|
     
     kubectlStatus(test.vm)
     checkRKE2Processes(test.vm)
+
+    mountDirs(test.vm)
+    runKillAllScript(test.vm)
+    checkMountPoint(test.vm)
   end
 
   config.vm.provision "install-packages", type: "shell", run: "once" do |sh|
