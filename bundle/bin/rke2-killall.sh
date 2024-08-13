@@ -62,7 +62,6 @@ systemctl stop rke2-agent.service || true
 killtree $({ set +x; } 2>/dev/null; getshims; set -x)
 
 do_unmount_and_remove '/run/k3s'
-do_unmount_and_remove "${RKE2_DATA_DIR}"
 do_unmount_and_remove '/var/lib/kubelet/pods'
 do_unmount_and_remove '/run/netns/cni-'
 
