@@ -132,7 +132,7 @@ var defaultKubeSystemPolicies = []policyTemplate{
 	{
 		// allows for all http and https traffic into the kube-system namespace to the traefik ingress controller pods
 		name:          "default-network-traefik-policy",
-		annotationKey: "np.rke2.io/ingress",
+		annotationKey: "np.rke2.io/traefik",
 		podSelector:   metav1.LabelSelector{MatchLabels: labels.Set{"app.kubernetes.io/name": "rke2-traefik"}},
 		ingress: []v1.NetworkPolicyIngressRule{
 			{
