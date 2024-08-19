@@ -64,7 +64,7 @@ RUN set -x && \
     	apk add --no-cache rpm-dev; \
     fi
 
-RUN GOCR_VERSION="v0.5.1" && \
+RUN GOCR_VERSION="v0.20.2" && \
     if [ "${ARCH}" = "arm64" ]; then \
         wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_arm64.tar.gz && \
         tar -zxvf go-containerregistry_Linux_arm64.tar.gz && \
