@@ -14,7 +14,7 @@ replace (
 	github.com/googleapis/gax-go/v2 => github.com/googleapis/gax-go/v2 v2.12.0
 	github.com/kubernetes-sigs/cri-tools => github.com/k3s-io/cri-tools v1.29.0-k3s1
 	github.com/open-policy-agent/opa => github.com/open-policy-agent/opa v0.59.0
-	github.com/opencontainers/runc => github.com/k3s-io/runc v1.1.12-k3s1
+	github.com/opencontainers/runc => github.com/k3s-io/runc v1.1.13-k3s1
 	github.com/opencontainers/selinux => github.com/opencontainers/selinux v1.11.0
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.18.0
 	github.com/prometheus/common => github.com/prometheus/common v0.45.0
