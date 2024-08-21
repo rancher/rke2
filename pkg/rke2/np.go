@@ -141,14 +141,14 @@ var defaultKubeSystemPolicies = []policyTemplate{
 						Protocol: &tcp,
 						Port: &intstr.IntOrString{
 							Type:   intstr.String,
-							StrVal: "http",
+							StrVal: "web",
 						},
 					},
 					{
 						Protocol: &tcp,
 						Port: &intstr.IntOrString{
 							Type:   intstr.String,
-							StrVal: "https",
+							StrVal: "websecure",
 						},
 					},
 				},
