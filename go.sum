@@ -1214,8 +1214,8 @@ github.com/k3s-io/kubernetes/staging/src/k8s.io/mount-utils v1.30.2-k3s1 h1:8eHN
 github.com/k3s-io/kubernetes/staging/src/k8s.io/mount-utils v1.30.2-k3s1/go.mod h1:4xH05OdueH2hpDdvzFGddYb+1GoCt/1GzcYN7ci1S14=
 github.com/k3s-io/kubernetes/staging/src/k8s.io/pod-security-admission v1.30.2-k3s1 h1:4cMZWzHEbKgplVpH7jr81YJVNm05Y2PJe9HfYuIsBW8=
 github.com/k3s-io/kubernetes/staging/src/k8s.io/pod-security-admission v1.30.2-k3s1/go.mod h1:TkJPz7+fWPDnOlud9WxO+KEu1KMBxQ6i9xsWryJd0l8=
-github.com/k3s-io/runc v1.1.12-k3s1 h1:p2x48K2BbRdF8crLEB4xoJ1pdjSprlvNNGpYBBULHL4=
-github.com/k3s-io/runc v1.1.12-k3s1/go.mod h1:S+lQwSfncpBha7XTy/5lBwWgm5+y5Ma/O44Ekby9FK8=
+github.com/k3s-io/runc v1.1.13-k3s1 h1:ZOXDlEU3z/Fgc9SZB5uIcEeyNowBg8tmBcv8oTLCHpw=
+github.com/k3s-io/runc v1.1.13-k3s1/go.mod h1:R016aXacfp/gwQBYw2FDGa9m+n6atbLWrYY8hNMT/sA=
 github.com/k3s-io/spegel v0.0.23-0.20240516234953-f3d2c4072314 h1:TrZb/yM0OtBuifPXlKaOfcxpJqzakA8+KsoO4c69ZLM=
 github.com/k3s-io/spegel v0.0.23-0.20240516234953-f3d2c4072314/go.mod h1:bMHfSjj1+Zf5VITCZe/wLjuni6rYAj/DjPU/kIVnhfA=
 github.com/karrick/godirwalk v1.17.0 h1:b4kY7nqDdioR/6qnbHQyDvmA17u5G1cZ6J+CZXwSWoI=
