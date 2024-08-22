@@ -29,7 +29,7 @@ replace (
 	go.etcd.io/etcd/raft/v3 => github.com/k3s-io/etcd/raft/v3 v3.5.13-k3s1
 	go.etcd.io/etcd/server/v3 => github.com/k3s-io/etcd/server/v3 v3.5.13-k3s1
 	go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful => go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful v0.44.0
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc => go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.45.0
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc => go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.46.0
 	golang.org/x/crypto => golang.org/x/crypto v0.24.0
 	golang.org/x/net => golang.org/x/net v0.26.0
 	golang.org/x/sys => golang.org/x/sys v0.21.0
@@ -76,21 +76,21 @@ require (
 	github.com/Microsoft/hcsshim v0.12.3
 	github.com/aws/aws-sdk-go v1.51.21
 	github.com/containerd/continuity v0.4.3 // indirect
-	github.com/containernetworking/plugins v1.4.1
-	github.com/google/go-containerregistry v0.19.0
-	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
+	github.com/containernetworking/plugins v1.5.1
+	github.com/google/go-containerregistry v0.20.2
+	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.3
 	github.com/k3s-io/k3s v1.30.3-0.20240822212334-c7468edbe71d // master
 	github.com/k3s-io/kine v0.12.0
 	github.com/libp2p/go-netroute v0.2.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
-	github.com/onsi/ginkgo/v2 v2.20.0
+	github.com/onsi/ginkgo/v2 v2.20.1
 	github.com/onsi/gomega v1.34.1
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/permissions v0.0.0-20240523180510-4001d3d637f7
 	github.com/rancher/wharfie v0.6.6
-	github.com/rancher/wins v0.1.1
-	github.com/rancher/wrangler/v3 v3.0.0-rc2
+	github.com/rancher/wins v0.4.17
+	github.com/rancher/wrangler/v3 v3.0.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
@@ -163,7 +163,7 @@ require (
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
-	github.com/docker/cli v24.0.7+incompatible // indirect
+	github.com/docker/cli v27.1.1+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/docker v27.1.1+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
@@ -187,7 +187,7 @@ require (
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.3-0.20220714215716-96bad1d688c5 // indirect
-	github.com/go-ole/go-ole v1.2.4 // indirect
+	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-openapi/jsonpointer v0.20.2 // indirect
 	github.com/go-openapi/jsonreference v0.20.4 // indirect
 	github.com/go-openapi/swag v0.22.9 // indirect
@@ -203,8 +203,10 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.1.2 // indirect
+	github.com/google/cabbie v1.0.2 // indirect
 	github.com/google/cadvisor v0.49.0 // indirect
 	github.com/google/cel-go v0.20.1 // indirect
+	github.com/google/glazier v0.0.0-20211029225403-9f766cca891d // indirect
 	github.com/google/gnostic-models v0.6.9-0.20230804172637-c7be7c783f49 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -330,7 +332,7 @@ require (
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
-	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
+	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/polydawn/refmt v0.89.0 // indirect
 	github.com/pquerna/cachecontrol v0.1.0 // indirect
@@ -349,6 +351,7 @@ require (
 	github.com/rootless-containers/rootlesskit v1.0.1 // indirect
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/scjalliance/comshim v0.0.0-20190308082608-cf06d2532c4e // indirect
 	github.com/seccomp/libseccomp-golang v0.10.0 // indirect
 	github.com/shengdoushi/base58 v1.0.0 // indirect
 	github.com/soheilhy/cmux v0.1.5 // indirect
@@ -423,12 +426,12 @@ require (
 	k8s.io/cloud-provider v0.31.0 // indirect
 	k8s.io/cluster-bootstrap v0.0.0 // indirect
 	k8s.io/component-helpers v0.31.0 // indirect
-	k8s.io/controller-manager v0.25.4 // indirect
+	k8s.io/controller-manager v0.27.10 // indirect
 	k8s.io/cri-client v0.31.0 // indirect
 	k8s.io/csi-translation-lib v0.0.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
 	k8s.io/endpointslice v0.0.0 // indirect
-	k8s.io/kms v0.0.0 // indirect
+	k8s.io/kms v0.27.10 // indirect
 	k8s.io/kube-aggregator v0.31.0 // indirect
 	k8s.io/kube-controller-manager v0.0.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
