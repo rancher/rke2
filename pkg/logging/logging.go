@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/natefinch/lumberjack"
 	"github.com/spf13/pflag"
+	"gopkg.in/natefinch/lumberjack.v2"
 	cliflag "k8s.io/component-base/cli/flag"
 	"k8s.io/klog/v2"
 )
