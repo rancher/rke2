@@ -51,7 +51,7 @@ The **Chart** column indicates the Helm chart that uses this image. `CORE` indic
 | rke2-cilium | rancher/mirrored-cilium-operator-generic | rancher/image-mirror |  | FALSE |
 | rke2-cilium | rancher/mirrored-cilium-startup-script | rancher/image-mirror |  | FALSE |
 |  |  |  |  |  |
-| rancher-vsphere-cpi | rancher/mirrored-cloud-provider-vsphere-cpi-release-manager | rancher/image-mirror |  | FALSE |
+| rancher-vsphere-cpi | rancher/mirrored-cloud-provider-vsphere | rancher/image-mirror |  | FALSE |
 | rancher-vsphere-cpi | rancher/mirrored-cloud-provider-vsphere-csi-release-driver | rancher/image-mirror |  | FALSE |
 | rancher-vsphere-cpi | rancher/mirrored-cloud-provider-vsphere-csi-release-syncer | rancher/image-mirror |  | FALSE |
 |  |  |  |  |  |
