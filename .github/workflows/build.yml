@@ -30,14 +30,12 @@ jobs:
           secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials AWS_ACCESS_KEY_ID ;
           secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials AWS_SECRET_ACCESS_KEY ;
     - name: Build
-      run: |
-        dapper -f Dockerfile --target dapper make dapper-ci
+      run: dapper -f Dockerfile --target dapper make dapper-ci
       env:
         AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
     - name: Test
-      run: |
-        dapper -f Dockerfile --target dapper make test
+      run: dapper -f Dockerfile --target dapper make test
     - name: Upload Logs on Failure
       if: ${{ failure() }}
       uses: actions/upload-artifact@v4
