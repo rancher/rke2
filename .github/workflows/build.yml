@@ -38,6 +38,12 @@ jobs:
     - name: Test
       run: |
         dapper -f Dockerfile --target dapper make test
+    - name: Upload Logs on Failure
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: rke2-test-logs
+        path: /tmp/rke2-logs/
   build-arm64:
     runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64,hdd=64
     steps:
