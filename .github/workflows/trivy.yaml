@@ -1,0 +1,73 @@
+name: PR Comment Triggered Trivy Scan
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  trivy_scan:
+    if: github.event.issue.pull_request && github.event.comment.body == '/trivy' && github.event.issue.state == 'open'
+    runs-on: ubuntu-latest
+    # runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }}
+    permissions:
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+    - name: Checkout PR code
+      uses: actions/checkout@v4
+      with:
+        ref: refs/pull/${{ github.event.issue.number }}/head
+    
+    - name: Comment Status on PR
+      run: |
+        gh repo set-default ${{ github.repository }}
+        gh pr comment ${{ github.event.issue.number }} -b ":construction: Running Trivy scan on PR :construction: "
+    
+    # We don't care about the go version, as we only use it to capture ENV vars
+    - name: Install Go
+      uses: ./.github/actions/setup-go
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build RKE2 Image
+      id: build-image
+      run: |
+        SKIP_WINDOWS=true make build-image-runtime
+        TAG=$(docker images --format "{{.Repository}}:{{.Tag}} {{.CreatedAt}}" | grep "rancher/rke2-runtime" | sort -k2 -r | head -n1 | awk '{print $1}')
+        echo "TAG=${TAG}" >> "$GITHUB_OUTPUT"
+
+    - name: Run Trivy on image
+      uses: aquasecurity/trivy-action@0.24.0
+      with:
+        image-ref: '${{ steps.build-image.outputs.TAG }}'
+        format: 'table'
+        severity: "HIGH,CRITICAL"
+        output: "trivy-image-report.txt"
+    
+    - name: Run Trivy on filesystem
+      uses: aquasecurity/trivy-action@0.24.0
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        severity: "HIGH,CRITICAL"
+        output: "trivy-fs-report.txt"
+    
+    - name: Add Trivy Report to PR
+      run: |
+        sudo chown runner:runner trivy-image-report.txt trivy-fs-report.txt
+        cat trivy-image-report.txt trivy-fs-report.txt > trivy-report.txt
+        if [ -s trivy-report.txt ] && [ -n "$(grep -v '^\s*$' trivy-report.txt)" ]; then
+          echo '```' | cat - trivy-report.txt > temp && mv temp trivy-report.txt
+          echo '```' >> trivy-report.txt
+          gh issue comment ${{ github.event.issue.number }} --edit-last -F trivy-report.txt
+        else
+          echo ':star2: No High or Critical CVEs Found :star2:' > trivy-report.txt
+          gh issue comment ${{ github.event.issue.number }} --edit-last -F trivy-report.txt
+        fi
+    
+    - name: Report Failure
+      if: ${{ failure() }}
+      run: |
+        gh issue comment ${{ github.event.issue.number }} --edit-last -b ":x: Trivy scan action failed, check logs :x:"
