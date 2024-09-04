@@ -19,6 +19,10 @@ var (
 			Name:  "crictl",
 			Usage: "(crictl) export crictl config file",
 		},
+		&cli.BoolFlag{
+			Name:  "ctr",
+			Usage: "(ctr) export containerd sock file",
+		},
 	}
 
 	k3sCompletionBase = mustCmdFromK3S(cmds.NewCompletionCommand(Run), K3SFlagSet{
@@ -46,23 +50,30 @@ func isCrictlSet(crictl bool) string {
 	return ""
 }
 
+func isCtrSet(ctr bool) string {
+	if ctr {
+		return " --ctr"
+	}
+	return ""
+}
+
 func Run(ctx *cli.Context) error {
 	if ctx.NArg() < 1 {
 		return fmt.Errorf("must provide a valid SHELL argument")
 	}
 	shell := ctx.Args()[0]
-	completetionScript, err := genCompletionScript(shell, ctx.Bool("kubectl"), ctx.Bool("crictl"))
+	completetionScript, err := genCompletionScript(shell, ctx.Bool("kubectl"), ctx.Bool("crictl"), ctx.Bool("ctr"))
 	if err != nil {
 		return err
 	}
 	if ctx.Bool("i") {
-		return writeToRC(shell, ctx.Bool("kubectl"), ctx.Bool("crictl"))
+		return writeToRC(shell, ctx.Bool("kubectl"), ctx.Bool("crictl"), ctx.Bool("ctr"))
 	}
 	fmt.Println(completetionScript)
 	return nil
 }
 
-func genCompletionScript(shell string, kubectl, crictl bool) (string, error) {
+func genCompletionScript(shell string, kubectl, crictl, ctr bool) (string, error) {
 	var completionScript string
 	if shell == "bash" {
 		completionScript = fmt.Sprintf(`#! /bin/bash
@@ -123,10 +134,16 @@ export CRI_CONFIG_FILE=/var/lib/rancher/rke2/agent/etc/crictl.yaml
     `, completionScript)
 	}
 
+	if ctr {
+		completionScript = fmt.Sprintf(`%s
+export CONTAINERD_ADDRESS=/run/k3s/containerd/containerd.sock
+    `, completionScript)
+	}
+
 	return completionScript, nil
 }
 
-func writeToRC(shell string, kubectl, crictl bool) error {
+func writeToRC(shell string, kubectl, crictl, ctr bool) error {
 	rcFileName := ""
 	if shell == "bash" {
 		rcFileName = "/.bashrc"
@@ -144,7 +161,7 @@ func writeToRC(shell string, kubectl, crictl bool) error {
 		return err
 	}
 	defer f.Close()
-	bashEntry := fmt.Sprintf("# >> %[1]s command completion (start)\n. <(%[1]s completion %[2]s%[3]s%[4]s)\n# >> %[1]s command completion (end)", version.Program, shell, isKubectlSet(kubectl), isCrictlSet(crictl))
+	bashEntry := fmt.Sprintf("# >> %[1]s command completion (start)\n. <(%[1]s completion %[2]s%[3]s%[4]s%[5]s)\n# >> %[1]s command completion (end)", version.Program, shell, isKubectlSet(kubectl), isCrictlSet(crictl), isCtrSet(ctr))
 	if _, err := f.WriteString(bashEntry); err != nil {
 		return err
 	}
