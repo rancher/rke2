@@ -45,8 +45,10 @@ channels:
 - name: v1.30
   latestRegexp: v1\.30\..*
   excludeRegexp: ^[^+]+-
+- name: v1.31
+  latestRegexp: v1\.31\..*
+  excludeRegexp: ^[^+]+-
 github:
   owner: rancher
   repo: rke2
 redirectBase: https://github.com/rancher/rke2/releases/tag/
-
