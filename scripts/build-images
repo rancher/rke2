@@ -81,8 +81,8 @@ EOF
 fi
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
-    ${REGISTRY}/rancher/hardened-multus-cni:v4.0.2-build20240612
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.4.1-build20240430
+    ${REGISTRY}/rancher/hardened-multus-cni:v4.1.0-build20240830
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.5.1-build20240830
     ${REGISTRY}/rancher/hardened-node-feature-discovery:v0.15.4-build20240513
     ${REGISTRY}/rancher/hardened-sriov-network-operator:v1.2.0-build20240327
     ${REGISTRY}/rancher/hardened-sriov-network-config-daemon:v1.2.0-build20240327
@@ -91,7 +91,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
     ${REGISTRY}/rancher/hardened-ib-sriov-cni:v1.0.3-build20240327
     ${REGISTRY}/rancher/hardened-sriov-network-resources-injector:v1.5-build20240327
     ${REGISTRY}/rancher/hardened-sriov-network-webhook:v1.2.0-build20240327
-    ${REGISTRY}/rancher/hardened-whereabouts:v0.7.0-build20240429
+    ${REGISTRY}/rancher/hardened-whereabouts:v0.8.0-build20240830
     ${REGISTRY}/rancher/mirrored-library-busybox:1.36.1
 EOF
 
