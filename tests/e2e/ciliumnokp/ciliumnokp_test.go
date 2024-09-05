@@ -13,7 +13,7 @@ import (
 	"github.com/rancher/rke2/tests/e2e"
 )
 
-var nodeOS = flag.String("nodeOS", "generic/ubuntu2310", "VM operating system")
+var nodeOS = flag.String("nodeOS", "bento/ubuntu-24.04", "VM operating system")
 var serverCount = flag.Int("serverCount", 1, "number of server nodes")
 var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
