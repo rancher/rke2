@@ -1,7 +1,7 @@
 RKE2 Install on Ubuntu 20.04 Focal Fossa
 ---
 
-Asserting correctness of the RKE2 installer script on [Ubuntu 20.04](https://releases.ubuntu.com/20.04/).
+Asserting correctness of the RKE2 installer script on [Ubuntu 24.04](https://releases.ubuntu.com/24.04/).
 
 ### Testing With Vagrant
 
@@ -9,7 +9,7 @@ The [Vagrant box](https://app.vagrantup.com/generic/boxes/ubuntu2004) used for t
 - `hyperv`
 - `libvirt`
 - `parallels`
-- `virtualbox` (the default for most installations, including `macos-12` github actions runners)
+- `virtualbox` (the default for most installations)
 - `vmware_desktop`
 
 To spin up a VM to test a locally modified `install.sh`:
