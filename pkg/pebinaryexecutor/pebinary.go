@@ -129,8 +129,10 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 		logrus.Fatal("Unsupported CNI: ", p.CNIName)
 	}
 
-	if err := p.CNIPlugin.Setup(ctx, nodeConfig, restConfig, p.DataDir); err != nil {
-		return err
+	if p.CNIPlugin != nil {
+		if err := p.CNIPlugin.Setup(ctx, nodeConfig, restConfig, p.DataDir); err != nil {
+			return err
+		}
 	}
 
 	// required to initialize KubeProxy
