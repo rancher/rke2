@@ -13,12 +13,12 @@ EOF
 
 xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
-    ${REGISTRY}/rancher/hardened-coredns:v1.11.1-build20240305
-    ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.8.10-build20240124
-    ${REGISTRY}/rancher/hardened-dns-node-cache:1.22.28-build20240125
+    ${REGISTRY}/rancher/hardened-coredns:v1.11.1-build20240910
+    ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.8.11-build20240910
+    ${REGISTRY}/rancher/hardened-dns-node-cache:1.23.1-build20240910
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20240531
-    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.7.1-build20240401
-    ${REGISTRY}/rancher/hardened-addon-resizer:1.8.20-build20240410
+    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.7.1-build20240910
+    ${REGISTRY}/rancher/hardened-addon-resizer:1.8.20-build20240910
     ${REGISTRY}/rancher/klipper-helm:v0.9.2-build20240828
     ${REGISTRY}/rancher/klipper-lb:v0.4.9
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
@@ -34,8 +34,8 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-traefik.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.28.1-build20240830
-    ${REGISTRY}/rancher/hardened-flannel:v0.25.6-build20240828
+    ${REGISTRY}/rancher/hardened-calico:v3.28.1-build20240910
+    ${REGISTRY}/rancher/hardened-flannel:v0.25.6-build20240910
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
@@ -50,7 +50,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.16.1
     ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.16.1
     ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.16.1
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.5.1-build20240830
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.5.1-build20240910
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
@@ -81,9 +81,9 @@ EOF
 fi
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
-    ${REGISTRY}/rancher/hardened-multus-cni:v4.1.0-build20240830
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.5.1-build20240830
-    ${REGISTRY}/rancher/hardened-whereabouts:v0.8.0-build20240830
+    ${REGISTRY}/rancher/hardened-multus-cni:v4.1.0-build20240910
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.5.1-build20240910
+    ${REGISTRY}/rancher/hardened-whereabouts:v0.8.0-build20240910
     ${REGISTRY}/rancher/mirrored-library-busybox:1.36.1
 EOF
 
@@ -98,8 +98,8 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-flannel.txt
-    ${REGISTRY}/rancher/hardened-flannel:v0.25.6-build20240828
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.5.1-build20240830
+    ${REGISTRY}/rancher/hardened-flannel:v0.25.6-build20240910
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.5.1-build20240910
 EOF
 fi
 # Continue to provide a legacy airgap archive set with the default CNI images
