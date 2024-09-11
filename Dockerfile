@@ -149,6 +149,8 @@ COPY --from=runtime-collect / /
 
 FROM ubuntu:24.04 AS test
 ARG TARGETARCH
+LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-runtime"
+LABEL org.opencontainers.image.source="https://github.com/rancher/rke2"
 VOLUME /var/lib/rancher/rke2
 VOLUME /var/lib/kubelet
 VOLUME /var/lib/cni
