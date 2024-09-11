@@ -7,8 +7,7 @@ on:
 jobs:
   trivy_scan:
     if: github.event.issue.pull_request && github.event.comment.body == '/trivy' && github.event.issue.state == 'open'
-    runs-on: ubuntu-latest
-    # runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }}
+    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }}
     permissions:
       pull-requests: write
     env:
