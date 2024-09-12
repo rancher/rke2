@@ -96,13 +96,13 @@ var _ = Describe("Verify DualStack in Cilium without kube-proxy configuration", 
 			res, err := e2e.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred(), res)
 			// We expect the following output and the important parts are HostPort, LoadBalancer, Host Routing and Masquerading
-			// Host Routing:           BPF
+			// Routing:                Network: Tunnel [vxlan]   Host: BPF
 			// Masquerading:           BPF
 			// Clock Source for BPF:   ktime
 			// - LoadBalancer:   Enabled
 			// - HostPort:       Enabled
 			// BPF Maps:   dynamic sizing: on (ratio: 0.002500)
-			Expect(res).Should(ContainSubstring("Host Routing"))
+			Expect(res).Should(ContainSubstring("Routing"))
 			Expect(res).Should(ContainSubstring("Masquerading"))
 			Expect(res).Should(ContainSubstring("LoadBalancer:   Enabled"))
 			Expect(res).Should(ContainSubstring("HostPort:       Enabled"))
