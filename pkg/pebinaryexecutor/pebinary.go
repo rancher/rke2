@@ -116,6 +116,9 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 		return err
 	}
 
+	// required to initialize KubeProxy
+	p.KubeConfigKubeProxy = nodeConfig.AgentConfig.KubeConfigKubeProxy
+
 	switch p.CNIName {
 	case "", CNICalico:
 		logrus.Info("Setting up Calico CNI")
@@ -125,6 +128,7 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 		p.CNIPlugin = &win.Flannel{}
 	case CNINone:
 		logrus.Info("Skipping CNI setup")
+		return nil
 	default:
 		logrus.Fatal("Unsupported CNI: ", p.CNIName)
 	}
@@ -132,9 +136,6 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 	if err := p.CNIPlugin.Setup(ctx, nodeConfig, restConfig, p.DataDir); err != nil {
 		return err
 	}
-
-	// required to initialize KubeProxy
-	p.KubeConfigKubeProxy = nodeConfig.AgentConfig.KubeConfigKubeProxy
 
 	logrus.Infof("Windows bootstrap okay. Exiting setup.")
 	return nil
