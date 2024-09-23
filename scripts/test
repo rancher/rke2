@@ -5,14 +5,14 @@ cd $(dirname $0)/..
 
 docker ps
 
-. ./scripts/test-helpers
+. ./tests/docker/test-helpers
 
 artifacts=$(pwd)/dist/artifacts
 mkdir -p $artifacts
 
 # ---
 
-. ./scripts/test-run-basics
+. ./tests/docker/test-run-basics
 echo "Did test-run-basics $?"
 
 # ---
@@ -23,11 +23,6 @@ fi
 
 E2E_OUTPUT=$artifacts test-run-sonobuoy
 echo "Did test-run-sonobuoy $?"
-# ---
-
-if [ "$DRONE_BUILD_EVENT" = 'tag' ]; then
-    early-exit 'Skipping remaining tests on tag.'
-fi
 # ---
 
 #test-run-sonobuoy mysql

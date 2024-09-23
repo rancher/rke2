@@ -149,14 +149,14 @@ package-windows-bundle: build-windows-binary	## Package the Windows tarball bund
 	./scripts/package-windows-bundle
 
 .PHONY: test
-test: unit-tests integration-tests
+test: test-unit test-docker
 
-.PHONY: unit-tests
-unit-tests:
-	./scripts/unit-tests
+.PHONY: test-unit
+unit-test:
+	./scripts/test-unit
 
-.PHONY: integration-tests
-integration-tests:
+.PHONY: test-docker
+test-docker:
 	./scripts/test
 
 .PHONY: checksum
