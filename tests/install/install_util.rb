@@ -117,7 +117,7 @@ def runKillAllScript(vm)
     #!/usr/bin/env bash
     set -eu -o pipefail
     echo 'Run kill all'
-    rke2-killall.sh
+    /usr/local/bin/rke2-killall.sh
     SHELL
   end
 end
