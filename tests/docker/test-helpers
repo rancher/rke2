@@ -171,7 +171,7 @@ dump-logs() {
     echo "#- Finish: logs for run ($testID)"
     echo "#---------------------------------"
     echo
-    ./scripts/log-upload $TEST_DIR
+    ./tests/docker/log-upload $TEST_DIR
 }
 export -f dump-logs
 
@@ -324,7 +324,7 @@ test-setup() {
         return 1
     fi
 
-    local setupFile=./scripts/test-setup-${TEST_TYPE}
+    local setupFile=./tests/docker/test-setup-${TEST_TYPE}
     [ -f $setupFile ] && source $setupFile
 
     echo ${RANDOM}${RANDOM}${RANDOM} >$TEST_DIR/metadata/secret
@@ -337,7 +337,7 @@ gen-certs() {(
     set -e -x
     #umask 077
 
-    local opensslConfig=$(pwd)/scripts/test-certs-openssl.cnf
+    local opensslConfig=$(pwd)/tests/docker/test-certs-openssl.cnf
     local subject="/C=US/ST=AZ/L=Tempe/O=Rancher/OU=DevOps/DC=com/DC=rancher"
     local caDir=$TEST_DIR/db-ca
     [ -d $caDir ] && rm -rf $caDir
@@ -555,7 +555,7 @@ export -f early-exit
 
 run-test() {
     export PROVISION_LOCK=$(mktemp)
-    ./scripts/test-runner $@ &
+    ./tests/docker/test-runner $@ &
     pids+=($!)
     (
         set +x
@@ -605,7 +605,7 @@ test-run-sonobuoy() {
         export LABEL_SUFFIX=$1
     fi
 
-    . ./scripts/test-setup-sonobuoy$suffix
+    . ./tests/docker/test-setup-sonobuoy$suffix
     run-e2e-tests
 }
 export -f test-run-sonobuoy
