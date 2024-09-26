@@ -21,7 +21,7 @@ check_target_ro() {
 RKE2_DATA_DIR=${RKE2_DATA_DIR:-/var/lib/rancher/rke2}
 
 . /etc/os-release
-if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/amazon-linux-release ]; then
+if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/system-release ]; then
     # If redhat/oracle family os is detected, double check whether installation mode is yum or tar.
     # yum method assumes installation root under /usr
     # tar method assumes installation root under /usr/local
@@ -69,7 +69,7 @@ uninstall_disable_services()
 uninstall_remove_files()
 {
 
-    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/amazon-linux-release ]; then
+    if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/system-release ]; then
         yum remove -y "rke2-*"
 
         rm -f /etc/yum.repos.d/rancher-rke2*.repo
