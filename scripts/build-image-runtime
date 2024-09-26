@@ -18,7 +18,7 @@ DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
     --file Dockerfile \
     .
 
-if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ]; then
+if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ] && [ -z "$SKIP_WINDOWS" ]; then
   DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
       --build-arg TAG=${VERSION} \
       --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
