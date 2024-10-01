@@ -175,5 +175,5 @@ jobs:
         dapper -f Dockerfile --target dapper make dispatch
       env:
         PAT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PATH_USERNAME: ${{ env.PAT_USERNAME }}
+        PAT_USERNAME: ${{ env.PAT_USERNAME }}
         GITHUB_ACTION_TAG: ${{ env.GITHUB_ACTION_TAG }}
