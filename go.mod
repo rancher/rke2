@@ -86,7 +86,7 @@ require (
 	github.com/onsi/gomega v1.34.1
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/permissions v0.0.0-20240523180510-4001d3d637f7
-	github.com/rancher/wharfie v0.6.6
+	github.com/rancher/wharfie v0.6.7
 	github.com/rancher/wins v0.4.17
 	github.com/rancher/wrangler/v3 v3.0.0
 	github.com/sirupsen/logrus v1.9.3
