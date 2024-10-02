@@ -420,6 +420,8 @@ github.com/bmizerany/perks v0.0.0-20141205001514-d9a9656a3a4b/go.mod h1:ac9efd0D
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/boombuler/barcode v1.0.1/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/bradfitz/go-smtpd v0.0.0-20170404230938-deb6d6237625/go.mod h1:HYsPBTaaSFSlLx/70C2HPIMNZpVV8+vt/A+FMnYP11g=
+github.com/brandond/k3s v1.29.10-0.20241002220904-ec2e30fc90d7 h1:cfq3G/67KnyYD4hv5avr/7Ib9TZHZxgFxuONHzdc4Zk=
+github.com/brandond/k3s v1.29.10-0.20241002220904-ec2e30fc90d7/go.mod h1:ECny+DiGPxkXAz1DAWDbXmwcdbNo6LR3EENtVksxeE4=
 github.com/bronze1man/goStrongswanVici v0.0.0-20221114103242-3f6dc524986c h1:JY0NMX6F455gODxoTSesio3OmhM8HEniyFMWgpHvTY0=
 github.com/bronze1man/goStrongswanVici v0.0.0-20221114103242-3f6dc524986c/go.mod h1:fWUtBEPt2yjrr3WFhOqvajM8JSEU8bEeBcoeSCsKRpc=
 github.com/bshuster-repo/logrus-logstash-hook v1.0.0/go.mod h1:zsTqEiSzDgAa/8GZR7E1qaXrhYNDKBYy5/dWPTIflbk=
@@ -1238,8 +1240,6 @@ github.com/k3s-io/etcd/server/v3 v3.5.13-k3s1 h1:Pqcxkg7V60c26ZpHoekP9QoUdLuduxF
 github.com/k3s-io/etcd/server/v3 v3.5.13-k3s1/go.mod h1:K/8nbsGupHqmr5MkgaZpLlH1QdX1pcNQLAkODy44XcQ=
 github.com/k3s-io/helm-controller v0.15.13 h1:sBpJEFCKy3Bfgk7fjGEnhC9fucrjU/UCuuhNvqDWK/A=
 github.com/k3s-io/helm-controller v0.15.13/go.mod h1:xGN8KNHGkmlaCwyjNx281cR8IEqC9MJgyMaS3wn1k+o=
-github.com/k3s-io/k3s v1.29.9-0.20240906215822-17201d4eb989 h1:LQvEyETEePEIprZYKc5gTRwhV4AQPUqT8b9Sw11BMb8=
-github.com/k3s-io/k3s v1.29.9-0.20240906215822-17201d4eb989/go.mod h1:vWQZJ9tiewoe+HbjHhTVvV3ABoMp/cQq9XqQsFW6BDU=
 github.com/k3s-io/kine v0.12.0 h1:OWUdEAjwbZivVCwOWaPbTNnnQTrEmSW32+13UWQjYz4=
 github.com/k3s-io/kine v0.12.0/go.mod h1:L4x3qotFebVh1ZVzYwFVL5PPfqw2sRJTjDTIeViO70Y=
 github.com/k3s-io/klog v1.0.0-k3s2/go.mod h1:4Bi6QPql/J/LkTDqv7R/cd3hPo4k2DG6Ptcz060Ez5I=

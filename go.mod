@@ -12,6 +12,7 @@ replace (
 	github.com/docker/docker => github.com/docker/docker v25.0.6+incompatible
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.4
 	github.com/googleapis/gax-go/v2 => github.com/googleapis/gax-go/v2 v2.12.0
+	github.com/k3s-io/k3s => github.com/brandond/k3s v1.29.10-0.20241002220904-ec2e30fc90d7
 	github.com/kubernetes-sigs/cri-tools => github.com/k3s-io/cri-tools v1.29.0-k3s1
 	github.com/opencontainers/runc => github.com/k3s-io/runc v1.1.14-k3s1
 	github.com/opencontainers/selinux => github.com/opencontainers/selinux v1.11.0
@@ -106,7 +107,7 @@ require (
 	k8s.io/component-base v0.30.0
 	k8s.io/cri-api v0.30.3
 	k8s.io/klog/v2 v2.130.1
-	k8s.io/kubernetes v1.29.6
+	k8s.io/kubernetes v1.29.9
 	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8
 	sigs.k8s.io/yaml v1.4.0
 )
@@ -439,9 +440,9 @@ require (
 	inet.af/tcpproxy v0.0.0-20200125044825-b6bb9b5b8252 // indirect
 	k8s.io/apiextensions-apiserver v0.30.0 // indirect
 	k8s.io/cli-runtime v0.22.2 // indirect
-	k8s.io/cloud-provider v0.29.8 // indirect
+	k8s.io/cloud-provider v0.29.9 // indirect
 	k8s.io/cluster-bootstrap v0.0.0 // indirect
-	k8s.io/component-helpers v0.29.8 // indirect
+	k8s.io/component-helpers v0.29.9 // indirect
 	k8s.io/controller-manager v0.25.4 // indirect
 	k8s.io/csi-translation-lib v0.0.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
@@ -456,7 +457,7 @@ require (
 	k8s.io/kubelet v0.28.6 // indirect
 	k8s.io/legacy-cloud-providers v0.0.0 // indirect
 	k8s.io/metrics v0.0.0 // indirect
-	k8s.io/mount-utils v0.29.8 // indirect
+	k8s.io/mount-utils v0.29.9 // indirect
 	k8s.io/pod-security-admission v0.0.0 // indirect
 	lukechampine.com/blake3 v1.2.1 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.29.0 // indirect
