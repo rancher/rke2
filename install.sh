@@ -562,7 +562,7 @@ EOF
     cat <<-EOF >>"${repodir}/rancher-rke2.repo"
 [rancher-rke2-${rke2_majmin}-${rke2_rpm_channel}]
 name=Rancher RKE2 ${rke2_majmin} (${1})
-baseurl=https://${rpm_site}/rke2/${rke2_rpm_channel}/${rke2_majmin}/${rpm_site_infix}/x86_64
+baseurl=https://${rpm_site}/rke2/${rke2_rpm_channel}/${rke2_majmin}/${rpm_site_infix}/${ARCH}
 enabled=1
 gpgcheck=1
 repo_gpgcheck=0
