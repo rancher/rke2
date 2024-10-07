@@ -44,12 +44,12 @@ charts:
   - version: 0.1.1800
     filename: /charts/harvester-csi-driver.yaml
     bootstrap: true
-  - version: 1.7.202
+  - version: 3.0.600
     filename: /charts/rke2-snapshot-controller.yaml
     bootstrap: false
-  - version: 1.7.202
+  - version: 3.0.600
     filename: /charts/rke2-snapshot-controller-crd.yaml
     bootstrap: false
-  - version: 1.7.302
+  - version: 1.9.001
     filename: /charts/rke2-snapshot-validation-webhook.yaml
     bootstrap: false
