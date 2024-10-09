@@ -17,16 +17,34 @@ nodeOS=${1:-"bento/ubuntu-24.04"}
 OS=$(echo "$nodeOS"|cut -d'/' -f2)
 
 E2E_REGISTRY=true && export E2E_REGISTRY
-
+cd rke2
 git pull --rebase origin master
 /usr/local/go/bin/go mod tidy
 cd tests/e2e
-
 # create directory to store reports if it does not exists
 if [ ! -d createreport ]
 then
 	mkdir createreport
 fi
+
+cleanup() {
+  for net in $(virsh net-list --all | tail -n +2 | tr -s ' ' | cut -d ' ' -f2 | grep -v default); do
+    virsh net-destroy "$net"
+    virsh net-undefine "$net"
+  done
+
+  for domain in $(virsh list --all | tail -n +2 | tr -s ' ' | cut -d ' ' -f3); do
+     virsh destroy "$domain"
+    virsh undefine "$domain" --remove-all-storage
+  done
+
+  for vm in `vagrant global-status  |tr -s ' '|tail +3 |grep "/" |cut -d ' '  -f5`; do
+    cd $vm
+    vagrant destroy -f
+    cd ..
+  done
+}
+
 
 # Remove VMs which are in invalid state
 vagrant global-status --prune
@@ -35,6 +53,7 @@ count=0
 run_tests(){
 
     count=$(( count + 1 ))
+    rm createreport/rke2_${OS}.log 2>/dev/null
 
     for i in ${!tests[@]}; do
 	pushd ${tests[$i]}
@@ -48,6 +67,7 @@ run_tests(){
 }
 
 ls createreport/rke2_${OS}.log 2>/dev/null && rm createreport/rke2_${OS}.log
+cleanup
 run_tests
 
 # re-run test if first run fails and keep record of repeatedly failed test to debug
