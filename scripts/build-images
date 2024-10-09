@@ -75,8 +75,8 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-resizer:v1.10.1
     ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.14.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.7.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v4.0.1
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-snapshotter:v7.0.2
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v5.1.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-snapshotter:v8.1.0
 EOF
 fi
 
