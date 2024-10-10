@@ -105,6 +105,8 @@ RUN mv CalicoWindows/cni/calico-ipam.exe rancher/
 RUN mv CalicoWindows/confd confd/
 
 FROM scratch AS windows-runtime
+LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-runtime"
+LABEL org.opencontainers.image.source="https://github.com/rancher/rke2"
 COPY --from=containerd /usr/local/bin/*.exe /bin/
 COPY --from=windows-runtime-collect ./rancher/* /bin/
 COPY --from=windows-runtime-collect ./confd/ /bin/confd
