@@ -48,7 +48,7 @@ build-windows-images:                     ## Build only the Windows images and t
 	./scripts/build-windows-images
 
 .PHONY: build-image-runtime
-build-image-runtime: setup-builder        ## Build the runtime image
+build-image-runtime:                      ## Build the runtime image
 	./scripts/build-image-runtime
 
 .PHONY: publish-image-runtime
@@ -56,7 +56,7 @@ publish-image-runtime: build-image-runtime
 	./scripts/publish-image-runtime
 
 .PHONY: build-image-runtime-windows
-build-image-runtime-windows: setup-builder
+build-image-runtime-windows:
 	./scripts/build-image-runtime-windows
 
 .PHONY: publish-image-runtime-windows
@@ -145,7 +145,7 @@ package-windows-images: build-windows-images		## Package Windows crane images fo
 	./scripts/package-windows-images
 
 .PHONY: package-image-runtime
-package-image-runtime: setup-builder build-image-runtime		## Package runtime image for GH Actions testing
+package-image-runtime: build-image-runtime		## Package runtime image for GH Actions testing
 	./scripts/package-image-runtime
 
 .PHONY: package-bundle
@@ -170,10 +170,6 @@ test-docker:
 .PHONY: checksum
 checksum:
 	./scripts/checksum
-
-.PHONY: setup-builder
-setup-builder:
-	./scripts/setup-docker-builder
 
 ./.dapper:
 	@echo Downloading dapper
