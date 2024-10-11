@@ -16,8 +16,10 @@ docker manifest annotate ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} ${REPO}/$
 docker manifest annotate ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-linux-arm64 --os linux --arch arm64
 docker manifest annotate ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 --os windows --arch amd64
 
-set +x
-docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-set -x
-
 docker manifest push ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
+
+if [ -n "${IID_FILE_FLAG}" ]; then
+    DIGEST=$(docker buildx imagetools inspect --format "{{json .Manifest}}" ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} | jq -r '.digest')
+    IID_FILE_PATH=$(echo "${IID_FILE_FLAG}" | cut -d' ' -f2)
+    echo "${DIGEST}" > "${IID_FILE_PATH}"
+fi

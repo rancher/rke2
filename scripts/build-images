@@ -6,6 +6,7 @@ cd $(dirname $0)/..
 source ./scripts/version.sh
 
 ./scripts/build-image-runtime
+./scripts/build-image-runtime-windows
 
 awk '{print $1}' << EOF > build/images-core.txt
     ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}

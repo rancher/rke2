@@ -25,7 +25,7 @@ if [ -z "$GOOS" ]; then
     fi
 fi
 
-GIT_TAG=$GITHUB_ACTION_TAG
+GIT_TAG=${GITHUB_ACTION_TAG:-$TAG}
 TREE_STATE=clean
 COMMIT=$DRONE_COMMIT
 REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code; then echo .dirty; fi)
