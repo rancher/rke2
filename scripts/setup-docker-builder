@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -ex
+
+BUILDER=${BUILDER:-rke2-builder}
+
+docker buildx ls | grep ${BUILDER}|| \
+    docker buildx create --name=${BUILDER} --platform=linux/amd64,linux/arm64
+
+docker buildx use ${BUILDER}
