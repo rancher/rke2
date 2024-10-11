@@ -64,7 +64,7 @@ use-nodelocal-DNSCache() {
 }
 export -f use-nodelocal-DNSCache
 
-# -- Create a loadbalancer service so that the klipper-lb image is used
+# -- Create a loadbalancer service so that the busybox image is used
 use-servicelb() {
     local loadbalancer_manifest='scripts/airgap/loadbalancer-test.yaml'
     kubectl apply -f $loadbalancer_manifest
