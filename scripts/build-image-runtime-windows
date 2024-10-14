@@ -8,10 +8,10 @@ source ./scripts/version.sh
 ./scripts/setup-docker-builder
 
 if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ] && [ -z "$SKIP_WINDOWS" ]; then
-  DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
-      --sbom=true \
+  DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build ${IID_FILE_FLAG} \
       --builder ${PROG} \
-      ${IID_FILE_FLAG} \
+      --output type=docker \
+      --sbom=true \
       --build-arg TAG=${VERSION} \
       --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
       --build-arg MAJOR=${VERSION_MAJOR} \
