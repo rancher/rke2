@@ -145,6 +145,8 @@ COPY --from=charts \
     /charts/
 
 FROM scratch AS runtime
+LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-runtime"
+LABEL org.opencontainers.image.source="https://github.com/rancher/rke2"
 COPY --from=runtime-collect / /
 
 FROM ubuntu:24.04 AS test
