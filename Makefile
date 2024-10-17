@@ -55,6 +55,14 @@ build-image-runtime:                      ## Build the runtime image
 publish-image-runtime: build-image-runtime
 	./scripts/publish-image-runtime
 
+.PHONY: build-image-runtime-windows
+build-image-runtime-windows:
+	./scripts/build-image-runtime-windows
+
+.PHONY: publish-image-runtime-windows
+publish-image-runtime-windows: build-image-runtime-windows
+	./scripts/publish-image-runtime-windows
+
 .PHONY: validate
 validate:                                ## Run go fmt/vet
 	./scripts/validate
