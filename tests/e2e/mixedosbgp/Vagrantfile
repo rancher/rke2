@@ -2,7 +2,7 @@ ENV['VAGRANT_NO_PARALLEL'] = ENV['E2E_STANDUP_PARALLEL'] ? nil : 'no'
 NODE_ROLES = (ENV['E2E_NODE_ROLES'] ||
 ["server-0", "linux-agent-0", "windows-agent-0" ])
 NODE_BOXES = (ENV['E2E_NODE_BOXES'] ||
-['generic/ubuntu2310', 'generic/ubuntu2310', 'jborean93/WindowsServer2022'])
+['bento/ubuntu-24.04', 'bento/ubuntu-24.04', 'jborean93/WindowsServer2022'])
 GITHUB_BRANCH = (ENV['E2E_GITHUB_BRANCH'] || "master")
 RELEASE_VERSION = (ENV['E2E_RELEASE_VERSION'] || "")
 NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
@@ -29,7 +29,7 @@ def provision(vm, role, role_num, node_num)
       install_type = "Version=#{RELEASE_VERSION}"
     else 
       vm.provision "shell", path: "../scripts/latest_commit.ps1", args: [GITHUB_BRANCH, "./rke2_commits.txt"]
-      install_type = "-Commit=(Get-Content -TotalCount 1 ./rke2_commits.txt)"
+      install_type = "-Commit (Get-Content -TotalCount 1 ./rke2_commits.txt)"
     end
   else
     if !RELEASE_VERSION.empty?
@@ -89,16 +89,6 @@ def provision(vm, role, role_num, node_num)
       puts "invalid box: " + vm.box + " found for windows agent"
       abort
     end
-
-    # For Windows GUI on virtualbox
-    # vm.provider "virtualbox" do |v|
-      # v.gui = true
-      # v.customize ["modifyvm", :id, "--vram", 128]
-      # v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
-      # v.customize ["modifyvm", :id, "--accelerate3d", "on"]
-      # v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
-    # end
-    # If using libvirt, use virt-viewer for GUI after bring up the node
     vm.provision :rke2, run: 'once' do |rke2|
       rke2.env = install_type
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321

@@ -72,7 +72,7 @@ func StartService() (bool, error) {
 	// built-in administrators of the Windows machine or by the local system.
 	// If this Win32 event (Global//stackdump-{pid}) is signaled, a goroutine launched by this call
 	// will dump the current stack trace into {windowsTemporaryDirectory}/{default.WindowsServiceName}.{pid}.stack.logs
-	profilings.SetupDumpStacks(version.Program, os.Getpid())
+	profilings.SetupDumpStacks(version.Program, os.Getpid(), os.TempDir())
 
 	go func() {
 		if err := svc.Run(version.Program, Service); err != nil {

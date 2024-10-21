@@ -18,10 +18,10 @@ import (
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	rawServer "github.com/k3s-io/k3s/pkg/server"
-	"github.com/natefinch/lumberjack"
 	"github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
 	"github.com/rancher/rke2/pkg/images"
+	"gopkg.in/natefinch/lumberjack.v2"
 
 	"github.com/rancher/wrangler/v3/pkg/slice"
 	"github.com/sirupsen/logrus"

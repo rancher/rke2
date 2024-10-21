@@ -106,6 +106,8 @@ var (
 		"system-default-registry":           copyFlag,
 		"node-ip":                           copyFlag,
 		"node-external-ip":                  copyFlag,
+		"node-internal-dns":                 copyFlag,
+		"node-external-dns":                 copyFlag,
 		"resolv-conf":                       copyFlag,
 		"flannel-iface":                     dropFlag,
 		"flannel-conf":                      dropFlag,

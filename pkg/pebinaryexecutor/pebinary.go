@@ -23,12 +23,12 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
-	"github.com/natefinch/lumberjack"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/logging"
 	win "github.com/rancher/rke2/pkg/windows"
 	"github.com/sirupsen/logrus"
+	"gopkg.in/natefinch/lumberjack.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 	"k8s.io/client-go/rest"
@@ -116,6 +116,9 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 		return err
 	}
 
+	// required to initialize KubeProxy
+	p.KubeConfigKubeProxy = nodeConfig.AgentConfig.KubeConfigKubeProxy
+
 	switch p.CNIName {
 	case "", CNICalico:
 		logrus.Info("Setting up Calico CNI")
@@ -125,6 +128,7 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 		p.CNIPlugin = &win.Flannel{}
 	case CNINone:
 		logrus.Info("Skipping CNI setup")
+		return nil
 	default:
 		logrus.Fatal("Unsupported CNI: ", p.CNIName)
 	}
@@ -132,9 +136,6 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 	if err := p.CNIPlugin.Setup(ctx, nodeConfig, restConfig, p.DataDir); err != nil {
 		return err
 	}
-
-	// required to initialize KubeProxy
-	p.KubeConfigKubeProxy = nodeConfig.AgentConfig.KubeConfigKubeProxy
 
 	logrus.Infof("Windows bootstrap okay. Exiting setup.")
 	return nil

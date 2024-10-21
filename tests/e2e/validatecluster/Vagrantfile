@@ -2,9 +2,10 @@ ENV['VAGRANT_NO_PARALLEL'] = ENV['E2E_STANDUP_PARALLEL'] ? nil : 'no'
 NODE_ROLES = (ENV['E2E_NODE_ROLES'] ||
   ["server-0", "server-1", "server-2", "agent-0" ])
 NODE_BOXES = (ENV['E2E_NODE_BOXES'] ||
-  ['generic/ubuntu2310', 'generic/ubuntu2310', 'generic/ubuntu2310', 'generic/ubuntu2310'])
+  ['bento/ubuntu-24.04', 'bento/ubuntu-24.04', 'bento/ubuntu-24.04', 'bento/ubuntu-24.04'])
 GITHUB_BRANCH = (ENV['E2E_GITHUB_BRANCH'] || "master")
 RELEASE_VERSION = (ENV['E2E_RELEASE_VERSION'] || "")
+HARDENED = (ENV['E2E_HARDENED'] || "")
 NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
 NODE_MEMORY = (ENV['E2E_NODE_MEMORY'] || 3072).to_i
 CNI = (ENV['E2E_CNI'] || "canal") # canal, cilium and calico supported
@@ -25,6 +26,9 @@ def provision(vm, roles, role_num, node_num)
   load vagrant_defaults
   
   defaultOSConfigure(vm)
+  if !HARDENED.empty? 
+    cisPrep(vm)
+  end
   install_type = getInstallType(vm, RELEASE_VERSION, GITHUB_BRANCH)
   
   vm.provision "shell", inline: "ping -c 2 rke2.io"
