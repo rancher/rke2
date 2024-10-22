@@ -5,11 +5,7 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-./scripts/setup-docker-builder
-
 DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build ${IID_FILE_FLAG} \
-    --builder ${PROG} \
-    --output type=docker \
     --sbom=true \
     --attest type=provenance,mode=max \
     --build-arg TAG=${VERSION} \
