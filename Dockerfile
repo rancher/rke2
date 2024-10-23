@@ -119,7 +119,7 @@ RUN rm -vf /charts/*.sh /charts/*.md /charts/chart_versions.yaml
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM rancher/hardened-kubernetes:v1.30.6-rke2r1-build20241023 AS kubernetes
 FROM rancher/hardened-containerd:v1.7.22-k3s1-build20241010 AS containerd
-FROM rancher/hardened-crictl:v1.30.1-build20240910 AS crictl
+FROM rancher/hardened-crictl:v1.30.1-build20241008 AS crictl
 FROM rancher/hardened-runc:v1.1.14-build20240910 AS runc
 
 FROM scratch AS runtime-collect
