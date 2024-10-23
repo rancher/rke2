@@ -13,17 +13,17 @@ EOF
 
 xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
-    ${REGISTRY}/rancher/hardened-coredns:v1.11.1-build20240910
-    ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.8.11-build20240910
-    ${REGISTRY}/rancher/hardened-dns-node-cache:1.23.1-build20240910
+    ${REGISTRY}/rancher/hardened-coredns:v1.11.1-build20241008
+    ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.8.11-build20241014
+    ${REGISTRY}/rancher/hardened-dns-node-cache:1.23.1-build20241008
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20240910
-    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.7.1-build20240910
-    ${REGISTRY}/rancher/hardened-addon-resizer:1.8.20-build20240910
+    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.7.1-build20241008
+    ${REGISTRY}/rancher/hardened-addon-resizer:1.8.20-build20241001
     ${REGISTRY}/rancher/klipper-helm:v0.9.3-build20241008
     ${REGISTRY}/rancher/klipper-lb:v0.4.9
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.4.4
-    ${REGISTRY}/rancher/nginx-ingress-controller:v1.10.5-hardened1
+    ${REGISTRY}/rancher/nginx-ingress-controller:v1.10.5-hardened3
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
     ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-controller:v8.1.0
     ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-validation-webhook:v8.1.0
@@ -34,8 +34,8 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-traefik.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.28.2-build20241003
-    ${REGISTRY}/rancher/hardened-flannel:v0.25.7-build20241007
+    ${REGISTRY}/rancher/hardened-calico:v3.28.2-build20241016
+    ${REGISTRY}/rancher/hardened-flannel:v0.25.7-build20241008
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
@@ -81,9 +81,9 @@ EOF
 fi
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
-    ${REGISTRY}/rancher/hardened-multus-cni:v4.1.2-build20241009
+    ${REGISTRY}/rancher/hardened-multus-cni:v4.1.2-build20241011
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.5.1-build20241009
-    ${REGISTRY}/rancher/hardened-whereabouts:v0.8.0-build20240910
+    ${REGISTRY}/rancher/hardened-whereabouts:v0.8.0-build20241011
     ${REGISTRY}/rancher/mirrored-library-busybox:1.36.1
 EOF
 
