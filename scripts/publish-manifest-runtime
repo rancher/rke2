@@ -21,3 +21,7 @@ docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
 set -x
 
 docker manifest push ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
+
+if [ -n "${IID_FILE}" ]; then
+    docker buildx imagetools inspect --format "{{json .Manifest}}" ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} | jq -r '.digest' > ${IID_FILE}
+fi
