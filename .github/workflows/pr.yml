@@ -23,4 +23,4 @@ jobs:
       run: |
         export IID_FILE=$(mktemp)
         export IID_FILE_FLAG="--iidfile ${IID_FILE}"
-        make publish-image-runtime
+        make test-publish-image-runtime
