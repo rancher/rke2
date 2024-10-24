@@ -43,8 +43,7 @@ do_unmount_and_remove() {
     MOUNTS=$(printf ${MOUNTS} | grep "^$1" | sort -r)
     if [ -n "${MOUNTS}" ]; then
         set -x
-        umount ${MOUNTS}
-        rm -rf --one-file-system ${MOUNTS}
+        umount -- ${MOUNTS} && rm -rf --one-file-system -- ${MOUNTS}
     else
         set -x
     fi
