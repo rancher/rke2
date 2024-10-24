@@ -8,7 +8,7 @@ K3S_PKG=github.com/k3s-io/k3s
 RKE2_PKG=github.com/rancher/rke2
 GO=${GO-go}
 GOARCH=${GOARCH:-$("${GO}" env GOARCH)}
-ARCH=${ARCH:-$("${GO}" env GOARCH)}
+ARCH=${ARCH:-"${GOARCH}"}
 GOOS=${GOOS:-$("${GO}" env GOOS)}
 if [ -z "$GOOS" ]; then
     if [ "${OS}" == "Windows_NT" ]; then
