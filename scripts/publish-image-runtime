@@ -5,7 +5,6 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-
 docker buildx build ${IID_FILE_FLAG} \
     --sbom=true \
     --attest type=provenance,mode=max \
