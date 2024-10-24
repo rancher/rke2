@@ -5,7 +5,7 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build ${IID_FILE_FLAG} \
+docker buildx build ${IID_FILE_FLAG} \
     --sbom=true \
     --attest type=provenance,mode=max \
     --build-arg TAG=${VERSION} \
