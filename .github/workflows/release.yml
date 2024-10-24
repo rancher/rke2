@@ -61,6 +61,9 @@ jobs:
 
     - name: Publish Image Runtime
       uses: rancher/ecm-distro-tools/actions/publish-image@master
+      env:
+        GOARCH: amd64
+        GOOS: linux
       with:
         image: "rke2-runtime"
         tag: ${{ github.ref_name }}
@@ -77,6 +80,9 @@ jobs:
 
     - name: Publish Image Runtime (Windows)
       uses: rancher/ecm-distro-tools/actions/publish-image@master
+      env:
+        GOARCH: amd64
+        GOOS: linux
       with:
         image: "rke2-runtime"
         tag: ${{ github.ref_name }}
@@ -144,6 +150,9 @@ jobs:
 
     - name: Publish Image Runtime
       uses: rancher/ecm-distro-tools/actions/publish-image@master
+      env:
+        GOARCH: arm64
+        GOOS: linux
       with:
         image: "rke2-runtime"
         tag: ${{ github.ref_name }}
@@ -191,6 +200,9 @@ jobs:
 
     - name: Manifest
       uses: rancher/ecm-distro-tools/actions/publish-image@master
+      env:
+        GOARCH: amd64
+        GOOS: linux
       with:
         image: "rke2-runtime"
         tag: ${{ github.ref_name }}
