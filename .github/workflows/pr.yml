@@ -15,6 +15,12 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+    - name: Setup QEMU
+      uses: docker/setup-qemu-action@v3
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
     - name: test build image
       run: |
+        export IID_FILE=$(mktemp)
+        export IID_FILE_FLAG="--iidfile ${IID_FILE}"
         make publish-image-runtime
