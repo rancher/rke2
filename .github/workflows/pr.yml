@@ -10,41 +10,22 @@ name: PR Build
 permissions:
     contents: read
 jobs:
-  build-amd64:
+  test-amd64:
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    - name: Install Dapper
+
+    - name: Setup QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: test build image
       run: |
-        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
-        chmod +x /usr/local/bin/dapper
-    - name: Build
-      run: dapper -f Dockerfile --target dapper make dapper-ci
-    - name: Test
-      run: dapper -f Dockerfile --target dapper make test
-    - name: Prepare Test Logs on Failure
-      if: ${{ failure() }}
-      run: |
-        sudo cp -r /tmp/rke2-logs ~/rke2-logs
-        sudo chown -R $USER:$USER ~/rke2-logs
-        ls -la ~/rke2-logs
-    - name: Upload Logs on Failure
-      if: ${{ failure() }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: rke2-test-logs
-        path: ~/rke2-logs/
-  build-arm64:
-    runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64,hdd=64
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    - name: Install Dapper
-      run: |
-        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
-        chmod +x /usr/local/bin/dapper
-    - name: Build
-      run: |
-        dapper -f Dockerfile --target dapper make dapper-ci
-        
+        export GOARCH=amd64
+        export GOOS=linux
+        export IID_FILE=$(mktemp)
+        export IID_FILE_FLAG="--iidfile ${IID_FILE}"
+        make publish-image-runtime-windows
