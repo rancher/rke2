@@ -55,8 +55,8 @@ build-image-runtime:                      ## Build the runtime image
 publish-image-runtime:
 	./scripts/publish-image-runtime
 
-.PHONY: publish-image-runtime-windows
-publish-image-runtime-windows:
+.PHONY: test-publish-image-runtime-windows
+test-publish-image-runtime-windows:
 	./scripts/publish-image-runtime-windows
 
 .PHONY: validate
