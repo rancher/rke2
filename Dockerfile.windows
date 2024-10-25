@@ -104,8 +104,7 @@ RUN mv CalicoWindows/cni/calico.exe rancher/
 RUN mv CalicoWindows/cni/calico-ipam.exe rancher/
 RUN mv CalicoWindows/confd confd/
 
-# New stage to create clean directory structure
-FROM scratch AS directory-setup
+FROM alpine:3.20 AS directory-setup
 RUN mkdir -p /clean/bin /clean/bin/confd /clean/charts
 
 FROM scratch AS windows-runtime
@@ -116,7 +115,7 @@ LABEL org.opencontainers.image.source="https://github.com/rancher/rke2"
 # First copy the clean directory structure
 COPY --from=directory-setup /clean/ /
 
-# Copy files - directories will be created automatically
+# Copy files
 COPY --from=containerd /usr/local/bin/*.exe /bin/
 COPY --from=windows-runtime-collect ./rancher/* /bin/
 COPY --from=windows-runtime-collect ./confd/ /bin/confd/
