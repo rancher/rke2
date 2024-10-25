@@ -5,7 +5,11 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
+# Enable buildx experimental features
+export DOCKER_CLI_EXPERIMENTAL=enabled
+
 docker buildx build ${IID_FILE_FLAG} \
+    --progress=plain \
     --sbom=true \
     --attest type=provenance,mode=max \
     --build-arg TAG=${VERSION} \
@@ -15,6 +19,6 @@ docker buildx build ${IID_FILE_FLAG} \
     --build-arg CACHEBUST="$(date +%s%N)" \
     --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
     --target windows-runtime \
-    --file Dockerfile.windows \
     --platform windows/amd64 \
+    --file Dockerfile.windows \
     .

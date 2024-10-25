@@ -21,11 +21,27 @@ jobs:
 
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
+      with:
+        platforms: windows/amd64
+
+    - name: Configure Windows container support
+      run: |
+        docker buildx create --use --platform windows/amd64
+
+    - name: docker --bootstrap
+      run: |
+        docker buildx inspect --bootstrap
 
     - name: test build image
+      env:
+        DOCKER_BUILDKIT: 1
       run: |
         export GOARCH=amd64
-        export GOOS=linux
+        export GOOS=windows
         export IID_FILE=$(mktemp)
         export IID_FILE_FLAG="--iidfile ${IID_FILE}"
+
+        echo '{"experimental":true}' | sudo tee /etc/docker/daemon.json
+        sudo service docker restart
+
         make publish-image-runtime-windows
