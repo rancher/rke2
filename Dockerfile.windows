@@ -105,7 +105,7 @@ RUN mv CalicoWindows/cni/calico-ipam.exe rancher/
 RUN mv CalicoWindows/confd confd/
 
 # New stage to create clean directory structure
-FROM alpine:3.20 AS directory-setup
+FROM scratch AS directory-setup
 RUN mkdir -p /clean/bin /clean/bin/confd /clean/charts
 
 FROM scratch AS windows-runtime
