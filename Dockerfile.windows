@@ -104,27 +104,19 @@ RUN mv CalicoWindows/cni/calico.exe rancher/
 RUN mv CalicoWindows/cni/calico-ipam.exe rancher/
 RUN mv CalicoWindows/confd confd/
 
-FROM mcr.microsoft.com/windows/nanoserver:ltsc2022 AS windows-runtime
-USER ContainerAdministrator
-SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS windows-runtime
+SHELL ["cmd", "/S", "/C"]
 
 LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-runtime"
 LABEL org.opencontainers.image.source="https://github.com/rancher/rke2"
 
-# Create directories using PowerShell
-RUN New-Item -ItemType Directory -Force -Path C:\bin
-RUN New-Item -ItemType Directory -Force -Path C:\bin\confd
-RUN New-Item -ItemType Directory -Force -Path C:\charts
+# Create directories using simple commands
+RUN mkdir C:\bin
+RUN mkdir C:\bin\confd
+RUN mkdir C:\charts
 
-# Copy files using Windows paths
+# Copy files
 COPY --from=containerd /usr/local/bin/*.exe C:/bin/
 COPY --from=windows-runtime-collect ./rancher/* C:/bin/
 COPY --from=windows-runtime-collect ./confd/ C:/bin/confd/
 COPY --from=windows-runtime-collect ./charts C:/charts/
-
-# Set permissions if needed
-RUN icacls.exe "C:\bin" /grant "Users:(OI)(CI)(RX)"
-RUN icacls.exe "C:\bin\confd" /grant "Users:(OI)(CI)(RX)"
-RUN icacls.exe "C:\charts" /grant "Users:(OI)(CI)(RX)"
-
-USER ContainerUser
