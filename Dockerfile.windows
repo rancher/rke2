@@ -108,12 +108,16 @@ FROM mcr.microsoft.com/windows/nanoserver:1809 AS windows-runtime
 LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-runtime"
 LABEL org.opencontainers.image.source="https://github.com/rancher/rke2"
 
-# Create necessary directories first
-SHELL ["cmd", "/S", "/C"]
-RUN mkdir C:\bin C:\bin\confd C:\charts
+USER ContainerAdministrator
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+# Create necessary directories
+RUN New-Item -ItemType Directory -Force -Path C:\bin, C:\bin\confd, C:\charts
 
 # Copy files using Windows paths
 COPY --from=containerd /usr/local/bin/*.exe C:/bin/
 COPY --from=windows-runtime-collect ./rancher/* C:/bin/
 COPY --from=windows-runtime-collect ./confd/ C:/bin/confd/
 COPY --from=windows-runtime-collect ./charts C:/charts/
+
+USER ContainerUser
