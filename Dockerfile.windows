@@ -104,19 +104,13 @@ RUN mv CalicoWindows/cni/calico.exe rancher/
 RUN mv CalicoWindows/cni/calico-ipam.exe rancher/
 RUN mv CalicoWindows/confd confd/
 
-FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS windows-runtime
-SHELL ["cmd", "/S", "/C"]
+FROM scratch AS windows-runtime
 
 LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-runtime"
 LABEL org.opencontainers.image.source="https://github.com/rancher/rke2"
 
-# Create directories using simple commands
-RUN mkdir C:\bin
-RUN mkdir C:\bin\confd
-RUN mkdir C:\charts
-
-# Copy files
-COPY --from=containerd /usr/local/bin/*.exe C:/bin/
-COPY --from=windows-runtime-collect ./rancher/* C:/bin/
-COPY --from=windows-runtime-collect ./confd/ C:/bin/confd/
-COPY --from=windows-runtime-collect ./charts C:/charts/
+# Copy files - directories will be created automatically
+COPY --from=containerd /usr/local/bin/*.exe /bin/
+COPY --from=windows-runtime-collect ./rancher/* /bin/
+COPY --from=windows-runtime-collect ./confd/ /bin/confd/
+COPY --from=windows-runtime-collect ./charts /charts/
