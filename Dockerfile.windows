@@ -104,10 +104,16 @@ RUN mv CalicoWindows/cni/calico.exe rancher/
 RUN mv CalicoWindows/cni/calico-ipam.exe rancher/
 RUN mv CalicoWindows/confd confd/
 
-FROM scratch AS windows-runtime
+FROM mcr.microsoft.com/windows/nanoserver:1809 AS windows-runtime
 LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-runtime"
 LABEL org.opencontainers.image.source="https://github.com/rancher/rke2"
-COPY --from=containerd /usr/local/bin/*.exe /bin/
-COPY --from=windows-runtime-collect ./rancher/* /bin/
-COPY --from=windows-runtime-collect ./confd/ /bin/confd
-COPY --from=windows-runtime-collect ./charts /charts/
+
+# Create necessary directories first
+SHELL ["cmd", "/S", "/C"]
+RUN mkdir C:\bin C:\bin\confd C:\charts
+
+# Copy files using Windows paths
+COPY --from=containerd /usr/local/bin/*.exe C:/bin/
+COPY --from=windows-runtime-collect ./rancher/* C:/bin/
+COPY --from=windows-runtime-collect ./confd/ C:/bin/confd/
+COPY --from=windows-runtime-collect ./charts C:/charts/
