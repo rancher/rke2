@@ -1,4 +1,4 @@
-FROM alpine:3.20 AS build
+FROM --platform=$BUILDPLATFORM alpine:3.20 AS build
 
 RUN apk --no-cache add \
     curl \
@@ -38,7 +38,7 @@ RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/ins
 WORKDIR /source
 # End Dapper stuff
 
-FROM rancher/hardened-containerd:v1.7.22-k3s1-build20241010-amd64-windows AS containerd
+FROM --platform=$BUILDPLATFORM rancher/hardened-containerd:v1.7.22-k3s1-build20241010-amd64-windows AS containerd
 FROM build as windows-runtime-collect
 ARG KUBERNETES_VERSION=dev
 
@@ -107,6 +107,7 @@ RUN mv CalicoWindows/confd confd/
 FROM scratch AS windows-runtime
 LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-runtime"
 LABEL org.opencontainers.image.source="https://github.com/rancher/rke2"
+WORKDIR /bin/
 COPY --from=containerd /usr/local/bin/*.exe /bin/
 COPY --from=windows-runtime-collect ./rancher/* /bin/
 COPY --from=windows-runtime-collect ./confd/ /bin/confd
