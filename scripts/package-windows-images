@@ -8,15 +8,15 @@ source ./scripts/version.sh
 mkdir -p dist/artifacts
 
 # ltsc1809 / Server 2019 1809
-crane pull --platform windows/amd64:10.0.17763.2114 \
+crane pull --platform windows/amd64 \
   ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
-  ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
+  ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION}-amd64-windows-10.0.17763.2114 \
   rke2-windows-1809-amd64-images.tar
 
 # ltsc2022 / Server 2022 21H2
-crane pull --platform windows/amd64:10.0.20348.169 \
+crane pull --platform windows/amd64 \
   ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
-  ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
+  ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION}-amd64-windows-10.0.20348.169 \
   rke2-windows-ltsc2022-amd64-images.tar
 
 WINDOWS_TARFILES=(rke2-windows-1809-amd64-images.tar rke2-windows-ltsc2022-amd64-images.tar)
