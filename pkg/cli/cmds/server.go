@@ -97,6 +97,7 @@ var (
 		"docker":                            dropFlag,
 		"container-runtime-endpoint":        copyFlag,
 		"disable-default-registry-endpoint": copyFlag,
+		"nonroot-devices":                   copyFlag,
 		"embedded-registry":                 copyFlag,
 		"supervisor-metrics":                copyFlag,
 		"image-service-endpoint":            dropFlag,

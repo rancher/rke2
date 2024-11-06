@@ -31,6 +31,7 @@ var (
 		"docker":                            dropFlag,
 		"container-runtime-endpoint":        copyFlag,
 		"disable-default-registry-endpoint": copyFlag,
+		"nonroot-devices":                   copyFlag,
 		"image-service-endpoint":            dropFlag,
 		"pause-image":                       dropFlag,
 		"default-runtime":                   copyFlag,
