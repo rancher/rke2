@@ -525,6 +525,9 @@ func ParsePods(kubeconfig string, print bool) ([]Pod, error) {
 func RunCmdOnNode(cmd string, nodename string) (string, error) {
 	runcmd := "vagrant ssh -c \"sudo " + cmd + "\" " + nodename
 	out, err := RunCommand(runcmd)
+	// On GHA CI we see warnings about "[fog][WARNING] Unrecognized arguments: libvirt_ip_command"
+	// these are added to the command output and need to be removed
+	out = strings.ReplaceAll(out, "[fog][WARNING] Unrecognized arguments: libvirt_ip_command\n", "")
 	if err != nil {
 		return out, fmt.Errorf("failed to run command: %s on node %s: %s, %v", cmd, nodename, out, err)
 	}
