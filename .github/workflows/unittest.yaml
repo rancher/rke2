@@ -37,7 +37,7 @@ jobs:
         go test -coverpkg=./... -coverprofile=coverage.out ./pkg/... -run Unit
         go tool cover -func coverage.out
     - name: Upload Results To Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.out
