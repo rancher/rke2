@@ -82,6 +82,12 @@ var (
 			EnvVar:      "RKE2_CLOUD_PROVIDER_CONFIG",
 			Destination: &config.CloudProviderConfig,
 		},
+		&cli.BoolFlag{
+			Name:        "node-name-from-cloud-provider-metadata",
+			Usage:       "(cloud provider) Set node name from instance metadata service hostname",
+			EnvVar:      "RKE2_NODE_NAME_FROM_CLOUD_PROVIDER_METADATA",
+			Destination: &config.CloudProviderMetadataHostname,
+		},
 		&cli.StringFlag{
 			Name: "profile",
 			Usage: "(security) Validate system configuration against the selected benchmark (valid items: cis, cis-1.23 (deprecated))",
