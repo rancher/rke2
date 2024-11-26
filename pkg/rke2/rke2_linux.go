@@ -7,13 +7,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/k3s-io/k3s/pkg/agent/config"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
@@ -92,22 +89,29 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		return nil, fmt.Errorf("--cloud-provider-config requires --cloud-provider-name to be provided")
 	}
 	if cfg.CloudProviderName != "" {
-		cpConfig = &podexecutor.CloudProviderConfig{
-			Name: cfg.CloudProviderName,
-			Path: cfg.CloudProviderConfig,
-		}
-		if clx.String("node-name") == "" && cfg.CloudProviderName == "aws" {
-			fqdn := hostnameFromMetadataEndpoint(context.Background())
-			if fqdn == "" {
-				hostFQDN, err := hostnameFQDN()
-				if err != nil {
-					return nil, err
-				}
-				fqdn = hostFQDN
+		if cfg.CloudProviderName == "aws" {
+			logrus.Warnf("--cloud-provider-name=aws is deprecated due to removal of the in-tree aws cloud provider; if you want the legacy hostname behavior associated with this flag please use --node-name-from-cloud-provider-metadata")
+			cfg.CloudProviderMetadataHostname = true
+			cfg.CloudProviderName = ""
+		} else {
+			cpConfig = &podexecutor.CloudProviderConfig{
+				Name: cfg.CloudProviderName,
+				Path: cfg.CloudProviderConfig,
 			}
-			if err := clx.Set("node-name", fqdn); err != nil {
+		}
+	}
+
+	if cfg.CloudProviderMetadataHostname {
+		fqdn := hostnameFromMetadataEndpoint(context.Background())
+		if fqdn == "" {
+			hostFQDN, err := hostnameFQDN()
+			if err != nil {
 				return nil, err
 			}
+			fqdn = hostFQDN
+		}
+		if err := clx.Set("node-name", fqdn); err != nil {
+			return nil, err
 		}
 	}
 
@@ -501,35 +505,4 @@ func hostnameFQDN() (string, error) {
 	}
 
 	return strings.TrimSpace(b.String()), nil
-}
-
-func hostnameFromMetadataEndpoint(ctx context.Context) string {
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
-	defer cancel()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://169.254.169.254/latest/meta-data/local-hostname", nil)
-	if err != nil {
-		logrus.Debugf("Failed to create request for metadata endpoint: %v", err)
-		return ""
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		logrus.Debugf("Failed to get local-hostname from metadata endpoint: %v", err)
-		return ""
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		logrus.Debugf("Metadata endpoint returned unacceptable status code %d", resp.StatusCode)
-		return ""
-	}
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logrus.Debugf("Failed to read response body from metadata endpoint: %v", err)
-		return ""
-	}
-
-	return strings.TrimSpace(string(b))
 }
