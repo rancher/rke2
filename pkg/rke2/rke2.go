@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -35,6 +36,7 @@ type Config struct {
 	PodSecurityAdmissionConfigFile string
 	CloudProviderConfig            string
 	CloudProviderName              string
+	CloudProviderMetadataHostname  bool
 	Images                         images.ImageOverrideConfig
 	KubeletPath                    string
 	ControlPlaneResourceRequests   cli.StringSlice
@@ -405,4 +407,57 @@ func terminateRunningContainers(ctx context.Context, containerRuntimeEndpoint st
 		// once all disabled components have been removed, stop polling
 		return len(disabledItems) == 0, nil
 	})
+}
+
+func hostnameFromMetadataEndpoint(ctx context.Context) string {
+	var token string
+
+	// Get token, required for IMDSv2
+	tokenCtx, tokenCancel := context.WithTimeout(ctx, time.Second)
+	defer tokenCancel()
+	if req, err := http.NewRequestWithContext(tokenCtx, http.MethodPut, "http://169.254.169.254/latest/api/token", nil); err != nil {
+		logrus.Debugf("Failed to create request for token endpoint: %v", err)
+	} else {
+		req.Header.Add("x-aws-ec2-metadata-token-ttl-seconds", "60")
+		if resp, err := http.DefaultClient.Do(req); err != nil {
+			logrus.Debugf("Failed to get token from token endpoint: %v", err)
+		} else {
+			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				logrus.Debugf("Token endpoint returned unacceptable status code %d", resp.StatusCode)
+			} else {
+				if b, err := ioutil.ReadAll(resp.Body); err != nil {
+					logrus.Debugf("Failed to read response body from token endpoint: %v", err)
+				} else {
+					token = string(b)
+				}
+			}
+		}
+	}
+
+	// Get hostname from IMDS, with token if available
+	metaCtx, metaCancel := context.WithTimeout(ctx, time.Second)
+	defer metaCancel()
+	if req, err := http.NewRequestWithContext(metaCtx, http.MethodGet, "http://169.254.169.254/latest/meta-data/local-hostname", nil); err != nil {
+		logrus.Debugf("Failed to create request for metadata endpoint: %v", err)
+	} else {
+		if token != "" {
+			req.Header.Add("x-aws-ec2-metadata-token", token)
+		}
+		if resp, err := http.DefaultClient.Do(req); err != nil {
+			logrus.Debugf("Failed to get hostname from metadata endpoint: %v", err)
+		} else {
+			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				logrus.Debugf("Metadata endpoint returned unacceptable status code %d", resp.StatusCode)
+			} else {
+				if b, err := ioutil.ReadAll(resp.Body); err != nil {
+					logrus.Debugf("Failed to read response body from metadata endpoint: %v", err)
+				} else {
+					return strings.TrimSpace(string(b))
+				}
+			}
+		}
+	}
+	return ""
 }
