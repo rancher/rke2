@@ -5,13 +5,19 @@ import (
 	"sync"
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
+	"github.com/k3s-io/k3s/pkg/util"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
-const runtimeClassesChart = "rke2-runtimeclasses"
+const (
+	runtimeClassesChart  = "rke2-runtimeclasses"
+	namespace            = "kube-system"
+	helm                 = "Helm"
+	helmReleaseName      = "meta.helm.sh/release-name"
+	helmManageBy         = "app.kubernetes.io/managed-by"
+	helmReleaseNamespace = "meta.helm.sh/release-namespace"
+)
 
 var runtimes = map[string]bool{
 	"nvidia":              true,
@@ -26,12 +32,7 @@ func setRuntimes() cmds.StartupHook {
 			<-args.APIServerReady
 			logrus.Info("Setting runtimes")
 
-			config, err := clientcmd.BuildConfigFromFlags("", args.KubeConfigSupervisor)
-			if err != nil {
-				logrus.Fatalf("runtimes: new k8s restConfig: %v", err)
-			}
-
-			client, err := kubernetes.NewForConfig(config)
+			client, err := util.GetClientSet(args.KubeConfigSupervisor)
 			if err != nil {
 				logrus.Fatalf("runtimes: new k8s client: %v", err)
 			}
@@ -51,25 +52,23 @@ func setRuntimes() cmds.StartupHook {
 				}
 
 				if c.Labels == nil {
-					labels := make(map[string]string)
-					c.SetLabels(labels)
+					c.Labels = map[string]string{}
 				}
 
-				if managedBy, ok := c.Labels["app.kubernetes.io/managed-by"]; !ok || managedBy != "Helm" {
-					c.Labels["app.kubernetes.io/managed-by"] = "Helm"
+				if managedBy, ok := c.Labels[helmManageBy]; !ok || managedBy != helm {
+					c.Labels[helmManageBy] = helm
 				}
 
 				if c.Annotations == nil {
-					annotations := make(map[string]string)
-					c.SetAnnotations(annotations)
+					c.Annotations = map[string]string{}
 				}
 
-				if releaseName, ok := c.Annotations["meta.helm.sh/release-name"]; !ok || releaseName != runtimeClassesChart {
-					c.Annotations["meta.helm.sh/release-name"] = runtimeClassesChart
+				if releaseName, ok := c.Annotations[helmReleaseName]; !ok || releaseName != runtimeClassesChart {
+					c.Annotations[helmReleaseName] = runtimeClassesChart
 				}
 
-				if namespace, ok := c.Annotations["meta.helm.sh/release-namespace"]; !ok || namespace != "kube-system" {
-					c.Annotations["meta.helm.sh/release-namespace"] = "kube-system"
+				if ns, ok := c.Annotations[helmReleaseNamespace]; !ok || ns != namespace {
+					c.Annotations[helmReleaseNamespace] = namespace
 				}
 
 				_, err = rcClient.Update(context.Background(), &c, metav1.UpdateOptions{})
