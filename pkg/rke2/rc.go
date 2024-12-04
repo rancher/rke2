@@ -11,12 +11,14 @@ import (
 )
 
 const (
-	runtimeClassesChart  = "rke2-runtimeclasses"
-	namespace            = "kube-system"
-	helm                 = "Helm"
-	helmReleaseName      = "meta.helm.sh/release-name"
-	helmManageBy         = "app.kubernetes.io/managed-by"
-	helmReleaseNamespace = "meta.helm.sh/release-namespace"
+	runtimeClassesChart = "rke2-runtimeclasses"
+	defaultNamespace    = "kube-system"
+
+	// Values from upstream, see reference at -> https://github.com/helm/helm/blob/v3.16.3/pkg/action/validate.go#L34-L37
+	appManagedByLabel              = "app.kubernetes.io/managed-by"
+	appManagedByHelm               = "Helm"
+	helmReleaseNameAnnotation      = "meta.helm.sh/release-name"
+	helmReleaseNamespaceAnnotation = "meta.helm.sh/release-namespace"
 )
 
 var runtimes = map[string]bool{
@@ -55,20 +57,20 @@ func setRuntimes() cmds.StartupHook {
 					c.Labels = map[string]string{}
 				}
 
-				if managedBy, ok := c.Labels[helmManageBy]; !ok || managedBy != helm {
-					c.Labels[helmManageBy] = helm
+				if managedBy, ok := c.Labels[appManagedByLabel]; !ok || managedBy != appManagedByHelm {
+					c.Labels[appManagedByLabel] = appManagedByHelm
 				}
 
 				if c.Annotations == nil {
 					c.Annotations = map[string]string{}
 				}
 
-				if releaseName, ok := c.Annotations[helmReleaseName]; !ok || releaseName != runtimeClassesChart {
-					c.Annotations[helmReleaseName] = runtimeClassesChart
+				if releaseName, ok := c.Annotations[helmReleaseNameAnnotation]; !ok || releaseName != runtimeClassesChart {
+					c.Annotations[helmReleaseNameAnnotation] = runtimeClassesChart
 				}
 
-				if ns, ok := c.Annotations[helmReleaseNamespace]; !ok || ns != namespace {
-					c.Annotations[helmReleaseNamespace] = namespace
+				if namespace, ok := c.Annotations[helmReleaseNamespaceAnnotation]; !ok || namespace != defaultNamespace {
+					c.Annotations[helmReleaseNamespaceAnnotation] = defaultNamespace
 				}
 
 				_, err = rcClient.Update(context.Background(), &c, metav1.UpdateOptions{})
