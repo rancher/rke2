@@ -12,7 +12,6 @@ import (
 
 const (
 	runtimeClassesChart = "rke2-runtimeclasses"
-	defaultNamespace    = "kube-system"
 
 	// Values from upstream, see reference at -> https://github.com/helm/helm/blob/v3.16.3/pkg/action/validate.go#L34-L37
 	appManagedByLabel              = "app.kubernetes.io/managed-by"
@@ -69,8 +68,8 @@ func setRuntimes() cmds.StartupHook {
 					c.Annotations[helmReleaseNameAnnotation] = runtimeClassesChart
 				}
 
-				if namespace, ok := c.Annotations[helmReleaseNamespaceAnnotation]; !ok || namespace != defaultNamespace {
-					c.Annotations[helmReleaseNamespaceAnnotation] = defaultNamespace
+				if namespace, ok := c.Annotations[helmReleaseNamespaceAnnotation]; !ok || namespace != metav1.NamespaceSystem {
+					c.Annotations[helmReleaseNamespaceAnnotation] = metav1.NamespaceSystem
 				}
 
 				_, err = rcClient.Update(context.Background(), &c, metav1.UpdateOptions{})
