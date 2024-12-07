@@ -12,6 +12,7 @@ replace (
 	github.com/docker/docker => github.com/docker/docker v25.0.6+incompatible
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.4
 	github.com/googleapis/gax-go/v2 => github.com/googleapis/gax-go/v2 v2.12.0
+	github.com/k3s-io/k3s => github.com/brandond/k3s v1.31.0-rc1.0.20241207003025-103d50dba417
 	github.com/open-policy-agent/opa => github.com/open-policy-agent/opa v0.59.0
 	github.com/opencontainers/runc => github.com/k3s-io/runc v1.2.1-k3s1
 	github.com/opencontainers/selinux => github.com/opencontainers/selinux v1.11.0
