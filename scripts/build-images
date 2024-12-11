@@ -30,8 +30,8 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.29.0-build20241104
-    ${REGISTRY}/rancher/hardened-flannel:v0.26.0-build20241024
+    ${REGISTRY}/rancher/hardened-calico:v3.29.1-build20241211
+    ${REGISTRY}/rancher/hardened-flannel:v0.26.1-build20241211
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
@@ -94,7 +94,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-flannel.txt
-    ${REGISTRY}/rancher/hardened-flannel:v0.26.1-build20241107
+    ${REGISTRY}/rancher/hardened-flannel:v0.26.1-build20241211
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.6.0-build20241022
 EOF
 fi
