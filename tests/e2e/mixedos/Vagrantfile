@@ -28,9 +28,11 @@ def provision(vm, role, role_num, node_num)
     vm.provision "shell", path: "../scripts/install-bgp.ps1"
     if RELEASE_VERSION == "skip"
       install_type = "-ArtifactPath 'C:\tmp'" 
-    elsif !RELEASE_VERSION.empty?
+    elsif !RELEASE_VERSION.empty? && RELEASE_VERSION.start_with?("v1")
       install_type = "-Version #{RELEASE_VERSION}"
-    else 
+    elsif !RELEASE_VERSION.empty?
+      install_type = "-Commit #{RELEASE_VERSION}"
+    else
       vm.provision "shell", path: "../scripts/latest_commit.ps1", args: [GITHUB_BRANCH, "./rke2_commits.txt"]
       install_type = "-Commit (Get-Content -TotalCount 1 ./rke2_commits.txt)"
     end

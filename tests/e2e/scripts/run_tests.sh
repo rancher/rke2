@@ -21,6 +21,11 @@ cd rke2
 git pull --rebase origin master
 /usr/local/go/bin/go mod tidy
 cd tests/e2e
+
+# To reduce GH API requsts, we grab the latest commit on the host and pass it to the tests
+./scripts/latest_commit.sh master latest_commit.txt
+E2E_RELEASE_VERSION=$(cat latest_commit.txt) && export E2E_RELEASE_VERSION
+
 # create directory to store reports if it does not exists
 if [ ! -d createreport ]
 then
