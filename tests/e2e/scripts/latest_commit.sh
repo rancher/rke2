@@ -6,7 +6,7 @@ output_file=$2
 iterations=0
 
 # The VMs take time on startup to hit aws, wait loop until we can
-while ! curl -s --fail https://rke2-ci-builds.s3.amazonaws.com > /dev/null; do
+while ! curl -s --fail https://rke2-ci-builds.s3.amazonaws.com?max-keys=0 > /dev/null; do
     ((iterations++))
     if [ "$iterations" -ge 30 ]; then
         echo "Unable to hit https://rke2-ci-builds.s3.amazonaws.com"
