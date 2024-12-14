@@ -63,6 +63,10 @@ fi
 #   - INSTALL_RKE2_SKIP_FAPOLICY
 #     If set, the install script will skip adding fapolicy rules
 #     Default is not set.
+#
+#   - INSTALL_RKE2_OVERRIDE_OS_VERSION_ID
+#     If set, the install script will use the provided version instead of the version in /etc/os-release.
+#     Default is not set.
 
 
 # info logs the given argument at info log level.
@@ -485,6 +489,9 @@ install_dev_rpm() {
 # and calls yum to install the required packages.
 do_install_rpm() {
     . /etc/os-release
+    if [ x"${INSTALL_RKE2_OVERRIDE_OS_VERSION_ID}" != x"" ]; then
+        VERSION_ID=${INSTALL_RKE2_OVERRIDE_OS_VERSION_ID}
+    fi
     if [ -r /etc/redhat-release ] || [ -r /etc/centos-release ] || [ -r /etc/oracle-release ] || [ -r /etc/system-release ] || [ "${ID_LIKE%%[ ]*}" = "suse"  ]; then
         repodir=/etc/yum.repos.d
         if [ -d /etc/zypp/repos.d ]; then
