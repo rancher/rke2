@@ -13,12 +13,14 @@ end
 def getInstallType(vm, version, branch)
   if version == "skip"
     return "INSTALL_RKE2_ARTIFACT_PATH=/tmp" 
-  elsif !version.empty?
+  elsif !version.empty? && version.start_with?("v1")
     return "INSTALL_RKE2_VERSION=#{version}"
+  elsif !version.empty?
+    return "INSTALL_RKE2_COMMIT=#{version}"
   end
-  # Grabs the last 5 commit SHA's from the given branch, then purges any commits that do not have a passing CI build
+  # Grabs the last 10 commit SHA's from the given branch, then purges any commits that do not have a passing CI build
   scripts_location = Dir.exist?("./scripts") ? "./scripts" : "../scripts" 
-  vm.provision "shell", path:  scripts_location + "/latest_commit.sh", args: [branch, "/tmp/rke2_commits"]
+  vm.provision "shell", path:  scripts_location + "/latest_commit.sh", env: {GH_TOKEN:ENV['GH_TOKEN']}, args: [branch, "/tmp/rke2_commits"]
   return "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
 end
 
