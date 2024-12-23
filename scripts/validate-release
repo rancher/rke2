@@ -32,7 +32,7 @@ function get-module-version() {
 }
 
 function check_release_branch() {
-    TAG_BRANCH=$(git branch --all -q --contains $GIT_TAG | grep origin | grep -vE 'dependabot|updatecli|origin$|HEAD' | sed -e 's/^[[:space:]]*//')
+    TAG_BRANCH=$(git branch --all -q --contains $GIT_TAG | grep origin | grep -vE 'dependabot|updatecli|origin$|HEAD' | sed -e 's/^[[:space:]]*//' | tail -1)
     if [ "$TAG_BRANCH" == "remotes/origin/master" ]; then
         K8S_VERSION_GO_MOD=$(get-module-version k8s.io/kubernetes | cut -d. -f1-2)
         if [ "v$MAJOR.$MINOR" == "$K8S_VERSION_GO_MOD" ]; then
