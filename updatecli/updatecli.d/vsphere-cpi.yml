@@ -27,8 +27,8 @@ sources:
     spec:
       url: https://rancher.github.io/rke2-charts
       name: rancher-vsphere-cpi
-      versionfilter:
-        kind: "latest"
+      typefilter:
+        latest: true
   
 conditions:
   vsphereCPIVersionShouldBeUpdated:
