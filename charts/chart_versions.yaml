@@ -35,7 +35,7 @@ charts:
   - version: 0.2.600
     filename: /charts/harvester-cloud-provider.yaml
     bootstrap: true
-  - version: 0.1.2100
+  - version: 0.1.2200
     filename: /charts/harvester-csi-driver.yaml
     bootstrap: true
   - version: 3.0.601
