@@ -95,7 +95,12 @@ upper_bound_patch="${upper_bound##*.}"
 upper_bound_dash="${upper_bound_patch##*-}"
 upper_bound_patch="${upper_bound_patch%-*}"
 
-if [ "$lower_bound_major" -le "$kube_version_major"  ] && \
+if [ -z "$upper_bound" ] && \
+    [ "$lower_bound_major" -le "$kube_version_major"  ] && \
+    [ "$lower_bound_minor" -le "$kube_version_minor"  ] && \
+    [ "$lower_bound_patch" -le "$kube_version_patch"  ]; then
+    echo 0
+elif [ "$lower_bound_major" -le "$kube_version_major"  ] && \
     [ "$kube_version_major" -le "$upper_bound_major" ] && \
     [ "$lower_bound_minor" -le "$kube_version_minor"  ] && \
     [ "$kube_version_minor" -le "$upper_bound_minor" ] && \
