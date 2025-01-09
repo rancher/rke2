@@ -25,8 +25,7 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.4.4
     ${REGISTRY}/rancher/nginx-ingress-controller:v1.10.5-hardened6
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
-    ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-controller:v8.1.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-validation-webhook:v8.1.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-controller:v8.2.0
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-traefik.txt

@@ -4,7 +4,7 @@ source ./scripts/version.sh
 set +x
 
 info() {
-    echo '[INFO] ' "$@"
+    echo '[INFO] ' "$@" >&2
 }
 
 warn() {
@@ -36,7 +36,7 @@ download_chart() {
 
     chart_package=${chart_name%%-crd}
 
-    chart_url=${CHART_REPO:="https://rke2-charts.rancher.io"}/assets/${chart_package}/${chart_name}-${chart_version:="v0.0.0"}.tgz
+    chart_url=${CHART_REPO:="https://rke2-charts.rancher.io"}/assets/${chart_package}/${chart_name}-${chart_version:="0.0.0"}.tgz
 
     chart_tmp=$(mktemp --suffix .tar.gz)
     
@@ -66,45 +66,47 @@ check_system_registry() {
 }
 
 is_supported() {
-kube_version="$1"
-lower_bound="$2"
-upper_bound="$3"
+    kube_version="$1"
+    lower_bound="${2:-0.0.0-0}"
+    upper_bound="${3:-999.999.999-999}"
 
-kube_version="${kube_version#[vV]}"
-kube_version_major="${kube_version%%\.*}"
-kube_version_minor="${kube_version#*.}"
-kube_version_minor="${kube_version_minor%.*}"
-kube_version_patch="${kube_version##*.}"
-kube_version_dash="${kube_version_patch##*-}"
-kube_version_patch="${kube_version_patch%-*}"
+    info "Checking if Kubernetes '$kube_version' is between '$lower_bound' and '$upper_bound'"
 
-lower_bound="${lower_bound#[vV]}"
-lower_bound_major="${lower_bound%%\.*}"
-lower_bound_minor="${lower_bound#*.}"
-lower_bound_minor="${lower_bound_minor%.*}"
-lower_bound_patch="${lower_bound##*.}"
-lower_bound_dash="${lower_bound_patch##*-}"
-lower_bound_patch="${lower_bound_patch%-*}"
+    kube_version="${kube_version#[vV]}"
+    kube_version_major="${kube_version%%\.*}"
+    kube_version_minor="${kube_version#*.}"
+    kube_version_minor="${kube_version_minor%.*}"
+    kube_version_patch="${kube_version##*.}"
+    kube_version_dash="${kube_version_patch##*-}"
+    kube_version_patch="${kube_version_patch%-*}"
+
+    lower_bound="${lower_bound#[vV]}"
+    lower_bound_major="${lower_bound%%\.*}"
+    lower_bound_minor="${lower_bound#*.}"
+    lower_bound_minor="${lower_bound_minor%.*}"
+    lower_bound_patch="${lower_bound##*.}"
+    lower_bound_dash="${lower_bound_patch##*-}"
+    lower_bound_patch="${lower_bound_patch%-*}"
 
 
-upper_bound="${upper_bound#[vV]}"
-upper_bound_major="${upper_bound%%\.*}"
-upper_bound_minor="${upper_bound#*.}"
-upper_bound_minor="${upper_bound_minor%.*}"
-upper_bound_patch="${upper_bound##*.}"
-upper_bound_dash="${upper_bound_patch##*-}"
-upper_bound_patch="${upper_bound_patch%-*}"
+    upper_bound="${upper_bound#[vV]}"
+    upper_bound_major="${upper_bound%%\.*}"
+    upper_bound_minor="${upper_bound#*.}"
+    upper_bound_minor="${upper_bound_minor%.*}"
+    upper_bound_patch="${upper_bound##*.}"
+    upper_bound_dash="${upper_bound_patch##*-}"
+    upper_bound_patch="${upper_bound_patch%-*}"
 
-if [ "$lower_bound_major" -le "$kube_version_major"  ] && \
-    [ "$kube_version_major" -le "$upper_bound_major" ] && \
-    [ "$lower_bound_minor" -le "$kube_version_minor"  ] && \
-    [ "$kube_version_minor" -le "$upper_bound_minor" ] && \
-    [ "$lower_bound_patch" -le "$kube_version_patch"  ] && \
-    [ "$kube_version_patch" -le "$upper_bound_patch" ]; then
-    echo 0
-else
-    echo 1
-fi
+    if [ "$lower_bound_major" -le "$kube_version_major"  ] && \
+        [ "$kube_version_major" -le "$upper_bound_major" ] && \
+        [ "$lower_bound_minor" -le "$kube_version_minor"  ] && \
+        [ "$kube_version_minor" -le "$upper_bound_minor" ] && \
+        [ "$lower_bound_patch" -le "$kube_version_patch"  ] && \
+        [ "$kube_version_patch" -le "$upper_bound_patch" ]; then
+        echo 0
+    else
+        echo 1
+    fi
 }
 
 check_airgap() {
@@ -119,14 +121,9 @@ check_airgap() {
     chart_folder=$(mktemp -d)
     tar xfz $chart_tmp -C $chart_folder
 
-    version_annotation=`awk '$1 ~ /catalog.cattle.io\/kube-version:/ {
-        print $3 " " $5
-    }
-    ' $chart_folder/$chart_name/Chart.yaml `
-    if ! [[ -z ${version_annotation} ]]; then
-        version_annotation=${version_annotation:0:-1}
+    version_annotation=$(yq e '.annotations."catalog.cattle.io/kube-version" // ""' $chart_folder/$chart_name/Chart.yaml | awk '{print $2 " " $4}')
+    if [[ ${version_annotation} != " " ]]; then
         read lower_bound upper_bound <<< $version_annotation
-
         supported=$(is_supported ${KUBERNETES_VERSION} $lower_bound $upper_bound)
         if [ $supported = 1 ] ; then
             warn "Chart $chart_name:$chart_version does not support k8s ${KUBERNETES_VERSION}. Skipping airgap check"
@@ -154,6 +151,10 @@ declare -A NO_SYSTEM_REGISTRY
 declare -A NOT_FOUND
 
 while read version filename bootstrap; do    
+    if [ "$version" == "0.0.0" ]; then
+      continue
+    fi
+
     chart_name=$(basename "${filename%%.yaml}")
     chart_tmp=$(download_chart $version $chart_name $bootstrap)
 
