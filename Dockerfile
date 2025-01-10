@@ -49,8 +49,7 @@ RUN curl -sL "https://github.com/cli/cli/releases/download/v2.53.0/gh_2.53.0_lin
 RUN curl -sL https://dl.k8s.io/release/$( \
     curl -sL https://dl.k8s.io/release/stable.txt \
     )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
-    chmod a+x /usr/local/bin/kubectl; \
-    pip install codespell
+    chmod a+x /usr/local/bin/kubectl
 
 RUN python3 -m pip install awscli
 RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.55.2
