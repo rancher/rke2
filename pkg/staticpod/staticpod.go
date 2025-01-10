@@ -336,9 +336,9 @@ func addVolumes(p *v1.Pod, src []string, volume typeVolume) {
 }
 
 func addExtraMounts(p *v1.Pod, extraMounts []string) {
-	var sourceType v1.HostPathType
 
 	for i, rawMount := range extraMounts {
+		var sourceType v1.HostPathType
 		mount := strings.Split(rawMount, ":")
 		var ro bool
 		switch len(mount) {
