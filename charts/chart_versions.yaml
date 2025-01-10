@@ -17,7 +17,7 @@ charts:
   - version: 4.10.503
     filename: /charts/rke2-ingress-nginx.yaml
     bootstrap: false
-  - version: 3.12.004
+  - version: 3.12.200
     filename: /charts/rke2-metrics-server.yaml
     bootstrap: false
   - version: v4.1.400
