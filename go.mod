@@ -14,7 +14,7 @@ replace (
 	github.com/google/cadvisor => github.com/k3s-io/cadvisor v0.51.0-k3s1
 	github.com/googleapis/gax-go/v2 => github.com/googleapis/gax-go/v2 v2.12.0
 	github.com/open-policy-agent/opa => github.com/open-policy-agent/opa v0.59.0
-	github.com/opencontainers/runc => github.com/k3s-io/runc v1.2.1-k3s1
+	github.com/opencontainers/runc => github.com/k3s-io/runc v1.2.4-k3s1
 	github.com/opencontainers/selinux => github.com/opencontainers/selinux v1.11.0
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.19.1
 	github.com/prometheus/common => github.com/prometheus/common v0.55.0
@@ -79,7 +79,7 @@ require (
 	github.com/google/go-containerregistry v0.20.2
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.5
-	github.com/k3s-io/k3s v1.32.0-rc1.0.20241220224140-68fbd1a6b543 // release-v1.32
+	github.com/k3s-io/k3s v1.32.0-rc1.0.20250113193256-646e3135bc9f // master
 	github.com/k3s-io/kine v0.13.5
 	github.com/libp2p/go-netroute v0.2.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
@@ -96,7 +96,7 @@ require (
 	github.com/tigera/operator v1.28.1
 	github.com/urfave/cli v1.22.15
 	golang.org/x/sync v0.9.0
-	golang.org/x/sys v0.27.0
+	golang.org/x/sys v0.28.0
 	google.golang.org/grpc v1.68.0
 	k8s.io/api v0.32.0
 	k8s.io/apimachinery v0.32.0
@@ -155,7 +155,7 @@ require (
 	github.com/coreos/go-semver v0.3.1 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
-	github.com/cyphar/filepath-securejoin v0.3.4 // indirect
+	github.com/cyphar/filepath-securejoin v0.3.5 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
