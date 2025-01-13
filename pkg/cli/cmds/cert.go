@@ -41,6 +41,7 @@ func NewCertCommand() cli.Command {
 			"debug":           copyFlag,
 			"log":             copyFlag,
 			"service":         copyFlag,
+			"output":          copyFlag,
 			"data-dir": {
 				Usage:   "(data) Folder to hold state",
 				Default: rke2Path,
