@@ -47,3 +47,6 @@ charts:
   - version: 1.9.001
     filename: /charts/rke2-snapshot-validation-webhook.yaml
     bootstrap: false
+  - version: 0.1.000
+    filename: /charts/rke2-runtimeclasses.yaml
+    bootstrap: false

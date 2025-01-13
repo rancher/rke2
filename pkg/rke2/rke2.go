@@ -138,6 +138,7 @@ func Server(clx *cli.Context, cfg Config) error {
 		restrictServiceAccounts(cisMode, defaultNamespaces),
 		setKubeProxyDisabled(),
 		cleanupStaticPodsOnSelfDelete(dataDir),
+		setRuntimes(),
 	)
 
 	var leaderControllers rawServer.CustomControllers
