@@ -269,24 +269,20 @@ jobs:
           rke2-upgrade
           system-agent-installer-rke2
 
-    - name: Create `${{ github.event.release.tag_name }}` release in `rancher/rke2-upgrade`
+    - name: Create release in `rancher/rke2-upgrade`
       env:
         GH_TOKEN: ${{ steps.generate-token.outputs.token }}
       run: |
-        gh release create "${{ github.event.release.tag_name }}" \
+        gh release create "$GITHUB_ACTION_TAG" \
           --repo rancher/rke2-upgrade \
-          --title "${{ github.event.release.name }}" \
-          --notes "${{ github.event.release.body }}" \
-          ${{ github.event.release.prerelease && '--prerelease' || '' }} \
-          ${{ github.event.release.draft && '--draft' || '' }}
+          --title "$GITHUB_ACTION_TAG" \
+          --notes "Automated release created from $GITHUB_ACTION_TAG tag in ${{ github.repository }}"
 
-    - name: Create `${{ github.event.release.tag_name }}` release in `rancher/system-agent-installer-rke2`
+    - name: Create release in `rancher/system-agent-installer-rke2`
       env:
         GH_TOKEN: ${{ steps.generate-token.outputs.token }}
       run: |
-        gh release create "${{ github.event.release.tag_name }}" \
+        gh release create "$GITHUB_ACTION_TAG" \
           --repo rancher/system-agent-installer-rke2 \
-          --title "${{ github.event.release.name }}" \
-          --notes "${{ github.event.release.body }}" \
-          ${{ github.event.release.prerelease && '--prerelease' || '' }} \
-          ${{ github.event.release.draft && '--draft' || '' }}
+          --title "$GITHUB_ACTION_TAG" \
+          --notes "Automated release created from $GITHUB_ACTION_TAG tag in ${{ github.repository }}"
