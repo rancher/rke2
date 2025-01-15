@@ -117,7 +117,7 @@ func CreateCluster(nodeOS string, serverCount int, agentCount int) ([]string, []
 	}
 
 	// Bring up the first server node
-	cmd := fmt.Sprintf(`%s %s vagrant up %s &> vagrant.log`, nodeEnvs, testOptions, serverNodeNames[0])
+	cmd := fmt.Sprintf(`%s %s vagrant up --no-tty %s &> vagrant.log`, nodeEnvs, testOptions, serverNodeNames[0])
 
 	fmt.Println(cmd)
 	if _, err := RunCommand(cmd); err != nil {
@@ -127,7 +127,7 @@ func CreateCluster(nodeOS string, serverCount int, agentCount int) ([]string, []
 	// Bring up the rest of the nodes in parallel
 	errg, _ := errgroup.WithContext(context.Background())
 	for _, node := range append(serverNodeNames[1:], agentNodeNames...) {
-		cmd := fmt.Sprintf(`%s %s vagrant up %s &>> vagrant.log`, nodeEnvs, testOptions, node)
+		cmd := fmt.Sprintf(`%s %s vagrant up --no-tty %s &>> vagrant.log`, nodeEnvs, testOptions, node)
 		fmt.Println(cmd)
 		errg.Go(func() error {
 			if _, err := RunCommand(cmd); err != nil {
@@ -155,7 +155,7 @@ func CreateMixedCluster(nodeOS string, serverCount, linuxAgentCount, windowsAgen
 		}
 	}
 
-	cmd := fmt.Sprintf("%s %s vagrant up &> vagrant.log", nodeEnvs, testOptions)
+	cmd := fmt.Sprintf("%s %s vagrant up --no-tty &> vagrant.log", nodeEnvs, testOptions)
 	fmt.Println(cmd)
 	if _, err := RunCommand(cmd); err != nil {
 		fmt.Println("Error Creating Cluster", err)
@@ -213,7 +213,7 @@ func CreateLocalCluster(nodeOS string, serverCount, agentCount int) ([]string, [
 	testOptions += " E2E_RELEASE_VERSION=skip"
 
 	// Standup all VMs. In GitHub Actions, this also imports the VM image into libvirt, which takes time to complete.
-	cmd := fmt.Sprintf(`%s %s E2E_STANDUP_PARALLEL=true vagrant up --no-provision &> vagrant.log`, nodeEnvs, testOptions)
+	cmd := fmt.Sprintf(`%s %s E2E_STANDUP_PARALLEL=true vagrant up --no-tty --no-provision &> vagrant.log`, nodeEnvs, testOptions)
 	fmt.Println(cmd)
 	if _, err := RunCommand(cmd); err != nil {
 		return nil, nil, newNodeError(cmd, serverNodeNames[0], err)
@@ -296,7 +296,7 @@ func CreateLocalMixedCluster(nodeOS string, serverCount, linuxAgentCount, window
 	testOptions += " E2E_RELEASE_VERSION=skip"
 
 	// Standup all nodes, relying on vagrant-libvirt native parallel provisioning
-	cmd := fmt.Sprintf(`%s %s E2E_STANDUP_PARALLEL=true vagrant up --no-provision &> vagrant.log`, nodeEnvs, testOptions)
+	cmd := fmt.Sprintf(`%s %s E2E_STANDUP_PARALLEL=true vagrant up --no-tty --no-provision &> vagrant.log`, nodeEnvs, testOptions)
 	fmt.Println(cmd)
 	if _, err := RunCommand(cmd); err != nil {
 		return nil, nil, nil, err
@@ -419,7 +419,7 @@ func GenReport(specReport ginkgo.SpecReport) {
 }
 
 // GetVagrantLog returns the logs of on vagrant commands that initialize the nodes and provision RKE2 on each node.
-// It also attempts to fetch the systemctl logs of RKE2 on nodes where the rke2.service failed.
+// It also attempts to fetch the systemctl and kubelet/containerd logs of RKE2 on nodes where the rke2.service failed.
 func GetVagrantLog(cErr error) string {
 	var nodeErr *NodeError
 	nodeJournal := ""
@@ -430,6 +430,12 @@ func GetVagrantLog(cErr error) string {
 			nodeJournal, _ = RunCmdOnNode("sudo journalctl -u rke2* --no-pager", nodeErr.Node)
 		}
 		nodeJournal = "\nNode Journal Logs:\n" + nodeJournal
+
+		paths := []string{"/var/lib/rancher/rke2/agent/logs/kubelet.log", "/var/lib/rancher/rke2/agent/containerd/containerd.log"}
+		for _, path := range paths {
+			out, _ := RunCmdOnNode("sudo cat "+path, nodeErr.Node)
+			nodeJournal += "\n" + path + ":\n" + out + "\n"
+		}
 	}
 
 	log, err := os.Open("vagrant.log")
