@@ -124,10 +124,6 @@ publish-manifest-runtime:  						   ## Create and push the runtime manifest
 publish-binary: 						## Upload binaries
 	./scripts/publish-binary
 
-.PHONY: dispatch
-dispatch:								## Send dispatch event to rke2-upgrade repo
-	./scripts/dispatch
-
 .PHONY: package
 package: build 						## Package the rke2 binary
 	./scripts/package
