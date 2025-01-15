@@ -162,7 +162,10 @@ func SaveLog(log *os.File, dump bool) error {
 // for use with the next test.
 func Cleanup(rke2TestLock int) error {
 	// Save the agent/images directory
-	cmd := exec.Command("cp", "-r", "/var/lib/rancher/rke2/agent/images", "/tmp/images-backup")
+	if err := os.MkdirAll("/tmp/images-backup", 0755); err != nil && !errors.Is(err, os.ErrExist) {
+		return fmt.Errorf("failed to make backup images directory: %w", err)
+	}
+	cmd := exec.Command("sh", "-c", "mv /var/lib/rancher/rke2/agent/images/* /tmp/images-backup/")
 	if res, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("error backing up images directory: %s: %w", res, err)
 	}
@@ -179,7 +182,7 @@ func Cleanup(rke2TestLock int) error {
 	if err := os.MkdirAll("/var/lib/rancher/rke2/agent", 0755); err != nil {
 		return fmt.Errorf("failed to make agent directory: %w", err)
 	}
-	cmd = exec.Command("mv", "/tmp/images-backup", "/var/lib/rancher/rke2/agent/images")
+	cmd = exec.Command("sh", "-c", "mv /tmp/images-backup/* /var/lib/rancher/rke2/agent/images/")
 	if res, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("error restoring images directory: %s: %w", res, err)
 	}
