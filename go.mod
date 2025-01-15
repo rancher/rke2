@@ -79,7 +79,7 @@ require (
 	github.com/google/go-containerregistry v0.20.2
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.5
-	github.com/k3s-io/k3s v1.32.1-0.20250113201636-0b414715af20 // release-v1.32
+	github.com/k3s-io/k3s v1.32.1-0.20250115224115-9548f9b6c952 // release-v1.32
 	github.com/k3s-io/kine v0.13.5
 	github.com/libp2p/go-netroute v0.2.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
