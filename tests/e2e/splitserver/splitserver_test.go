@@ -49,7 +49,7 @@ func createSplitCluster(nodeOS string, etcdCount, controlPlaneCount, agentCount 
 		}
 	}
 
-	cmd := fmt.Sprintf(`E2E_NODE_ROLES="%s" E2E_NODE_BOXES="%s" %s vagrant up &> vagrant.log`, nodeRoles, nodeBoxes, testOptions)
+	cmd := fmt.Sprintf(`E2E_NODE_ROLES="%s" E2E_NODE_BOXES="%s" %s vagrant up --no-tty &> vagrant.log`, nodeRoles, nodeBoxes, testOptions)
 	fmt.Println(cmd)
 	if _, err := e2e.RunCommand(cmd); err != nil {
 		fmt.Println("Error Creating Cluster", err)
