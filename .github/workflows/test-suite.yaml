@@ -96,7 +96,7 @@ jobs:
     - name: Run Integration Tests
       run: | 
         mkdir -p $GOCOVERDIR
-        sudo -E env "PATH=$PATH" go test -v -timeout=45m ./tests/integration/${{ matrix.itest }}/... -run Integration
+        sudo -E env "PATH=$PATH" go test -timeout=45m ./tests/integration/${{ matrix.itest }}/... -run Integration -ginkgo.v -test.v
     - name: Generate coverage report
       run:  go tool covdata textfmt -i $GOCOVERDIR -o ${{ matrix.itest }}.out
     - name: Upload Results To Codecov
@@ -114,7 +114,7 @@ jobs:
     name: "E2E Tests"
     needs: build
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -161,4 +161,4 @@ jobs:
     - name: Run ${{ matrix.etest }} Test
       run: | 
         cd tests/e2e/${{ matrix.etest }}
-        go test -v -timeout=45m ./${{ matrix.etest}}_test.go -ci -local
+        go test -timeout=45m ./${{ matrix.etest}}_test.go -ci -local -ginkgo.v -test.v
