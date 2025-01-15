@@ -546,7 +546,9 @@ func RunCmdOnWindowsNode(cmd string, nodename string) (string, error) {
 
 // RunCommand execute a command on the host
 func RunCommand(cmd string) (string, error) {
-	c := exec.Command("bash", "-c", cmd)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*15)
+	defer cancel()
+	c := exec.CommandContext(ctx, "bash", "-c", cmd)
 	out, err := c.CombinedOutput()
 	return string(out), err
 }
