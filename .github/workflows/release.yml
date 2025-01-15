@@ -226,35 +226,9 @@ jobs:
         prime-username: ${{ env.PRIME_REGISTRY_USERNAME }}
         prime-password: ${{ env.PRIME_REGISTRY_PASSWORD }}
 
-  dispatch:
-    needs: [release-amd64, release-arm64]
-    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install Dapper
-      run: |
-        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
-        chmod +x /usr/local/bin/dapper
-    
-    - name: "Read secrets"
-      uses: rancher-eio/read-vault-secrets@main
-      with:
-        secrets: |
-          secret/data/github/repo/${{ github.repository }}/pat-username/credentials token | PAT_USERNAME ;
-
-    - name: Dispatch
-      run: |
-        dapper -f Dockerfile --target dapper make dispatch
-      env:
-        PAT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PAT_USERNAME: ${{ env.PAT_USERNAME }}
-        GITHUB_ACTION_TAG: ${{ env.GITHUB_ACTION_TAG }}
-
   release-downstream-components:
     name: "Release downstream components"
-    needs: [dispatch]
+    needs: [release-amd64, release-arm64]
     runs-on: ubuntu-latest
     permissions:
       contents: read
