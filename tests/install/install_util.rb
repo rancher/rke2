@@ -117,7 +117,8 @@ def runKillAllScript(vm)
     #!/usr/bin/env bash
     set -eu -o pipefail
     echo 'Run kill all'
-    /usr/local/bin/rke2-killall.sh
+    # This script runs as sudo, which may not have the PATH set correctly.
+    PATH=/usr/local/bin:$PATH rke2-killall.sh
     SHELL
   end
 end
