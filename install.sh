@@ -515,8 +515,8 @@ do_install_rpm() {
                 2023) # detect amazon linux 2023 distro
                     maj_ver="8"
                     ;;
-                *) # set default distro to centos 7, for edge cases such as fedora
-                    maj_ver="7"
+                *) # set default distro to centos 8, for edge cases such as fedora
+                    maj_ver="8"
                     ;;
             esac
             rpm_site_infix=centos/${maj_ver}
