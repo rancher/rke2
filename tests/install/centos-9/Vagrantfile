@@ -61,14 +61,4 @@ Vagrant.configure("2") do |config|
     SHELL
   end
 
-  config.vm.provision "selinux-status", type: "shell", run: "once", inline: "sestatus -v"
-  config.vm.provision "rke2-profile-env", type: "shell", run: "once" do |sh|
-    sh.inline = <<~SHELL
-        #!/usr/bin/env bash
-        cat <<-EOF > /etc/profile.d/rke2.sh
-export KUBECONFIG=/etc/rancher/rke2/rke2.yaml PATH=/usr/local/bin:$PATH:/var/lib/rancher/rke2/bin
-EOF
-    SHELL
-  end
-
 end
