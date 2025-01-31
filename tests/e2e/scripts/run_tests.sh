@@ -65,8 +65,8 @@ run_tests(){
 	vagrant destroy -f
 
         echo "RUNNING ${tests[$i]} TEST"
-        /usr/local/go/bin/go test -v ${tests[$i]}_test.go -timeout=2h -nodeOS="$nodeOS" -json -ci |tee -a ../createreport/rke2_${OS}.log
-        
+        /usr/local/go/bin/go test -v ${tests[$i]}_test.go -timeout=2h -nodeOS="$nodeOS" -json -ci > rke2_${OS}.log
+
 	popd
     done
 }
@@ -82,5 +82,5 @@ do
         run_tests
 done
 
-# Generate report and upload to s3 bucket
-cd createreport && /usr/local/go/bin/go run -v report-template-bindata.go generate_report.go -f rke2_${OS}.log
+# Upload to s3 bucket
+cd createreport && /usr/local/go/bin/go run -v s3upload.go -f rke2_${OS}.log
