@@ -27,9 +27,9 @@ cd tests/e2e
 E2E_RELEASE_VERSION=$(cat latest_commit.txt) && export E2E_RELEASE_VERSION
 
 # create directory to store reports if it does not exists
-if [ ! -d createreport ]
+if [ ! -d report ]
 then
-	mkdir createreport
+	mkdir report
 fi
 
 cleanup() {
@@ -58,7 +58,7 @@ count=0
 run_tests(){
 
     count=$(( count + 1 ))
-    rm createreport/rke2_${OS}.log 2>/dev/null
+    rm report/rke2_${OS}.log 2>/dev/null
 
     for i in ${!tests[@]}; do
 	pushd ${tests[$i]}
@@ -71,16 +71,16 @@ run_tests(){
     done
 }
 
-ls createreport/rke2_${OS}.log 2>/dev/null && rm createreport/rke2_${OS}.log
+ls report/rke2_${OS}.log 2>/dev/null && rm report/rke2_${OS}.log
 cleanup
 run_tests
 
 # re-run test if first run fails and keep record of repeatedly failed test to debug
-while [ -f createreport/rke2_${OS}.log ] && grep -w " FAIL:" createreport/rke2_${OS}.log && [ $count -le 2 ]
+while [ -f report/rke2_${OS}.log ] && grep -w " FAIL:" report/rke2_${OS}.log && [ $count -le 2 ]
 do
-        cp createreport/rke2_${OS}.log createreport/rke2_${OS}_${count}.log
+        cp report/rke2_${OS}.log report/rke2_${OS}_${count}.log
         run_tests
 done
 
 # Upload to s3 bucket
-cd createreport && /usr/local/go/bin/go run -v s3upload.go -f rke2_${OS}.log
+cd report && /usr/local/go/bin/go run -v s3upload.go -f rke2_${OS}.log
