@@ -13,87 +13,83 @@ EOF
 
 xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
-    ${REGISTRY}/rancher/hardened-coredns:v1.11.1-build20240305
-    ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.8.10-build20240124
-    ${REGISTRY}/rancher/hardened-dns-node-cache:1.22.28-build20240125
-    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20240418
-    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.7.1-build20240401
-    ${REGISTRY}/rancher/hardened-addon-resizer:1.8.20-build20240410
-    ${REGISTRY}/rancher/klipper-helm:v0.8.3-build20240228
-    ${REGISTRY}/rancher/klipper-lb:v0.4.7
+    ${REGISTRY}/rancher/hardened-coredns:v1.12.0-build20241126
+    ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.9.0-build20241126
+    ${REGISTRY}/rancher/hardened-dns-node-cache:1.24.0-build20241211
+    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20241106
+    ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.7.2-build20250110
+    ${REGISTRY}/rancher/hardened-addon-resizer:1.8.22-build20250110
+    ${REGISTRY}/rancher/klipper-helm:v0.9.4-build20250113
+    ${REGISTRY}/rancher/klipper-lb:v0.4.10
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
-    ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v20230312-helm-chart-4.5.2-28-g66a760794
-    ${REGISTRY}/rancher/nginx-ingress-controller:nginx-1.9.6-hardened1
+    ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.5.0
+    ${REGISTRY}/rancher/nginx-ingress-controller:v1.12.0-hardened2
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
-    ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-controller:v6.2.1
-    ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-validation-webhook:v6.2.2
+    ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-controller:v8.2.0
+EOF
+
+xargs -n1 -t docker image pull --quiet << EOF > build/images-traefik.txt
+    ${REGISTRY}/rancher/mirrored-library-traefik:2.11.10
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.27.3-build20240403
-    ${REGISTRY}/rancher/hardened-flannel:v0.25.1-build20240412
+    ${REGISTRY}/rancher/hardened-calico:v3.29.1-build20250110
+    ${REGISTRY}/rancher/hardened-flannel:v0.26.3-build20250108
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
-    ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.1.11
-    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.15.4
-    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.27.4-21905253931655328edaacf3cd16aeda73bbea2f
-    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.15.4
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.15.4
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.13.0
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui-backend:v0.13.0
-    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.15.4
-    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.15.4
-    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.15.4
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.4.1-build20240325
+    ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.2.0
+    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.16.6
+    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.30.9-1737073743-40a016d11c0d863b772961ed0168eea6fe6b10a5
+    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.16.6
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.16.6
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.13.1
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui-backend:v0.13.1
+    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.16.6
+    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.16.6
+    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.16.6
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.6.2-build20250124
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
-    ${REGISTRY}/rancher/mirrored-calico-operator:v1.32.7
-    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.27.3
-    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.27.3
-    ${REGISTRY}/rancher/mirrored-calico-typha:v3.27.3
-    ${REGISTRY}/rancher/mirrored-calico-node:v3.27.3
-    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.27.3
-    ${REGISTRY}/rancher/mirrored-calico-cni:v3.27.3
-    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.27.3
-    ${REGISTRY}/rancher/mirrored-calico-csi:v3.27.3
-    ${REGISTRY}/rancher/mirrored-calico-node-driver-registrar:v3.27.3
+    ${REGISTRY}/rancher/mirrored-calico-operator:v1.36.2
+    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.29.1
+    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.29.1
+    ${REGISTRY}/rancher/mirrored-calico-typha:v3.29.1
+    ${REGISTRY}/rancher/mirrored-calico-node:v3.29.1
+    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.29.1
+    ${REGISTRY}/rancher/mirrored-calico-cni:v3.29.1
+    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.29.1
+    ${REGISTRY}/rancher/mirrored-calico-csi:v3.29.1
+    ${REGISTRY}/rancher/mirrored-calico-node-driver-registrar:v3.29.1
 EOF
 
 if [ "${GOARCH}" != "arm64" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-cpi-release-manager:v1.28.0
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.1.2
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v3.1.2
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-node-driver-registrar:v2.8.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-resizer:v1.8.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.10.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.3.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v3.5.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-snapshotter:v6.2.1
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere:v1.32.1
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.3.1
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v3.3.1
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-node-driver-registrar:v2.12.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-resizer:v1.10.1
+    ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.14.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.7.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v4.0.1
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-snapshotter:v7.0.2
 EOF
 fi
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
-    ${REGISTRY}/rancher/hardened-multus-cni:v4.0.2-build20240208
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.4.0-build20240122
-    ${REGISTRY}/rancher/hardened-sriov-network-operator:v1.2.0-build20231010
-    ${REGISTRY}/rancher/hardened-sriov-network-config-daemon:v1.2.0-build20231010
-    ${REGISTRY}/rancher/hardened-sriov-network-device-plugin:v3.5.1-build20231009
-    ${REGISTRY}/rancher/hardened-sriov-cni:v2.6.3-build20231009
-    ${REGISTRY}/rancher/hardened-ib-sriov-cni:v1.0.2-build20231009
-    ${REGISTRY}/rancher/hardened-sriov-network-resources-injector:v1.5-build20231009
-    ${REGISTRY}/rancher/hardened-sriov-network-webhook:v1.2.0-build20231010
-    ${REGISTRY}/rancher/hardened-whereabouts:v0.6.3-build20240208
+    ${REGISTRY}/rancher/hardened-multus-cni:v4.1.4-build20250108
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.6.0-build20241022
+    ${REGISTRY}/rancher/hardened-whereabouts:v0.8.0-build20241011
     ${REGISTRY}/rancher/mirrored-library-busybox:1.36.1
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
-    ${REGISTRY}/rancher/harvester-cloud-provider:v0.2.1
-    ${REGISTRY}/rancher/mirrored-kube-vip-kube-vip-iptables:v0.6.0
-    ${REGISTRY}/rancher/harvester-csi-driver:v0.1.6
+    ${REGISTRY}/rancher/harvester-cloud-provider:v0.2.4
+    ${REGISTRY}/rancher/mirrored-kube-vip-kube-vip-iptables:v0.8.7
+    ${REGISTRY}/rancher/harvester-csi-driver:v0.2.2
     ${REGISTRY}/rancher/mirrored-longhornio-csi-node-driver-registrar:v2.3.0
     ${REGISTRY}/rancher/mirrored-longhornio-csi-resizer:v1.2.0
     ${REGISTRY}/rancher/mirrored-longhornio-csi-provisioner:v2.1.2
@@ -101,8 +97,8 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-flannel.txt
-    ${REGISTRY}/rancher/hardened-flannel:v0.25.1-build20240412
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.4.1-build20240325
+    ${REGISTRY}/rancher/hardened-flannel:v0.26.3-build20250108
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.6.0-build20241022
 EOF
 fi
 # Continue to provide a legacy airgap archive set with the default CNI images

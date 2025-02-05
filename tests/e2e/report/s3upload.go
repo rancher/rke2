@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/sirupsen/logrus"
 )
 
 const bucketName = "e2e-results-log"
@@ -23,18 +24,18 @@ func main() {
 		log.Fatal("--file flag is required")
 	}
 
-	logFile, err := ReadLogsFromFile(fileName)
+	logFile, err := readLogsFromFile(fileName)
 	if err != nil {
 		log.Fatalf("Error reading log file: %v", err)
 	}
 	defer logFile.Close()
 
-	if err = UploadReport(logFile); err != nil {
+	if err = uploadReport(logFile); err != nil {
 		log.Fatalf("Error uploading report: %v", err)
 	}
 }
 
-func UploadReport(file *os.File) error {
+func uploadReport(file *os.File) error {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-2"),
 	})
@@ -55,12 +56,12 @@ func UploadReport(file *os.File) error {
 		return fmt.Errorf("failed to upload to S3: %w", err)
 	}
 
-	fmt.Printf("Successfully uploaded %s to S3\n", file.Name())
+	logrus.Infof("Successfully uploaded %s to S3\n", file.Name())
 
 	return nil
 }
 
-func ReadLogsFromFile(fileName string) (*os.File, error) {
+func readLogsFromFile(fileName string) (*os.File, error) {
 	file, err := os.Open(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("error opening file: %w", err)
