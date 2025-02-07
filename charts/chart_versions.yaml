@@ -2,7 +2,7 @@ charts:
   - version: 1.16.601
     filename: /charts/rke2-cilium.yaml
     bootstrap: true
-  - version: v3.29.1-build2025011000
+  - version: v3.29.1-build2025020600
     filename: /charts/rke2-canal.yaml
     bootstrap: true
   - version: v3.29.101
@@ -26,10 +26,10 @@ charts:
   - version: 3.12.200
     filename: /charts/rke2-metrics-server.yaml
     bootstrap: false
-  - version: v4.1.400
+  - version: v4.1.403
     filename: /charts/rke2-multus.yaml
     bootstrap: true
-  - version: v0.26.300
+  - version: v0.26.402
     filename: /charts/rke2-flannel.yaml
     bootstrap: true
   - version: 1.10.000
