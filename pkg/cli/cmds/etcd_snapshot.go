@@ -40,6 +40,7 @@ func NewEtcdSnapshotCommand() cli.Command {
 		"s3-proxy":           copyFlag,
 		"s3-region":          copyFlag,
 		"s3-secret-key":      copyFlag,
+		"s3-session-token":   copyFlag,
 		"s3-skip-ssl-verify": copyFlag,
 		"s3-timeout":         copyFlag,
 	}
