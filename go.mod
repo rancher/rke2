@@ -92,7 +92,6 @@ require (
 	github.com/rancher/wins v0.4.17
 	github.com/rancher/wrangler/v3 v3.2.1-0.20250404112553-6674f9c57bfe
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.6
 	github.com/tigera/operator v1.28.1
 	golang.org/x/sync v0.13.0
@@ -342,6 +341,7 @@ require (
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/spegel-org/spegel v1.0.18 // indirect
 	github.com/spf13/afero v1.14.0 // indirect
+	github.com/spf13/cobra v1.8.1 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
