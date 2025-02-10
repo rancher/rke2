@@ -1,7 +1,7 @@
 #!/bin/bash
 # Usage: ./run_tests.sh
 # This script runs all the rke2 e2e tests and generates a report with the log
-# The generated log is placed in createreport/rke2_${OS}.log
+# The generated log is placed in report/rke2_${OS}.log
 #
 # This script must be run inside the rke2 directory where the tests exist
 #
@@ -22,9 +22,9 @@ git pull --rebase origin master
 /usr/local/go/bin/go mod tidy
 cd tests/e2e
 # create directory to store reports if it does not exists
-if [ ! -d createreport ]
+if [ ! -d report ]
 then
-	mkdir createreport
+	mkdir report
 fi
 
 cleanup() {
@@ -53,29 +53,29 @@ count=0
 run_tests(){
 
     count=$(( count + 1 ))
-    rm createreport/rke2_${OS}.log 2>/dev/null
+    rm report/rke2_${OS}.log 2>/dev/null
 
     for i in ${!tests[@]}; do
 	pushd ${tests[$i]}
 	vagrant destroy -f
 
         echo "RUNNING ${tests[$i]} TEST"
-        /usr/local/go/bin/go test -v ${tests[$i]}_test.go -timeout=2h -nodeOS="$nodeOS" -json -ci |tee -a ../createreport/rke2_${OS}.log
-        
+        /usr/local/go/bin/go test -v ${tests[$i]}_test.go -timeout=2h -nodeOS="$nodeOS" -json -ci > rke2_${OS}.log
+
 	popd
     done
 }
 
-ls createreport/rke2_${OS}.log 2>/dev/null && rm createreport/rke2_${OS}.log
+ls report/rke2_${OS}.log 2>/dev/null && rm report/rke2_${OS}.log
 cleanup
 run_tests
 
 # re-run test if first run fails and keep record of repeatedly failed test to debug
-while [ -f createreport/rke2_${OS}.log ] && grep -w " FAIL:" createreport/rke2_${OS}.log && [ $count -le 2 ]
+while [ -f report/rke2_${OS}.log ] && grep -w " FAIL:" report/rke2_${OS}.log && [ $count -le 2 ]
 do
-        cp createreport/rke2_${OS}.log createreport/rke2_${OS}_${count}.log
+        cp report/rke2_${OS}.log report/rke2_${OS}_${count}.log
         run_tests
 done
 
-# Generate report and upload to s3 bucket
-cd createreport && /usr/local/go/bin/go run -v report-template-bindata.go generate_report.go -f rke2_${OS}.log
+# Upload to s3 bucket
+cd report && /usr/local/go/bin/go run -v s3upload.go -f rke2_${OS}.log
