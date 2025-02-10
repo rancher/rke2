@@ -145,6 +145,7 @@ var (
 		"etcd-s3-proxy":                     copyFlag,
 		"etcd-s3-region":                    copyFlag,
 		"etcd-s3-secret-key":                copyFlag,
+		"etcd-s3-session-token":             copyFlag,
 		"etcd-s3-skip-ssl-verify":           copyFlag,
 		"etcd-s3-timeout":                   copyFlag,
 		"disable-helm-controller":           dropFlag,
