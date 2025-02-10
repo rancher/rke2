@@ -27,8 +27,8 @@ sources:
     spec:
       url: https://rancher.github.io/rke2-charts
       name: rancher-vsphere-csi
-      typefilter:
-        latest: true
+      versionfilter:
+        kind: semver
   
 conditions:
   vsphereCSIVersionShouldBeUpdated:
