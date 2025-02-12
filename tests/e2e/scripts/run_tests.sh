@@ -65,7 +65,7 @@ run_tests(){
 	vagrant destroy -f
 
         echo "RUNNING ${tests[$i]} TEST"
-        /usr/local/go/bin/go test -v ${tests[$i]}_test.go -timeout=2h -nodeOS="$nodeOS" -json -ci > rke2_${OS}.log
+        /usr/local/go/bin/go test -v ${tests[$i]}_test.go -timeout=2h -nodeOS="$nodeOS" -json -ci > ./report/rke2_${OS}.log
 
 	popd
     done
