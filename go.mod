@@ -1,6 +1,6 @@
 module github.com/rancher/rke2
 
-go 1.23.3
+go 1.23.6
 
 replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.12.9
