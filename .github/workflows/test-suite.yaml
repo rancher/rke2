@@ -136,6 +136,41 @@ jobs:
       - name: Run ${{ matrix.dtest }} Test
         run: |
           go test -v -timeout=20m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v 
+  docker-large:
+    name: "Docker Tests (Large)"
+    needs: build
+    if: github.repository == 'rancher/rke2'
+    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        dtest: [basics]
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - name: Check Memory
+        run: lsmem
+      - name: Install Go
+        uses: ./.github/actions/setup-go
+      - name: Download RKE2 Binary and Runtime Image
+        uses: actions/download-artifact@v4
+        with:
+          name: rke2-test-artifacts
+          path: ./artifacts
+      - name: Place the artifacts back and compute sha256sum
+        run: |
+          mkdir -p ./dist/artifacts
+          mkdir -p ./build/images
+          mkdir -p ./bin
+          mv ./artifacts/rke2-* ./build/images/
+          mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
+          sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+      - name: Run ${{ matrix.dtest }} Test
+        # Put the compiled test binary back in the same place as the test source
+        run: |
+          go test -v -timeout=30m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci
   e2e:
     name: "E2E Tests"
     needs: build
