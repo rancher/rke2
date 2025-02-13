@@ -105,7 +105,37 @@ jobs:
     - name: On Failure, Dump Server Logs
       if: ${{ failure() }}
       run: cat ./tests/integration/${{ matrix.itest }}/r2log.txt
-
+  docker: 
+    name: "Docker Tests"
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        dtest: [basics]
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - name: Install Go
+        uses: ./.github/actions/setup-go
+      - name: Download RKE2 Binary and Runtime Image
+        uses: actions/download-artifact@v4
+        with:
+          name: rke2-test-artifacts
+          path: ./artifacts
+      - name: Place the artifacts back and compute sha256sum
+        run: |
+          mkdir -p ./dist/artifacts
+          mkdir -p ./build/images
+          mkdir -p ./bin
+          mv ./artifacts/rke2-* ./build/images/
+          mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
+          sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+      - name: Run ${{ matrix.dtest }} Test
+        run: |
+          go test -v -timeout=20m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v 
   e2e:
     name: "E2E Tests"
     needs: build
@@ -128,7 +158,7 @@ jobs:
       with:
         path: |
             ~/.vagrant.d/boxes
-        key: vagrant-box-ubuntu-2004
+        key: vagrant-box-ubuntu-2404
     - name: "Vagrant Plugin(s)"
       run: vagrant plugin install vagrant-rke2 vagrant-reload vagrant-scp
     
