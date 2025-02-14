@@ -113,7 +113,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dtest: [basics]
+        dtest: [basics, secretsencryption]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -135,7 +135,7 @@ jobs:
           sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
       - name: Run ${{ matrix.dtest }} Test
         run: |
-          go test -v -timeout=20m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v 
+          go test -v -timeout=20m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci
   docker-large:
     name: "Docker Tests (Large)"
     needs: build
