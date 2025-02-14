@@ -457,7 +457,8 @@ func RestartCluster(nodes []DockerNode) error {
 			cmd = "systemctl restart rke2-server"
 		}
 		if _, err := node.RunCmdOnNode(cmd); err != nil {
-			return err
+			logs, _ := node.DumpServiceLogs(10)
+			return fmt.Errorf("journal logs: %s: %v", logs, err)
 		}
 	}
 	return nil
