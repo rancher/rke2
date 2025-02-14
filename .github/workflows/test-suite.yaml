@@ -5,6 +5,7 @@ on:
       - "**.md"
       - "channel.yaml"
       - "install.sh"
+      - "updatecli/**"
       - ".github/**"
       - "!.github/workflows/test-suite.yaml"
   pull_request:
@@ -12,6 +13,7 @@ on:
       - "**.md"
       - "channel.yaml"
       - "install.sh"
+      - "updatecli/**"
       - ".github/**"
       - "!.github/workflows/test-suite.yaml"
   workflow_dispatch: {}
@@ -145,7 +147,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dtest: [basics]
+        dtest: [splitserver]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -168,7 +170,6 @@ jobs:
           mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
           sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
       - name: Run ${{ matrix.dtest }} Test
-        # Put the compiled test binary back in the same place as the test source
         run: |
           go test -v -timeout=30m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci
   e2e:

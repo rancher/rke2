@@ -361,9 +361,13 @@ func (config *TestConfig) CopyAndModifyKubeconfig() error {
 	}
 
 	serverID := 0
-	for i := range config.Servers {
-		server_args := os.Getenv(fmt.Sprintf("SERVER_%d_ARGS", i))
-		if !strings.Contains(server_args, "--disable-apiserver") {
+	// Check the config.yaml of each server to find the first server that has the apiserver enabled
+	for i, node := range config.Servers {
+		out, err := node.RunCmdOnNode("cat /etc/rancher/rke2/config.yaml")
+		if err != nil {
+			return fmt.Errorf("failed to get config.yaml: %v", err)
+		}
+		if !strings.Contains(out, "disable-apiserver: true") {
 			serverID = i
 			break
 		}
@@ -445,6 +449,11 @@ func (config TestConfig) DeployWorkload(workload string) (string, error) {
 		}
 	}
 	return "", nil
+}
+
+func FetchClusterIP(kubeconfig string, servicename string) (string, error) {
+	cmd := "kubectl get svc " + servicename + " -o jsonpath='{.spec.clusterIP}' --kubeconfig=" + kubeconfig
+	return RunCommand(cmd)
 }
 
 // RestartCluster restarts the RKE2 service on each node given
