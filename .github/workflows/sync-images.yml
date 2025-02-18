@@ -47,4 +47,4 @@ jobs:
 
     - name: Sync images
       run: |
-        ./scripts/copy-images.sh -d -t ${{ secrets.PRIME_REGISTRY }} -i dist/artifacts/rke2-images-all.linux-amd64.txt 
+        ./scripts/copy-images.sh -d -t ${{ env.PRIME_REGISTRY }} -i dist/artifacts/rke2-images-all.linux-amd64.txt 
