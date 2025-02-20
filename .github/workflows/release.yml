@@ -119,7 +119,6 @@ jobs:
         dapper -f Dockerfile --target dapper make publish-binary
       env:
         GH_TOKEN: ${{ github.token }}
-
   release-arm64:
     runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64,hdd=256
     steps:
@@ -186,7 +185,6 @@ jobs:
         dapper -f Dockerfile --target dapper make publish-binary
       env:
         GH_TOKEN: ${{ github.token }}
-
   manifest:
     needs: [release-amd64, release-arm64]
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
