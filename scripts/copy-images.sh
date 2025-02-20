@@ -70,7 +70,9 @@ fi
 
 has_crane
 
-[ -n "${DRY_RUN}" ] && echo "Dry run, no images will be copied"
+if [ -n "${DRY_RUN}" ]; then 
+    echo "Dry run, no images will be copied"
+fi
 
 while read -r source_image; do
     if [ -z "${source_image}" ]; then
