@@ -262,3 +262,37 @@ jobs:
           --title "$GITHUB_ACTION_TAG" \
           --latest="false" \
           --notes "Automated release created from $GITHUB_ACTION_TAG tag in ${{ github.repository }}"
+  sync-prime-images:
+    name: "Sync Prime images"
+    needs: [release-amd64, release-arm64, manifest]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install crane
+        uses: ./.github/actions/install-crane
+      - name: "Read secrets"
+        uses: rancher-eio/read-vault-secrets@main
+        with:
+          secrets: |
+            secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
+            secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
+            secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD ;
+      - name: Log in to prime registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.PRIME_REGISTRY }}
+          username: ${{ env.PRIME_REGISTRY_USERNAME }}
+          password: ${{ env.PRIME_REGISTRY_PASSWORD }}
+      - name: Download image lists
+        run: |
+          gh release download ${{ env.GITHUB_ACTION_TAG }} --repo ${{ github.repository }} --pattern '*.txt'
+      - name: Sync images
+        run: |
+          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images-all.linux-amd64.txt
+          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images-all.linux-arm64.txt
+          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images.windows-amd64.txt
+        
