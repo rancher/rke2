@@ -2,10 +2,8 @@ name: Install crane
 inputs:
   version:
     default: v0.20.3
-    required: false
   checksum:
     default: d2ad3dd20f48ec7895f4f42d0f934d134c3b4f650a0c81ddce5dd7676fd0b839
-    required: false
 
 runs:
   using: 'composite'
