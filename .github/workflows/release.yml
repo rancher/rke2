@@ -273,7 +273,7 @@ jobs:
           --notes "Automated release created from $GITHUB_ACTION_TAG tag in ${{ github.repository }}"
   sync-prime-images:
     name: "Sync Prime images"
-    needs: [release-amd64, release-arm64]
+    needs: [release-amd64, release-arm64, manifest]
     runs-on: ubuntu-latest
     permissions:
       contents: read
