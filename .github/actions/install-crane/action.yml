@@ -1,0 +1,17 @@
+name: Install crane
+inputs:
+  version:
+    default: v0.20.3
+  checksum:
+    default: 36c67a932f489b3f2724b64af90b599a8ef2aa7b004872597373c0ad694dc059
+
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      run: |
+        curl -sL "https://github.com/google/go-containerregistry/releases/download/${{ inputs.version }}/go-containerregistry_Linux_x86_64.tar.gz" -o crane.tar.gz
+        echo "${{ inputs.checksum }}  crane.tar.gz" | sha256sum -c
+        tar -xzvf crane.tar.gz crane
+        chmod +x crane
+        mv crane /usr/local/bin/
