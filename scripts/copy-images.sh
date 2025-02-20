@@ -6,7 +6,7 @@ IMAGE_LIST=''
 DRY_RUN=''
 
 has_crane() {
-    CRANE="$(command -v crane)"
+    CRANE="$(command -v crane || true)"
     if [ -z "${CRANE}" ]; then
         echo "crane is not installed"
         exit 1

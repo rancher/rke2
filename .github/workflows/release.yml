@@ -283,9 +283,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Install crane
         uses: ./.github/actions/install-crane
-      - name: Download image lists
-        run: |
-          gh release download ${{ env.GITHUB_ACTION_TAG }} --pattern '*.txt'
       - name: "Read secrets"
         uses: rancher-eio/read-vault-secrets@main
         with:
@@ -299,8 +296,11 @@ jobs:
           registry: ${{ env.PRIME_REGISTRY }}
           username: ${{ env.PRIME_REGISTRY_USERNAME }}
           password: ${{ env.PRIME_REGISTRY_PASSWORD }}
+      - name: Download image lists
+        run: |
+          gh release download ${{ env.GITHUB_ACTION_TAG }} --repo ${{ github.repository }} --pattern '*.txt'
       - name: Sync images
         run: |
-          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i dist/artifacts/rke2-images-all.linux-amd64.txt
-          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i dist/artifacts/rke2-images-all.linux-arm64.txt
-          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i dist/artifacts/rke2-images.windows-amd64.txt
+          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images-all.linux-amd64.txt
+          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images-all.linux-arm64.txt
+          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images.windows-amd64.txt

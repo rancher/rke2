@@ -3,7 +3,7 @@ inputs:
   version:
     default: v0.20.3
   checksum:
-    default: d2ad3dd20f48ec7895f4f42d0f934d134c3b4f650a0c81ddce5dd7676fd0b839
+    default: 36c67a932f489b3f2724b64af90b599a8ef2aa7b004872597373c0ad694dc059
 
 runs:
   using: 'composite'
