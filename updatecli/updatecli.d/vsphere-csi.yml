@@ -23,12 +23,9 @@ scms:
 sources:
   vsphere-csi:
     name: "Get vsphere-csi chart version"
-    kind: "helmchart"
+    kind: "shell"
     spec:
-      url: https://rancher.github.io/rke2-charts
-      name: rancher-vsphere-csi
-      versionfilter:
-        kind: semver
+      command: bash ./updatecli/scripts/retrieve_chart_version.sh rancher-vsphere-csi
   
 conditions:
   vsphereCSIVersionShouldBeUpdated:
