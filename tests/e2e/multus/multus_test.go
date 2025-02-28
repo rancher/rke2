@@ -30,11 +30,7 @@ func Test_E2Emultus(t *testing.T) {
 	RunSpecs(t, "Validate multus Test Suite", suiteConfig, reporterConfig)
 }
 
-var (
-	kubeConfigFile  string
-	serverNodeNames []string
-	agentNodeNames  []string
-)
+var tc *e2e.TestConfig
 var _ = ReportAfterEach(e2e.GenReport)
 
 var _ = Describe("Verify multus Configuration", Ordered, func() {
@@ -42,34 +38,33 @@ var _ = Describe("Verify multus Configuration", Ordered, func() {
 	It("Starts up with no issues", func() {
 		var err error
 		if *local {
-			serverNodeNames, agentNodeNames, err = e2e.CreateLocalCluster(*nodeOS, *serverCount, *agentCount)
+			tc, err = e2e.CreateLocalCluster(*nodeOS, *serverCount, *agentCount)
 		} else {
-			serverNodeNames, agentNodeNames, err = e2e.CreateCluster(*nodeOS, *serverCount, *agentCount)
+			tc, err = e2e.CreateCluster(*nodeOS, *serverCount, *agentCount)
 		}
 		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog(err))
-		fmt.Println("CLUSTER CONFIG")
-		fmt.Println("OS:", *nodeOS)
-		fmt.Println("Server Nodes:", serverNodeNames)
-		fmt.Println("Agent Nodes:", agentNodeNames)
-		kubeConfigFile, err = e2e.GenKubeConfigFile(serverNodeNames[0])
+		By("CLUSTER CONFIG")
+		By("OS: " + *nodeOS)
+		By(tc.Status())
+		tc.KubeconfigFile, err = e2e.GenKubeConfigFile(tc.Servers[0])
 		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("Checks Node Status", func() {
 		Eventually(func(g Gomega) {
-			nodes, err := e2e.ParseNodes(kubeConfigFile, false)
+			nodes, err := e2e.ParseNodes(tc.KubeconfigFile, false)
 			g.Expect(err).NotTo(HaveOccurred())
 			for _, node := range nodes {
 				g.Expect(node.Status).Should(Equal("Ready"))
 			}
 		}, "620s", "5s").Should(Succeed())
-		_, err := e2e.ParseNodes(kubeConfigFile, true)
+		_, err := e2e.ParseNodes(tc.KubeconfigFile, true)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("Checks Pod Status", func() {
 		Eventually(func(g Gomega) {
-			pods, err := e2e.ParsePods(kubeConfigFile, false)
+			pods, err := e2e.ParsePods(tc.KubeconfigFile, false)
 			g.Expect(err).NotTo(HaveOccurred())
 			for _, pod := range pods {
 				if strings.Contains(pod.Name, "helm-install") {
@@ -79,21 +74,21 @@ var _ = Describe("Verify multus Configuration", Ordered, func() {
 				}
 			}
 		}, "420s", "5s").Should(Succeed())
-		_, err := e2e.ParsePods(kubeConfigFile, true)
+		_, err := e2e.ParsePods(tc.KubeconfigFile, true)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("Verifies multus daemonset comes up", func() {
 		Eventually(func() (string, error) {
-			cmd := "kubectl get ds rke2-multus -n kube-system -o jsonpath='{.status.numberReady}' --kubeconfig=" + kubeConfigFile
+			cmd := "kubectl get ds rke2-multus -n kube-system -o jsonpath='{.status.numberReady}' --kubeconfig=" + tc.KubeconfigFile
 			return e2e.RunCommand(cmd)
 		}, "120s", "5s").Should(ContainSubstring("2"))
 	})
 
 	It("Verifies macvlan communication via multus is working", func() {
-		_, err := e2e.DeployWorkload("multus-pods.yaml", kubeConfigFile)
+		_, err := tc.DeployWorkload("multus-pods.yaml")
 		Expect(err).NotTo(HaveOccurred())
-		cmd := "kubectl exec pod-macvlan --kubeconfig=" + kubeConfigFile + " -- ping -c 1 -w 2 10.1.1.102"
+		cmd := "kubectl exec pod-macvlan --kubeconfig=" + tc.KubeconfigFile + " -- ping -c 1 -w 2 10.1.1.102"
 		Eventually(func() (string, error) {
 			return e2e.RunCommand(cmd)
 		}, "20s", "3s").Should(ContainSubstring("0% packet loss"), "failed cmd: "+cmd)
@@ -111,6 +106,6 @@ var _ = AfterSuite(func() {
 		fmt.Println("FAILED!")
 	} else {
 		Expect(e2e.DestroyCluster()).To(Succeed())
-		Expect(os.Remove(kubeConfigFile)).To(Succeed())
+		Expect(os.Remove(tc.KubeconfigFile)).To(Succeed())
 	}
 })
