@@ -26,45 +26,38 @@ func Test_E2EMixedOSBGPValidation(t *testing.T) {
 	RunSpecs(t, "Validate MixedOS BGP Test Suite", suiteConfig, reporterConfig)
 }
 
-var (
-	kubeConfigFile    string
-	serverNodeNames   []string
-	linuxAgentNames   []string
-	windowsAgentNames []string
-)
+var tc *e2e.TestConfig
 
 var _ = ReportAfterEach(e2e.GenReport)
 var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 
 	It("Starts up with no issues", func() {
 		var err error
-		serverNodeNames, linuxAgentNames, windowsAgentNames, err = e2e.CreateMixedCluster(*nodeOS, *serverCount, *linuxAgentCount, *windowsAgentCount)
+		tc, err = e2e.CreateMixedCluster(*nodeOS, *serverCount, *linuxAgentCount, *windowsAgentCount)
 		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog(err))
-		fmt.Println("CLUSTER CONFIG")
-		fmt.Println("OS:", *nodeOS)
-		fmt.Println("Server Nodes:", serverNodeNames)
-		fmt.Println("Linux Agent Nodes:", linuxAgentNames)
-		fmt.Println("Windows Agent Nodes:", windowsAgentNames)
-		kubeConfigFile, err = e2e.GenKubeConfigFile(serverNodeNames[0])
+		By("CLUSTER CONFIG")
+		By("OS: " + *nodeOS)
+		By(tc.Status())
+		tc.KubeconfigFile, err = e2e.GenKubeConfigFile(tc.Servers[0])
 		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("Checks Node Status", func() {
 		Eventually(func(g Gomega) {
-			nodes, err := e2e.ParseNodes(kubeConfigFile, false)
+			nodes, err := e2e.ParseNodes(tc.KubeconfigFile, false)
 			g.Expect(err).NotTo(HaveOccurred())
-			g.Expect(len(serverNodeNames) + len(linuxAgentNames) + len(windowsAgentNames)).Should(Equal(len(nodes)))
+			g.Expect(len(tc.Servers) + len(tc.Agents) + len(tc.WindowsAgents)).Should(Equal(len(nodes)))
 			for _, node := range nodes {
 				g.Expect(node.Status).Should(Equal("Ready"))
 			}
 		}, "420s", "5s").Should(Succeed())
-		_, err := e2e.ParseNodes(kubeConfigFile, true)
+		_, err := e2e.ParseNodes(tc.KubeconfigFile, true)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("Checks Pod Status", func() {
 		Eventually(func(g Gomega) {
-			pods, err := e2e.ParsePods(kubeConfigFile, false)
+			pods, err := e2e.ParsePods(tc.KubeconfigFile, false)
 			g.Expect(err).NotTo(HaveOccurred())
 			for _, pod := range pods {
 				if strings.Contains(pod.Name, "helm-install") {
@@ -74,64 +67,64 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 				}
 			}
 		}, "420s", "5s").Should(Succeed())
-		_, err := e2e.ParsePods(kubeConfigFile, true)
+		_, err := e2e.ParsePods(tc.KubeconfigFile, true)
 		Expect(err).NotTo(HaveOccurred())
 	})
 	It("Verifies internode connectivity over BGP", func() {
-		_, err := e2e.DeployWorkload("pod_client.yaml", kubeConfigFile)
+		_, err := tc.DeployWorkload("pod_client.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
-		_, err = e2e.DeployWorkload("windows_app_deployment.yaml", kubeConfigFile)
+		_, err = tc.DeployWorkload("windows_app_deployment.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
 		// Often BGP router on windows needs a restart to get the routes properly (known issue in Calico)
 		cmdPowershell := "Restart-Service RemoteAccess"
-		res, err := e2e.RunCmdOnWindowsNode(cmdPowershell, windowsAgentNames[0])
+		res, err := tc.WindowsAgents[0].RunCmdOnNode(cmdPowershell)
 		Expect(err).NotTo(HaveOccurred(), "failed output:"+res)
 
 		// Wait for the pod_client pods to have an IP
 		Eventually(func() string {
-			ips, _ := e2e.PodIPsUsingLabel(kubeConfigFile, "app=client")
+			ips, _ := e2e.PodIPsUsingLabel(tc.KubeconfigFile, "app=client")
 			return ips[0].Ipv4
 		}, "120s", "10s").Should(ContainSubstring("10.42"), "failed getClientIPs")
 
 		// Wait for the windows_app_deployment pods to have an IP (We must wait 250s because it takes time)
 		Eventually(func() string {
-			ips, _ := e2e.PodIPsUsingLabel(kubeConfigFile, "app=windows-app")
+			ips, _ := e2e.PodIPsUsingLabel(tc.KubeconfigFile, "app=windows-app")
 			return ips[0].Ipv4
 		}, "620s", "10s").Should(ContainSubstring("10.42"), "failed getClientIPs")
 
 		// Verify there are BGP routes
 		cmdRoute := "ip route"
-		for _, node := range append(serverNodeNames, linuxAgentNames...) {
-			output, err := e2e.RunCmdOnNode(cmdRoute, node)
+		for _, node := range append(tc.Servers, tc.Agents...) {
+			output, err := node.RunCmdOnNode(cmdRoute)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output).Should(ContainSubstring("bird"))
 		}
 
 		// Test Linux -> Windows communication
 		fmt.Println("Testing Linux -> Windows communication")
-		cmd := "kubectl exec svc/client-curl --kubeconfig=" + kubeConfigFile + " -- curl -m7 windows-app-svc:3000"
+		cmd := "kubectl exec svc/client-curl --kubeconfig=" + tc.KubeconfigFile + " -- curl -m7 windows-app-svc:3000"
 		Eventually(func() (string, error) {
 			return e2e.RunCommand(cmd)
 		}, "120s", "3s").Should(ContainSubstring("Welcome to PSTools for K8s Debugging"), "failed cmd: "+cmd)
 
 		// Test Windows -> Linux communication
 		fmt.Println("Testing Windows -> Linux communication")
-		cmd = "kubectl exec svc/windows-app-svc --kubeconfig=" + kubeConfigFile + " -- curl -m7 client-curl:8080"
+		cmd = "kubectl exec svc/windows-app-svc --kubeconfig=" + tc.KubeconfigFile + " -- curl -m7 client-curl:8080"
 		Eventually(func() (string, error) {
 			return e2e.RunCommand(cmd)
 		}, "20s", "3s").Should(ContainSubstring("Welcome to nginx!"), "failed cmd: "+cmd)
 	})
 	It("Runs the mixed os sonobuoy plugin", func() {
 		cmd := "sonobuoy run --kubeconfig=/etc/rancher/rke2/rke2.yaml --plugin my-sonobuoy-plugins/mixed-workload-e2e/mixed-workload-e2e.yaml --aggregator-node-selector kubernetes.io/os:linux --wait"
-		res, err := e2e.RunCmdOnNode(cmd, serverNodeNames[0])
+		res, err := tc.Servers[0].RunCmdOnNode(cmd)
 		Expect(err).NotTo(HaveOccurred(), "failed output:"+res)
 		cmd = "sonobuoy retrieve --kubeconfig=/etc/rancher/rke2/rke2.yaml"
-		testResultTar, err := e2e.RunCmdOnNode(cmd, serverNodeNames[0])
+		testResultTar, err := tc.Servers[0].RunCmdOnNode(cmd)
 		Expect(err).NotTo(HaveOccurred(), "failed cmd: "+cmd)
 		cmd = "sonobuoy results " + testResultTar
-		res, err = e2e.RunCmdOnNode(cmd, serverNodeNames[0])
+		res, err = tc.Servers[0].RunCmdOnNode(cmd)
 		Expect(err).NotTo(HaveOccurred(), "failed cmd: "+cmd)
 		Expect(res).Should(ContainSubstring("Plugin: mixed-workload-e2e\nStatus: passed\n"))
 	})
@@ -148,6 +141,6 @@ var _ = AfterSuite(func() {
 		fmt.Println("FAILED!")
 	} else {
 		Expect(e2e.DestroyCluster()).To(Succeed())
-		Expect(os.Remove(kubeConfigFile)).To(Succeed())
+		Expect(os.Remove(tc.KubeconfigFile)).To(Succeed())
 	}
 })
