@@ -18,6 +18,7 @@ var nodeOS = flag.String("nodeOS", "bento/ubuntu-24.04", "VM operating system")
 var serverCount = flag.Int("serverCount", 1, "number of server nodes")
 var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
+var local = flag.Bool("local", false, "deploy a locally built RKE2")
 
 // Environment Variables Info:
 // E2E_RELEASE_VERSION=v1.23.1+rke2r1 or nil for latest commit from master
@@ -40,7 +41,11 @@ var _ = Describe("Verify multus Configuration", Ordered, func() {
 
 	It("Starts up with no issues", func() {
 		var err error
-		serverNodeNames, agentNodeNames, err = e2e.CreateCluster(*nodeOS, *serverCount, *agentCount)
+		if *local {
+			serverNodeNames, agentNodeNames, err = e2e.CreateLocalCluster(*nodeOS, *serverCount, *agentCount)
+		} else {
+			serverNodeNames, agentNodeNames, err = e2e.CreateCluster(*nodeOS, *serverCount, *agentCount)
+		}
 		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog(err))
 		fmt.Println("CLUSTER CONFIG")
 		fmt.Println("OS:", *nodeOS)
