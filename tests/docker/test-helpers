@@ -333,68 +333,6 @@ export -f test-setup
 
 # ---
 
-gen-certs() {(
-    set -e -x
-    #umask 077
-
-    local opensslConfig=$(pwd)/tests/docker/test-certs-openssl.cnf
-    local subject="/C=US/ST=AZ/L=Tempe/O=Rancher/OU=DevOps/DC=com/DC=rancher"
-    local caDir=$TEST_DIR/db-ca
-    [ -d $caDir ] && rm -rf $caDir
-    mkdir -p $caDir
-
-    cd $caDir
-    mkdir -p private certs newcerts crl
-    touch index.txt
-    echo '01' > serial
-
-    openssl req \
-        -config $opensslConfig \
-        -new -x509 \
-        -nodes \
-        -subj $subject \
-        -extensions v3_ca \
-        -keyout private/ca.key \
-        -out certs/ca.crt
-
-    openssl req \
-        -config $opensslConfig \
-        -new \
-        -nodes \
-        -subj $subject"/CN=server" \
-        -keyout private/db.key \
-        -out db.csr
-
-    openssl ca \
-        -config $opensslConfig \
-        -batch \
-        -extensions db_server \
-        -keyfile private/ca.key \
-        -cert certs/ca.crt \
-        -out certs/db.crt \
-        -infiles db.csr
-
-    openssl req \
-        -config $opensslConfig \
-        -new \
-        -nodes \
-        -subj $subject"/CN=client" \
-        -keyout private/client.key \
-        -out client.csr
-
-    openssl ca \
-        -config $opensslConfig \
-        -batch \
-        -extensions db_client \
-        -keyfile private/ca.key \
-        -cert certs/ca.crt \
-        -out certs/client.crt \
-        -infiles client.csr
-)}
-export -f gen-certs
-
-# ---
-
 inc-count() {(
     shopt -s extglob
     local count=$(exec 2>/dev/null; ls -1d "$TEST_DIR/$1/+([0-9])" | xargs -n1 basename | sort -n -r | head -1)
