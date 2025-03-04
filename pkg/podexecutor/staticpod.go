@@ -23,7 +23,7 @@ import (
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/util"
-	"github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/auth"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
@@ -650,7 +650,7 @@ func (s *StaticPodConfig) stopEtcd() error {
 	ctx := context.Background()
 	conn, err := cri.Connection(ctx, s.RuntimeEndpoint)
 	if err != nil {
-		return errors.Wrap(err, "failed to connect to cri")
+		return pkgerrors.WithMessage(err, "failed to connect to cri")
 	}
 	cRuntime := runtimeapi.NewRuntimeServiceClient(conn)
 	defer conn.Close()
@@ -664,7 +664,7 @@ func (s *StaticPodConfig) stopEtcd() error {
 	}
 	resp, err := cRuntime.ListPodSandbox(ctx, &runtimeapi.ListPodSandboxRequest{Filter: filter})
 	if err != nil {
-		return errors.Wrap(err, "failed to list pods")
+		return pkgerrors.WithMessage(err, "failed to list pods")
 	}
 
 	for _, pod := range resp.Items {
@@ -672,7 +672,7 @@ func (s *StaticPodConfig) stopEtcd() error {
 			continue
 		}
 		if _, err := cRuntime.RemovePodSandbox(ctx, &runtimeapi.RemovePodSandboxRequest{PodSandboxId: pod.Id}); err != nil {
-			return errors.Wrap(err, "failed to terminate pod")
+			return pkgerrors.WithMessage(err, "failed to terminate pod")
 		}
 	}
 
