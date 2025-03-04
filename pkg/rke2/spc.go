@@ -2,6 +2,7 @@ package rke2
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,7 +11,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/util"
 	"github.com/k3s-io/k3s/pkg/version"
-	"github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -90,7 +91,7 @@ func cleanupStaticPods(dataDir string) error {
 	for _, component := range components {
 		manifestName := filepath.Join(manifestDir, component+".yaml")
 		if err := os.RemoveAll(manifestName); err != nil {
-			return errors.Wrapf(err, "unable to delete %s manifest", component)
+			return pkgerrors.WithMessagef(err, "unable to delete %s manifest", component)
 		}
 	}
 	return nil

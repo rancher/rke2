@@ -5,6 +5,7 @@ package windows
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -17,7 +18,6 @@ import (
 	"github.com/Microsoft/hcsshim"
 	wapi "github.com/iamacarpet/go-win64api"
 	"github.com/libp2p/go-netroute"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	opv1 "github.com/tigera/operator/api/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -34,7 +34,7 @@ var (
 // createHnsNetwork creates the network that will connect nodes and returns its managementIP
 func createHnsNetwork(backend string, networkAdapter string) (string, error) {
 	var network hcsshim.HNSNetwork
-        // Check if the interface already exists
+	// Check if the interface already exists
 	hcsnetwork, err := hcsshim.GetHNSNetworkByName(CalicoHnsNetworkName)
 	if err == nil {
 		return hcsnetwork.ManagementIP, nil

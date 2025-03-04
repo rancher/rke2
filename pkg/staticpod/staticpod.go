@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -16,7 +17,7 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
-	"github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -84,7 +85,7 @@ type Args struct {
 func Remove(dir, command string) error {
 	manifestPath := filepath.Join(dir, command+".yaml")
 	if err := os.Remove(manifestPath); err != nil && !errors.Is(err, os.ErrNotExist) {
-		return errors.Wrapf(err, "failed to remove %s static pod manifest", command)
+		return pkgerrors.WithMessagef(err, "failed to remove %s static pod manifest", command)
 	}
 	logrus.Infof("Removed %s static pod manifest", command)
 	return nil
