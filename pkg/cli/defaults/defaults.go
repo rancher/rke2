@@ -6,19 +6,19 @@ import (
 	"path/filepath"
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
-	"github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 	"github.com/urfave/cli"
 	"google.golang.org/grpc/grpclog"
 )
 
 func Set(_ *cli.Context, dataDir string) error {
 	if err := createDataDir(dataDir, 0755); err != nil {
-		return errors.Wrapf(err, "failed to create directory %s", dataDir)
+		return pkgerrors.WithMessagef(err, "failed to create directory %s", dataDir)
 	}
 
 	logsDir := filepath.Join(dataDir, "agent", "logs")
 	if err := os.MkdirAll(logsDir, 0750); err != nil {
-		return errors.Wrapf(err, "failed to create directory %s", logsDir)
+		return pkgerrors.WithMessagef(err, "failed to create directory %s", logsDir)
 	}
 
 	cmds.ServerConfig.ClusterInit = true

@@ -2,6 +2,7 @@ package rke2
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -20,7 +21,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	rawServer "github.com/k3s-io/k3s/pkg/server"
 	"github.com/natefinch/lumberjack"
-	"github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/wrangler/pkg/slice"
@@ -267,7 +268,7 @@ func removeDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems 
 			if disabled {
 				manifestName := filepath.Join(manifestDir, component+".yaml")
 				if err := os.RemoveAll(manifestName); err != nil {
-					return errors.Wrapf(err, "unable to delete %s manifest", component)
+					return pkgerrors.WithMessagef(err, "unable to delete %s manifest", component)
 				}
 			}
 		}
@@ -289,7 +290,7 @@ func removeDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems 
 			select {
 			case err := <-containerdErr:
 				if err != nil {
-					return errors.Wrap(err, "temporary containerd process exited unexpectedly")
+					return pkgerrors.WithMessage(err, "temporary containerd process exited unexpectedly")
 				}
 			case <-ctx.Done():
 				return errors.New("static pod cleanup timed out")

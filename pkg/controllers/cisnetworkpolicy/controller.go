@@ -6,7 +6,7 @@ import (
 	"sort"
 
 	"github.com/k3s-io/k3s/pkg/server"
-	"github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 	coreclient "github.com/rancher/wrangler/pkg/generated/controllers/core/v1"
 	"github.com/sirupsen/logrus"
 	core "k8s.io/api/core/v1"
@@ -95,7 +95,7 @@ func (h *handler) reconcileFlannelHostNetworkPolicy(_ string, _ *core.Node) (*co
 			return nil
 		})
 		if err != nil {
-			return nil, errors.Wrapf(err, "CISNetworkPolicyController: error working on network policy in namespace %s", namespace)
+			return nil, pkgerrors.WithMessagef(err, "CISNetworkPolicyController: error working on network policy in namespace %s", namespace)
 		}
 	}
 	logrus.Debugf("CISNetworkPolicyController: Handled node change")
@@ -126,7 +126,7 @@ func (h *handler) generateHostNetworkPolicyIngressRule() (*netv1.NetworkPolicyIn
 
 	nodes, err := h.k8s.CoreV1().Nodes().List(h.ctx, metav1.ListOptions{})
 	if err != nil {
-		return &npIR, errors.Wrap(err, "CISNetworkPolicyController: problem listing nodes")
+		return &npIR, pkgerrors.WithMessage(err, "CISNetworkPolicyController: problem listing nodes")
 	}
 
 	for _, node := range nodes.Items {
