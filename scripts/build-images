@@ -33,8 +33,8 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-traefik.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.29.2-build20250218
-    ${REGISTRY}/rancher/hardened-flannel:v0.26.4-build20250218
+    ${REGISTRY}/rancher/hardened-calico:v3.29.2-build20250306
+    ${REGISTRY}/rancher/hardened-flannel:v0.26.5-build20250306
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
@@ -97,8 +97,8 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-flannel.txt
-    ${REGISTRY}/rancher/hardened-flannel:v0.26.4-build20250218
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.6.2-build20250124
+    ${REGISTRY}/rancher/hardened-flannel:v0.26.5-build20250306
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.6.2-build20250306
 EOF
 fi
 # Continue to provide a legacy airgap archive set with the default CNI images
