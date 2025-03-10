@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -68,10 +68,10 @@ func validateCISReqs(role CLIRole) error {
 	// etcd user only needs to exist on servers
 	if role == Server {
 		if _, err := user.Lookup("etcd"); err != nil {
-			ce = append(ce, errors.Wrap(err, "missing required"))
+			ce = append(ce, pkgerrors.WithMessage(err, "missing required"))
 		}
 		if _, err := user.LookupGroup("etcd"); err != nil {
-			ce = append(ce, errors.Wrap(err, "missing required"))
+			ce = append(ce, pkgerrors.WithMessage(err, "missing required"))
 		}
 	}
 
