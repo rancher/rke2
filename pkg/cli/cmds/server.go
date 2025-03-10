@@ -87,6 +87,7 @@ var (
 		"disable-etcd":                      copyFlag,
 		"etcd-disable-snapshots":            copyFlag,
 		"etcd-snapshot-schedule-cron":       copyFlag,
+		"etcd-snapshot-reconcile-interval":  copyFlag,
 		"etcd-snapshot-retention":           copyFlag,
 		"etcd-snapshot-dir":                 copyFlag,
 		"etcd-snapshot-name":                copyFlag,
