@@ -6,7 +6,7 @@ package defaults
 import (
 	"os"
 
-	"github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 )
 
 func createDataDir(dataDir string, perm os.FileMode) error {
@@ -15,7 +15,7 @@ func createDataDir(dataDir string, perm os.FileMode) error {
 	}
 
 	if err := os.MkdirAll(dataDir, perm); err != nil {
-		return errors.Wrapf(err, "failed to create directory %s", dataDir)
+		return pkgerrors.WithMessagef(err, "failed to create directory %s", dataDir)
 	}
 	return nil
 }

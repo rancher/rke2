@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/k3s-io/k3s/pkg/version"
-	"github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/wins/pkg/logs"
 	"github.com/rancher/wins/pkg/profilings"
 	"github.com/rancher/wrangler/v3/pkg/signals"
@@ -58,13 +58,13 @@ func StartService() (bool, error) {
 	// ETW tracing
 	etw, err := logs.NewEtwProviderHook(version.Program)
 	if err != nil {
-		return false, errors.Wrap(err, "could not create ETW provider logrus hook")
+		return false, pkgerrors.WithMessage(err, "could not create ETW provider logrus hook")
 	}
 	logrus.AddHook(etw)
 
 	el, err := logs.NewEventLogHook(version.Program)
 	if err != nil {
-		return false, errors.Wrap(err, "could not create eventlog logrus hook")
+		return false, pkgerrors.WithMessage(err, "could not create eventlog logrus hook")
 	}
 	logrus.AddHook(el)
 

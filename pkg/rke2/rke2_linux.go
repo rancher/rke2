@@ -6,6 +6,7 @@ package rke2
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
 	"path/filepath"
@@ -17,7 +18,6 @@ import (
 	"github.com/k3s-io/k3s/pkg/cluster/managed"
 	"github.com/k3s-io/k3s/pkg/etcd"
 	"github.com/k3s-io/kine/pkg/util"
-	"github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
