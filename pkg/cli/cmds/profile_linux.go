@@ -13,7 +13,7 @@ import (
 	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 const (

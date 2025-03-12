@@ -79,7 +79,7 @@ require (
 	github.com/google/go-containerregistry v0.20.2
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.6
-	github.com/k3s-io/k3s v1.32.0-rc1.0.20250311214945-781640ecea12 // master
+	github.com/k3s-io/k3s v1.32.0-rc1.0.20250312160245-ac38633c7192 // master
 	github.com/k3s-io/kine v0.13.9
 	github.com/libp2p/go-netroute v0.2.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
@@ -87,14 +87,14 @@ require (
 	github.com/onsi/gomega v1.36.2
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/permissions v0.0.0-20240523180510-4001d3d637f7
-	github.com/rancher/wharfie v0.6.7
+	github.com/rancher/wharfie v0.6.9
 	github.com/rancher/wins v0.4.17
 	github.com/rancher/wrangler/v3 v3.2.0-rc.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1 // indirect
 	github.com/spf13/pflag v1.0.5
 	github.com/tigera/operator v1.28.1
-	github.com/urfave/cli v1.22.15
+	github.com/urfave/cli/v2 v2.27.6
 	golang.org/x/sync v0.11.0
 	golang.org/x/sys v0.30.0
 	google.golang.org/grpc v1.70.0
@@ -336,7 +336,7 @@ require (
 	github.com/rancher/remotedialer v0.4.1 // indirect
 	github.com/raulk/go-watchdog v1.3.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
-	github.com/rootless-containers/rootlesskit v1.0.1 // indirect
+	github.com/rootless-containers/rootlesskit v1.1.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/scjalliance/comshim v0.0.0-20190308082608-cf06d2532c4e // indirect
@@ -466,6 +466,7 @@ require (
 	github.com/pion/webrtc/v3 v3.3.5 // indirect
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635 // indirect
 	github.com/wlynxg/anet v0.0.5 // indirect
+	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	k8s.io/externaljwt v1.32.0 // indirect
 	tags.cncf.io/container-device-interface v0.8.1 // indirect
 	tags.cncf.io/container-device-interface/specs-go v0.8.0 // indirect
