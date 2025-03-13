@@ -1,7 +1,7 @@
 ARG KUBERNETES_VERSION=dev
 
 # Build environment
-FROM rancher/hardened-build-base:v1.22.12b1 AS build
+FROM rancher/hardened-build-base:v1.23.6b1 AS build
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
 RUN set -x && \
@@ -117,7 +117,7 @@ RUN rm -vf /charts/*.sh /charts/*.md /charts/chart_versions.yaml
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
-FROM rancher/hardened-kubernetes:v1.30.10-rke2r1-build20250213 AS kubernetes
+FROM rancher/hardened-kubernetes:v1.30.11-rke2r1-build20250312 AS kubernetes
 FROM rancher/hardened-containerd:v1.7.26-k3s1-build20250310 AS containerd
 FROM rancher/hardened-crictl:v1.30.1-build20250211 AS crictl
 FROM rancher/hardened-runc:v1.2.5-build20250304 AS runc
