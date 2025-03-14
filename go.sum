@@ -254,8 +254,8 @@ github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 h1:L/gRVlceqvL25
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/Azure/go-autorest v12.0.0+incompatible/go.mod h1:r+4oMnoxhatjLLJ6zxSWATqVooLgysK6ZNox3g/xq24=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/BurntSushi/toml v1.3.2 h1:o7IhLm0Msx3BaB+n3Ag7L8EVlByGnpq14C4YWiu/gL8=
-github.com/BurntSushi/toml v1.3.2/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
+github.com/BurntSushi/toml v1.4.0 h1:kuoIxZQy2WRRk1pttg9asf+WVv6tWQuBNVmK8+nqPr0=
+github.com/BurntSushi/toml v1.4.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/GeertJohan/go.incremental v1.0.0/go.mod h1:6fAjUhbVuX1KcMD3c8TEgVUqmo4seqhv0i0kdATSkM0=
@@ -1104,8 +1104,8 @@ github.com/k3s-io/etcd/server/v3 v3.5.19-k3s1 h1:1X30nP+ySC9d9xUIg1ftj6jF76MA5pe
 github.com/k3s-io/etcd/server/v3 v3.5.19-k3s1/go.mod h1:sEMCH1EdYxuWsFu2PzH31jEsmeCQqTUZ7E1uSo9gpg0=
 github.com/k3s-io/helm-controller v0.16.6 h1:w/cdunYPTmatAMrYlf/qbmuatrKjfpC122ISn5QfIpA=
 github.com/k3s-io/helm-controller v0.16.6/go.mod h1:Zy6dK6PIepVPOH2wM3sg00RsJLAk3FkXIJl+rWeHC3Y=
-github.com/k3s-io/k3s v1.32.0-rc1.0.20250311214945-781640ecea12 h1:FNYdWzl0s0r4srroQxAKE+ZSO6oaYOkQ9NnP053IOeg=
-github.com/k3s-io/k3s v1.32.0-rc1.0.20250311214945-781640ecea12/go.mod h1:ws/UOEaNT7y5E6yhHQV0IiPS8jG9uCQUQ4S4sxRav/0=
+github.com/k3s-io/k3s v1.32.0-rc1.0.20250312160245-ac38633c7192 h1:/zX1LY7kOsh4i7d8uU7DJc4s+4I4nGDbwS0yVGvnJJg=
+github.com/k3s-io/k3s v1.32.0-rc1.0.20250312160245-ac38633c7192/go.mod h1:hKtvlgWGgIjggzQCM92YSLT3YOJCBSBbwq01HugdxRE=
 github.com/k3s-io/kine v0.13.9 h1:Dcobn5rXfl0tGCTPJzLRsowxAnK/4hhLzRGuPXhRJVQ=
 github.com/k3s-io/kine v0.13.9/go.mod h1:eBfR4kXgSkB4yIL+S3bF1+z5cvgYz8wbXrwANeL/Qok=
 github.com/k3s-io/klog v1.0.0-k3s2/go.mod h1:4Bi6QPql/J/LkTDqv7R/cd3hPo4k2DG6Ptcz060Ez5I=
@@ -1654,8 +1654,8 @@ github.com/rancher/permissions v0.0.0-20240523180510-4001d3d637f7 h1:0Kg2SGoMeU1
 github.com/rancher/permissions v0.0.0-20240523180510-4001d3d637f7/go.mod h1:fsbs0YOsGn1ofPD5p+BuI4qDhbMbSJtTegKt6Ucna+c=
 github.com/rancher/remotedialer v0.4.1 h1:jwOf2kPRjBBpSFofv1OuZHWaYHeC9Eb6/XgDvbkoTgc=
 github.com/rancher/remotedialer v0.4.1/go.mod h1:Ys004RpJuTLSm+k4aYUCoFiOOad37ubYev3TkOFg/5w=
-github.com/rancher/wharfie v0.6.7 h1:BhbBVJSLoDQMkZb+zVTLEKckUbq4sc3ZmEYqGakggSY=
-github.com/rancher/wharfie v0.6.7/go.mod h1:ew49A9PzRsTngdzXIkgakfhMq3mHMA650HS1OVQpaNA=
+github.com/rancher/wharfie v0.6.9 h1:w0xf8F/LqjuXBYYJRMWTcHWIF8p4zVKmFOOEqz74VhQ=
+github.com/rancher/wharfie v0.6.9/go.mod h1:PpyuDiBgnFVd56kKtNfSS3cMDTVcRJZVYfNwxcqv50I=
 github.com/rancher/wins v0.4.17 h1:Rh/3bVWNsXU4JOrn5/LpTdgQzCd3L8pYhW8a2sg6K60=
 github.com/rancher/wins v0.4.17/go.mod h1:31SyQWwDHjoYzU+jZRMmME90YzPKLJ2eCfsLVOwNoek=
 github.com/rancher/wrangler/v3 v3.2.0-rc.1 h1:c0r5aBVUwWUqfeVFP9S4JGalsLra5zHZtvyteSuKHtI=
@@ -1680,8 +1680,8 @@ github.com/rogpeppe/go-internal v1.10.0/go.mod h1:UQnix2H7Ngw/k4C5ijL5+65zddjncj
 github.com/rogpeppe/go-internal v1.12.0/go.mod h1:E+RYuTGaKKdloAfM02xzb0FW3Paa99yedzYV+kq4uf4=
 github.com/rogpeppe/go-internal v1.13.1 h1:KvO1DLK/DRN07sQ1LQKScxyZJuNnedQ5/wKSR38lUII=
 github.com/rogpeppe/go-internal v1.13.1/go.mod h1:uMEvuHeurkdAXX61udpOXGD/AzZDWNMNyH2VO9fmH0o=
-github.com/rootless-containers/rootlesskit v1.0.1 h1:jepqW1txFSowKSMAEkVhWH3Oa1TCY9S400MVYe/6Iro=
-github.com/rootless-containers/rootlesskit v1.0.1/go.mod h1:t2UAiYagxrJ+wmpFAUIZPcqsm4k2B7ve6g7lILKbloc=
+github.com/rootless-containers/rootlesskit v1.1.1 h1:F5psKWoWY9/VjZ3ifVcaosjvFZJOagX85U22M0/EQZE=
+github.com/rootless-containers/rootlesskit v1.1.1/go.mod h1:UD5GoA3dqKCJrnvnhVgQQnweMF2qZnf9KLw8EewcMZI=
 github.com/rs/cors v1.7.0/go.mod h1:gFx+x8UowdsKA9AchylcLynDq+nNFfI8FkUZdN/jGCU=
 github.com/rs/xid v1.6.0 h1:fV591PaemRlL6JfRxGDEPl69wICngIQ3shQtzfy2gxU=
 github.com/rs/xid v1.6.0/go.mod h1:7XoLgs4eV+QndskICGsho+ADou8ySMSjJKDIan90Nz0=
@@ -1840,8 +1840,8 @@ github.com/urfave/cli v1.22.2/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtX
 github.com/urfave/cli v1.22.4/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/urfave/cli v1.22.5/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/urfave/cli v1.22.10/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
-github.com/urfave/cli v1.22.15 h1:nuqt+pdC/KqswQKhETJjo7pvn/k4xMUxgW6liI7XpnM=
-github.com/urfave/cli v1.22.15/go.mod h1:wSan1hmo5zeyLGBjRJbzRTNk8gwoYa2B9n4q9dmRIc0=
+github.com/urfave/cli/v2 v2.27.6 h1:VdRdS98FNhKZ8/Az8B7MTyGQmpIr36O1EHybx/LaZ4g=
+github.com/urfave/cli/v2 v2.27.6/go.mod h1:3Sevf16NykTbInEnD0yKkjDAeZDS0A6bzhBH5hrMvTQ=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasttemplate v1.0.1/go.mod h1:UQGH1tvbgY+Nz5t2n7tXsz52dQxojPUpymEIMZ47gx8=
 github.com/vbatts/tar-split v0.11.6 h1:4SjTW5+PU11n6fZenf2IPoV8/tz3AaYHMWjf23envGs=
@@ -1882,6 +1882,8 @@ github.com/xiang90/probing v0.0.0-20221125231312-a49e3df8f510 h1:S2dVYn90KE98chq
 github.com/xiang90/probing v0.0.0-20221125231312-a49e3df8f510/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/xlab/handysort v0.0.0-20150421192137-fb3537ed64a1/go.mod h1:QcJo0QPSfTONNIgpN5RA8prR7fF8nkF6cTWTcNerRO8=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
+github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 h1:gEOO8jv9F4OT7lGCjxCBTO/36wtF6j2nSip77qHd4x4=
+github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1/go.mod h1:Ohn+xnUBiLI6FVj/9LpzZWtj1/D6lUovWYBkxHVV3aM=
 github.com/yl2chen/cidranger v1.0.2 h1:lbOWZVCG1tCRX4u24kuM1Tb4nHqWkDxwLdoS+SevawU=
 github.com/yl2chen/cidranger v1.0.2/go.mod h1:9U1yz7WPYDwf0vpNWFaeRh0bjwz5RVgRy/9UEQfHl0g=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
