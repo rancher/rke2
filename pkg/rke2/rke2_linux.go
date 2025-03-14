@@ -22,7 +22,7 @@ import (
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 const (
@@ -154,8 +154,8 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 	}
 
 	var ingressControllerName string
-	if IngressControllerFlag.Value != nil && len(*IngressControllerFlag.Value) > 0 {
-		ingressControllerName = (*IngressControllerFlag.Value)[0]
+	if len(cfg.IngressController.Value()) > 0 {
+		ingressControllerName = cfg.IngressController.Value()[0]
 	}
 
 	return &podexecutor.StaticPodConfig{
@@ -254,7 +254,7 @@ func parseControlPlaneResources(cfg Config) (*podexecutor.ControlPlaneResources,
 
 	parsedRequestsLimits := make(map[string]string)
 
-	for _, requests := range cfg.ControlPlaneResourceRequests {
+	for _, requests := range cfg.ControlPlaneResourceRequests.Value() {
 		for _, rawRequest := range strings.Split(requests, ",") {
 			v := strings.SplitN(rawRequest, "=", 2)
 			if len(v) != 2 {
@@ -264,7 +264,7 @@ func parseControlPlaneResources(cfg Config) (*podexecutor.ControlPlaneResources,
 		}
 	}
 
-	for _, limits := range cfg.ControlPlaneResourceLimits {
+	for _, limits := range cfg.ControlPlaneResourceLimits.Value() {
 		for _, rawLimit := range strings.Split(limits, ",") {
 			v := strings.SplitN(rawLimit, "=", 2)
 			if len(v) != 2 {
@@ -442,7 +442,7 @@ func parseControlPlaneProbeConfs(cfg Config) (*podexecutor.ControlPlaneProbeConf
 
 	parsedProbeConf := make(map[string]int32)
 
-	for _, conf := range cfg.ControlPlaneProbeConf {
+	for _, conf := range cfg.ControlPlaneProbeConf.Value() {
 		for _, rawConf := range strings.Split(conf, ",") {
 			v := strings.SplitN(rawConf, "=", 2)
 			if len(v) != 2 {
