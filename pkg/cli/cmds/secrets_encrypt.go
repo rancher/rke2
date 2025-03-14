@@ -3,10 +3,10 @@ package cmds
 import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/cli/secretsencrypt"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
-func NewSecretsEncryptCommand() cli.Command {
+func NewSecretsEncryptCommand() *cli.Command {
 	k3sOpts := K3SFlagSet{
 		"data-dir": copyFlag,
 		"token":    copyFlag,

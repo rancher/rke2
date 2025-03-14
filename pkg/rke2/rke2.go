@@ -27,7 +27,7 @@ import (
 
 	"github.com/rancher/wrangler/v3/pkg/slice"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1"
@@ -44,6 +44,8 @@ type Config struct {
 	ControlPlaneResourceRequests   cli.StringSlice
 	ControlPlaneResourceLimits     cli.StringSlice
 	ControlPlaneProbeConf          cli.StringSlice
+	CNI                            cli.StringSlice
+	IngressController              cli.StringSlice
 	ExtraMounts                    ExtraMounts
 	ExtraEnv                       ExtraEnv
 }
@@ -70,24 +72,6 @@ var (
 	DisableItems = []string{"rke2-coredns", "rke2-metrics-server", "rke2-snapshot-controller", "rke2-snapshot-controller-crd", "rke2-snapshot-validation-webhook"}
 	CNIItems     = []string{"calico", "canal", "cilium", "flannel"}
 	IngressItems = []string{"ingress-nginx", "traefik"}
-
-	CNIFlag = &cli.StringSliceFlag{
-		Name:   "cni",
-		Usage:  "(networking) CNI Plugins to deploy, one of none, " + strings.Join(CNIItems, ", ") + "; optionally with multus as the first value to enable the multus meta-plugin (default: canal)",
-		EnvVar: "RKE2_CNI",
-		Value:  &cli.StringSlice{},
-	}
-	IngressControllerFlag = &cli.StringSliceFlag{
-		Name:   "ingress-controller",
-		Usage:  "(networking) Ingress Controllers to deploy, one of none, " + strings.Join(IngressItems, ", ") + "; the first value will be set as the default ingress class (default: ingress-nginx)",
-		EnvVar: "RKE_INGRESS_CONTROLLER",
-		Value:  &cli.StringSlice{},
-	}
-	ServiceLBFlag = &cli.BoolFlag{
-		Name:   "enable-servicelb",
-		Usage:  "(components) Enable rke2 default cloud controller manager's service controller",
-		EnvVar: "RKE2_ENABLE_SERVICELB",
-	}
 )
 
 // Valid CIS Profile versions
@@ -144,7 +128,7 @@ func Server(clx *cli.Context, cfg Config) error {
 
 	var leaderControllers rawServer.CustomControllers
 
-	cnis := *CNIFlag.Value
+	cnis := clx.StringSlice("cni")
 	if cisMode && (len(cnis) == 0 || slice.ContainsString(cnis, "canal")) {
 		leaderControllers = append(leaderControllers, cisnetworkpolicy.Controller)
 	} else {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/version"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 var (
@@ -30,7 +30,7 @@ var (
 	})
 )
 
-func NewCompletionCommand() cli.Command {
+func NewCompletionCommand() *cli.Command {
 	cmd := k3sCompletionBase
 	cmd.Flags = append(cmd.Flags, completionFlags...)
 	return cmd
@@ -61,7 +61,7 @@ func Run(ctx *cli.Context) error {
 	if ctx.NArg() < 1 {
 		return fmt.Errorf("must provide a valid SHELL argument")
 	}
-	shell := ctx.Args()[0]
+	shell := ctx.Args().First()
 	completetionScript, err := genCompletionScript(shell, ctx.Bool("kubectl"), ctx.Bool("crictl"), ctx.Bool("ctr"))
 	if err != nil {
 		return err
