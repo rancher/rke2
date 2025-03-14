@@ -4,12 +4,12 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/cli/etcdsnapshot"
 	"github.com/k3s-io/k3s/pkg/configfilearg"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 const defaultSnapshotRentention = 5
 
-func NewEtcdSnapshotCommand() cli.Command {
+func NewEtcdSnapshotCommand() *cli.Command {
 	cmds.ServerConfig.ClusterInit = true
 	k3sOpts := K3SFlagSet{
 		"config":          copyFlag,
