@@ -10,7 +10,7 @@ import (
 
 	"github.com/rancher/rke2/pkg/podexecutor"
 	"github.com/rancher/rke2/pkg/staticpod"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 func Test_UnitInitExecutor(t *testing.T) {
@@ -29,11 +29,11 @@ func Test_UnitInitExecutor(t *testing.T) {
 			name: "agent",
 			args: args{
 				cfg: Config{
-					ControlPlaneProbeConf:        []string{"kube-proxy-startup-initial-delay-seconds=42"},
-					ControlPlaneResourceLimits:   []string{"kube-proxy-cpu=123m"},
-					ControlPlaneResourceRequests: []string{"kube-proxy-memory=123Mi"},
-					ExtraEnv:                     ExtraEnv{KubeProxy: []string{"FOO=BAR"}},
-					ExtraMounts:                  ExtraMounts{KubeProxy: []string{"/foo=/bar"}},
+					ControlPlaneProbeConf:        *cli.NewStringSlice("kube-proxy-startup-initial-delay-seconds=42"),
+					ControlPlaneResourceLimits:   *cli.NewStringSlice("kube-proxy-cpu=123m"),
+					ControlPlaneResourceRequests: *cli.NewStringSlice("kube-proxy-memory=123Mi"),
+					ExtraEnv:                     ExtraEnv{KubeProxy: *cli.NewStringSlice("FOO=BAR")},
+					ExtraMounts:                  ExtraMounts{KubeProxy: *cli.NewStringSlice("/foo=/bar")},
 				},
 				isServer: false,
 			},
@@ -62,11 +62,11 @@ func Test_UnitInitExecutor(t *testing.T) {
 			name: "server",
 			args: args{
 				cfg: Config{
-					ControlPlaneProbeConf:        []string{"kube-proxy-startup-initial-delay-seconds=123"},
-					ControlPlaneResourceLimits:   []string{"kube-proxy-cpu=42m"},
-					ControlPlaneResourceRequests: []string{"kube-proxy-memory=42Mi"},
-					ExtraEnv:                     ExtraEnv{KubeProxy: []string{"BAZ=BOP"}},
-					ExtraMounts:                  ExtraMounts{KubeProxy: []string{"/baz=/bop"}},
+					ControlPlaneProbeConf:        *cli.NewStringSlice("kube-proxy-startup-initial-delay-seconds=123"),
+					ControlPlaneResourceLimits:   *cli.NewStringSlice("kube-proxy-cpu=42m"),
+					ControlPlaneResourceRequests: *cli.NewStringSlice("kube-proxy-memory=42Mi"),
+					ExtraEnv:                     ExtraEnv{KubeProxy: *cli.NewStringSlice("BAZ=BOP")},
+					ExtraMounts:                  ExtraMounts{KubeProxy: *cli.NewStringSlice("/baz=/bop")},
 				},
 				isServer: true,
 			},
@@ -95,7 +95,7 @@ func Test_UnitInitExecutor(t *testing.T) {
 			name: "bad probe conf",
 			args: args{
 				cfg: Config{
-					ControlPlaneProbeConf: []string{"kube-proxy-startup-initial-delay-seconds=-123"},
+					ControlPlaneProbeConf: *cli.NewStringSlice("kube-proxy-startup-initial-delay-seconds=-123"),
 				},
 			},
 			wantErr: true,
@@ -104,7 +104,7 @@ func Test_UnitInitExecutor(t *testing.T) {
 			name: "bad control plane limits",
 			args: args{
 				cfg: Config{
-					ControlPlaneResourceLimits: []string{"kube-proxy-cpu"},
+					ControlPlaneResourceLimits: *cli.NewStringSlice("kube-proxy-cpu"),
 				},
 			},
 			wantErr: true,
@@ -113,7 +113,7 @@ func Test_UnitInitExecutor(t *testing.T) {
 			name: "bad control plane requests",
 			args: args{
 				cfg: Config{
-					ControlPlaneResourceRequests: []string{"kube-proxy-memory"},
+					ControlPlaneResourceRequests: *cli.NewStringSlice("kube-proxy-memory"),
 				},
 			},
 			wantErr: true,
