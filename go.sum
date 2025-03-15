@@ -368,6 +368,8 @@ github.com/bmizerany/perks v0.0.0-20141205001514-d9a9656a3a4b/go.mod h1:ac9efd0D
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/boombuler/barcode v1.0.1/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/bradfitz/go-smtpd v0.0.0-20170404230938-deb6d6237625/go.mod h1:HYsPBTaaSFSlLx/70C2HPIMNZpVV8+vt/A+FMnYP11g=
+github.com/brandond/k3s v1.32.0-rc1.0.20250315021327-8c45359d40e3 h1:zGYpAHMVkDvRd2f7udmOc1DRG2yH7k+B2bSBBwOp4E4=
+github.com/brandond/k3s v1.32.0-rc1.0.20250315021327-8c45359d40e3/go.mod h1:j7bp1628fIRYgvTU/8a66eAhuxUespGpzVBtYuh0SSY=
 github.com/bronze1man/goStrongswanVici v0.0.0-20231128135937-211cef3b0b20 h1:JMoL5xJSYxo1QVJ3c+4FutWQnks3gZX9DYkgAnvg+5g=
 github.com/bronze1man/goStrongswanVici v0.0.0-20231128135937-211cef3b0b20/go.mod h1:fWUtBEPt2yjrr3WFhOqvajM8JSEU8bEeBcoeSCsKRpc=
 github.com/buger/jsonparser v0.0.0-20181115193947-bf1c66bbce23/go.mod h1:bbYlZJ7hK1yFx9hf58LP0zeX7UjIGs20ufpu3evjr+s=
@@ -1104,8 +1106,6 @@ github.com/k3s-io/etcd/server/v3 v3.5.19-k3s1 h1:1X30nP+ySC9d9xUIg1ftj6jF76MA5pe
 github.com/k3s-io/etcd/server/v3 v3.5.19-k3s1/go.mod h1:sEMCH1EdYxuWsFu2PzH31jEsmeCQqTUZ7E1uSo9gpg0=
 github.com/k3s-io/helm-controller v0.16.6 h1:w/cdunYPTmatAMrYlf/qbmuatrKjfpC122ISn5QfIpA=
 github.com/k3s-io/helm-controller v0.16.6/go.mod h1:Zy6dK6PIepVPOH2wM3sg00RsJLAk3FkXIJl+rWeHC3Y=
-github.com/k3s-io/k3s v1.32.0-rc1.0.20250312160245-ac38633c7192 h1:/zX1LY7kOsh4i7d8uU7DJc4s+4I4nGDbwS0yVGvnJJg=
-github.com/k3s-io/k3s v1.32.0-rc1.0.20250312160245-ac38633c7192/go.mod h1:hKtvlgWGgIjggzQCM92YSLT3YOJCBSBbwq01HugdxRE=
 github.com/k3s-io/kine v0.13.9 h1:Dcobn5rXfl0tGCTPJzLRsowxAnK/4hhLzRGuPXhRJVQ=
 github.com/k3s-io/kine v0.13.9/go.mod h1:eBfR4kXgSkB4yIL+S3bF1+z5cvgYz8wbXrwANeL/Qok=
 github.com/k3s-io/klog v1.0.0-k3s2/go.mod h1:4Bi6QPql/J/LkTDqv7R/cd3hPo4k2DG6Ptcz060Ez5I=
@@ -1849,8 +1849,8 @@ github.com/vbatts/tar-split v0.11.6/go.mod h1:dqKNtesIOr2j2Qv3W/cHjnvk9I8+G7oAkF
 github.com/viant/assertly v0.4.8/go.mod h1:aGifi++jvCrUaklKEKT0BU95igDNaqkvz+49uaYMPRU=
 github.com/viant/toolbox v0.24.0/go.mod h1:OxMCG57V0PXuIP2HNQrtJf2CjqdmbrOx5EkMILuUhzM=
 github.com/vishvananda/netlink v1.0.0/go.mod h1:+SR5DhBJrl6ZM7CoCKvpw5BKroDKQ+PJqOg65H/2ktk=
-github.com/vishvananda/netlink v1.3.1-0.20240905180732-b1ce50cfa9be h1:xdCMvyhnKzaepIUgVpUmTJo/+H1AQ7HuFYn1hv7/Neo=
-github.com/vishvananda/netlink v1.3.1-0.20240905180732-b1ce50cfa9be/go.mod h1:i6NetklAujEcC6fK0JPjT8qSwWyO0HLn4UKG+hGqeJs=
+github.com/vishvananda/netlink v1.3.1-0.20250206174618-62fb240731fa h1:iAhToRwOrdk+pKzclvLM7nKZhsg8f7dVrgkFccDUbUw=
+github.com/vishvananda/netlink v1.3.1-0.20250206174618-62fb240731fa/go.mod h1:i6NetklAujEcC6fK0JPjT8qSwWyO0HLn4UKG+hGqeJs=
 github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df/go.mod h1:JP3t17pCcGlemwknint6hfoeCVQrEMVwxRLRjXpq+BU=
 github.com/vishvananda/netns v0.0.4 h1:Oeaw1EM2JMxD51g9uhtC0D7erkIjgmj8+JZc26m1YX8=
 github.com/vishvananda/netns v0.0.4/go.mod h1:SpkAiCQRtJ6TvvxPnOSyH3BMl6unz3xZlaprSwhNNJM=
@@ -2512,8 +2512,8 @@ honnef.co/go/tools v0.0.1-2020.1.4/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9
 honnef.co/go/tools v0.1.3/go.mod h1:NgwopIslSNH47DimFoV78dnkksY2EFtX0ajyb3K/las=
 honnef.co/go/tools v0.1.4/go.mod h1:NgwopIslSNH47DimFoV78dnkksY2EFtX0ajyb3K/las=
 howett.net/plist v0.0.0-20181124034731-591f970eefbb/go.mod h1:vMygbs4qMhSZSc4lCUl2OEE+rDiIIJAIdR4m7MiMcm0=
-k8s.io/cri-client v0.32.2 h1:vjowJUyu14IbmifqCKJHE9rK/BPSfkXvltqN42W1Zuo=
-k8s.io/cri-client v0.32.2/go.mod h1:fRZhmmZW16Qviln8hfy+e8dd2wP/n9B6TiGxLE3zBe0=
+k8s.io/cri-client v0.32.3 h1:+D2ajlFpXsUcr/9ofYcE5kVqVK4Q97wnZHeH80oDEzw=
+k8s.io/cri-client v0.32.3/go.mod h1:W1+Z8QsVnLkoGqtJ41B5SRHfQn6/mqGORdfNDl2cEkw=
 k8s.io/gengo/v2 v2.0.0-20240826214909-a7b603a56eb7/go.mod h1:EJykeLsmFC60UQbYJezXkEsG2FLrt0GPNkU5iK5GWxU=
 k8s.io/gengo/v2 v2.0.0-20240911193312-2b36238f13e9/go.mod h1:EJykeLsmFC60UQbYJezXkEsG2FLrt0GPNkU5iK5GWxU=
 k8s.io/kube-openapi v0.0.0-20241105132330-32ad38e42d3f h1:GA7//TjRY9yWGy1poLzYYJJ4JRdzg3+O6e8I+e+8T5Y=

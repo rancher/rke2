@@ -23,6 +23,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
+	"github.com/k3s-io/k3s/pkg/util"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/logging"
@@ -60,6 +61,9 @@ type PEBinaryConfig struct {
 	CISMode             bool
 	DisableETCD         bool
 	IsServer            bool
+
+	apiServerReady <-chan struct{}
+	criReady       chan struct{}
 }
 
 type CloudProviderConfig struct {
@@ -79,6 +83,9 @@ const (
 // and staging the kubelet and containerd binaries.  On servers, it also ensures that manifests are
 // copied in to place and in sync with the system configuration.
 func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node, cfg cmds.Agent) error {
+	p.apiServerReady = util.APIServerReadyChan(ctx, nodeConfig.AgentConfig.KubeConfigK3sController, util.DefaultAPIServerReadyTimeout)
+	p.criReady = make(chan struct{})
+
 	// On servers this is set to an initial value from the CLI when the resolver is created, so that
 	// static pod manifests can be created before the agent bootstrap is complete. The agent itself
 	// really only needs to know about the runtime and pause images, all of which are configured after the
@@ -264,11 +271,13 @@ func (p *PEBinaryConfig) KubeProxy(ctx context.Context, args []string) error {
 
 // Docker starts cri-dockerd as implemented in the k3s cridockerd package
 func (p *PEBinaryConfig) Docker(ctx context.Context, cfg *config.Node) error {
+	defer close(p.criReady)
 	return cridockerd.Run(ctx, cfg)
 }
 
 // Containerd configures and starts containerd.
 func (p *PEBinaryConfig) Containerd(ctx context.Context, cfg *config.Node) error {
+	defer close(p.criReady)
 	args := getContainerdArgs(cfg)
 	stdOut := io.Writer(os.Stdout)
 	stdErr := io.Writer(os.Stderr)
@@ -350,17 +359,17 @@ func (p *PEBinaryConfig) APIServerHandlers(ctx context.Context) (authenticator.R
 }
 
 // APIServer isn't supported in the binary executor.
-func (p *PEBinaryConfig) APIServer(ctx context.Context, etcdReady <-chan struct{}, args []string) error {
+func (p *PEBinaryConfig) APIServer(ctx context.Context, args []string) error {
 	panic("kube-api-server is unsupported on windows")
 }
 
 // Scheduler isn't supported in the binary executor.
-func (p *PEBinaryConfig) Scheduler(ctx context.Context, apiReady <-chan struct{}, args []string) error {
+func (p *PEBinaryConfig) Scheduler(ctx context.Context, nodeReady <-chan struct{}, args []string) error {
 	panic("kube-scheduler is unsupported on windows")
 }
 
 // ControllerManager isn't supported in the binary executor.
-func (p *PEBinaryConfig) ControllerManager(ctx context.Context, apiReady <-chan struct{}, args []string) error {
+func (p *PEBinaryConfig) ControllerManager(ctx context.Context, args []string) error {
 	panic("kube-controller-manager is unsupported on windows")
 }
 
@@ -375,8 +384,35 @@ func (p *PEBinaryConfig) CloudControllerManager(ctx context.Context, ccmRBACRead
 }
 
 // ETCD isn't supported in the binary executor.
-func (p *PEBinaryConfig) ETCD(ctx context.Context, args executor.ETCDConfig, extraArgs []string) error {
+func (p *PEBinaryConfig) ETCD(ctx context.Context, args *executor.ETCDConfig, extraArgs []string, test executor.TestFunc) error {
 	panic("etcd is unsupported on windows")
+}
+
+func (p *PEBinaryConfig) CRI(ctx context.Context, cfg *config.Node) error {
+	defer close(p.criReady)
+	// agentless sets cri socket path to /dev/null to indicate no CRI is needed
+	if cfg.ContainerRuntimeEndpoint != "/dev/null" {
+		return cri.WaitForService(ctx, cfg.ContainerRuntimeEndpoint, "CRI")
+	}
+	return nil
+}
+
+func (p *PEBinaryConfig) APIServerReadyChan() <-chan struct{} {
+	if p.apiServerReady == nil {
+		panic("executor not bootstrapped")
+	}
+	return p.apiServerReady
+}
+
+func (p *PEBinaryConfig) ETCDReadyChan() <-chan struct{} {
+	panic("etcd is unsupported on windows")
+}
+
+func (p *PEBinaryConfig) CRIReadyChan() <-chan struct{} {
+	if p.criReady == nil {
+		panic("executor not bootstrapped")
+	}
+	return p.criReady
 }
 
 // addFeatureGate adds a feature gate with the correct syntax.
