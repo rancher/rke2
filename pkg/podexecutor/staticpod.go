@@ -124,6 +124,10 @@ type StaticPodConfig struct {
 	DisableETCD      bool
 	ExternalDatabase bool
 	IsServer         bool
+
+	apiServerReady <-chan struct{}
+	etcdReady      chan struct{}
+	criReady       chan struct{}
 }
 
 type CloudProviderConfig struct {
@@ -134,7 +138,11 @@ type CloudProviderConfig struct {
 // Bootstrap prepares the static executor to run components by setting the system default registry
 // and staging the kubelet and containerd binaries.  On servers, it also ensures that manifests are
 // copied in to place and in sync with the system configuration.
-func (s *StaticPodConfig) Bootstrap(_ context.Context, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
+func (s *StaticPodConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
+	s.apiServerReady = util.APIServerReadyChan(ctx, nodeConfig.AgentConfig.KubeConfigK3sController, util.DefaultAPIServerReadyTimeout)
+	s.etcdReady = make(chan struct{})
+	s.criReady = make(chan struct{})
+
 	// On servers this is set to an initial value from the CLI when the resolver is created, so that
 	// static pod manifests can be created before the agent bootstrap is complete. The agent itself
 	// really only needs to know about the runtime and pause images, all of which are configured after the
@@ -237,17 +245,14 @@ func (s *StaticPodConfig) KubeProxy(_ context.Context, args []string) error {
 
 // APIServerHandlers returning the authenticator and request handler for requests to the apiserver endpoint.
 func (s *StaticPodConfig) APIServerHandlers(ctx context.Context) (authenticator.Request, http.Handler, error) {
-	var tokenauth authenticator.Request
+	<-s.APIServerReadyChan()
 	kubeConfigAPIServer := filepath.Join(s.DataDir, "server", "cred", "api-server.kubeconfig")
-	err := util.WaitForAPIServerReady(ctx, kubeConfigAPIServer, util.DefaultAPIServerReadyTimeout)
-	if err == nil {
-		tokenauth, err = auth.BootstrapTokenAuthenticator(ctx, kubeConfigAPIServer)
-	}
+	tokenauth, err := auth.BootstrapTokenAuthenticator(ctx, kubeConfigAPIServer)
 	return tokenauth, http.NotFoundHandler(), err
 }
 
 // APIServer sets up the apiserver static pod once etcd is available.
-func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}, args []string) error {
+func (s *StaticPodConfig) APIServer(_ context.Context, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeAPIServer)
 	if err != nil {
 		return err
@@ -365,7 +370,7 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 		},
 	}
 
-	return after(etcdReady, func() error {
+	return after(s.ETCDReadyChan(), func() error {
 		return staticpod.Run(s.ManifestsDir, apiServerArgs)
 	})
 }
@@ -373,7 +378,7 @@ func (s *StaticPodConfig) APIServer(_ context.Context, etcdReady <-chan struct{}
 var permitPortSharingFlag = []string{"--permit-port-sharing=true"}
 
 // Scheduler starts the kube-scheduler static pod, once the apiserver is available.
-func (s *StaticPodConfig) Scheduler(_ context.Context, apiReady <-chan struct{}, args []string) error {
+func (s *StaticPodConfig) Scheduler(_ context.Context, nodeReady <-chan struct{}, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeScheduler)
 	if err != nil {
 		return err
@@ -387,7 +392,7 @@ func (s *StaticPodConfig) Scheduler(_ context.Context, apiReady <-chan struct{},
 	}
 
 	args = append(permitPortSharingFlag, args...)
-	return after(apiReady, func() error {
+	return after(s.APIServerReadyChan(), func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:       "kube-scheduler",
 			Args:          args,
@@ -430,7 +435,7 @@ func after(after <-chan struct{}, f func() error) error {
 }
 
 // ControllerManager starts the kube-controller-manager static pod, once the apiserver is available.
-func (s *StaticPodConfig) ControllerManager(_ context.Context, apiReady <-chan struct{}, args []string) error {
+func (s *StaticPodConfig) ControllerManager(_ context.Context, args []string) error {
 	image, err := s.Resolver.GetReference(images.KubeControllerManager)
 	if err != nil {
 		return err
@@ -452,7 +457,7 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, apiReady <-chan s
 		files = append(files, etcdNameFile(s.DataDir))
 	}
 
-	return after(apiReady, func() error {
+	return after(s.APIServerReadyChan(), func() error {
 		extraArgs := []string{
 			"--flex-volume-plugin-dir=/var/lib/kubelet/volumeplugins",
 			"--terminated-pod-gc-threshold=1000",
@@ -531,7 +536,31 @@ func (s *StaticPodConfig) CurrentETCDOptions() (opts executor.InitialOptions, er
 }
 
 // ETCD starts the etcd static pod.
-func (s *StaticPodConfig) ETCD(ctx context.Context, args executor.ETCDConfig, extraArgs []string) error {
+func (s *StaticPodConfig) ETCD(ctx context.Context, args *executor.ETCDConfig, extraArgs []string, test executor.TestFunc) error {
+	go func() {
+		defer close(s.etcdReady)
+		for {
+			if err := test(ctx); err != nil {
+				logrus.Infof("Failed to test etcd connection: %v", err)
+			} else {
+				logrus.Info("Connection to etcd is ready")
+				return
+			}
+
+			select {
+			case <-time.After(5 * time.Second):
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
+	// nil args indicates a no-op start; all we need to do is wait for the test
+	// func to indicate readiness and close the channel.
+	if args == nil {
+		return nil
+	}
+
 	image, err := s.Resolver.GetReference(images.ETCD)
 	if err != nil {
 		return err
@@ -637,12 +666,44 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, args executor.ETCDConfig, ex
 
 // Containerd starts the k3s implementation of containerd
 func (s *StaticPodConfig) Containerd(ctx context.Context, config *daemonconfig.Node) error {
+	defer close(s.criReady)
 	return containerd.Run(ctx, config)
 }
 
 // Docker starts the k3s implementation of cridockerd
 func (s *StaticPodConfig) Docker(ctx context.Context, config *daemonconfig.Node) error {
+	defer close(s.criReady)
 	return cridockerd.Run(ctx, config)
+}
+
+func (s *StaticPodConfig) CRI(ctx context.Context, cfg *daemonconfig.Node) error {
+	defer close(s.criReady)
+	// agentless sets cri socket path to /dev/null to indicate no CRI is needed
+	if cfg.ContainerRuntimeEndpoint != "/dev/null" {
+		return cri.WaitForService(ctx, cfg.ContainerRuntimeEndpoint, "CRI")
+	}
+	return nil
+}
+
+func (s *StaticPodConfig) APIServerReadyChan() <-chan struct{} {
+	if s.apiServerReady == nil {
+		panic("executor not bootstrapped")
+	}
+	return s.apiServerReady
+}
+
+func (s *StaticPodConfig) ETCDReadyChan() <-chan struct{} {
+	if s.etcdReady == nil {
+		panic("executor not bootstrapped")
+	}
+	return s.etcdReady
+}
+
+func (s *StaticPodConfig) CRIReadyChan() <-chan struct{} {
+	if s.criReady == nil {
+		panic("executor not bootstrapped")
+	}
+	return s.criReady
 }
 
 // stopEtcd searches the container runtime endpoint for the etcd static pod, and terminates it.
