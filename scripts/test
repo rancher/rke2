@@ -12,11 +12,6 @@ mkdir -p $artifacts
 
 # ---
 
-. ./tests/docker/test-run-basics
-echo "Did test-run-basics $?"
-
-# ---
-
 if [ "$ARCH" != 'amd64' ]; then
     early-exit "Skipping remaining tests, images not available for $ARCH."
 fi

@@ -37,7 +37,7 @@ jobs:
     - name: Load kernel modules
       run: |
        sudo modprobe br_netfilter overlay
-    - name: Test
+    - name: Test Conformance
       run: dapper -f Dockerfile --target dapper make test
     - name: Prepare Test Logs on Failure
       if: ${{ failure() }}
