@@ -80,7 +80,7 @@ EOF
 fi
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
-    ${REGISTRY}/rancher/hardened-multus-cni:v4.1.4-build20250108
+    ${REGISTRY}/rancher/hardened-multus-cni:v4.2.0-build20250326
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.6.2-build20250306
     ${REGISTRY}/rancher/hardened-whereabouts:v0.8.0-build20250131
     ${REGISTRY}/rancher/mirrored-library-busybox:1.36.1
