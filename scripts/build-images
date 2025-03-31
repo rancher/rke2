@@ -29,36 +29,36 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.29.2-build20250306
+    ${REGISTRY}/rancher/hardened-calico:v3.29.3-build20250327
     ${REGISTRY}/rancher/hardened-flannel:v0.26.5-build20250306
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.2.1
-    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.17.1
-    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.31.5-1739264036-958bef243c6c66fcfd73ca319f2eb49fff1eb2ae
-    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.17.1
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.17.1
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.13.1
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui-backend:v0.13.1
-    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.17.1
-    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.17.1
-    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.17.1
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.6.2-build20250124
+    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.17.2
+    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.31.5-1741765102-efed3defcc70ab5b263a0fc44c93d316b846a211
+    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.17.2
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.17.2
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.13.2
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui-backend:v0.13.2
+    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.17.2
+    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.17.2
+    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.17.2
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.6.2-build20250306
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
-    ${REGISTRY}/rancher/mirrored-calico-operator:v1.36.5
-    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.29.2
-    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.29.2
-    ${REGISTRY}/rancher/mirrored-calico-typha:v3.29.2
-    ${REGISTRY}/rancher/mirrored-calico-node:v3.29.2
-    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.29.2
-    ${REGISTRY}/rancher/mirrored-calico-cni:v3.29.2
-    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.29.2
-    ${REGISTRY}/rancher/mirrored-calico-csi:v3.29.2
-    ${REGISTRY}/rancher/mirrored-calico-node-driver-registrar:v3.29.2
+    ${REGISTRY}/rancher/mirrored-calico-operator:v1.36.7
+    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.29.3
+    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.29.3
+    ${REGISTRY}/rancher/mirrored-calico-typha:v3.29.3
+    ${REGISTRY}/rancher/mirrored-calico-node:v3.29.3
+    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.29.3
+    ${REGISTRY}/rancher/mirrored-calico-cni:v3.29.3
+    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.29.3
+    ${REGISTRY}/rancher/mirrored-calico-csi:v3.29.3
+    ${REGISTRY}/rancher/mirrored-calico-node-driver-registrar:v3.29.3
 EOF
 
 if [ "${GOARCH}" != "arm64" ]; then
