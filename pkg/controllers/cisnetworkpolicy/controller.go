@@ -134,16 +134,44 @@ func (h *handler) generateHostNetworkPolicyIngressRule() (*netv1.NetworkPolicyIn
 			logrus.Debugf("CISNetworkPolicyController: node=%v doesn't have flannel label, skipping", node.Name)
 			continue
 		}
+		var addrlen string
+		// For full backwards compatibility check first 'PodCIDR'
+		// and next 'PodCIDRs'
 		podCIDRFirstIP, _, err := net.ParseCIDR(node.Spec.PodCIDR)
 		if err != nil {
 			logrus.Debugf("CISNetworkPolicyController: node=%+v", node)
 			logrus.Errorf("CISNetworkPolicyController: couldn't parse PodCIDR(%v) for node %v err=%v", node.Spec.PodCIDR, node.Name, err)
-			continue
+		} else {
+			addrlen = "/32"
+			if podCIDRFirstIP.To4() == nil {
+				addrlen = "/128"
+			}
+			ipBlock := netv1.IPBlock{
+				CIDR: podCIDRFirstIP.String() + addrlen,
+			}
+			npIR.From = append(npIR.From, netv1.NetworkPolicyPeer{IPBlock: &ipBlock})
+                }
+
+		for _, cidr := range node.Spec.PodCIDRs {
+			podCIDRsFirstIP, _, err := net.ParseCIDR(cidr)
+			if err != nil {
+				logrus.Debugf("CISNetworkPolicyController: node=%+v", node)
+				logrus.Errorf("CISNetworkPolicyController: couldn't parse PodCIDRs(%v) for node %v err=%v", cidr, node.Name, err)
+				continue
+			}
+			if podCIDRsFirstIP.String() == podCIDRFirstIP.String() {
+				// Same as 'podCIDR' above
+				continue
+			}
+			addrlen = "/32"
+			if podCIDRsFirstIP.To4() == nil {
+				addrlen = "/128"
+			}
+			ipBlock := netv1.IPBlock{
+				CIDR: podCIDRsFirstIP.String() + addrlen,
+			}
+			npIR.From = append(npIR.From, netv1.NetworkPolicyPeer{IPBlock: &ipBlock})
 		}
-		ipBlock := netv1.IPBlock{
-			CIDR: podCIDRFirstIP.String() + "/32",
-		}
-		npIR.From = append(npIR.From, netv1.NetworkPolicyPeer{IPBlock: &ipBlock})
 	}
 
 	// sort ipblocks so it always appears in a certain order
