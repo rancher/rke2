@@ -141,7 +141,7 @@ func (h *handler) generateHostNetworkPolicyIngressRule() (*netv1.NetworkPolicyIn
 			podCIDRs = []string{node.Spec.PodCIDR}
 		}
 
-		for _, cidr := podCIDRs {
+		for _, cidr := range podCIDRs {
 			podCIDRFirstIP, _, err := net.ParseCIDR(cidr)
 			if err != nil {
 				logrus.Debugf("CISNetworkPolicyController: node=%+v", node)
