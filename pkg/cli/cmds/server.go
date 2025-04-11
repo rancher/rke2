@@ -128,6 +128,7 @@ var (
 		"agent-token-file":                  copyFlag,
 		"server":                            copyFlag,
 		"secrets-encryption":                hideFlag,
+		"secrets-encryption-provider":       copyFlag,
 		"protect-kernel-defaults":           copyFlag,
 		"snapshotter":                       copyFlag,
 		"selinux":                           copyFlag,
