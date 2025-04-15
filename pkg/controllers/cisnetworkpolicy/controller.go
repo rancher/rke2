@@ -134,16 +134,28 @@ func (h *handler) generateHostNetworkPolicyIngressRule() (*netv1.NetworkPolicyIn
 			logrus.Debugf("CISNetworkPolicyController: node=%v doesn't have flannel label, skipping", node.Name)
 			continue
 		}
-		podCIDRFirstIP, _, err := net.ParseCIDR(node.Spec.PodCIDR)
-		if err != nil {
-			logrus.Debugf("CISNetworkPolicyController: node=%+v", node)
-			logrus.Errorf("CISNetworkPolicyController: couldn't parse PodCIDR(%v) for node %v err=%v", node.Spec.PodCIDR, node.Name, err)
-			continue
+
+		var addrlen string
+		podCIDRs := node.Spec.PodCIDRs
+		if len(podCIDRs) == 0 {
+			podCIDRs = []string{node.Spec.PodCIDR}
 		}
-		ipBlock := netv1.IPBlock{
-			CIDR: podCIDRFirstIP.String() + "/32",
+
+		for _, cidr := range podCIDRs {
+			podCIDRFirstIP, _, err := net.ParseCIDR(cidr)
+			if err != nil {
+				logrus.Errorf("CISNetworkPolicyController: couldn't parse PodCIDR(%v) for node %v err=%v", cidr, node.Name, err)
+				continue
+			}
+			addrlen = "/32"
+			if podCIDRFirstIP.To4() == nil {
+				addrlen = "/128"
+			}
+			ipBlock := netv1.IPBlock{
+				CIDR: podCIDRFirstIP.String() + addrlen,
+			}
+			npIR.From = append(npIR.From, netv1.NetworkPolicyPeer{IPBlock: &ipBlock})
 		}
-		npIR.From = append(npIR.From, netv1.NetworkPolicyPeer{IPBlock: &ipBlock})
 	}
 
 	// sort ipblocks so it always appears in a certain order
