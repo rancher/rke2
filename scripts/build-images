@@ -67,7 +67,7 @@ EOF
 
 if [ "${GOARCH}" != "arm64" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere:v1.32.1
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere:v1.33.0
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.3.1
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v3.3.1
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-node-driver-registrar:v2.12.0
