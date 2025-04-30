@@ -121,6 +121,7 @@ type StaticPodConfig struct {
 	ControlPlaneMounts
 	ControlPlaneProbeConfs
 	CISMode          bool
+	CISETCDMode      bool
 	DisableETCD      bool
 	ExternalDatabase bool
 	IsServer         bool
@@ -602,7 +603,7 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, args *executor.ETCDConfig, e
 			args.PeerTrust.KeyFile,
 			args.PeerTrust.TrustedCAFile,
 		},
-		CISMode:       s.CISMode,
+		CISMode:       s.CISMode || s.CISETCDMode,
 		HealthPort:    2381,
 		HealthPath:    "/health?serializable=true",
 		HealthProto:   "HTTP",
@@ -615,7 +616,7 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, args *executor.ETCDConfig, e
 		ProbeConfs:    s.ControlPlaneProbeConfs.Etcd,
 	}
 
-	if s.CISMode {
+	if s.CISMode || s.CISETCDMode {
 		etcdUser, err := user.Lookup("etcd")
 		if err != nil {
 			return err

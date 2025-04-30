@@ -163,6 +163,7 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		ImagesDir:              agentImagesDir,
 		ManifestsDir:           agentManifestsDir,
 		CISMode:                isCISMode(clx),
+		CISETCDMode:            isCISETCDMode(clx),
 		CloudProvider:          cpConfig,
 		DataDir:                dataDir,
 		AuditPolicyFile:        clx.String("audit-policy-file"),
