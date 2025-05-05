@@ -286,13 +286,6 @@ func (s *StaticPodConfig) APIServer(_ context.Context, args []string) error {
 		args = append([]string{"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}, args...)
 	}
 
-	if s.CloudProvider != nil {
-		extraArgs := []string{
-			"--cloud-provider=" + s.CloudProvider.Name,
-			"--cloud-config=" + s.CloudProvider.Path,
-		}
-		args = append(extraArgs, args...)
-	}
 	if s.CISMode && s.AuditPolicyFile == "" {
 		s.AuditPolicyFile = defaultAuditPolicyFile
 	}
