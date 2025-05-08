@@ -11,6 +11,8 @@
 .EXAMPLE 
     rke2-uninstall.ps1
     Uninstalls the RKE2 Windows service and cleans the RKE2 Windows Agent (Worker) Node
+    rke2-uninstall.ps1 -silent $true
+    Uninstalls the RKE2 Windows service and cleans the RKE2 Windows Agent (Worker) Node with suppressed confirmations
 #>
 
 Param(
