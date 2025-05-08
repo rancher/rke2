@@ -9,6 +9,7 @@ docker buildx build ${IID_FILE_FLAG} \
     --sbom=true \
     --attest type=provenance,mode=max \
     --build-arg TAG=${VERSION} \
+    --build-arg REGISTRY=${REGISTRY} \
     --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
     --build-arg MAJOR=${VERSION_MAJOR} \
     --build-arg MINOR=${VERSION_MINOR} \
