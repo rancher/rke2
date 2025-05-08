@@ -13,6 +13,11 @@
     Uninstalls the RKE2 Windows service and cleans the RKE2 Windows Agent (Worker) Node
 #>
 
+Param(
+    [Parameter(Mandatory=$False)]
+    [bool]$silent = $False
+)
+
 $ErrorActionPreference = 'Stop'
 $WarningPreference = 'SilentlyContinue'
 $VerbosePreference = 'SilentlyContinue'
@@ -107,7 +112,11 @@ function Stop-Processes () {
         Write-LogInfo "Checking if $ProcessName process exists"
         if ((Get-Process -Name $ProcessName -ErrorAction SilentlyContinue)) {
             Write-LogInfo "$ProcessName process found, stopping now"
-            Stop-Process -Name $ProcessName
+            if ($silent) {
+                Stop-Process -Name $ProcessName -Force -Confirm:$false
+            } else {
+                Stop-Process -Name $ProcessName
+            }
             while (-Not(Get-Process -Name $ProcessName).HasExited) {
                 Write-LogInfo "Waiting for $ProcessName process to stop"
                 Start-Sleep -s 5
@@ -129,7 +138,11 @@ function Invoke-CleanServices () {
         Write-LogInfo "Checking if $ServiceName service exists"
         if ((Get-Service -Name $ServiceName -ErrorAction SilentlyContinue)) {
             Write-LogInfo "$ServiceName service found, stopping now"
-            Stop-Service -Name $ServiceName
+            if ($silent) {
+               Stop-Service -Name $ServiceName -Force -Confirm:$false
+            } else {
+               Stop-Service -Name $ServiceName
+            }
             while ((Get-Service -Name $ServiceName).Status -ne 'Stopped') {
                 Write-LogInfo "Waiting for $ServiceName service to stop"
                 Start-Sleep -s 5
@@ -274,7 +287,11 @@ function Remove-Containerd () {
     if (ctr) {
         # We create a lockfile to prevent rke2 service from starting kubelet again
         Create-Lockfile
-        Stop-Process -Name "kubelet"
+        if ($silent) {
+            Stop-Process -Name "kubelet" -Force -Confirm:$false
+        } else {
+            Stop-Process -Name "kubelet"
+        }
         while (-Not(Get-Process -Name "kubelet").HasExited) {
             Write-LogInfo "Waiting for kubelet process to stop"
             Start-Sleep -s 5
@@ -413,9 +430,13 @@ function Create-Lockfile() {
         $executablePath = $command.Source
         $dataBinDirDirectory = Split-Path -Parent $executablePath
         $lockFilePath = Join-Path -Path $dataBinDirDirectory -ChildPath "rke2-uninstall.lock"
-        New-Item -ItemType File -Path $lockFilePath -Force
+        if ($silent) {
+            New-Item -ItemType File -Path $lockFilePath -Force -Confirm:$false
+        } else {
+            New-Item -ItemType File -Path $lockFilePath
+        }
     } else {
-	# ctr should exist at this point but just in case we add this log
+    # ctr should exist at this point but just in case we add this log
         Write-Host "ctr.exe not found, container cleanup and RKE2 uninstallation is unlikely to succeed."
     }
 }
