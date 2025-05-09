@@ -38,7 +38,7 @@ charts:
   - version: 3.3.1-rancher1000
     filename: /charts/rancher-vsphere-csi.yaml
     bootstrap: true
-  - version: 0.2.900
+  - version: 0.2.1000
     filename: /charts/harvester-cloud-provider.yaml
     bootstrap: true
   - version: 0.1.2300
