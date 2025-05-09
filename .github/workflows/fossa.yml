@@ -17,6 +17,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Read FOSSA token
+      if: github.repository == 'rancher/rke2'
       uses: rancher-eio/read-vault-secrets@main
       with:
         secrets: |

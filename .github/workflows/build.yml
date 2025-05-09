@@ -15,7 +15,7 @@ permissions:
     id-token: write
 jobs:
   build-amd64:
-    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
+    runs-on: ubuntu-22.04
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -25,6 +25,7 @@ jobs:
         chmod +x /usr/local/bin/dapper
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@main
+      if: github.repository == 'rancher/rke2'
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials AWS_ACCESS_KEY_ID ;
@@ -48,7 +49,7 @@ jobs:
         name: rke2-test-logs
         path: ~/rke2-logs/
   build-arm64:
-    runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64,hdd=64
+    runs-on: ubuntu-22.04-arm
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -58,6 +59,7 @@ jobs:
         chmod +x /usr/local/bin/dapper
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@main
+      if: github.repository == 'rancher/rke2'
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials AWS_ACCESS_KEY_ID ;
