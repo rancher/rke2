@@ -305,7 +305,6 @@ jobs:
           ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images-all.linux-arm64.txt
           ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images.windows-amd64.txt
 
-
   sync-prime-ribs:
     name: "Sync Prime ribs"
     needs: [manifest]
