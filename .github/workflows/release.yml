@@ -360,6 +360,15 @@ jobs:
           REGISTRY: ${{ env.PRIME_REGISTRY }}
         run: |
           dapper -f Dockerfile --target dapper make package-images
+      - name: Package windows images
+        if: ${{ matrix.arch == 'amd64' }}
+        env:
+          REGISTRY: ${{ env.PRIME_REGISTRY }}
+        run: |
+          dapper -f Dockerfile --target dapper make package-windows-images
+      - name: Checksum Artifacts
+        run: |
+          dapper -f Dockerfile --target dapper make checksum
       - name: Upload Artifacts
         env:
           S3_PATH: s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/rke2/${{ env.TAG }}
