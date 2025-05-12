@@ -119,12 +119,6 @@ jobs:
         dapper -f Dockerfile --target dapper make publish-binary
       env:
         GH_TOKEN: ${{ github.token }}
-    - name: Upload Binaries
-      uses: actions/upload-artifact@v4
-      with:
-        name: binaries-amd64
-        path: |
-          $(find dist/artifacts -type f ! -name '*images*')
   release-arm64:
     runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64,hdd=256
     steps:
@@ -191,12 +185,6 @@ jobs:
         dapper -f Dockerfile --target dapper make publish-binary
       env:
         GH_TOKEN: ${{ github.token }}
-    - name: Upload Binaries
-      uses: actions/upload-artifact@v4
-      with:
-        name: binaries-arm64
-        path: |
-          $(find dist/artifacts -type f ! -name '*images*')
   manifest:
     needs: [release-amd64, release-arm64]
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
@@ -316,10 +304,12 @@ jobs:
           ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images-all.linux-amd64.txt
           ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images-all.linux-arm64.txt
           ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images.windows-amd64.txt
-  sync-prime-ribs-arm64:
-    name: "Sync Prime ribs arm64"
+
+
+  sync-prime-ribs:
+    name: "Sync Prime ribs"
     needs: [manifest]
-    runs-on: ${{ matrix.runner }}
+    runs-on: runs-on,runner=${{ matrix.runner }},run-id=${{ github.run_id }},image=${{ matrix.image }},hdd=256
     permissions:
       contents: read
       id-token: write
@@ -331,12 +321,21 @@ jobs:
           - amd64
         include:
           - arch: arm64
-            runner: ubuntu-24.04-arm
+            runner: 8cpu-linux-arm64
+            image: ubuntu22-full-arm64
           - arch: amd64
-            runner: ubuntu-24.04
+            runner: 8cpu-linux-x64
+            image: ubuntu22-full-x64
+    env:
+      TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Install Dapper
+        run: |
+          curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
+          chmod +x /usr/local/bin/dapper
       - name: Make artifacts directory
         run: |
           mkdir -p dist/artifacts
@@ -354,11 +353,9 @@ jobs:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Download binaries
-        uses: actions/download-artifact@v4
-        with:
-          name: binaries-${{ matrix.arch }}
-          path: ./dist/artifacts/
+      - name: Download Binaries
+        run: |
+          gh release download "$TAG" --repo "${{ github.repository }}" --dir ./dist/artifacts -p "rke2.*" -p "*.exe"
       - name: Package Images
         env:
           REGISTRY: ${{ env.PRIME_REGISTRY }}
@@ -366,6 +363,6 @@ jobs:
           dapper -f Dockerfile --target dapper make package-images
       - name: Upload Artifacts
         env:
-          S3_PATH: s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/${{ github.repository }}/${{ github.ref_name }}
+          S3_PATH: s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/rke2/${{ env.TAG }}
         run: |
           aws s3 sync ./dist/artifacts "$S3_PATH" --quiet --no-progress
