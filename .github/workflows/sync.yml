@@ -95,6 +95,6 @@ jobs:
           dapper -f Dockerfile --target dapper make package-images
       - name: Upload Artifacts
         env:
-          S3_PATH: s3://${{ secrets.PRIME_ARTIFACTS_BUCKET_NAME }}/${{ github.repository }}/${{ github.ref_name }}
+          S3_PATH: s3://${{ secrets.PRIME_ARTIFACTS_BUCKET_NAME }}/rke2/${{ env.TAG }}
         run: |
           aws s3 sync ./dist/artifacts "$S3_PATH" --quiet --no-progress
