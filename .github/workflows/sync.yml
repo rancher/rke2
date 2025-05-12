@@ -33,7 +33,7 @@ jobs:
       with:
         name: binaries-arm64
         path: |
-          $(find dist/artifacts -type f ! -name '*images*')
+          dist/artifacts/rke2.*
 
   sync-prime-ribs:
     name: "Sync Prime ribs"
