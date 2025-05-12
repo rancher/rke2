@@ -1,0 +1,77 @@
+on:
+  workflow_dispatch:
+
+env:
+  TAG: "v1.33.0+rke2r1"
+  GH_TOKEN: ${{ github.token }}
+
+name: Sync
+permissions:
+    contents: write
+jobs:
+  download:
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Make artifacts directory
+      run: |
+        mkdir -p dist/artifacts
+    - name: Download assets
+      env:
+        ORG: rancher
+        REPO: rke2
+      run: |
+        gh release download "$TAG" --repo "$ORG/$REPO" --dir ./dist/artifacts --pattern
+    - name: Upload Binaries
+      uses: actions/upload-artifact@v4
+      with:
+        name: binaries-arm64
+        path: |
+          $(find dist/artifacts -type f ! -name '*images*')
+
+  sync-prime-ribs:
+    name: "Sync Prime ribs"
+    needs: [download]
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - arm64
+          - amd64
+        include:
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+          - arch: amd64
+            runner: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Make artifacts directory
+        run: |
+          mkdir -p dist/artifacts
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: binaries-${{ matrix.arch }}
+          path: ./dist/artifacts/
+      - name: Package Images
+        env:
+          REGISTRY: ${{ secrets.PRIME_REGISTRY }}
+        run: |
+          dapper -f Dockerfile --target dapper make package-images
+      - name: Upload Artifacts
+        env:
+          S3_PATH: s3://${{ secrets.PRIME_ARTIFACTS_BUCKET_NAME }}/${{ github.repository }}/${{ github.ref_name }}
+        run: |
+          aws s3 sync ./dist/artifacts "$S3_PATH" --quiet --no-progress
