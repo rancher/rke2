@@ -28,12 +28,19 @@ jobs:
     - name: List files
       run: |
         ls -al ./dist/artifacts
-    - name: Upload Binaries
+    - name: Upload Binaries amd64
+      uses: actions/upload-artifact@v4
+      with:
+        name: binaries-amd64
+        path: |
+          dist/artifacts/rke2.linux-amd64*
+          dist/artifacts/rke2.windows-amd64*
+    - name: Upload Binaries arm64
       uses: actions/upload-artifact@v4
       with:
         name: binaries-arm64
         path: |
-          dist/artifacts/rke2.*
+          dist/artifacts/rke2.linux-arm64*
 
   sync-prime-ribs:
     name: "Sync Prime ribs"
