@@ -86,7 +86,7 @@ jobs:
         env:
           REGISTRY: ${{ secrets.PRIME_REGISTRY }}
         run: |
-          dapper -f Dockerfile --target dapper make package-images
+          make package-images
       - name: Upload Artifacts
         env:
           S3_PATH: s3://${{ secrets.PRIME_ARTIFACTS_BUCKET_NAME }}/${{ github.repository }}/${{ github.ref_name }}
