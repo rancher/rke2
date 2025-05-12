@@ -24,7 +24,7 @@ jobs:
         ORG: rancher
         REPO: rke2
       run: |
-        gh release download "$TAG" --repo "$ORG/$REPO" --dir ./dist/artifacts
+        gh release download "$TAG" --repo "$ORG/$REPO" --dir ./dist/artifacts --pattern "rke2.*"
     - name: List files
       run: |
         ls -al ./dist/artifacts
