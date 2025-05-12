@@ -49,7 +49,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.17.3
     ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.17.3
     ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.17.3
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.6.2-build20250306
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.7.1-build20250509
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
