@@ -24,7 +24,7 @@ jobs:
         ORG: rancher
         REPO: rke2
       run: |
-        gh release download "$TAG" --repo "$ORG/$REPO" --dir ./dist/artifacts --pattern "rke2.*"
+        gh release download "$TAG" --repo "$ORG/$REPO" --dir ./dist/artifacts -p "rke2.*" -p "*.exe"
     - name: List files
       run: |
         ls -al ./dist/artifacts
@@ -35,6 +35,7 @@ jobs:
         path: |
           dist/artifacts/rke2.linux-amd64*
           dist/artifacts/rke2.windows-amd64*
+          dist/artifacts/rke2*.exe
     - name: Upload Binaries arm64
       uses: actions/upload-artifact@v4
       with:
