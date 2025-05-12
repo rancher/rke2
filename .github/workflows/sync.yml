@@ -1,6 +1,7 @@
 on:
   workflow_dispatch:
   pull_request:
+  push:
 
 env:
   TAG: "v1.33.0+rke2r1"
