@@ -149,7 +149,7 @@ jobs:
         GH_TOKEN: ${{ github.token }}
 
   manifest:
-    needs: release-amd64
+    needs: release
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
     steps:
     - name: Checkout code
@@ -190,7 +190,7 @@ jobs:
         prime-password: ${{ env.PRIME_REGISTRY_PASSWORD }}
 
   dispatch:
-    needs: [release-amd64, release-arm64]
+    needs: release
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
     steps:
     - name: Checkout code
