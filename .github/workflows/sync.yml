@@ -23,7 +23,7 @@ jobs:
         ORG: rancher
         REPO: rke2
       run: |
-        gh release download "$TAG" --repo "$ORG/$REPO" --dir ./dist/artifacts --pattern
+        gh release download "$TAG" --repo "$ORG/$REPO" --dir ./dist/artifacts
     - name: Upload Binaries
       uses: actions/upload-artifact@v4
       with:
