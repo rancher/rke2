@@ -64,6 +64,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Install Dapper
+        run: |
+          curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
+          chmod +x /usr/local/bin/dapper
       - name: Make artifacts directory
         run: |
           mkdir -p dist/artifacts
