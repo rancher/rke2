@@ -319,7 +319,7 @@ jobs:
   sync-prime-ribs-arm64:
     name: "Sync Prime ribs arm64"
     needs: [manifest]
-    runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64,hdd=256
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
       id-token: write
@@ -329,6 +329,11 @@ jobs:
         arch:
           - arm64
           - amd64
+        include:
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+          - arch: amd64
+            runner: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
