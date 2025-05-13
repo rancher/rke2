@@ -112,6 +112,12 @@ var _ = AfterEach(func() {
 })
 
 var _ = AfterSuite(func() {
+	if tc != nil && failed {
+		AddReportEntry("cluster-resources", tc.DumpResources())
+		AddReportEntry("pod-logs", tc.DumpPodLogs(50))
+		AddReportEntry("journald-logs", tc.DumpServiceLogs(250))
+		AddReportEntry("component-logs", tc.DumpComponentLogs(250))
+	}
 	if *ci || (tc != nil && !failed) {
 		tc.Cleanup()
 	}
