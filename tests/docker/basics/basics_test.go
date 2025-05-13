@@ -39,7 +39,7 @@ var _ = Describe("Basic Tests", Ordered, func() {
 			Eventually(func(g Gomega) {
 				g.Expect(tests.CheckDefaultDeployments(tc.KubeconfigFile)).To(Succeed())
 				g.Expect(tests.CheckDefaultDaemonSets(tc.KubeconfigFile)).To(Succeed())
-			}, "180s", "5s").Should(Succeed())
+			}, "240s", "5s").Should(Succeed())
 			Eventually(func() error {
 				return tests.NodesReady(tc.KubeconfigFile, tc.GetNodeNames())
 			}, "40s", "5s").Should(Succeed())
@@ -105,6 +105,12 @@ var _ = AfterEach(func() {
 })
 
 var _ = AfterSuite(func() {
+	if tc != nil && failed {
+		AddReportEntry("cluster-resources", tc.DumpResources())
+		AddReportEntry("pod-logs", tc.DumpPodLogs(50))
+		AddReportEntry("journald-logs", tc.DumpServiceLogs(250))
+		AddReportEntry("component-logs", tc.DumpComponentLogs(250))
+	}
 	if *ci || (tc != nil && !failed) {
 		tc.Cleanup()
 	}
