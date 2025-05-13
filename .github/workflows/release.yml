@@ -352,6 +352,11 @@ jobs:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+      - name: Pull rke2-runtime
+        env:
+          REGISTRY: ${{ secrets.PRIME_REGISTRY }}
+        run: |
+          docker pull "${REGISTRY}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
       - name: Download Binaries
         run: |
           gh release download "$TAG" --repo "${{ github.repository }}" --dir ./dist/artifacts -p "rke2.*" -p "*.exe"
