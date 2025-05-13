@@ -414,13 +414,63 @@ func getEnvOrDefault(key, defaultValue string) string {
 	return defaultValue
 }
 
-// Dump the journalctl logs for the k3s service
+func (config *TestConfig) DumpResources() string {
+	cmd := "kubectl get pod,node -A -o wide --kubeconfig=" + config.KubeconfigFile
+	out, err := RunCommand(cmd)
+	if err != nil {
+		return fmt.Sprintf("Failed to run command %q: %v", cmd, err)
+	}
+	return out
+}
+
+// Dump pod logs for all nodes
+func (config *TestConfig) DumpPodLogs(lines int) string {
+	logs := &strings.Builder{}
+	cmd := fmt.Sprintf("tail -n %d /var/log/pods/*/*/*", lines)
+	for _, node := range append(config.Servers, config.Agents...) {
+		if l, err := node.RunCmdOnNode(cmd); err != nil {
+			fmt.Fprintf(logs, "** failed to tail pod logs for node %s ***\n%v\n", node.Name, err)
+		} else {
+			fmt.Fprintf(logs, "** pod logs for node %s ***\n%s\n", node.Name, l)
+		}
+	}
+	return logs.String()
+}
+
+// Dump kubelet and containerd logs for all nodes
+func (config *TestConfig) DumpComponentLogs(lines int) string {
+	logs := &strings.Builder{}
+	cmd := fmt.Sprintf("tail -n %d /var/lib/rancher/rke2/agent/containerd/containerd.log /var/lib/rancher/rke2/agent/logs/kubelet.log", lines)
+	for _, node := range append(config.Servers, config.Agents...) {
+		if l, err := node.RunCmdOnNode(cmd); err != nil {
+			fmt.Fprintf(logs, "** failed to tail component logs for node %s ***\n%v\n", node.Name, err)
+		} else {
+			fmt.Fprintf(logs, "** component logs for node %s ***\n%s\n", node.Name, l)
+		}
+	}
+	return logs.String()
+}
+
+// Dump journactl logs for all nodes
+func (config *TestConfig) DumpServiceLogs(lines int) string {
+	logs := &strings.Builder{}
+	for _, node := range append(config.Servers, config.Agents...) {
+		if l, err := node.DumpServiceLogs(lines); err != nil {
+			fmt.Fprintf(logs, "** failed to read journald log for node %s ***\n%v\n", node.Name, err)
+		} else {
+			fmt.Fprintf(logs, "** journald log for node %s ***\n%s\n", node.Name, l)
+		}
+	}
+	return logs.String()
+}
+
+// Dump the journalctl logs for the rke2 service
 func (node DockerNode) DumpServiceLogs(lines int) (string, error) {
 	var cmd string
 	if strings.Contains(node.Name, "agent") {
-		cmd = fmt.Sprintf("journalctl -u k3s-agent -n %d", lines)
+		cmd = fmt.Sprintf("journalctl -u rke2-agent -n %d", lines)
 	} else {
-		cmd = fmt.Sprintf("journalctl -u k3s -n %d", lines)
+		cmd = fmt.Sprintf("journalctl -u rke2-server -n %d", lines)
 	}
 	res, err := node.RunCmdOnNode(cmd)
 	if strings.Contains(res, "No entries") {
