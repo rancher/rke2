@@ -2,7 +2,7 @@
 set -x
 
 PROG=rke2
-REGISTRY=docker.io
+REGISTRY=${REGISTRY:-docker.io}
 REPO=${REPO:-rancher}
 K3S_PKG=github.com/k3s-io/k3s
 RKE2_PKG=github.com/rancher/rke2
