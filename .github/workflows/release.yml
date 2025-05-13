@@ -338,7 +338,7 @@ jobs:
       - name: Make artifacts directory
         run: |
           mkdir -p dist/artifacts
-      - name: "Read secrets"
+      - name: Read secrets
         uses: rancher-eio/read-vault-secrets@main
         with:
           secrets: |
@@ -354,7 +354,7 @@ jobs:
           aws-region: us-east-1
       - name: Pull rke2-runtime
         env:
-          REGISTRY: ${{ secrets.PRIME_REGISTRY }}
+          REGISTRY: ${{ env.PRIME_REGISTRY }}
         run: |
           docker pull "${REGISTRY}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
       - name: Download Binaries
