@@ -20,8 +20,7 @@ jobs:
         curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
         chmod +x /usr/local/bin/dapper
     - name: Build
-      run: |
-        dapper -f Dockerfile --target dapper make dapper-ci
+      run: dapper -f Dockerfile --target dapper make dapper-ci
     - name: Load kernel modules
       run: |
         sudo modprobe br_netfilter overlay
