@@ -135,6 +135,9 @@ jobs:
           mv ./artifacts/rke2-* ./build/images/
           mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
           sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+      - name: Load kernel modules
+        run: |
+          sudo modprobe br_netfilter overlay
       - name: Run ${{ matrix.dtest }} Test
         run: |
           go test -v -timeout=20m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci
@@ -169,6 +172,9 @@ jobs:
           mv ./artifacts/rke2-* ./build/images/
           mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
           sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+      - name: Load kernel modules
+        run: |
+          sudo modprobe br_netfilter overlay
       - name: Run ${{ matrix.dtest }} Test
         run: |
           go test -v -timeout=30m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci
