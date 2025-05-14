@@ -54,6 +54,10 @@ jobs:
       continue-on-error: true
       run: |
         dapper -f Dockerfile --target dapper make scan-images
+
+    - name: Load kernel modules
+      run: |
+        sudo modprobe br_netfilter overlay
     
     - name: Test
       run: |
