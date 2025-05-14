@@ -159,6 +159,7 @@ var (
 		"etcd-s3":                           copyFlag,
 		"etcd-s3-access-key":                copyFlag,
 		"etcd-s3-bucket":                    copyFlag,
+		"etcd-s3-bucket-lookup-type":        copyFlag,
 		"etcd-s3-config-secret":             copyFlag,
 		"etcd-s3-endpoint":                  copyFlag,
 		"etcd-s3-endpoint-ca":               copyFlag,
