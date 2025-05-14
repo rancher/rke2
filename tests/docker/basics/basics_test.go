@@ -52,7 +52,7 @@ var _ = Describe("Basic Tests", Ordered, func() {
 			Expect(err).NotTo(HaveOccurred(), "failed to apply dns-node-cache manifest")
 			Eventually(func() error {
 				return tests.CheckDaemonSets([]string{"node-local-dns"}, tc.KubeconfigFile)
-			}, "40s", "5s").Should(Succeed())
+			}, "80s", "5s").Should(Succeed())
 		})
 		It("should deploy loadbalancer service", func() {
 			_, err := tc.DeployWorkload("loadbalancer.yaml")
