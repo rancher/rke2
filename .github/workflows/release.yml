@@ -63,6 +63,10 @@ jobs:
       with:
         name: release-trivy-scan
         path: trivy_scan_report.txt
+
+    - name: Load kernel modules
+      run: |
+       sudo modprobe br_netfilter overlay
         
     - name: Test
       run: |

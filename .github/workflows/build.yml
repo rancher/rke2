@@ -34,6 +34,9 @@ jobs:
       env:
         AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+    - name: Load kernel modules
+      run: |
+       sudo modprobe br_netfilter overlay
     - name: Test
       run: dapper -f Dockerfile --target dapper make test
     - name: Prepare Test Logs on Failure
@@ -68,4 +71,3 @@ jobs:
       env:
         AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
-        
