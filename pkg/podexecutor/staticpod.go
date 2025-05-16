@@ -135,11 +135,23 @@ type CloudProviderConfig struct {
 	Path string
 }
 
+// apiserverSyncAndReady returns a channel that is closed once the etcd and apiserver static pods have been synced,
+// and the apiserver readyz endpoint returns success.
+func apiserverSyncAndReady(ctx context.Context, nodeConfig *daemonconfig.Node, cfg cmds.Agent) <-chan struct{} {
+	ready := make(chan struct{})
+	go func() {
+		defer close(ready)
+		reconcileStaticPods(ctx, cfg.ContainerRuntimeEndpoint, cfg.DataDir)
+		<-util.APIServerReadyChan(ctx, nodeConfig.AgentConfig.KubeConfigK3sController, util.DefaultAPIServerReadyTimeout)
+	}()
+	return ready
+}
+
 // Bootstrap prepares the static executor to run components by setting the system default registry
 // and staging the kubelet and containerd binaries.  On servers, it also ensures that manifests are
 // copied in to place and in sync with the system configuration.
 func (s *StaticPodConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
-	s.apiServerReady = util.APIServerReadyChan(ctx, nodeConfig.AgentConfig.KubeConfigK3sController, util.DefaultAPIServerReadyTimeout)
+	s.apiServerReady = apiserverSyncAndReady(ctx, nodeConfig, cfg)
 	s.etcdReady = make(chan struct{})
 	s.criReady = make(chan struct{})
 
