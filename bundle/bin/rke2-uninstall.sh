@@ -113,7 +113,7 @@ uninstall_remove_files()
     rm -d /etc/rancher || true
     rm -rf /etc/cni
     rm -rf /opt/cni/bin
-    rm -rf /var/lib/kubelet || true
+    rm --one-file-system -rf /var/lib/kubelet || true
     rm -rf "${RKE2_DATA_DIR}" || error "Failed to remove /var/lib/rancher/rke2"
     rm -d /var/lib/rancher || true
 
