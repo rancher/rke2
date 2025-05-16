@@ -1,17 +1,14 @@
-package rke2
-
-// TODO: move this into the podexecutor package, this logic is specific to that executor and should be there instead of here.
+package podexecutor
 
 import (
 	"context"
 	"errors"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
+	"github.com/k3s-io/k3s/pkg/agent/config"
 	"github.com/k3s-io/k3s/pkg/agent/cri"
-	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	pkgerrors "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -24,50 +21,52 @@ import (
 	netutils "k8s.io/utils/net"
 )
 
+const (
+	ContainerdSock = "/run/k3s/containerd/containerd.sock"
+)
+
 type containerInfo struct {
 	Config *runtimeapi.ContainerConfig `json:"config,omitempty"`
+}
+
+func PodManifestsDir(dataDir string) string {
+	return filepath.Join(dataDir, "agent", config.DefaultPodManifestPath)
 }
 
 // reconcileStaticPods validates that the running pods for etcd and kube-apiserver match the static pod
 // manifests provided in /var/lib/rancher/rke2/agent/pod-manifests. If any old pods are found, they are
 // manually terminated, as the kubelet cannot be relied upon to terminate old pod when the apiserver is
 // not available.
-func reconcileStaticPods(containerRuntimeEndpoint, dataDir string) cmds.StartupHook {
-	return func(ctx context.Context, wg *sync.WaitGroup, args cmds.StartupHookArgs) error {
-		go func() {
-			defer wg.Done()
-			if err := wait.PollImmediateWithContext(ctx, 20*time.Second, 30*time.Minute, func(ctx context.Context) (bool, error) {
-				if containerRuntimeEndpoint == "" {
-					containerRuntimeEndpoint = containerdSock
-				}
-				conn, err := cri.Connection(ctx, containerRuntimeEndpoint)
-				if err != nil {
-					logrus.Infof("Waiting for cri connection: %v", err)
-					return false, nil
-				}
-				cRuntime := runtimeapi.NewRuntimeServiceClient(conn)
-				defer conn.Close()
+func reconcileStaticPods(ctx context.Context, containerRuntimeEndpoint, dataDir string) {
+	if err := wait.PollImmediateWithContext(ctx, 20*time.Second, 30*time.Minute, func(ctx context.Context) (bool, error) {
+		if containerRuntimeEndpoint == "" {
+			containerRuntimeEndpoint = ContainerdSock
+		}
+		conn, err := cri.Connection(ctx, containerRuntimeEndpoint)
+		if err != nil {
+			logrus.Infof("Waiting for cri connection: %v", err)
+			return false, nil
+		}
+		cRuntime := runtimeapi.NewRuntimeServiceClient(conn)
+		defer conn.Close()
 
-				manifestDir := podManifestsDir(dataDir)
+		manifestDir := PodManifestsDir(dataDir)
 
-				for _, pod := range []string{"etcd", "kube-apiserver"} {
-					manifestFile := filepath.Join(manifestDir, pod+".yaml")
-					if err := checkManifestDeployed(ctx, cRuntime, manifestFile); err != nil {
-						if errors.Is(err, os.ErrNotExist) {
-							// Since split-role servers exist, we don't care if no manifest is found
-							continue
-						}
-						logrus.Infof("Pod for %s not synced (%v), retrying", pod, err)
-						return false, nil
-					}
-					logrus.Infof("Pod for %s is synced", pod)
+		for _, pod := range []string{"etcd", "kube-apiserver"} {
+			manifestFile := filepath.Join(manifestDir, pod+".yaml")
+			if err := checkManifestDeployed(ctx, cRuntime, manifestFile); err != nil {
+				if errors.Is(err, os.ErrNotExist) {
+					// Since split-role servers exist, we don't care if no manifest is found
+					continue
 				}
-				return true, nil
-			}); err != nil {
-				logrus.Fatalf("Failed waiting for static pods to sync: %v", err)
+				logrus.Infof("Pod for %s not synced (%v), retrying", pod, err)
+				return false, nil
 			}
-		}()
-		return nil
+			logrus.Infof("Pod for %s is synced", pod)
+		}
+		return true, nil
+	}); err != nil {
+		logrus.Fatalf("Failed waiting for static pods to sync: %v", err)
 	}
 }
 
