@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rancher/rke2/tests"
 	"github.com/rancher/rke2/tests/docker"
+	"github.com/rancher/rke2/tests/e2e"
 )
 
 var (
@@ -106,6 +107,8 @@ var _ = AfterEach(func() {
 
 var _ = AfterSuite(func() {
 	if tc != nil && failed {
+		metrics, _ := e2e.RunCommand("kubectl get --kubeconfig=" + tc.KubeconfigFile + " --raw /metrics | grep apiserver_encryption_config_controller_automatic_reload")
+		AddReportEntry("metrics", metrics)
 		AddReportEntry("cluster-resources", tc.DumpResources())
 		AddReportEntry("pod-logs", tc.DumpPodLogs(50))
 		AddReportEntry("journald-logs", tc.DumpServiceLogs(250))

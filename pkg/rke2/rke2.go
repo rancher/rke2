@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/k3s-io/k3s/pkg/agent/config"
 	"github.com/k3s-io/k3s/pkg/agent/cri"
 	"github.com/k3s-io/k3s/pkg/cli/agent"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
@@ -23,6 +22,7 @@ import (
 	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
 	"github.com/rancher/rke2/pkg/images"
+	"github.com/rancher/rke2/pkg/podexecutor"
 	"gopkg.in/natefinch/lumberjack.v2"
 
 	"github.com/rancher/wrangler/v3/pkg/slice"
@@ -79,7 +79,6 @@ const (
 	CISProfile123          = "cis-1.23"
 	CISProfile             = "cis"
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
-	containerdSock         = "/run/k3s/containerd/containerd.sock"
 	KubeAPIServer          = "kube-apiserver"
 	KubeScheduler          = "kube-scheduler"
 	KubeControllerManager  = "kube-controller-manager"
@@ -117,7 +116,6 @@ func Server(clx *cli.Context, cfg Config) error {
 	}
 	dataDir := clx.String("data-dir")
 	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
-		reconcileStaticPods(cmds.AgentConfig.ContainerRuntimeEndpoint, dataDir),
 		setNetworkPolicies(cisMode, defaultNamespaces),
 		setClusterRoles(),
 		restrictServiceAccounts(cisMode, defaultNamespaces),
@@ -203,10 +201,6 @@ func etcdNameFile(dataDir string) string {
 	return filepath.Join(dataDir, "server", "db", "etcd", "name")
 }
 
-func podManifestsDir(dataDir string) string {
-	return filepath.Join(dataDir, "agent", config.DefaultPodManifestPath)
-}
-
 func binDir(dataDir string) string {
 	return filepath.Join(dataDir, "bin")
 }
@@ -217,7 +211,7 @@ func binDir(dataDir string) string {
 func removeDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems map[string]bool, clusterReset bool) error {
 	terminatePods := false
 	execPath := binDir(dataDir)
-	manifestDir := podManifestsDir(dataDir)
+	manifestDir := podexecutor.PodManifestsDir(dataDir)
 
 	// no need to clean up static pods if this is a clean install (bin or manifests dirs missing)
 	for _, path := range []string{execPath, manifestDir} {
@@ -299,8 +293,8 @@ func isCISMode(clx *cli.Context) bool {
 func startContainerd(_ context.Context, dataDir string, errChan chan error, cmd *exec.Cmd) {
 	args := []string{
 		"-c", filepath.Join(dataDir, "agent", "etc", "containerd", "config.toml"),
-		"-a", containerdSock,
-		"--state", filepath.Dir(containerdSock),
+		"-a", podexecutor.ContainerdSock,
+		"--state", filepath.Dir(podexecutor.ContainerdSock),
 		"--root", filepath.Join(dataDir, "agent", "containerd"),
 	}
 
@@ -350,7 +344,7 @@ func startContainerd(_ context.Context, dataDir string, errChan chan error, cmd 
 // TODO: move this into the podexecutor package, this logic is specific to that executor and should be there instead of here.
 func terminateRunningContainers(ctx context.Context, containerRuntimeEndpoint string, disabledItems map[string]bool, containerdErr chan error) {
 	if containerRuntimeEndpoint == "" {
-		containerRuntimeEndpoint = containerdSock
+		containerRuntimeEndpoint = podexecutor.ContainerdSock
 	}
 
 	// send on the subprocess error channel to wake up the select
