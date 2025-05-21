@@ -125,7 +125,7 @@ func Test_UnitInitExecutor(t *testing.T) {
 			flagSet := flag.NewFlagSet("test", 0)
 			flagSet.String("pod-security-admission-config-file", "/tmp/pss.yaml", "")
 			tt.args.clx = cli.NewContext(nil, flagSet, nil)
-			got, err := initExecutor(tt.args.clx, tt.args.cfg, tt.args.isServer)
+			execer, err := initExecutor(tt.args.clx, tt.args.cfg, tt.args.isServer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("initExecutor() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -134,6 +134,12 @@ func Test_UnitInitExecutor(t *testing.T) {
 			if tt.wantErr {
 				return
 			}
+			got, ok := execer.(*podexecutor.StaticPodConfig)
+			if !ok {
+				t.Errorf("failed to convert Executor as StaticPodConfig")
+				return
+			}
+
 			if !reflect.DeepEqual(got.ControlPlaneProbeConfs.KubeProxy.Startup.InitialDelaySeconds, tt.want.ControlPlaneProbeConfs.KubeProxy.Startup.InitialDelaySeconds) {
 				t.Errorf("initExecutor() kube-proxy-startup-initial-delay-seconds = %+v\nWant = %+v",
 					got.ControlPlaneProbeConfs.KubeProxy.Startup.InitialDelaySeconds,
