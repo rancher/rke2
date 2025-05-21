@@ -16,10 +16,12 @@ import (
 	"github.com/k3s-io/k3s/pkg/agent/config"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/cluster/managed"
+	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/etcd"
 	"github.com/k3s-io/kine/pkg/util"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
+	"github.com/rancher/rke2/pkg/kubernetesexecutor"
 	"github.com/rancher/rke2/pkg/podexecutor"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -41,7 +43,21 @@ const (
 	PeriodSeconds       = "period-seconds"
 )
 
-func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.StaticPodConfig, error) {
+func initExecutor(clx *cli.Context, cfg Config, isServer bool) (executor.Executor, error) {
+	if clx.Bool("disable-agent") && isServer {
+		return initKubernetesExecutor(clx, cfg)
+	}
+	return initPodExecutor(clx, cfg, isServer)
+}
+
+func initKubernetesExecutor(clx *cli.Context, cfg Config) (executor.Executor, error) {
+	return &kubernetesexecutor.KubernetesConfig{
+		DataDir: clx.String("data-dir"),
+		Name:    "rke2",
+	}, nil
+}
+
+func initPodExecutor(clx *cli.Context, cfg Config, isServer bool) (executor.Executor, error) {
 	// This flag will only be set on servers, on agents this is a no-op and the
 	// resolver's default registry will get updated later when bootstrapping
 	cfg.Images.SystemDefaultRegistry = clx.String("system-default-registry")
