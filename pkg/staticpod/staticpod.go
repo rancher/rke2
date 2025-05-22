@@ -76,6 +76,7 @@ type Args struct {
 	ExtraEnv        []string
 	ProbeConfs      ProbeConfs
 	SecurityContext *v1.PodSecurityContext
+	Ports           []v1.ContainerPort
 	Annotations     map[string]string
 	Privileged      bool
 }
@@ -105,7 +106,7 @@ func Run(dir string, args Args) error {
 			}
 		}
 	}
-	files, err := readFiles(args.Args, args.ExcludeFiles)
+	files, err := ReadFiles(args.Args, args.ExcludeFiles)
 	if err != nil {
 		return err
 	}
@@ -113,7 +114,7 @@ func Run(dir string, args Args) error {
 	// TODO Check to make sure we aren't double mounting directories and the files in those directories
 
 	args.Files = append(args.Files, files...)
-	pod, err := pod(args)
+	pod, err := Pod(args)
 	if err != nil {
 		return err
 	}
@@ -186,7 +187,7 @@ func hashFiles(files []string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
-func pod(args Args) (*v1.Pod, error) {
+func Pod(args Args) (*v1.Pod, error) {
 	filehash, err := hashFiles(args.Files)
 	if err != nil {
 		return nil, err
@@ -213,6 +214,7 @@ func pod(args Args) (*v1.Pod, error) {
 					Image:   args.Image.Name(),
 					Command: []string{args.Command},
 					Args:    args.Args,
+					Ports:   args.Ports,
 					Env: []v1.EnvVar{
 						{
 							Name:  "FILE_HASH",
@@ -414,10 +416,10 @@ func addExtraEnv(p *v1.Pod, extraEnv []string) {
 	}
 }
 
-// readFiles takes in the arguments passed to the static pod and returns a list of all files
+// ReadFiles takes in the arguments passed to the static pod and returns a list of all files
 // embedded in those arguments to be included in the pod manifest as volumes.
 // excludeFiles are not included in the returned list.
-func readFiles(args, excludeFiles []string) ([]string, error) {
+func ReadFiles(args, excludeFiles []string) ([]string, error) {
 	files := map[string]bool{}
 	excludes := map[string]bool{}
 
