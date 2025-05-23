@@ -375,7 +375,7 @@ func (s *StaticPodConfig) APIServer(_ context.Context, args []string) error {
 		},
 	}
 
-	return after(s.ETCDReadyChan(), func() error {
+	return After(s.ETCDReadyChan(), func() error {
 		return staticpod.Run(s.ManifestsDir, apiServerArgs)
 	})
 }
@@ -397,7 +397,7 @@ func (s *StaticPodConfig) Scheduler(_ context.Context, nodeReady <-chan struct{}
 	}
 
 	args = append(permitPortSharingFlag, args...)
-	return after(s.APIServerReadyChan(), func() error {
+	return After(s.APIServerReadyChan(), func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:       "kube-scheduler",
 			Args:          args,
@@ -428,8 +428,9 @@ func OnlyExisting(paths []string) []string {
 	return existing
 }
 
-// after calls a function after a message is received from a channel.
-func after(after <-chan struct{}, f func() error) error {
+// After calls a function after a message is received from a channel.
+// If the function returns an error, a fatal error is logged.
+func After(after <-chan struct{}, f func() error) error {
 	go func() {
 		<-after
 		if err := f(); err != nil {
@@ -462,7 +463,7 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, args []string) er
 		files = append(files, etcdNameFile(s.DataDir))
 	}
 
-	return after(s.APIServerReadyChan(), func() error {
+	return After(s.APIServerReadyChan(), func() error {
 		extraArgs := []string{
 			"--flex-volume-plugin-dir=/var/lib/kubelet/volumeplugins",
 			"--terminated-pod-gc-threshold=1000",
@@ -498,7 +499,7 @@ func (s *StaticPodConfig) CloudControllerManager(_ context.Context, ccmRBACReady
 	if err := images.Pull(s.ImagesDir, images.CloudControllerManager, image); err != nil {
 		return err
 	}
-	return after(ccmRBACReady, func() error {
+	return After(ccmRBACReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:       "cloud-controller-manager",
 			Args:          args,

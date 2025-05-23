@@ -1,13 +1,16 @@
 package kubernetesexecutor
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io/fs"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -70,8 +73,6 @@ type KubernetesConfig struct {
 }
 
 func (k *KubernetesConfig) APIServer(ctx context.Context, args []string) error {
-	logrus.Warnf("APIServer")
-
 	image, err := k.Resolver.GetReference(images.KubeAPIServer)
 	if err != nil {
 		return err
@@ -83,6 +84,19 @@ func (k *KubernetesConfig) APIServer(ctx context.Context, args []string) error {
 	k.loadbalancer, err = loadbalancer.New(ctx, filepath.Join(k.DataDir, "agent"), loadbalancer.APIServerServiceName, url, 6443, false)
 	if err != nil {
 		return err
+	}
+
+	advertiseAddress := ""
+	if advertiseEnv := os.Getenv(version.ProgramUpper + "_ADVERTISE_ADDRESS"); advertiseEnv != "" {
+		if !slices.Contains(cmds.ServerConfig.TLSSan.Value(), advertiseEnv) {
+			return fmt.Errorf("Advertised address not in TLS SAN list")
+		}
+		advertiseAddress = advertiseEnv
+	} else {
+		advertiseAddress, err = k.getAdvertiseAddress(ctx)
+		if err != nil {
+			return err
+		}
 	}
 
 	auditLogFile := ""
@@ -126,13 +140,11 @@ func (k *KubernetesConfig) APIServer(ctx context.Context, args []string) error {
 	// FIXME - figure out how to copy this into a secret and mount it somewhere other than /etc
 	//args = append([]string{"--admission-control-config-file=" + k.PSAConfigFile}, args...)
 
-	// set advertise address from apiserver service link env var
-	envPrefix := strings.ToUpper(strings.ReplaceAll(k.Name+"-apiserver", "-", "_"))
-	args = append(args, "--advertise-address=$("+envPrefix+"_SERVICE_HOST)")
+	// set advertise address from apiserver service or configured value
+	args = append(args, "--advertise-address="+advertiseAddress)
 
 	files := []string{}
 	excludeFiles := []string{}
-
 	dirs := podexecutor.OnlyExisting(podexecutor.SSLDirs)
 	if auditLogFile != "" && auditLogFile != "-" {
 		dirs = append(dirs, filepath.Dir(auditLogFile))
@@ -141,7 +153,7 @@ func (k *KubernetesConfig) APIServer(ctx context.Context, args []string) error {
 
 	// FIXME - "server/cred/encryption-config.json" needs to be synced into secret when the content is updated
 
-	apiServerArgs := staticpod.Args{
+	podArgs := staticpod.Args{
 		Command:       "kube-apiserver",
 		Args:          args,
 		Image:         image,
@@ -176,7 +188,7 @@ func (k *KubernetesConfig) APIServer(ctx context.Context, args []string) error {
 		},
 	}
 
-	deployment, err := k.deployment(apiServerArgs)
+	deployment, err := k.deployment(podArgs)
 	if err != nil {
 		return err
 	}
@@ -196,8 +208,6 @@ func (k *KubernetesConfig) APIServerReadyChan() <-chan struct{} {
 }
 
 func (k *KubernetesConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node, cfg cmds.Agent) error {
-	logrus.Warnf("Bootstrap")
-
 	loader := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		&clientcmd.ClientConfigLoadingRules{ExplicitPath: k.KubeConfig},
 		&clientcmd.ConfigOverrides{},
@@ -248,7 +258,6 @@ func (k *KubernetesConfig) Bootstrap(ctx context.Context, nodeConfig *config.Nod
 }
 
 func (k *KubernetesConfig) CRI(ctx context.Context, node *config.Node) error {
-	logrus.Warnf("CRI")
 	if node.ContainerRuntimeEndpoint != "/dev/null" {
 		return errNotImplemented
 	}
@@ -260,18 +269,83 @@ func (k *KubernetesConfig) CRIReadyChan() <-chan struct{} {
 }
 
 func (k *KubernetesConfig) CloudControllerManager(ctx context.Context, ccmRBACReady <-chan struct{}, args []string) error {
-	logrus.Warnf("CloudControllerManager")
-	return nil
+	image, err := k.Resolver.GetReference(images.CloudControllerManager)
+	if err != nil {
+		return err
+	}
+
+	files := []string{}
+	excludeFiles := []string{}
+	dirs := podexecutor.OnlyExisting(podexecutor.SSLDirs)
+
+	podArgs := staticpod.Args{
+		Command:       "cloud-controller-manager",
+		Args:          args,
+		Image:         image,
+		Dirs:          dirs,
+		CISMode:       k.CISMode,
+		HealthPort:    10258,
+		HealthProto:   "HTTPS",
+		CPURequest:    k.ControlPlaneResources.CloudControllerManagerCPURequest,
+		CPULimit:      k.ControlPlaneResources.CloudControllerManagerCPULimit,
+		MemoryRequest: k.ControlPlaneResources.CloudControllerManagerMemoryRequest,
+		MemoryLimit:   k.ControlPlaneResources.CloudControllerManagerMemoryLimit,
+		ExtraEnv:      k.ControlPlaneEnv.CloudControllerManager,
+		ProbeConfs:    k.ControlPlaneProbeConfs.CloudControllerManager,
+		Files:         files,
+		ExcludeFiles:  excludeFiles,
+	}
+
+	deployment, err := k.deployment(podArgs)
+	if err != nil {
+		return err
+	}
+
+	return podexecutor.After(ccmRBACReady, func() error {
+		return k.apply.WithSetID(k.Name + "-" + deployment.Name).ApplyObjects(deployment)
+	})
 }
 
 func (k *KubernetesConfig) Containerd(ctx context.Context, node *config.Node) error {
-	logrus.Warnf("Containerd")
 	return errNotImplemented
 }
 
 func (k *KubernetesConfig) ControllerManager(ctx context.Context, args []string) error {
-	logrus.Warnf("ControllerManager")
-	return nil
+	image, err := k.Resolver.GetReference(images.KubeControllerManager)
+	if err != nil {
+		return err
+	}
+
+	files := []string{}
+	excludeFiles := []string{}
+	dirs := podexecutor.OnlyExisting(podexecutor.SSLDirs)
+
+	podArgs := staticpod.Args{
+		Command:       "kube-controller-manager",
+		Args:          args,
+		Image:         image,
+		Dirs:          dirs,
+		CISMode:       k.CISMode,
+		HealthPort:    10257,
+		HealthProto:   "HTTPS",
+		CPURequest:    k.ControlPlaneResources.KubeControllerManagerCPURequest,
+		CPULimit:      k.ControlPlaneResources.KubeControllerManagerCPULimit,
+		MemoryRequest: k.ControlPlaneResources.KubeControllerManagerMemoryRequest,
+		MemoryLimit:   k.ControlPlaneResources.KubeControllerManagerMemoryLimit,
+		ExtraEnv:      k.ControlPlaneEnv.KubeControllerManager,
+		ProbeConfs:    k.ControlPlaneProbeConfs.KubeControllerManager,
+		Files:         files,
+		ExcludeFiles:  excludeFiles,
+	}
+
+	deployment, err := k.deployment(podArgs)
+	if err != nil {
+		return err
+	}
+
+	return podexecutor.After(k.APIServerReadyChan(), func() error {
+		return k.apply.WithSetID(k.Name + "-" + deployment.Name).ApplyObjects(deployment)
+	})
 }
 
 func (k *KubernetesConfig) CurrentETCDOptions() (executor.InitialOptions, error) {
@@ -279,13 +353,14 @@ func (k *KubernetesConfig) CurrentETCDOptions() (executor.InitialOptions, error)
 }
 
 func (k *KubernetesConfig) Docker(ctx context.Context, node *config.Node) error {
-	logrus.Warnf("Docker")
 	return errNotImplemented
 }
 
 func (k *KubernetesConfig) ETCD(ctx context.Context, args *executor.ETCDConfig, extraArgs []string, test executor.TestFunc) error {
-	logrus.Warnf("ETCD")
-	return nil
+	// TODO: manage a single etcd pod per controller replica?
+	// Need to figure out how to bootstrap, as we currently expect the supervisor to have access to the etcd
+	// database files and pull stuff out of them with the embedded executor.
+	return errNotImplemented
 }
 
 func (k *KubernetesConfig) ETCDReadyChan() <-chan struct{} {
@@ -293,18 +368,49 @@ func (k *KubernetesConfig) ETCDReadyChan() <-chan struct{} {
 }
 
 func (k *KubernetesConfig) KubeProxy(ctx context.Context, args []string) error {
-	logrus.Warnf("KubeProxy")
 	return errNotImplemented
 }
 
 func (k *KubernetesConfig) Kubelet(ctx context.Context, args []string) error {
-	logrus.Warnf("Kubelet")
 	return errNotImplemented
 }
 
 func (k *KubernetesConfig) Scheduler(ctx context.Context, nodeReady <-chan struct{}, args []string) error {
-	logrus.Warnf("Scheduler")
-	return nil
+	image, err := k.Resolver.GetReference(images.KubeScheduler)
+	if err != nil {
+		return err
+	}
+
+	files := []string{}
+	excludeFiles := []string{}
+	dirs := podexecutor.OnlyExisting(podexecutor.SSLDirs)
+
+	podArgs := staticpod.Args{
+		Command:       "kube-scheduler",
+		Args:          args,
+		Image:         image,
+		Dirs:          dirs,
+		CISMode:       k.CISMode,
+		HealthPort:    10259,
+		HealthProto:   "HTTPS",
+		CPURequest:    k.ControlPlaneResources.KubeSchedulerCPURequest,
+		CPULimit:      k.ControlPlaneResources.KubeSchedulerCPULimit,
+		MemoryRequest: k.ControlPlaneResources.KubeSchedulerMemoryRequest,
+		MemoryLimit:   k.ControlPlaneResources.KubeSchedulerMemoryLimit,
+		ExtraEnv:      k.ControlPlaneEnv.KubeScheduler,
+		ProbeConfs:    k.ControlPlaneProbeConfs.KubeScheduler,
+		Files:         files,
+		ExcludeFiles:  excludeFiles,
+	}
+
+	deployment, err := k.deployment(podArgs)
+	if err != nil {
+		return err
+	}
+
+	return podexecutor.After(k.APIServerReadyChan(), func() error {
+		return k.apply.WithSetID(k.Name + "-" + deployment.Name).ApplyObjects(deployment)
+	})
 }
 
 // getAdvertiseAddress waits for ClusterIP assignment for the apiserver service, this is what we will advertise to clients.
@@ -334,9 +440,13 @@ func (k *KubernetesConfig) getAdvertiseAddress(ctx context.Context) (string, err
 // It also creates a Service for the apiserver.
 func (k *KubernetesConfig) applyClusterResources(ctx context.Context) error {
 	objs := []runtime.Object{}
+	serviceType := corev1.ServiceTypeClusterIP
+	if typeEnv := os.Getenv(version.ProgramUpper + "_CLUSTER_SERVICETYPE"); typeEnv != "" {
+		serviceType = corev1.ServiceType(typeEnv)
+	}
 
 	for _, dir := range secretDirs {
-		data, err := bytesFromDir(filepath.Join(k.DataDir, "server", dir))
+		data, err := k.bytesFromDir(filepath.Join(k.DataDir, "server", dir))
 		if err != nil {
 			return err
 		}
@@ -368,12 +478,12 @@ func (k *KubernetesConfig) applyClusterResources(ctx context.Context) error {
 			},
 		},
 		Spec: corev1.ServiceSpec{
+			Type: serviceType,
 			Selector: map[string]string{
 				clusterNameLabel: k.Name,
 				"component":      "kube-apiserver",
 				"tier":           "control-plane",
 			},
-			Type: corev1.ServiceTypeClusterIP,
 			Ports: []corev1.ServicePort{
 				{Name: "https", Port: 6443, TargetPort: intstr.FromInt(6443)},
 				{Name: "supervisor", Port: 9345, TargetPort: intstr.FromInt(9345)},
@@ -485,6 +595,19 @@ func (k *KubernetesConfig) deployment(args staticpod.Args) (*appsv1.Deployment, 
 
 // deploymentForPod creates a Deployment with Name, LabelSelector, and Pod from the Pod
 func deploymentForPod(pod *corev1.Pod) *appsv1.Deployment {
+	replicas := 1
+	maxUnavailable := 1
+
+	if replicasEnv := os.Getenv(version.ProgramUpper + "_CLUSTER_REPLICAS"); replicasEnv != "" {
+		if r, err := strconv.Atoi(replicasEnv); err == nil && r >= 0 {
+			replicas = r
+		}
+	}
+
+	if replicas > 1 {
+		maxUnavailable = replicas - 1
+	}
+
 	return &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "apps/v1",
@@ -496,12 +619,13 @@ func deploymentForPod(pod *corev1.Pod) *appsv1.Deployment {
 			Labels:    pod.Labels,
 		},
 		Spec: appsv1.DeploymentSpec{
-			RevisionHistoryLimit: ptr.To(int32(1)),
+			Replicas:             ptr.To(int32(replicas)),
+			RevisionHistoryLimit: ptr.To(int32(0)),
 			Strategy: appsv1.DeploymentStrategy{
 				Type: appsv1.RollingUpdateDeploymentStrategyType,
 				RollingUpdate: &appsv1.RollingUpdateDeployment{
 					MaxSurge:       ptr.To(intstr.FromInt(1)),
-					MaxUnavailable: ptr.To(intstr.FromInt(1)),
+					MaxUnavailable: ptr.To(intstr.FromInt(maxUnavailable)),
 				},
 			},
 			Selector: &metav1.LabelSelector{
@@ -528,9 +652,16 @@ func (k *KubernetesConfig) addSupervisorContainer(d *appsv1.Deployment) {
 	d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, corev1.Container{
 		Name:    "supervisor",
 		Image:   d.Spec.Template.Spec.Containers[0].Image,
-		Command: []string{"/bin/sh", "-xc"},
+		Command: []string{"/bin/sh", "-xec"},
 		Args:    []string{strings.Join(args, "\n")},
 		Ports:   []corev1.ContainerPort{{Name: "supervisor", Protocol: corev1.ProtocolTCP, ContainerPort: 9345}},
+		SecurityContext: &corev1.SecurityContext{
+			Capabilities: &corev1.Capabilities{
+				Add: []corev1.Capability{
+					"NET_ADMIN",
+				},
+			},
+		},
 	})
 
 	if d.Spec.Template.Spec.SecurityContext == nil {
@@ -541,7 +672,8 @@ func (k *KubernetesConfig) addSupervisorContainer(d *appsv1.Deployment) {
 
 // bytesFromDir returns a map of paths to bytes for normal files under a directory.
 // Path separators are converted to underscores, so that the map can be used as Secret data.
-func bytesFromDir(base string) (map[string][]byte, error) {
+// Loopback addresses in kubeconfigs are also replaced with the apiserver service name
+func (k *KubernetesConfig) bytesFromDir(base string) (map[string][]byte, error) {
 	fileBytes := map[string][]byte{}
 	base = base + string(filepath.Separator)
 	return fileBytes, filepath.WalkDir(base, func(path string, d fs.DirEntry, err error) error {
@@ -555,6 +687,10 @@ func bytesFromDir(base string) (map[string][]byte, error) {
 		b, err := ioutil.ReadFile(path)
 		if err != nil {
 			return err
+		}
+		if strings.HasSuffix(d.Name(), ".kubeconfig") {
+			b = bytes.ReplaceAll(b, []byte("[::1]"), []byte(k.Name+"-kube-apiserver"))
+			b = bytes.ReplaceAll(b, []byte("127.0.0.1"), []byte(k.Name+"-kube-apiserver"))
 		}
 		path = strings.TrimPrefix(path, base)
 		path = strings.ReplaceAll(path, string(filepath.Separator), "_")
