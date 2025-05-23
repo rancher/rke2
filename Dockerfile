@@ -106,9 +106,7 @@ VOLUME /var/lib/rancher/k3s
 FROM build AS charts
 ARG CHART_REPO="https://rke2-charts.rancher.io"
 ARG KUBERNETES_VERSION=""
-ARG CACHEBUST="cachebust"
 COPY charts/ /charts/
-RUN echo ${CACHEBUST}>/dev/null
 RUN /charts/build-charts.sh
 RUN rm -vf /charts/*.sh /charts/*.md /charts/chart_versions.yaml
 
