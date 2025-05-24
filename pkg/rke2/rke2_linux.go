@@ -511,7 +511,7 @@ func parseControlPlaneProbeConfs(cfg Config) (*podexecutor.ControlPlaneProbeConf
 		// https://github.com/kubernetes/kubernetes/blob/v1.24.0/cmd/kubeadm/app/util/staticpod/utils.go#L259
 		Startup: {
 			InitialDelaySeconds: 10,
-			TimeoutSeconds:      5,
+			TimeoutSeconds:      15,
 			FailureThreshold:    24,
 			PeriodSeconds:       10,
 		},

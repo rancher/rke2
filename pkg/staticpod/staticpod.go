@@ -60,6 +60,10 @@ type Args struct {
 	Sockets         []string
 	CISMode         bool // CIS requires that the manifest be saved with 600 permissions
 	ExcludeFiles    []string
+	StartupExec     []string
+	StartupPort     int32
+	StartupProto    string
+	StartupPath     string
 	HealthExec      []string
 	HealthPort      int32
 	HealthProto     string
@@ -492,10 +496,10 @@ func readinessProbe(args Args) *v1.Probe {
 	return createProbe(args.ReadyExec, args.ReadyPath, args.ReadyProto, args.ReadyPort, args.ProbeConfs.Readiness)
 }
 
-// startupProbe returns a Probe, using the Health values from the provided pod args,
+// startupProbe returns a Probe, using the Startup values from the provided pod args,
 // and the appropriate thresholds for startup probing.
 func startupProbe(args Args) *v1.Probe {
-	return createProbe(args.HealthExec, args.HealthPath, args.HealthProto, args.HealthPort, args.ProbeConfs.Startup)
+	return createProbe(args.StartupExec, args.StartupPath, args.StartupProto, args.StartupPort, args.ProbeConfs.Startup)
 }
 
 // createProbe creates a Probe using the provided configuration.
@@ -530,7 +534,7 @@ func createProbe(command []string, path, scheme string, port int32, conf ProbeCo
 			probe.HTTPGet.Scheme = v1.URISchemeHTTPS
 		}
 		if probe.HTTPGet.Path == "" {
-			probe.HTTPGet.Path = "/healthz"
+			probe.HTTPGet.Path = "/livez"
 		}
 		return probe
 	}
