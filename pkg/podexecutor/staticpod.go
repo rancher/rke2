@@ -130,6 +130,9 @@ type StaticPodConfig struct {
 	criReady       chan struct{}
 }
 
+// explicit type check
+var _ executor.Executor = &StaticPodConfig{}
+
 type CloudProviderConfig struct {
 	Name string
 	Path string
@@ -243,7 +246,7 @@ func (s *StaticPodConfig) KubeProxy(_ context.Context, args []string) error {
 		Image:         image,
 		CISMode:       s.CISMode,
 		HealthPort:    10256,
-		HealthProto:   "HTTP",
+		HealthScheme:  "HTTP",
 		CPURequest:    s.ControlPlaneResources.KubeProxyCPURequest,
 		CPULimit:      s.ControlPlaneResources.KubeProxyCPULimit,
 		MemoryRequest: s.ControlPlaneResources.KubeProxyMemoryRequest,
@@ -252,6 +255,7 @@ func (s *StaticPodConfig) KubeProxy(_ context.Context, args []string) error {
 		ExtraMounts:   s.ControlPlaneMounts.KubeProxy,
 		ProbeConfs:    s.ControlPlaneProbeConfs.KubeProxy,
 		Privileged:    true,
+		HostNetwork:   true,
 	})
 }
 
@@ -382,6 +386,7 @@ func (s *StaticPodConfig) APIServer(_ context.Context, args []string) error {
 			"--certificate-authority=" + s.DataDir + "/server/tls/server-ca.crt",
 			"--raw=/readyz",
 		},
+		HostNetwork: true,
 	}
 
 	return After(s.ETCDReadyChan(), func() error {
@@ -413,12 +418,12 @@ func (s *StaticPodConfig) Scheduler(_ context.Context, nodeReady <-chan struct{}
 			Image:         image,
 			CISMode:       s.CISMode,
 			HealthPort:    10259,
-			HealthProto:   "HTTPS",
+			HealthScheme:  "HTTPS",
 			ReadyPort:     10259,
-			ReadyProto:    "HTTPS",
+			ReadyScheme:   "HTTPS",
 			ReadyPath:     "/readyz",
 			StartupPort:   10259,
-			StartupProto:  "HTTPS",
+			StartupScheme: "HTTPS",
 			CPURequest:    s.ControlPlaneResources.KubeSchedulerCPURequest,
 			CPULimit:      s.ControlPlaneResources.KubeSchedulerCPULimit,
 			MemoryRequest: s.ControlPlaneResources.KubeSchedulerMemoryRequest,
@@ -427,6 +432,7 @@ func (s *StaticPodConfig) Scheduler(_ context.Context, nodeReady <-chan struct{}
 			ExtraMounts:   s.ControlPlaneMounts.KubeScheduler,
 			ProbeConfs:    s.ControlPlaneProbeConfs.KubeScheduler,
 			Files:         files,
+			HostNetwork:   true,
 		})
 	})
 }
@@ -490,10 +496,10 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, args []string) er
 			Dirs:          OnlyExisting(SSLDirs),
 			CISMode:       s.CISMode,
 			HealthPort:    10257,
-			HealthProto:   "HTTPS",
+			HealthScheme:  "HTTPS",
 			HealthPath:    "/healthz",
 			StartupPort:   10257,
-			StartupProto:  "HTTPS",
+			StartupScheme: "HTTPS",
 			StartupPath:   "/healthz",
 			CPURequest:    s.ControlPlaneResources.KubeControllerManagerCPURequest,
 			CPULimit:      s.ControlPlaneResources.KubeControllerManagerCPULimit,
@@ -503,6 +509,7 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, args []string) er
 			ExtraMounts:   s.ControlPlaneMounts.KubeControllerManager,
 			ProbeConfs:    s.ControlPlaneProbeConfs.KubeControllerManager,
 			Files:         files,
+			HostNetwork:   true,
 		})
 	})
 }
@@ -525,10 +532,10 @@ func (s *StaticPodConfig) CloudControllerManager(_ context.Context, ccmRBACReady
 			Dirs:          OnlyExisting(SSLDirs),
 			CISMode:       s.CISMode,
 			HealthPort:    10258,
-			HealthProto:   "HTTPS",
+			HealthScheme:  "HTTPS",
 			HealthPath:    "/healthz",
 			StartupPort:   10257,
-			StartupProto:  "HTTPS",
+			StartupScheme: "HTTPS",
 			StartupPath:   "/healthz",
 			CPURequest:    s.ControlPlaneResources.CloudControllerManagerCPURequest,
 			CPULimit:      s.ControlPlaneResources.CloudControllerManagerCPULimit,
@@ -538,6 +545,7 @@ func (s *StaticPodConfig) CloudControllerManager(_ context.Context, ccmRBACReady
 			ExtraMounts:   s.ControlPlaneMounts.CloudControllerManager,
 			ProbeConfs:    s.ControlPlaneProbeConfs.CloudControllerManager,
 			Files:         []string{},
+			HostNetwork:   true,
 		})
 	})
 }
@@ -628,7 +636,7 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, args *executor.ETCDConfig, e
 		CISMode:       s.CISMode,
 		HealthPort:    2381,
 		HealthPath:    "/health?serializable=true",
-		HealthProto:   "HTTP",
+		HealthScheme:  "HTTP",
 		CPURequest:    s.ControlPlaneResources.EtcdCPURequest,
 		CPULimit:      s.ControlPlaneResources.EtcdCPULimit,
 		MemoryRequest: s.ControlPlaneResources.EtcdMemoryRequest,
@@ -636,6 +644,7 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, args *executor.ETCDConfig, e
 		ExtraEnv:      s.ControlPlaneEnv.Etcd,
 		ExtraMounts:   s.ControlPlaneMounts.Etcd,
 		ProbeConfs:    s.ControlPlaneProbeConfs.Etcd,
+		HostNetwork:   true,
 	}
 
 	if s.CISMode {

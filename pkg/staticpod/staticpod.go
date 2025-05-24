@@ -62,15 +62,15 @@ type Args struct {
 	ExcludeFiles    []string
 	StartupExec     []string
 	StartupPort     int32
-	StartupProto    string
+	StartupScheme   string
 	StartupPath     string
 	HealthExec      []string
 	HealthPort      int32
-	HealthProto     string
+	HealthScheme    string
 	HealthPath      string
 	ReadyExec       []string
 	ReadyPort       int32
-	ReadyProto      string
+	ReadyScheme     string
 	ReadyPath       string
 	CPURequest      string
 	CPULimit        string
@@ -83,6 +83,7 @@ type Args struct {
 	Ports           []v1.ContainerPort
 	Annotations     map[string]string
 	Privileged      bool
+	HostNetwork     bool
 }
 
 // Remove cleans up the static pod manifest for the given command from the specified directory.
@@ -238,7 +239,7 @@ func Pod(args Args) (*v1.Pod, error) {
 					},
 				},
 			},
-			HostNetwork:       true,
+			HostNetwork:       args.HostNetwork,
 			PriorityClassName: "system-cluster-critical",
 			SecurityContext:   args.SecurityContext,
 		},
@@ -343,7 +344,6 @@ func addVolumes(p *v1.Pod, src []string, volume typeVolume) {
 }
 
 func addExtraMounts(p *v1.Pod, extraMounts []string) {
-
 	for i, rawMount := range extraMounts {
 		var sourceType v1.HostPathType
 		mount := strings.Split(rawMount, ":")
@@ -487,26 +487,38 @@ func kubeconfigFiles(kubeconfig string) ([]string, error) {
 // livenessProbe returns a Probe, using the Health values from the provided pod args,
 // and the appropriate thresholds for liveness probing.
 func livenessProbe(args Args) *v1.Probe {
-	return createProbe(args.HealthExec, args.HealthPath, args.HealthProto, args.HealthPort, args.ProbeConfs.Liveness)
+	var host string
+	if args.HostNetwork {
+		host = "localhost"
+	}
+	return createProbe(args.HealthExec, args.HealthScheme, host, args.HealthPath, args.HealthPort, args.ProbeConfs.Liveness)
 }
 
 // readinessProbe returns a Probe, using the Ready values from the provided pod args,
 // and the appropriate thresholds for readiness probing.
 func readinessProbe(args Args) *v1.Probe {
-	return createProbe(args.ReadyExec, args.ReadyPath, args.ReadyProto, args.ReadyPort, args.ProbeConfs.Readiness)
+	var host string
+	if args.HostNetwork {
+		host = "localhost"
+	}
+	return createProbe(args.ReadyExec, args.ReadyScheme, host, args.ReadyPath, args.ReadyPort, args.ProbeConfs.Readiness)
 }
 
 // startupProbe returns a Probe, using the Startup values from the provided pod args,
 // and the appropriate thresholds for startup probing.
 func startupProbe(args Args) *v1.Probe {
-	return createProbe(args.StartupExec, args.StartupPath, args.StartupProto, args.StartupPort, args.ProbeConfs.Startup)
+	var host string
+	if args.HostNetwork {
+		host = "localhost"
+	}
+	return createProbe(args.StartupExec, args.StartupScheme, host, args.StartupPath, args.StartupPort, args.ProbeConfs.Startup)
 }
 
 // createProbe creates a Probe using the provided configuration.
 // If command is set, an ExecAction Probe is returned.
 // If command is empty but port is set, a HTTPGetAction Probe is returned.
 // If neither is set, no Probe is returned.
-func createProbe(command []string, path, scheme string, port int32, conf ProbeConf) *v1.Probe {
+func createProbe(command []string, scheme, host, path string, port int32, conf ProbeConf) *v1.Probe {
 	probe := &v1.Probe{
 		InitialDelaySeconds: conf.InitialDelaySeconds,
 		TimeoutSeconds:      conf.TimeoutSeconds,
@@ -524,7 +536,7 @@ func createProbe(command []string, path, scheme string, port int32, conf ProbeCo
 	} else if port != 0 {
 		probe.HTTPGet = &v1.HTTPGetAction{
 			Path:   path,
-			Host:   "localhost",
+			Host:   host,
 			Scheme: v1.URIScheme(scheme),
 			Port: intstr.IntOrString{
 				IntVal: port,

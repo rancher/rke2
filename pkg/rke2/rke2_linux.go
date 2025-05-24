@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -21,6 +22,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/etcd"
 	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/k3s-io/kine/pkg/util"
+	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/kubernetesexecutor"
@@ -55,26 +57,6 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (executor.Executo
 		return nil, err
 	}
 
-	// Verify if the user want to use kine as the datastore
-	// and then remove the etcd from the static pod
-	externalDatabase := false
-	if cmds.ServerConfig.DatastoreEndpoint != "" || (clx.Bool("disable-etcd") && !clx.IsSet("server")) {
-		cmds.ServerConfig.DisableETCD = false
-		cmds.ServerConfig.ClusterInit = false
-
-		// When the datastore sets a etcd endpoint, rke2 does not need kine with tls and changes
-		// in the --etcd-servers inside podexecutor using externalDatabase
-		scheme, _ := util.SchemeAndAddress(cmds.ServerConfig.DatastoreEndpoint)
-		switch scheme {
-		case "http", "https":
-		default:
-			cmds.ServerConfig.KineTLS = true
-			externalDatabase = true
-		}
-	} else {
-		managed.RegisterDriver(&etcd.ETCD{})
-	}
-
 	if clx.IsSet("cloud-provider-config") || clx.IsSet("cloud-provider-name") {
 		if clx.IsSet("node-external-ip") {
 			return nil, errors.New("can't set node-external-ip while using cloud provider")
@@ -83,10 +65,9 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (executor.Executo
 	}
 
 	if clx.Bool("disable-agent") && isServer {
-		cmds.ServerConfig.DisableAgent = true
 		return initKubernetesExecutor(clx, cfg)
 	}
-	return initPodExecutor(clx, cfg, isServer, externalDatabase)
+	return initPodExecutor(clx, cfg, isServer)
 }
 
 func initKubernetesExecutor(clx *cli.Context, cfg Config) (executor.Executor, error) {
@@ -95,9 +76,24 @@ func initKubernetesExecutor(clx *cli.Context, cfg Config) (executor.Executor, er
 		clusterName = nameVal
 	}
 
-	// ensure certs are valid for services
-	cmds.ServerConfig.TLSSan.Set(clusterName + "-kube-apiserver")
-	cmds.ServerConfig.TLSSan.Set(clusterName + "-supervisor")
+	domain := ""
+	if kubeVal := os.Getenv("KUBERNETES_SERVICE_HOST"); kubeVal != "" {
+		if names, _ := net.LookupAddr(kubeVal); len(names) > 0 {
+			domain, _ = strings.CutPrefix(names[0], "kubernetes.default.svc.")
+			domain = strings.TrimSuffix(domain, ".")
+		}
+	}
+
+	// set fixed node name and IP so certs are not regenerated unnecessarily
+	cmds.AgentConfig.NodeName = clusterName + "-supervisor"
+	cmds.AgentConfig.NodeIP.Set("127.0.0.1")
+
+	// don't start containerd and kubelet
+	cmds.ServerConfig.DisableAgent = true
+
+	// disable the built-in helm controller, we will run a custom one that does not require bootstrap charts
+	// to run on control-plane nodes - since there will be no control-plane nodes.
+	cmds.ServerConfig.DisableHelmController = true
 
 	// use fixed rke2-runtime image digest for prestaged content baked into the supervisor image
 	cfg.Images.Runtime = "rancher/rke2-runtime@sha256:0000000000000000000000000000000000000000000000000000000000000000"
@@ -136,11 +132,12 @@ func initKubernetesExecutor(clx *cli.Context, cfg Config) (executor.Executor, er
 		ingressControllerName = cfg.IngressController.Value()[0]
 	}
 
-	return &kubernetesexecutor.KubernetesConfig{
+	k := &kubernetesexecutor.KubernetesConfig{
 		Resolver:               resolver,
 		CISMode:                isCISMode(clx),
 		DataDir:                clx.String("data-dir"),
 		Name:                   clusterName,
+		Domain:                 domain,
 		KubeConfig:             os.Getenv("KUBECONFIG"),
 		AuditPolicyFile:        clx.String("audit-policy-file"),
 		PSAConfigFile:          podSecurityConfigFile,
@@ -148,13 +145,40 @@ func initKubernetesExecutor(clx *cli.Context, cfg Config) (executor.Executor, er
 		ControlPlaneResources:  *controlPlaneResources,
 		ControlPlaneProbeConfs: *controlPlaneProbeConfs,
 		ControlPlaneEnv:        *extraEnv,
-	}, nil
+	}
+
+	if cmds.ServerConfig.DatastoreEndpoint == "" {
+		managed.Clear()
+		managed.RegisterDriver(k)
+	}
+
+	return k, pkgerrors.WithMessage(k.Init(clx.Context), "failed to create kubernetes client")
 }
 
-func initPodExecutor(clx *cli.Context, cfg Config, isServer, externalDatabase bool) (executor.Executor, error) {
+func initPodExecutor(clx *cli.Context, cfg Config, isServer bool) (executor.Executor, error) {
 	resolver, err := images.NewResolver(cfg.Images)
 	if err != nil {
 		return nil, err
+	}
+
+	// Verify if the user want to use kine as the datastore
+	// and then remove the etcd from the static pod
+	externalDatabase := false
+	if cmds.ServerConfig.DatastoreEndpoint != "" || (clx.Bool("disable-etcd") && !clx.IsSet("server")) {
+		cmds.ServerConfig.DisableETCD = false
+		cmds.ServerConfig.ClusterInit = false
+
+		// When the datastore sets a etcd endpoint, rke2 does not need kine with tls and changes
+		// in the --etcd-servers inside podexecutor using externalDatabase
+		scheme, _ := util.SchemeAndAddress(cmds.ServerConfig.DatastoreEndpoint)
+		switch scheme {
+		case "http", "https":
+		default:
+			cmds.ServerConfig.KineTLS = true
+			externalDatabase = true
+		}
+	} else {
+		managed.RegisterDriver(&etcd.ETCD{})
 	}
 
 	dataDir := clx.String("data-dir")
