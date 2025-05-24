@@ -40,14 +40,14 @@ import (
 )
 
 var (
-	ssldirs = []string{
+	SSLDirs = []string{
 		"/etc/ssl/certs",
 		"/etc/pki/tls/certs",
 		"/etc/ca-certificates",
 		"/usr/local/share/ca-certificates",
 		"/usr/share/ca-certificates",
 	}
-	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
+	DefaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
 )
 
 type ControlPlaneResources struct {
@@ -299,11 +299,11 @@ func (s *StaticPodConfig) APIServer(_ context.Context, args []string) error {
 	}
 
 	if s.CISMode && s.AuditPolicyFile == "" {
-		s.AuditPolicyFile = defaultAuditPolicyFile
+		s.AuditPolicyFile = DefaultAuditPolicyFile
 	}
 
 	if s.AuditPolicyFile != "" {
-		if err := writeDefaultPolicyFile(s.AuditPolicyFile); err != nil {
+		if err := WriteDefaultPolicyFile(s.AuditPolicyFile); err != nil {
 			return err
 		}
 		extraArgs := []string{
@@ -327,7 +327,7 @@ func (s *StaticPodConfig) APIServer(_ context.Context, args []string) error {
 		files = append(files, etcdNameFile(s.DataDir))
 	}
 
-	dirs := onlyExisting(ssldirs)
+	dirs := OnlyExisting(SSLDirs)
 	if auditLogFile != "" && auditLogFile != "-" {
 		dirs = append(dirs, filepath.Dir(auditLogFile))
 		excludeFiles = append(excludeFiles, auditLogFile)
@@ -375,7 +375,7 @@ func (s *StaticPodConfig) APIServer(_ context.Context, args []string) error {
 		},
 	}
 
-	return after(s.ETCDReadyChan(), func() error {
+	return After(s.ETCDReadyChan(), func() error {
 		return staticpod.Run(s.ManifestsDir, apiServerArgs)
 	})
 }
@@ -397,7 +397,7 @@ func (s *StaticPodConfig) Scheduler(_ context.Context, nodeReady <-chan struct{}
 	}
 
 	args = append(permitPortSharingFlag, args...)
-	return after(s.APIServerReadyChan(), func() error {
+	return After(s.APIServerReadyChan(), func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:       "kube-scheduler",
 			Args:          args,
@@ -417,8 +417,8 @@ func (s *StaticPodConfig) Scheduler(_ context.Context, nodeReady <-chan struct{}
 	})
 }
 
-// onlyExisting filters out paths from the list that cannot be accessed
-func onlyExisting(paths []string) []string {
+// OnlyExisting filters out paths from the list that cannot be accessed
+func OnlyExisting(paths []string) []string {
 	existing := []string{}
 	for _, path := range paths {
 		if _, err := os.Stat(path); err == nil {
@@ -428,8 +428,9 @@ func onlyExisting(paths []string) []string {
 	return existing
 }
 
-// after calls a function after a message is received from a channel.
-func after(after <-chan struct{}, f func() error) error {
+// After calls a function after a message is received from a channel.
+// If the function returns an error, a fatal error is logged.
+func After(after <-chan struct{}, f func() error) error {
 	go func() {
 		<-after
 		if err := f(); err != nil {
@@ -462,7 +463,7 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, args []string) er
 		files = append(files, etcdNameFile(s.DataDir))
 	}
 
-	return after(s.APIServerReadyChan(), func() error {
+	return After(s.APIServerReadyChan(), func() error {
 		extraArgs := []string{
 			"--flex-volume-plugin-dir=/var/lib/kubelet/volumeplugins",
 			"--terminated-pod-gc-threshold=1000",
@@ -472,7 +473,7 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, args []string) er
 			Command:       "kube-controller-manager",
 			Args:          args,
 			Image:         image,
-			Dirs:          onlyExisting(ssldirs),
+			Dirs:          OnlyExisting(SSLDirs),
 			CISMode:       s.CISMode,
 			HealthPort:    10257,
 			HealthProto:   "HTTPS",
@@ -498,12 +499,12 @@ func (s *StaticPodConfig) CloudControllerManager(_ context.Context, ccmRBACReady
 	if err := images.Pull(s.ImagesDir, images.CloudControllerManager, image); err != nil {
 		return err
 	}
-	return after(ccmRBACReady, func() error {
+	return After(ccmRBACReady, func() error {
 		return staticpod.Run(s.ManifestsDir, staticpod.Args{
 			Command:       "cloud-controller-manager",
 			Args:          args,
 			Image:         image,
-			Dirs:          onlyExisting(ssldirs),
+			Dirs:          OnlyExisting(SSLDirs),
 			CISMode:       s.CISMode,
 			HealthPort:    10258,
 			HealthProto:   "HTTPS",
@@ -764,7 +765,7 @@ func etcdNameFile(dataDir string) string {
 	return filepath.Join(dataDir, "server", "db", "etcd", "name")
 }
 
-func writeDefaultPolicyFile(policyFilePath string) error {
+func WriteDefaultPolicyFile(policyFilePath string) error {
 	auditPolicy := auditv1.Policy{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Policy",
