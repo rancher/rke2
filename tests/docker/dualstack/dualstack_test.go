@@ -136,6 +136,22 @@ var _ = Describe("DualStack Tests", Ordered, func() {
 			}
 		})
 	})
+	Context("Validate dnscache feature", func() {
+		It("deploys nodecache daemonset", func() {
+			_, err := tc.DeployWorkload("nodecache.yaml")
+			Expect(err).NotTo(HaveOccurred())
+			Eventually(func() error {
+				return tests.CheckDaemonSets([]string{"node-local-dns"}, tc.KubeconfigFile)
+			}, "120s", "5s").Should(Succeed())
+		})
+
+		It("Verifies nodecache is working", func() {
+			cmd := "dig +retries=0 @169.254.20.10 www.kubernetes.io"
+			for _, server := range tc.Servers {
+				Expect(server.RunCmdOnNode(cmd)).Should(ContainSubstring("status: NOERROR"), "failed cmd: "+cmd)
+			}
+		})
+	})
 })
 
 var failed bool
