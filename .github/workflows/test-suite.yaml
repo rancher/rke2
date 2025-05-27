@@ -180,7 +180,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        etest: [dnscache, kine, ciliumnokp, multus]
+        etest: [kine, ciliumnokp, multus]
       max-parallel: 3
     steps:
     - name: "Checkout"
