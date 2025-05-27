@@ -164,6 +164,36 @@ func PodReady(podName, namespace, kubeconfigFile string) (bool, error) {
 	return false, nil
 }
 
+// GetPodIPs returns all IP addresses attached to a pod
+func GetPodIPs(podName, namespace, kubeconfigFile string) ([]string, error) {
+	clientSet, err := K8sClient(kubeconfigFile)
+	if err != nil {
+		return nil, err
+	}
+
+	pod, err := clientSet.CoreV1().Pods(namespace).Get(context.TODO(), podName, metav1.GetOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get pod %s/%s: %w", namespace, podName, err)
+	}
+
+	var ips []string
+
+	// Get the primary pod IP
+	if pod.Status.PodIP != "" {
+		ips = append(ips, pod.Status.PodIP)
+	}
+
+	// Get additional pod IPs (for dual-stack scenarios)
+	for _, podIP := range pod.Status.PodIPs {
+		// Avoid duplicating the primary IP
+		if podIP.IP != pod.Status.PodIP {
+			ips = append(ips, podIP.IP)
+		}
+	}
+
+	return ips, nil
+}
+
 // Checks if provided nodes are ready, otherwise returns an error
 func NodesReady(kubeconfigFile string, nodeNames []string) error {
 	nodes, err := ParseNodes(kubeconfigFile)
@@ -185,6 +215,32 @@ func NodesReady(kubeconfigFile string, nodeNames []string) error {
 		return fmt.Errorf("expected nodes %v, found %v", nodesToCheck, readyNodes)
 	}
 	return nil
+}
+
+// GetNodeIPs returns all IP addresses attached to a node
+func GetNodeIPs(nodeName, kubeconfigFile string) ([]string, error) {
+	clientSet, err := K8sClient(kubeconfigFile)
+	if err != nil {
+		return nil, err
+	}
+
+	node, err := clientSet.CoreV1().Nodes().Get(context.TODO(), nodeName, metav1.GetOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get node %s: %w", nodeName, err)
+	}
+
+	var ips []string
+
+	// Get the primary node IP
+	if node.Status.Addresses != nil {
+		for _, address := range node.Status.Addresses {
+			if address.Type == corev1.NodeInternalIP || address.Type == corev1.NodeExternalIP {
+				ips = append(ips, address.Address)
+			}
+		}
+	}
+
+	return ips, nil
 }
 
 func K8sClient(kubeconfigFile string) (*kubernetes.Clientset, error) {
