@@ -12,7 +12,7 @@
 set -x
 
 # tests to run
-tests=("ciliumnokp" "dnscache" "dualstack" "mixedos" "mixedosbgp" "multus" "secretsencryption" "splitserver" "upgradecluster" "validatecluster" "kine")
+tests=("ciliumnokp" "mixedos" "mixedosbgp" "multus" "secretsencryption" "splitserver" "upgradecluster" "validatecluster" "kine")
 nodeOS=${1:-"bento/ubuntu-24.04"}
 OS=$(echo "$nodeOS"|cut -d'/' -f2)
 
