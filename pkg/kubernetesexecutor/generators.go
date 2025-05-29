@@ -13,9 +13,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/version"
-	"github.com/rancher/rke2/pkg/staticpod"
+	"github.com/rancher/rke2/pkg/podtemplate"
 	yaml2 "gopkg.in/yaml.v2"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -37,14 +38,18 @@ type pathGroup struct {
 
 // pod is essentially a wrapper around the normal static pod manifest,
 // but with HostPath mounts converted to Secret volumes.
-func (k *KubernetesConfig) pod(args staticpod.Args) (*corev1.Pod, error) {
-	files, err := staticpod.ReadFiles(args.Args, args.ExcludeFiles)
+func (k *KubernetesConfig) pod(args *podtemplate.Args) (*corev1.Pod, error) {
+	if args == nil {
+		return nil, nil
+	}
+
+	files, err := podtemplate.ReadFiles(args.Args, args.ExcludeFiles)
 	if err != nil {
 		return nil, err
 	}
 
 	args.Files = append(args.Files, files...)
-	pod, err := staticpod.Pod(args)
+	pod, err := podtemplate.Pod(args)
 	if err != nil {
 		return nil, err
 	}
@@ -136,36 +141,14 @@ func (k *KubernetesConfig) pod(args staticpod.Args) (*corev1.Pod, error) {
 	return pod, nil
 }
 
-// applyClusterResources creates secrets containing the contents of the
-// server directories. This content is mounted from the  host by static pods,
-// but is packaged into a Secret for use by the Deployment pods.
-// It also creates a Service for the apiserver.
-func (k *KubernetesConfig) applyClusterResources(ctx context.Context, dirs ...string) error {
-	objs := []runtime.Object{}
+// applyApiserverService creates a Service for the apiserver
+func (k *KubernetesConfig) applyAPIServerService(ctx context.Context) error {
 	serviceType := corev1.ServiceTypeClusterIP
 	if typeEnv := os.Getenv(version.ProgramUpper + "_CLUSTER_SERVICETYPE"); typeEnv != "" {
 		serviceType = corev1.ServiceType(typeEnv)
 	}
 
-	for _, dir := range dirs {
-		data, err := k.bytesFromDir(filepath.Join(k.DataDir, "server", dir))
-		if err != nil {
-			return err
-		}
-		objs = append(objs, &corev1.Secret{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: "v1",
-				Kind:       "Secret",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      k.Name + "-server-" + dir,
-				Namespace: k.namespace,
-			},
-			Type: corev1.SecretTypeOpaque,
-			Data: data,
-		})
-	}
-	objs = append(objs, &corev1.Service{
+	service := &corev1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
 			Kind:       "Service",
@@ -187,13 +170,40 @@ func (k *KubernetesConfig) applyClusterResources(ctx context.Context, dirs ...st
 				"tier":           "control-plane",
 			},
 			Ports: []corev1.ServicePort{
-				{Name: "https", Port: 6443, TargetPort: intstr.FromInt(6443)},
-				{Name: "supervisor", Port: 9345, TargetPort: intstr.FromInt(9345)},
+				{Name: "https", Port: int32(cmds.ServerConfig.APIServerPort), TargetPort: intstr.FromInt(cmds.ServerConfig.APIServerPort)},
+				{Name: "supervisor", Port: int32(cmds.ServerConfig.SupervisorPort), TargetPort: intstr.FromInt(cmds.ServerConfig.SupervisorPort)},
 			},
 		},
-	})
+	}
 
-	return k.apply.WithSetID(k.Name + "-controlplane").WithNoDelete().ApplyObjects(objs...)
+	return k.apply.WithSetID(k.Name + "-kube-apiserver-service").ApplyObjects(service)
+}
+
+// applyClusterSecrets creates secrets containing the contents of the
+// server directories. This content is mounted from the  host by static pods,
+// but is packaged into a Secret for use by the Deployment pods.
+func (k *KubernetesConfig) applyClusterSecrets(ctx context.Context, dirs ...string) error {
+	objs := []runtime.Object{}
+	for _, dir := range dirs {
+		data, err := k.bytesFromDir(filepath.Join(k.DataDir, "server", dir))
+		if err != nil {
+			return err
+		}
+		objs = append(objs, &corev1.Secret{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "v1",
+				Kind:       "Secret",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      k.Name + "-server-" + dir,
+				Namespace: k.namespace,
+			},
+			Type: corev1.SecretTypeOpaque,
+			Data: data,
+		})
+	}
+
+	return k.apply.WithSetID(k.Name + "-bootstrap-secrets").ApplyObjects(objs...)
 }
 
 // extractClusterSecrets extracts the secrets out to the data dir, so that
@@ -217,7 +227,11 @@ func (k *KubernetesConfig) extractClusterSecrets(ctx context.Context, dirs ...st
 	return nil
 }
 
-func (k KubernetesConfig) statefulSetWithService(args staticpod.Args) (*appsv1.StatefulSet, *corev1.Service, error) {
+func (k KubernetesConfig) statefulSetWithService(args *podtemplate.Args) (*appsv1.StatefulSet, *corev1.Service, error) {
+	if args == nil {
+		return nil, nil, nil
+	}
+
 	pod, err := k.pod(args)
 	return statefulSetForPod(pod), serviceForPod(pod), err
 }
@@ -321,8 +335,12 @@ func serviceForPod(pod *corev1.Pod) *corev1.Service {
 	}
 }
 
-// deployment returns a Deployment for the provided staticpod Args.
-func (k *KubernetesConfig) deployment(args staticpod.Args) (*appsv1.Deployment, error) {
+// deployment returns a Deployment for the provided podtemplate Args.
+func (k *KubernetesConfig) deployment(args *podtemplate.Args) (*appsv1.Deployment, error) {
+	if args == nil {
+		return nil, nil
+	}
+
 	pod, err := k.pod(args)
 	return deploymentForPod(pod), err
 }
@@ -490,7 +508,7 @@ func (k *KubernetesConfig) addSupervisorContainer(d *appsv1.Deployment) {
 		Image:   d.Spec.Template.Spec.Containers[0].Image,
 		Command: []string{"/bin/sh", "-xec"},
 		Args:    []string{strings.Join(args, "\n")},
-		Ports:   []corev1.ContainerPort{{Name: "supervisor", Protocol: corev1.ProtocolTCP, ContainerPort: 9345}},
+		Ports:   []corev1.ContainerPort{{Name: "supervisor", Protocol: corev1.ProtocolTCP, ContainerPort: int32(cmds.ServerConfig.SupervisorPort)}},
 		SecurityContext: &corev1.SecurityContext{
 			Capabilities: &corev1.Capabilities{
 				Add: []corev1.Capability{
@@ -528,6 +546,10 @@ func (k *KubernetesConfig) bytesFromDir(base string) (map[string][]byte, error) 
 			b = bytes.ReplaceAll(b, []byte("[::1]"), []byte(k.Name+"-kube-apiserver"))
 			b = bytes.ReplaceAll(b, []byte("127.0.0.1"), []byte(k.Name+"-kube-apiserver"))
 		}
+		if d.Name() == "egress-selector-config.yaml" {
+			b = bytes.ReplaceAll(b, []byte("[::1]"), []byte(k.Name+"-supervisor"))
+			b = bytes.ReplaceAll(b, []byte("127.0.0.1"), []byte(k.Name+"-supervisor"))
+		}
 		path = strings.TrimPrefix(path, base)
 		path = strings.ReplaceAll(path, string(filepath.Separator), "_")
 		fileBytes[path] = b
@@ -544,6 +566,9 @@ func (k *KubernetesConfig) dirFromBytes(base string, data map[string][]byte) err
 	for path, b := range data {
 		if strings.HasSuffix(path, ".kubeconfig") {
 			b = bytes.ReplaceAll(b, []byte(k.Name+"-kube-apiserver"), []byte("127.0.0.1"))
+		}
+		if strings.HasSuffix(path, "egress-selector-config.yaml") {
+			b = bytes.ReplaceAll(b, []byte(k.Name+"-supervisor"), []byte("127.0.0.1"))
 		}
 		path = strings.ReplaceAll(path, "_", string(filepath.Separator))
 		path = filepath.Join(base, path)

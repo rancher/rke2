@@ -55,7 +55,7 @@ func (k *KubernetesConfig) helmController(ctx context.Context, sc *server.Contex
 	apply := apply.New(k8s, apply.NewClientFactory(config)).WithInjector(func(objs []runtime.Object) ([]runtime.Object, error) {
 		for i, obj := range objs {
 			if job, ok := obj.(*batchv1.Job); ok {
-				delete(job.Spec.Template.Spec.NodeSelector, "node-role.kubernetes.io/LabelControlPlaneSuffix")
+				delete(job.Spec.Template.Spec.NodeSelector, helmchart.LabelNodeRolePrefix+helmchart.LabelControlPlaneSuffix)
 				objs[i] = job
 			}
 		}

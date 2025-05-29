@@ -27,6 +27,7 @@ import (
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/kubernetesexecutor"
 	"github.com/rancher/rke2/pkg/podexecutor"
+	"github.com/rancher/rke2/pkg/podtemplate"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
@@ -133,18 +134,21 @@ func initKubernetesExecutor(clx *cli.Context, cfg Config) (executor.Executor, er
 	}
 
 	k := &kubernetesexecutor.KubernetesConfig{
-		Resolver:               resolver,
-		CISMode:                isCISMode(clx),
-		DataDir:                clx.String("data-dir"),
-		Name:                   clusterName,
-		Domain:                 domain,
-		KubeConfig:             os.Getenv("KUBECONFIG"),
-		AuditPolicyFile:        clx.String("audit-policy-file"),
-		PSAConfigFile:          podSecurityConfigFile,
-		IngressController:      ingressControllerName,
-		ControlPlaneResources:  *controlPlaneResources,
-		ControlPlaneProbeConfs: *controlPlaneProbeConfs,
-		ControlPlaneEnv:        *extraEnv,
+		Config: podtemplate.Config{
+			Resolver:  resolver,
+			CISMode:   isCISMode(clx),
+			DataDir:   clx.String("data-dir"),
+			Resources: controlPlaneResources,
+			Probes:    controlPlaneProbeConfs,
+			Env:       extraEnv,
+			Mounts:    &podtemplate.ControlPlaneMounts{},
+		},
+		Name:              clusterName,
+		Domain:            domain,
+		KubeConfig:        os.Getenv("KUBECONFIG"),
+		AuditPolicyFile:   clx.String("audit-policy-file"),
+		PSAConfigFile:     podSecurityConfigFile,
+		IngressController: ingressControllerName,
 	}
 
 	if cmds.ServerConfig.DatastoreEndpoint == "" {
@@ -260,29 +264,31 @@ func initPodExecutor(clx *cli.Context, cfg Config, isServer bool) (executor.Exec
 	}
 
 	return &podexecutor.StaticPodConfig{
-		Resolver:               resolver,
-		ImagesDir:              agentImagesDir,
-		ManifestsDir:           agentManifestsDir,
-		CISMode:                isCISMode(clx),
-		CloudProvider:          cpConfig,
-		DataDir:                dataDir,
-		AuditPolicyFile:        clx.String("audit-policy-file"),
-		PSAConfigFile:          podSecurityConfigFile,
-		KubeletPath:            cfg.KubeletPath,
-		RuntimeEndpoint:        containerRuntimeEndpoint,
-		DisableETCD:            clx.Bool("disable-etcd"),
-		ExternalDatabase:       externalDatabase,
-		IsServer:               isServer,
-		IngressController:      ingressControllerName,
-		ControlPlaneResources:  *controlPlaneResources,
-		ControlPlaneProbeConfs: *controlPlaneProbeConfs,
-		ControlPlaneEnv:        *extraEnv,
-		ControlPlaneMounts:     *extraMounts,
+		Config: podtemplate.Config{
+			Resolver:  resolver,
+			ImagesDir: agentImagesDir,
+			CISMode:   isCISMode(clx),
+			DataDir:   dataDir,
+			Resources: controlPlaneResources,
+			Probes:    controlPlaneProbeConfs,
+			Env:       extraEnv,
+			Mounts:    extraMounts,
+		},
+		ManifestsDir:      agentManifestsDir,
+		CloudProvider:     cpConfig,
+		AuditPolicyFile:   clx.String("audit-policy-file"),
+		PSAConfigFile:     podSecurityConfigFile,
+		KubeletPath:       cfg.KubeletPath,
+		RuntimeEndpoint:   containerRuntimeEndpoint,
+		DisableETCD:       clx.Bool("disable-etcd"),
+		ExternalDatabase:  externalDatabase,
+		IsServer:          isServer,
+		IngressController: ingressControllerName,
 	}, nil
 }
 
-func parseControlPlaneResources(cfg Config) (*podexecutor.ControlPlaneResources, error) {
-	var controlPlaneResources podexecutor.ControlPlaneResources
+func parseControlPlaneResources(cfg Config) (*podtemplate.ControlPlaneResources, error) {
+	var controlPlaneResources podtemplate.ControlPlaneResources
 	// resources is a map of the component (kube-apiserver, kube-controller-manager, etc.) to a map[string]*string,
 	// where the key of the downstream map is the `cpu-request`, `cpu-limit`, `memory-request`, or `memory-limit` and
 	// the value corresponds to a pointer to the component resources array
@@ -389,8 +395,8 @@ func parseControlPlaneResources(cfg Config) (*podexecutor.ControlPlaneResources,
 	return &controlPlaneResources, nil
 }
 
-func parseControlPlaneProbeConfs(cfg Config) (*podexecutor.ControlPlaneProbeConfs, error) {
-	var controlPlaneProbes podexecutor.ControlPlaneProbeConfs
+func parseControlPlaneProbeConfs(cfg Config) (*podtemplate.ControlPlaneProbeConfs, error) {
+	var controlPlaneProbes podtemplate.ControlPlaneProbeConfs
 	// probes is a map of the component (kube-apiserver, kube-controller-manager, etc.) probe type, and setting, where
 	// the value corresponds to a pointer to the component probes array.
 	probes := map[string]map[string]map[string]*int32{
@@ -573,8 +579,8 @@ func parseControlPlaneProbeConfs(cfg Config) (*podexecutor.ControlPlaneProbeConf
 	return &controlPlaneProbes, nil
 }
 
-func parseControlPlaneEnv(cfg Config) (*podexecutor.ControlPlaneEnv, error) {
-	return &podexecutor.ControlPlaneEnv{
+func parseControlPlaneEnv(cfg Config) (*podtemplate.ControlPlaneEnv, error) {
+	return &podtemplate.ControlPlaneEnv{
 		KubeAPIServer:          cfg.ExtraEnv.KubeAPIServer.Value(),
 		KubeScheduler:          cfg.ExtraEnv.KubeScheduler.Value(),
 		KubeControllerManager:  cfg.ExtraEnv.KubeControllerManager.Value(),
@@ -584,8 +590,8 @@ func parseControlPlaneEnv(cfg Config) (*podexecutor.ControlPlaneEnv, error) {
 	}, nil
 }
 
-func parseControlPlaneMounts(cfg Config) (*podexecutor.ControlPlaneMounts, error) {
-	return &podexecutor.ControlPlaneMounts{
+func parseControlPlaneMounts(cfg Config) (*podtemplate.ControlPlaneMounts, error) {
+	return &podtemplate.ControlPlaneMounts{
 		KubeAPIServer:          cfg.ExtraMounts.KubeAPIServer.Value(),
 		KubeScheduler:          cfg.ExtraMounts.KubeScheduler.Value(),
 		KubeControllerManager:  cfg.ExtraMounts.KubeControllerManager.Value(),
