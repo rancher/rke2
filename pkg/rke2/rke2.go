@@ -20,6 +20,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	rawServer "github.com/k3s-io/k3s/pkg/server"
 	pkgerrors "github.com/pkg/errors"
+	"github.com/rancher/rke2/pkg/controllers"
 	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podexecutor"
@@ -88,7 +89,8 @@ const (
 )
 
 func Server(clx *cli.Context, cfg Config) error {
-	if err := setup(clx, cfg, true); err != nil {
+	serverControllers, err := setup(clx, cfg, true)
+	if err != nil {
 		return err
 	}
 
@@ -125,6 +127,12 @@ func Server(clx *cli.Context, cfg Config) error {
 	)
 
 	var leaderControllers rawServer.CustomControllers
+	var controllers rawServer.CustomControllers
+
+	if serverControllers != nil {
+		leaderControllers = serverControllers.LeaderControllers()
+		controllers = serverControllers.Controllers()
+	}
 
 	cnis := clx.StringSlice("cni")
 	if cisMode && (len(cnis) == 0 || slice.ContainsString(cnis, "canal")) {
@@ -133,33 +141,45 @@ func Server(clx *cli.Context, cfg Config) error {
 		leaderControllers = append(leaderControllers, cisnetworkpolicy.Cleanup)
 	}
 
-	return server.RunWithControllers(clx, leaderControllers, rawServer.CustomControllers{})
+	return server.RunWithControllers(clx, leaderControllers, controllers)
 }
 
 func Agent(clx *cli.Context, cfg Config) error {
-	if err := setup(clx, cfg, false); err != nil {
+	if _, err := setup(clx, cfg, false); err != nil {
 		return err
 	}
 	return agent.Run(clx)
 }
 
-func setup(clx *cli.Context, cfg Config, isServer bool) error {
+func setup(clx *cli.Context, cfg Config, isServer bool) (controllers.Server, error) {
+	// If we are pid 1, k3s is about to reexec so we shouldn't bother doing anything
+	// ref: https://github.com/k3s-io/k3s/blob/v1.33.0%2Bk3s1/pkg/cli/cmds/log_linux.go#L21-L24
+	if os.Getpid() == 1 && os.Getenv("_K3S_LOG_REEXEC_") != "true" {
+		return nil, nil
+	}
+
 	dataDir := clx.String("data-dir")
 	clusterReset := clx.Bool("cluster-reset")
 	clusterResetRestorePath := clx.String("cluster-reset-restore-path")
 	containerRuntimeEndpoint := clx.String("container-runtime-endpoint")
-
 	ex, err := initExecutor(clx, cfg, isServer)
 	if err != nil {
-		return err
+		return nil, pkgerrors.Wrap(err, "failed to initialize executor")
 	}
 	executor.Set(ex)
+
+	// note: controllers are only run on servers, even though we
+	// do the type check and return them either way.
+	var serverControllers controllers.Server
+	if ec, ok := ex.(controllers.Server); ok {
+		serverControllers = ec
+	}
 
 	// check for force restart file
 	var forceRestart bool
 	if _, err := os.Stat(ForceRestartFile(dataDir)); err != nil {
 		if !os.IsNotExist(err) {
-			return err
+			return nil, err
 		}
 	} else {
 		forceRestart = true
@@ -183,14 +203,14 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 	if clusterResetRestorePath != "" {
 		forceRestartFile := ForceRestartFile(dataDir)
 		if err := os.MkdirAll(dataDir, 0755); err != nil {
-			return err
+			return nil, err
 		}
 		if err := ioutil.WriteFile(forceRestartFile, []byte(""), 0600); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return removeDisabledPods(dataDir, containerRuntimeEndpoint, disabledItems, clusterReset)
+	return serverControllers, removeDisabledPods(dataDir, containerRuntimeEndpoint, disabledItems, clusterReset)
 }
 
 func ForceRestartFile(dataDir string) string {

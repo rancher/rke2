@@ -66,6 +66,9 @@ type PEBinaryConfig struct {
 	criReady       chan struct{}
 }
 
+// explicit interface check
+var _ executor.Executor = &PEBinaryConfig{}
+
 type CloudProviderConfig struct {
 	Name string
 	Path string
