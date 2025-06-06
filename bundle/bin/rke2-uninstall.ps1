@@ -11,13 +11,13 @@
 .EXAMPLE 
     rke2-uninstall.ps1
     Uninstalls the RKE2 Windows service and cleans the RKE2 Windows Agent (Worker) Node
-    rke2-uninstall.ps1 -silent $true
-    Uninstalls the RKE2 Windows service and cleans the RKE2 Windows Agent (Worker) Node with suppressed confirmations
+    rke2-uninstall.ps1 -Confirm $false
+    Uninstalls the RKE2 Windows service and cleans the RKE2 Windows Agent (Worker) Node without asking for confirmations
 #>
 
 Param(
     [Parameter(Mandatory=$False)]
-    [bool]$silent = $False
+    [bool]$Confirm = $True
 )
 
 $ErrorActionPreference = 'Stop'
@@ -114,7 +114,7 @@ function Stop-Processes () {
         Write-LogInfo "Checking if $ProcessName process exists"
         if ((Get-Process -Name $ProcessName -ErrorAction SilentlyContinue)) {
             Write-LogInfo "$ProcessName process found, stopping now"
-            if ($silent) {
+            if ($Confirm -eq $false) {
                 Stop-Process -Name $ProcessName -Force -Confirm:$false
             } else {
                 Stop-Process -Name $ProcessName
@@ -140,7 +140,7 @@ function Invoke-CleanServices () {
         Write-LogInfo "Checking if $ServiceName service exists"
         if ((Get-Service -Name $ServiceName -ErrorAction SilentlyContinue)) {
             Write-LogInfo "$ServiceName service found, stopping now"
-            if ($silent) {
+            if ($Confirm -eq $false) {
                Stop-Service -Name $ServiceName -Force -Confirm:$false
             } else {
                Stop-Service -Name $ServiceName
@@ -289,7 +289,7 @@ function Remove-Containerd () {
     if (ctr) {
         # We create a lockfile to prevent rke2 service from starting kubelet again
         Create-Lockfile
-        if ($silent) {
+        if ($Confirm -eq $false) {
             Stop-Process -Name "kubelet" -Force -Confirm:$false
         } else {
             Stop-Process -Name "kubelet"
@@ -432,7 +432,7 @@ function Create-Lockfile() {
         $executablePath = $command.Source
         $dataBinDirDirectory = Split-Path -Parent $executablePath
         $lockFilePath = Join-Path -Path $dataBinDirDirectory -ChildPath "rke2-uninstall.lock"
-        if ($silent) {
+        if ($Confirm -eq $false) {
             New-Item -ItemType File -Path $lockFilePath -Force -Confirm:$false
         } else {
             New-Item -ItemType File -Path $lockFilePath
