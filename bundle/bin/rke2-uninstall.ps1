@@ -141,6 +141,7 @@ function Invoke-CleanServices () {
         if ((Get-Service -Name $ServiceName -ErrorAction SilentlyContinue)) {
             Write-LogInfo "$ServiceName service found, stopping now"
             if ($Confirm -eq $false) {
+	           Start-Sleep -s 1
                Stop-Service -Name $ServiceName -Force -Confirm:$false
             } else {
                Stop-Service -Name $ServiceName
