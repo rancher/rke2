@@ -504,7 +504,7 @@ do_install_rpm() {
             ${transactional_update_run} mkdir -p /var/lib/rpm-state
             # configure infix and rpm_installer
             rpm_site_infix=microos
-            if [ "${VARIANT_ID:-}" = sle-micro ] || [ "${ID:-}" = sle-micro ]; then
+            if [ "${VARIANT_ID:-}" = sle-micro ] || [ "${ID:-}" = sle-micro ] || [ "${ID:-}" = sl-micro ]; then
                 rpm_site_infix=slemicro
                 package_installer=zypper
             fi
