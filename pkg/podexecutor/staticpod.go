@@ -120,7 +120,7 @@ type StaticPodConfig struct {
 	ControlPlaneEnv
 	ControlPlaneMounts
 	ControlPlaneProbeConfs
-	CISMode          bool
+	ProfileMode      ProfileMode
 	DisableETCD      bool
 	ExternalDatabase bool
 	IsServer         bool
@@ -241,7 +241,7 @@ func (s *StaticPodConfig) KubeProxy(_ context.Context, args []string) error {
 		Command:       "kube-proxy",
 		Args:          args,
 		Image:         image,
-		CISMode:       s.CISMode,
+		CISMode:       s.ProfileMode.isCISMode(),
 		HealthPort:    10256,
 		HealthProto:   "HTTP",
 		CPURequest:    s.ControlPlaneResources.KubeProxyCPURequest,
@@ -298,7 +298,7 @@ func (s *StaticPodConfig) APIServer(_ context.Context, args []string) error {
 		args = append([]string{"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}, args...)
 	}
 
-	if s.CISMode && s.AuditPolicyFile == "" {
+	if s.ProfileMode.isCISMode() && s.AuditPolicyFile == "" {
 		s.AuditPolicyFile = defaultAuditPolicyFile
 	}
 
@@ -345,7 +345,7 @@ func (s *StaticPodConfig) APIServer(_ context.Context, args []string) error {
 		Args:          args,
 		Image:         image,
 		Dirs:          dirs,
-		CISMode:       s.CISMode,
+		CISMode:       s.ProfileMode.isCISMode(),
 		CPURequest:    s.ControlPlaneResources.KubeAPIServerCPURequest,
 		CPULimit:      s.ControlPlaneResources.KubeAPIServerCPULimit,
 		MemoryRequest: s.ControlPlaneResources.KubeAPIServerMemoryRequest,
@@ -402,7 +402,7 @@ func (s *StaticPodConfig) Scheduler(_ context.Context, nodeReady <-chan struct{}
 			Command:       "kube-scheduler",
 			Args:          args,
 			Image:         image,
-			CISMode:       s.CISMode,
+			CISMode:       s.ProfileMode.isCISMode(),
 			HealthPort:    10259,
 			HealthProto:   "HTTPS",
 			CPURequest:    s.ControlPlaneResources.KubeSchedulerCPURequest,
@@ -473,7 +473,7 @@ func (s *StaticPodConfig) ControllerManager(_ context.Context, args []string) er
 			Args:          args,
 			Image:         image,
 			Dirs:          onlyExisting(ssldirs),
-			CISMode:       s.CISMode,
+			CISMode:       s.ProfileMode.isCISMode(),
 			HealthPort:    10257,
 			HealthProto:   "HTTPS",
 			CPURequest:    s.ControlPlaneResources.KubeControllerManagerCPURequest,
@@ -504,7 +504,7 @@ func (s *StaticPodConfig) CloudControllerManager(_ context.Context, ccmRBACReady
 			Args:          args,
 			Image:         image,
 			Dirs:          onlyExisting(ssldirs),
-			CISMode:       s.CISMode,
+			CISMode:       s.ProfileMode.isCISMode(),
 			HealthPort:    10258,
 			HealthProto:   "HTTPS",
 			CPURequest:    s.ControlPlaneResources.CloudControllerManagerCPURequest,
@@ -602,7 +602,7 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, args *executor.ETCDConfig, e
 			args.PeerTrust.KeyFile,
 			args.PeerTrust.TrustedCAFile,
 		},
-		CISMode:       s.CISMode,
+		CISMode:       s.ProfileMode.isAnyMode(),
 		HealthPort:    2381,
 		HealthPath:    "/health?serializable=true",
 		HealthProto:   "HTTP",
@@ -615,7 +615,7 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, args *executor.ETCDConfig, e
 		ProbeConfs:    s.ControlPlaneProbeConfs.Etcd,
 	}
 
-	if s.CISMode {
+	if s.ProfileMode.isAnyMode() {
 		etcdUser, err := user.Lookup("etcd")
 		if err != nil {
 			return err

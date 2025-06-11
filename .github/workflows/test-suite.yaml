@@ -115,7 +115,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dtest: [basics, dualstack, secretsencryption]
+        dtest: [basics, dualstack, profile, secretsencryption]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
