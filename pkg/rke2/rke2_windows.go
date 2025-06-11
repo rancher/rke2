@@ -13,6 +13,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/agent/config"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/cluster/managed"
+	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/etcd"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
@@ -22,7 +23,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*pebinaryexecutor.PEBinaryConfig, error) {
+func initExecutor(clx *cli.Context, cfg Config, isServer bool) (executor.Executor, error) {
 	// This flag will only be set on servers, on agents this is a no-op and the
 	// resolver's default registry will get updated later when bootstrapping
 	cfg.Images.SystemDefaultRegistry = clx.String("system-default-registry")

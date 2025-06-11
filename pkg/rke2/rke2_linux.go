@@ -8,6 +8,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
@@ -16,11 +18,16 @@ import (
 	"github.com/k3s-io/k3s/pkg/agent/config"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/cluster/managed"
+	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/etcd"
+	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/k3s-io/kine/pkg/util"
+	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
+	"github.com/rancher/rke2/pkg/kubernetesexecutor"
 	"github.com/rancher/rke2/pkg/podexecutor"
+	"github.com/rancher/rke2/pkg/podtemplate"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
@@ -41,42 +48,15 @@ const (
 	PeriodSeconds       = "period-seconds"
 )
 
-func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.StaticPodConfig, error) {
+func initExecutor(clx *cli.Context, cfg Config, isServer bool) (executor.Executor, error) {
 	// This flag will only be set on servers, on agents this is a no-op and the
 	// resolver's default registry will get updated later when bootstrapping
 	cfg.Images.SystemDefaultRegistry = clx.String("system-default-registry")
-	resolver, err := images.NewResolver(cfg.Images)
-	if err != nil {
-		return nil, err
-	}
 
 	dataDir := clx.String("data-dir")
 	if err := defaults.Set(clx, dataDir); err != nil {
 		return nil, err
 	}
-
-	// Verify if the user want to use kine as the datastore
-	// and then remove the etcd from the static pod
-	ExternalDatabase := false
-	if cmds.ServerConfig.DatastoreEndpoint != "" || (clx.Bool("disable-etcd") && !clx.IsSet("server")) {
-		cmds.ServerConfig.DisableETCD = false
-		cmds.ServerConfig.ClusterInit = false
-
-		// When the datastore sets a etcd endpoint, rke2 does not need kine with tls and changes
-		// in the --etcd-servers inside podexecutor using ExternalDatabase
-		scheme, _ := util.SchemeAndAddress(cmds.ServerConfig.DatastoreEndpoint)
-		switch scheme {
-		case "http", "https":
-		default:
-			cmds.ServerConfig.KineTLS = true
-			ExternalDatabase = true
-		}
-	} else {
-		managed.RegisterDriver(&etcd.ETCD{})
-	}
-
-	agentManifestsDir := filepath.Join(dataDir, "agent", config.DefaultPodManifestPath)
-	agentImagesDir := filepath.Join(dataDir, "agent", "images")
 
 	if clx.IsSet("cloud-provider-config") || clx.IsSet("cloud-provider-name") {
 		if clx.IsSet("node-external-ip") {
@@ -84,6 +64,131 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 		}
 		cmds.ServerConfig.DisableCCM = true
 	}
+
+	if clx.Bool("disable-agent") && isServer {
+		return initKubernetesExecutor(clx, cfg)
+	}
+	return initPodExecutor(clx, cfg, isServer)
+}
+
+func initKubernetesExecutor(clx *cli.Context, cfg Config) (executor.Executor, error) {
+	clusterName := version.Program
+	if nameVal := os.Getenv("RKE2_CLUSTER_NAME"); nameVal != "" {
+		clusterName = nameVal
+	}
+
+	domain := ""
+	if kubeVal := os.Getenv("KUBERNETES_SERVICE_HOST"); kubeVal != "" {
+		if names, _ := net.LookupAddr(kubeVal); len(names) > 0 {
+			domain, _ = strings.CutPrefix(names[0], "kubernetes.default.svc.")
+			domain = strings.TrimSuffix(domain, ".")
+		}
+	}
+
+	// set fixed node name and IP so certs are not regenerated unnecessarily
+	cmds.AgentConfig.NodeName = clusterName + "-supervisor"
+	cmds.AgentConfig.NodeIP.Set("127.0.0.1")
+
+	// don't start containerd and kubelet
+	cmds.ServerConfig.DisableAgent = true
+
+	// disable the built-in helm controller, we will run a custom one that does not require bootstrap charts
+	// to run on control-plane nodes - since there will be no control-plane nodes.
+	cmds.ServerConfig.DisableHelmController = true
+
+	// use fixed rke2-runtime image digest for prestaged content baked into the supervisor image
+	cfg.Images.Runtime = "rancher/rke2-runtime@sha256:0000000000000000000000000000000000000000000000000000000000000000"
+
+	resolver, err := images.NewResolver(cfg.Images)
+	if err != nil {
+		return nil, err
+	}
+
+	controlPlaneResources, err := parseControlPlaneResources(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	controlPlaneProbeConfs, err := parseControlPlaneProbeConfs(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	extraEnv, err := parseControlPlaneEnv(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	// Adding PSAs
+	podSecurityConfigFile := clx.String("pod-security-admission-config-file")
+	if podSecurityConfigFile == "" {
+		if err := setPSAs(isCISMode(clx)); err != nil {
+			return nil, err
+		}
+		podSecurityConfigFile = defaultPSAConfigFile
+	}
+
+	var ingressControllerName string
+	if len(cfg.IngressController.Value()) > 0 {
+		ingressControllerName = cfg.IngressController.Value()[0]
+	}
+
+	k := &kubernetesexecutor.KubernetesConfig{
+		Config: podtemplate.Config{
+			Resolver:  resolver,
+			CISMode:   isCISMode(clx),
+			DataDir:   clx.String("data-dir"),
+			Resources: controlPlaneResources,
+			Probes:    controlPlaneProbeConfs,
+			Env:       extraEnv,
+			Mounts:    &podtemplate.ControlPlaneMounts{},
+		},
+		Name:              clusterName,
+		Domain:            domain,
+		KubeConfig:        os.Getenv("KUBECONFIG"),
+		AuditPolicyFile:   clx.String("audit-policy-file"),
+		PSAConfigFile:     podSecurityConfigFile,
+		IngressController: ingressControllerName,
+	}
+
+	if cmds.ServerConfig.DatastoreEndpoint == "" {
+		managed.Clear()
+		managed.RegisterDriver(k)
+	}
+
+	return k, pkgerrors.WithMessage(k.Init(clx.Context), "failed to create kubernetes client")
+}
+
+func initPodExecutor(clx *cli.Context, cfg Config, isServer bool) (executor.Executor, error) {
+	resolver, err := images.NewResolver(cfg.Images)
+	if err != nil {
+		return nil, err
+	}
+
+	// Verify if the user want to use kine as the datastore
+	// and then remove the etcd from the static pod
+	externalDatabase := false
+	if cmds.ServerConfig.DatastoreEndpoint != "" || (clx.Bool("disable-etcd") && !clx.IsSet("server")) {
+		cmds.ServerConfig.DisableETCD = false
+		cmds.ServerConfig.ClusterInit = false
+
+		// When the datastore sets a etcd endpoint, rke2 does not need kine with tls and changes
+		// in the --etcd-servers inside podexecutor using externalDatabase
+		scheme, _ := util.SchemeAndAddress(cmds.ServerConfig.DatastoreEndpoint)
+		switch scheme {
+		case "http", "https":
+		default:
+			cmds.ServerConfig.KineTLS = true
+			externalDatabase = true
+		}
+	} else {
+		managed.RegisterDriver(&etcd.ETCD{})
+	}
+
+	dataDir := clx.String("data-dir")
+	agentManifestsDir := filepath.Join(dataDir, "agent", config.DefaultPodManifestPath)
+	agentImagesDir := filepath.Join(dataDir, "agent", "images")
+
 	var cpConfig *podexecutor.CloudProviderConfig
 	if cfg.CloudProviderConfig != "" && cfg.CloudProviderName == "" {
 		return nil, fmt.Errorf("--cloud-provider-config requires --cloud-provider-name to be provided")
@@ -159,29 +264,31 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*podexecutor.Sta
 	}
 
 	return &podexecutor.StaticPodConfig{
-		Resolver:               resolver,
-		ImagesDir:              agentImagesDir,
-		ManifestsDir:           agentManifestsDir,
-		CISMode:                isCISMode(clx),
-		CloudProvider:          cpConfig,
-		DataDir:                dataDir,
-		AuditPolicyFile:        clx.String("audit-policy-file"),
-		PSAConfigFile:          podSecurityConfigFile,
-		KubeletPath:            cfg.KubeletPath,
-		RuntimeEndpoint:        containerRuntimeEndpoint,
-		DisableETCD:            clx.Bool("disable-etcd"),
-		ExternalDatabase:       ExternalDatabase,
-		IsServer:               isServer,
-		IngressController:      ingressControllerName,
-		ControlPlaneResources:  *controlPlaneResources,
-		ControlPlaneProbeConfs: *controlPlaneProbeConfs,
-		ControlPlaneEnv:        *extraEnv,
-		ControlPlaneMounts:     *extraMounts,
+		Config: podtemplate.Config{
+			Resolver:  resolver,
+			ImagesDir: agentImagesDir,
+			CISMode:   isCISMode(clx),
+			DataDir:   dataDir,
+			Resources: controlPlaneResources,
+			Probes:    controlPlaneProbeConfs,
+			Env:       extraEnv,
+			Mounts:    extraMounts,
+		},
+		ManifestsDir:      agentManifestsDir,
+		CloudProvider:     cpConfig,
+		AuditPolicyFile:   clx.String("audit-policy-file"),
+		PSAConfigFile:     podSecurityConfigFile,
+		KubeletPath:       cfg.KubeletPath,
+		RuntimeEndpoint:   containerRuntimeEndpoint,
+		DisableETCD:       clx.Bool("disable-etcd"),
+		ExternalDatabase:  externalDatabase,
+		IsServer:          isServer,
+		IngressController: ingressControllerName,
 	}, nil
 }
 
-func parseControlPlaneResources(cfg Config) (*podexecutor.ControlPlaneResources, error) {
-	var controlPlaneResources podexecutor.ControlPlaneResources
+func parseControlPlaneResources(cfg Config) (*podtemplate.ControlPlaneResources, error) {
+	var controlPlaneResources podtemplate.ControlPlaneResources
 	// resources is a map of the component (kube-apiserver, kube-controller-manager, etc.) to a map[string]*string,
 	// where the key of the downstream map is the `cpu-request`, `cpu-limit`, `memory-request`, or `memory-limit` and
 	// the value corresponds to a pointer to the component resources array
@@ -288,8 +395,8 @@ func parseControlPlaneResources(cfg Config) (*podexecutor.ControlPlaneResources,
 	return &controlPlaneResources, nil
 }
 
-func parseControlPlaneProbeConfs(cfg Config) (*podexecutor.ControlPlaneProbeConfs, error) {
-	var controlPlaneProbes podexecutor.ControlPlaneProbeConfs
+func parseControlPlaneProbeConfs(cfg Config) (*podtemplate.ControlPlaneProbeConfs, error) {
+	var controlPlaneProbes podtemplate.ControlPlaneProbeConfs
 	// probes is a map of the component (kube-apiserver, kube-controller-manager, etc.) probe type, and setting, where
 	// the value corresponds to a pointer to the component probes array.
 	probes := map[string]map[string]map[string]*int32{
@@ -434,7 +541,7 @@ func parseControlPlaneProbeConfs(cfg Config) (*podexecutor.ControlPlaneProbeConf
 		// https://github.com/kubernetes/kubernetes/blob/v1.24.0/cmd/kubeadm/app/util/staticpod/utils.go#L259
 		Startup: {
 			InitialDelaySeconds: 10,
-			TimeoutSeconds:      5,
+			TimeoutSeconds:      15,
 			FailureThreshold:    24,
 			PeriodSeconds:       10,
 		},
@@ -472,8 +579,8 @@ func parseControlPlaneProbeConfs(cfg Config) (*podexecutor.ControlPlaneProbeConf
 	return &controlPlaneProbes, nil
 }
 
-func parseControlPlaneEnv(cfg Config) (*podexecutor.ControlPlaneEnv, error) {
-	return &podexecutor.ControlPlaneEnv{
+func parseControlPlaneEnv(cfg Config) (*podtemplate.ControlPlaneEnv, error) {
+	return &podtemplate.ControlPlaneEnv{
 		KubeAPIServer:          cfg.ExtraEnv.KubeAPIServer.Value(),
 		KubeScheduler:          cfg.ExtraEnv.KubeScheduler.Value(),
 		KubeControllerManager:  cfg.ExtraEnv.KubeControllerManager.Value(),
@@ -483,8 +590,8 @@ func parseControlPlaneEnv(cfg Config) (*podexecutor.ControlPlaneEnv, error) {
 	}, nil
 }
 
-func parseControlPlaneMounts(cfg Config) (*podexecutor.ControlPlaneMounts, error) {
-	return &podexecutor.ControlPlaneMounts{
+func parseControlPlaneMounts(cfg Config) (*podtemplate.ControlPlaneMounts, error) {
+	return &podtemplate.ControlPlaneMounts{
 		KubeAPIServer:          cfg.ExtraMounts.KubeAPIServer.Value(),
 		KubeScheduler:          cfg.ExtraMounts.KubeScheduler.Value(),
 		KubeControllerManager:  cfg.ExtraMounts.KubeControllerManager.Value(),

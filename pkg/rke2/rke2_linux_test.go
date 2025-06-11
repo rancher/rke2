@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/rancher/rke2/pkg/podexecutor"
-	"github.com/rancher/rke2/pkg/staticpod"
+	"github.com/rancher/rke2/pkg/podtemplate"
 	"github.com/urfave/cli/v2"
 )
 
@@ -38,22 +38,24 @@ func Test_UnitInitExecutor(t *testing.T) {
 				isServer: false,
 			},
 			want: &podexecutor.StaticPodConfig{
-				ControlPlaneProbeConfs: podexecutor.ControlPlaneProbeConfs{
-					KubeProxy: staticpod.ProbeConfs{
-						Startup: staticpod.ProbeConf{
-							InitialDelaySeconds: 42,
+				Config: podtemplate.Config{
+					Probes: &podtemplate.ControlPlaneProbeConfs{
+						KubeProxy: podtemplate.ProbeConfs{
+							Startup: podtemplate.ProbeConf{
+								InitialDelaySeconds: 42,
+							},
 						},
 					},
-				},
-				ControlPlaneResources: podexecutor.ControlPlaneResources{
-					KubeProxyCPULimit:      "123m",
-					KubeProxyMemoryRequest: "123Mi",
-				},
-				ControlPlaneEnv: podexecutor.ControlPlaneEnv{
-					KubeProxy: []string{"FOO=BAR"},
-				},
-				ControlPlaneMounts: podexecutor.ControlPlaneMounts{
-					KubeProxy: []string{"/foo=/bar"},
+					Resources: &podtemplate.ControlPlaneResources{
+						KubeProxyCPULimit:      "123m",
+						KubeProxyMemoryRequest: "123Mi",
+					},
+					Env: &podtemplate.ControlPlaneEnv{
+						KubeProxy: []string{"FOO=BAR"},
+					},
+					Mounts: &podtemplate.ControlPlaneMounts{
+						KubeProxy: []string{"/foo=/bar"},
+					},
 				},
 			},
 			wantErr: false,
@@ -71,22 +73,24 @@ func Test_UnitInitExecutor(t *testing.T) {
 				isServer: true,
 			},
 			want: &podexecutor.StaticPodConfig{
-				ControlPlaneProbeConfs: podexecutor.ControlPlaneProbeConfs{
-					KubeProxy: staticpod.ProbeConfs{
-						Startup: staticpod.ProbeConf{
-							InitialDelaySeconds: 123,
+				Config: podtemplate.Config{
+					Probes: &podtemplate.ControlPlaneProbeConfs{
+						KubeProxy: podtemplate.ProbeConfs{
+							Startup: podtemplate.ProbeConf{
+								InitialDelaySeconds: 123,
+							},
 						},
 					},
-				},
-				ControlPlaneResources: podexecutor.ControlPlaneResources{
-					KubeProxyCPULimit:      "42m",
-					KubeProxyMemoryRequest: "42Mi",
-				},
-				ControlPlaneEnv: podexecutor.ControlPlaneEnv{
-					KubeProxy: []string{"BAZ=BOP"},
-				},
-				ControlPlaneMounts: podexecutor.ControlPlaneMounts{
-					KubeProxy: []string{"/baz=/bop"},
+					Resources: &podtemplate.ControlPlaneResources{
+						KubeProxyCPULimit:      "42m",
+						KubeProxyMemoryRequest: "42Mi",
+					},
+					Env: &podtemplate.ControlPlaneEnv{
+						KubeProxy: []string{"BAZ=BOP"},
+					},
+					Mounts: &podtemplate.ControlPlaneMounts{
+						KubeProxy: []string{"/baz=/bop"},
+					},
 				},
 			},
 			wantErr: false,
@@ -125,7 +129,7 @@ func Test_UnitInitExecutor(t *testing.T) {
 			flagSet := flag.NewFlagSet("test", 0)
 			flagSet.String("pod-security-admission-config-file", "/tmp/pss.yaml", "")
 			tt.args.clx = cli.NewContext(nil, flagSet, nil)
-			got, err := initExecutor(tt.args.clx, tt.args.cfg, tt.args.isServer)
+			execer, err := initExecutor(tt.args.clx, tt.args.cfg, tt.args.isServer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("initExecutor() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -134,30 +138,36 @@ func Test_UnitInitExecutor(t *testing.T) {
 			if tt.wantErr {
 				return
 			}
-			if !reflect.DeepEqual(got.ControlPlaneProbeConfs.KubeProxy.Startup.InitialDelaySeconds, tt.want.ControlPlaneProbeConfs.KubeProxy.Startup.InitialDelaySeconds) {
+			got, ok := execer.(*podexecutor.StaticPodConfig)
+			if !ok {
+				t.Errorf("failed to convert Executor as StaticPodConfig")
+				return
+			}
+
+			if !reflect.DeepEqual(got.Config.Probes.KubeProxy.Startup.InitialDelaySeconds, tt.want.Config.Probes.KubeProxy.Startup.InitialDelaySeconds) {
 				t.Errorf("initExecutor() kube-proxy-startup-initial-delay-seconds = %+v\nWant = %+v",
-					got.ControlPlaneProbeConfs.KubeProxy.Startup.InitialDelaySeconds,
-					tt.want.ControlPlaneProbeConfs.KubeProxy.Startup.InitialDelaySeconds)
+					got.Config.Probes.KubeProxy.Startup.InitialDelaySeconds,
+					tt.want.Config.Probes.KubeProxy.Startup.InitialDelaySeconds)
 			}
-			if !reflect.DeepEqual(got.ControlPlaneResources.KubeProxyCPULimit, tt.want.ControlPlaneResources.KubeProxyCPULimit) {
+			if !reflect.DeepEqual(got.Config.Resources.KubeProxyCPULimit, tt.want.Config.Resources.KubeProxyCPULimit) {
 				t.Errorf("initExecutor() kube-proxy-cpu = %+v\nWant = %+v",
-					got.ControlPlaneResources.KubeProxyCPULimit,
-					tt.want.ControlPlaneResources.KubeProxyCPULimit)
+					got.Config.Resources.KubeProxyCPULimit,
+					tt.want.Config.Resources.KubeProxyCPULimit)
 			}
-			if !reflect.DeepEqual(got.ControlPlaneResources.KubeProxyMemoryRequest, tt.want.ControlPlaneResources.KubeProxyMemoryRequest) {
+			if !reflect.DeepEqual(got.Config.Resources.KubeProxyMemoryRequest, tt.want.Config.Resources.KubeProxyMemoryRequest) {
 				t.Errorf("initExecutor() kube-proxy-memory = %+v\nWant = %+v",
-					got.ControlPlaneResources.KubeProxyMemoryRequest,
-					tt.want.ControlPlaneResources.KubeProxyMemoryRequest)
+					got.Config.Resources.KubeProxyMemoryRequest,
+					tt.want.Config.Resources.KubeProxyMemoryRequest)
 			}
-			if !reflect.DeepEqual(got.ControlPlaneEnv.KubeProxy, tt.want.ControlPlaneEnv.KubeProxy) {
+			if !reflect.DeepEqual(got.Config.Env.KubeProxy, tt.want.Config.Env.KubeProxy) {
 				t.Errorf("initExecutor() kube-proxy extra-env = %+v\nWant = %+v",
-					got.ControlPlaneEnv.KubeProxy,
-					tt.want.ControlPlaneEnv.KubeProxy)
+					got.Config.Env.KubeProxy,
+					tt.want.Config.Env.KubeProxy)
 			}
-			if !reflect.DeepEqual(got.ControlPlaneMounts.KubeProxy, tt.want.ControlPlaneMounts.KubeProxy) {
+			if !reflect.DeepEqual(got.Config.Mounts.KubeProxy, tt.want.Config.Mounts.KubeProxy) {
 				t.Errorf("initExecutor() kube-proxy extra-mounts = %+v\nWant = %+v",
-					got.ControlPlaneMounts.KubeProxy,
-					tt.want.ControlPlaneMounts.KubeProxy)
+					got.Config.Mounts.KubeProxy,
+					tt.want.Config.Mounts.KubeProxy)
 			}
 		})
 	}

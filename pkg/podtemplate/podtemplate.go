@@ -1,4 +1,4 @@
-package staticpod
+package podtemplate
 
 import (
 	"bytes"
@@ -15,7 +15,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	pkgerrors "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -38,48 +37,6 @@ const (
 	file             typeVolume = "file"
 )
 
-type ProbeConf struct {
-	InitialDelaySeconds int32
-	TimeoutSeconds      int32
-	FailureThreshold    int32
-	PeriodSeconds       int32
-}
-
-type ProbeConfs struct {
-	Liveness  ProbeConf
-	Readiness ProbeConf
-	Startup   ProbeConf
-}
-
-type Args struct {
-	Command         string
-	Args            []string
-	Image           name.Reference
-	Dirs            []string
-	Files           []string
-	Sockets         []string
-	CISMode         bool // CIS requires that the manifest be saved with 600 permissions
-	ExcludeFiles    []string
-	HealthExec      []string
-	HealthPort      int32
-	HealthProto     string
-	HealthPath      string
-	ReadyExec       []string
-	ReadyPort       int32
-	ReadyProto      string
-	ReadyPath       string
-	CPURequest      string
-	CPULimit        string
-	MemoryRequest   string
-	MemoryLimit     string
-	ExtraMounts     []string
-	ExtraEnv        []string
-	ProbeConfs      ProbeConfs
-	SecurityContext *v1.PodSecurityContext
-	Annotations     map[string]string
-	Privileged      bool
-}
-
 // Remove cleans up the static pod manifest for the given command from the specified directory.
 // It does not actually stop or remove the static pod from the container runtime.
 func Remove(dir, command string) error {
@@ -91,10 +48,14 @@ func Remove(dir, command string) error {
 	return nil
 }
 
-// Run writes a static pod manifest for the given command into the specified directory.
+// Writes a static pod manifest for the given command into the specified directory.
 // Note that it does not actually run the command; the kubelet is responsible for picking up
 // the manifest and creating container to run it.
-func Run(dir string, args Args) error {
+func Write(dir string, args *Args) error {
+	if args == nil {
+		return nil
+	}
+
 	if cmds.AgentConfig.EnableSELinux {
 		if args.SecurityContext == nil {
 			args.SecurityContext = &v1.PodSecurityContext{}
@@ -105,7 +66,7 @@ func Run(dir string, args Args) error {
 			}
 		}
 	}
-	files, err := readFiles(args.Args, args.ExcludeFiles)
+	files, err := ReadFiles(args.Args, args.ExcludeFiles)
 	if err != nil {
 		return err
 	}
@@ -113,7 +74,7 @@ func Run(dir string, args Args) error {
 	// TODO Check to make sure we aren't double mounting directories and the files in those directories
 
 	args.Files = append(args.Files, files...)
-	pod, err := pod(args)
+	pod, err := Pod(args)
 	if err != nil {
 		return err
 	}
@@ -186,7 +147,11 @@ func hashFiles(files []string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
-func pod(args Args) (*v1.Pod, error) {
+func Pod(args *Args) (*v1.Pod, error) {
+	if args == nil {
+		return nil, nil
+	}
+
 	filehash, err := hashFiles(args.Files)
 	if err != nil {
 		return nil, err
@@ -213,6 +178,7 @@ func pod(args Args) (*v1.Pod, error) {
 					Image:   args.Image.Name(),
 					Command: []string{args.Command},
 					Args:    args.Args,
+					Ports:   args.Ports,
 					Env: []v1.EnvVar{
 						{
 							Name:  "FILE_HASH",
@@ -223,16 +189,16 @@ func pod(args Args) (*v1.Pod, error) {
 						Requests: v1.ResourceList{},
 						Limits:   v1.ResourceList{},
 					},
-					LivenessProbe:   livenessProbe(args),
-					ReadinessProbe:  readinessProbe(args),
-					StartupProbe:    startupProbe(args),
+					LivenessProbe:   args.livenessProbe(),
+					ReadinessProbe:  args.readinessProbe(),
+					StartupProbe:    args.startupProbe(),
 					ImagePullPolicy: v1.PullIfNotPresent,
 					SecurityContext: &v1.SecurityContext{
 						Privileged: &args.Privileged,
 					},
 				},
 			},
-			HostNetwork:       true,
+			HostNetwork:       args.HostNetwork,
 			PriorityClassName: "system-cluster-critical",
 			SecurityContext:   args.SecurityContext,
 		},
@@ -337,7 +303,6 @@ func addVolumes(p *v1.Pod, src []string, volume typeVolume) {
 }
 
 func addExtraMounts(p *v1.Pod, extraMounts []string) {
-
 	for i, rawMount := range extraMounts {
 		var sourceType v1.HostPathType
 		mount := strings.Split(rawMount, ":")
@@ -414,10 +379,10 @@ func addExtraEnv(p *v1.Pod, extraEnv []string) {
 	}
 }
 
-// readFiles takes in the arguments passed to the static pod and returns a list of all files
+// ReadFiles takes in the arguments passed to the static pod and returns a list of all files
 // embedded in those arguments to be included in the pod manifest as volumes.
 // excludeFiles are not included in the returned list.
-func readFiles(args, excludeFiles []string) ([]string, error) {
+func ReadFiles(args, excludeFiles []string) ([]string, error) {
 	files := map[string]bool{}
 	excludes := map[string]bool{}
 
@@ -480,27 +445,39 @@ func kubeconfigFiles(kubeconfig string) ([]string, error) {
 
 // livenessProbe returns a Probe, using the Health values from the provided pod args,
 // and the appropriate thresholds for liveness probing.
-func livenessProbe(args Args) *v1.Probe {
-	return createProbe(args.HealthExec, args.HealthPath, args.HealthProto, args.HealthPort, args.ProbeConfs.Liveness)
+func (a *Args) livenessProbe() *v1.Probe {
+	var host string
+	if a.HostNetwork {
+		host = "localhost"
+	}
+	return createProbe(a.HealthExec, a.HealthScheme, host, a.HealthPath, a.HealthPort, a.ProbeConfs.Liveness)
 }
 
 // readinessProbe returns a Probe, using the Ready values from the provided pod args,
 // and the appropriate thresholds for readiness probing.
-func readinessProbe(args Args) *v1.Probe {
-	return createProbe(args.ReadyExec, args.ReadyPath, args.ReadyProto, args.ReadyPort, args.ProbeConfs.Readiness)
+func (a *Args) readinessProbe() *v1.Probe {
+	var host string
+	if a.HostNetwork {
+		host = "localhost"
+	}
+	return createProbe(a.ReadyExec, a.ReadyScheme, host, a.ReadyPath, a.ReadyPort, a.ProbeConfs.Readiness)
 }
 
-// startupProbe returns a Probe, using the Health values from the provided pod args,
+// startupProbe returns a Probe, using the Startup values from the provided pod args,
 // and the appropriate thresholds for startup probing.
-func startupProbe(args Args) *v1.Probe {
-	return createProbe(args.HealthExec, args.HealthPath, args.HealthProto, args.HealthPort, args.ProbeConfs.Startup)
+func (a *Args) startupProbe() *v1.Probe {
+	var host string
+	if a.HostNetwork {
+		host = "localhost"
+	}
+	return createProbe(a.StartupExec, a.StartupScheme, host, a.StartupPath, a.StartupPort, a.ProbeConfs.Startup)
 }
 
 // createProbe creates a Probe using the provided configuration.
 // If command is set, an ExecAction Probe is returned.
 // If command is empty but port is set, a HTTPGetAction Probe is returned.
 // If neither is set, no Probe is returned.
-func createProbe(command []string, path, scheme string, port int32, conf ProbeConf) *v1.Probe {
+func createProbe(command []string, scheme, host, path string, port int32, conf ProbeConf) *v1.Probe {
 	probe := &v1.Probe{
 		InitialDelaySeconds: conf.InitialDelaySeconds,
 		TimeoutSeconds:      conf.TimeoutSeconds,
@@ -518,7 +495,7 @@ func createProbe(command []string, path, scheme string, port int32, conf ProbeCo
 	} else if port != 0 {
 		probe.HTTPGet = &v1.HTTPGetAction{
 			Path:   path,
-			Host:   "localhost",
+			Host:   host,
 			Scheme: v1.URIScheme(scheme),
 			Port: intstr.IntOrString{
 				IntVal: port,
@@ -528,7 +505,7 @@ func createProbe(command []string, path, scheme string, port int32, conf ProbeCo
 			probe.HTTPGet.Scheme = v1.URISchemeHTTPS
 		}
 		if probe.HTTPGet.Path == "" {
-			probe.HTTPGet.Path = "/healthz"
+			probe.HTTPGet.Path = "/livez"
 		}
 		return probe
 	}
