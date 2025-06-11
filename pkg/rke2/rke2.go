@@ -286,11 +286,13 @@ func isCISMode(clx *cli.Context) bool {
 }
 
 func setProfileMode(clx *cli.Context) podexecutor.ProfileMode {
-	profile := clx.String("profile")
-	if profile == ProfileCIS {
+	switch clx.String("profile") {
+	case ProfileCIS:
 		return podexecutor.ProfileModeCIS
-	} else if profile == ProfileETCD {
+	case ProfileETCD:
 		return podexecutor.ProfileModeETCD
+	default:
+		return podexecutor.ProfileModeNone
 	}
 	return podexecutor.ProfileModeNone
 }
