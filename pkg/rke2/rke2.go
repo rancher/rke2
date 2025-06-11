@@ -286,9 +286,14 @@ func isCISMode(clx *cli.Context) bool {
 	return profile == CISProfile
 }
 
-func isCISETCDMode(clx *cli.Context) bool {
+func setCISMode(clx *cli.Context) podexecutor.CISMode {
 	profile := clx.String("profile")
-	return profile == ETCDProfile
+	if profile == CISProfile {
+		return podexecutor.STDMode
+	} else if profile == ETCDProfile {
+		return podexecutor.ETCDMode
+	}
+	return podexecutor.NoMode
 }
 
 // TODO: move this into the podexecutor package, this logic is specific to that executor and should be there instead of here.
