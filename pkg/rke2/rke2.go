@@ -74,10 +74,9 @@ var (
 	IngressItems = []string{"ingress-nginx", "traefik"}
 )
 
-// Valid CIS Profile versions
 const (
-	CISProfile             = "cis"
-	ETCDProfile            = "etcd"
+	ProfileCIS             = "cis"
+	ProfileETCD            = "etcd"
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
 	KubeAPIServer          = "kube-apiserver"
 	KubeScheduler          = "kube-scheduler"
@@ -283,17 +282,17 @@ func removeDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems 
 
 func isCISMode(clx *cli.Context) bool {
 	profile := clx.String("profile")
-	return profile == CISProfile
+	return profile == ProfileCIS
 }
 
-func setCISMode(clx *cli.Context) podexecutor.CISMode {
+func setProfileMode(clx *cli.Context) podexecutor.ProfileMode {
 	profile := clx.String("profile")
-	if profile == CISProfile {
-		return podexecutor.STDMode
-	} else if profile == ETCDProfile {
-		return podexecutor.ETCDMode
+	if profile == ProfileCIS {
+		return podexecutor.ProfileModeCIS
+	} else if profile == ProfileETCD {
+		return podexecutor.ProfileModeETCD
 	}
-	return podexecutor.NoMode
+	return podexecutor.ProfileModeNone
 }
 
 // TODO: move this into the podexecutor package, this logic is specific to that executor and should be there instead of here.

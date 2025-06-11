@@ -115,17 +115,15 @@ func setCISFlags(clx *cli.Context) error {
 
 func validateProfile(clx *cli.Context, role CLIRole) {
 	switch clx.String("profile") {
-	case rke2.CISProfile:
+	case rke2.ProfileCIS:
 		if err := validateKernelReqs(role); err != nil {
-			logrus.Fatal(err)
-		}
-		if err := validateETCDReqs(role); err != nil {
 			logrus.Fatal(err)
 		}
 		if err := setCISFlags(clx); err != nil {
 			logrus.Fatal(err)
 		}
-	case rke2.ETCDProfile:
+		fallthrough // cis profile also requires etcd validation
+	case rke2.ProfileETCD:
 		if err := validateETCDReqs(role); err != nil {
 			logrus.Fatal(err)
 		}
