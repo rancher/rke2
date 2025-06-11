@@ -294,7 +294,6 @@ func setProfileMode(clx *cli.Context) podexecutor.ProfileMode {
 	default:
 		return podexecutor.ProfileModeNone
 	}
-	return podexecutor.ProfileModeNone
 }
 
 // TODO: move this into the podexecutor package, this logic is specific to that executor and should be there instead of here.

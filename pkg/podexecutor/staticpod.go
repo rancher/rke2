@@ -104,21 +104,6 @@ type ControlPlaneProbeConfs struct {
 	CloudControllerManager staticpod.ProbeConfs
 }
 
-type ProfileMode int
-
-const (
-	ProfileModeNone ProfileMode = iota
-	ProfileModeCIS
-	ProfileModeETCD
-)
-
-func (c ProfileMode) isAnyMode() bool {
-	return c != ProfileModeNone
-}
-func (c ProfileMode) isCISMode() bool {
-	return c == ProfileModeCIS
-}
-
 type StaticPodConfig struct {
 	Resolver      *images.Resolver
 	stopKubelet   context.CancelFunc
