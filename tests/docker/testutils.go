@@ -171,7 +171,7 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 			}
 		}
 
-		if _, err := newServer.RunCmdOnNode("curl -sfL https://get.rke2.io | INSTALL_RKE2_ARTIFACT_PATH=/tmp/rke2-artifacts sh -"); err != nil {
+		if _, err := newServer.RunCmdOnNode("curl -sfL https://raw.githubusercontent.com/rancher/rke2/refs/heads/master/install.sh | INSTALL_RKE2_ARTIFACT_PATH=/tmp/rke2-artifacts sh -"); err != nil {
 			return fmt.Errorf("failed to install server: %v", err)
 		}
 
@@ -273,7 +273,7 @@ func (config *TestConfig) ProvisionAgents(numOfAgents int) error {
 				}
 			}
 
-			if _, err := newAgent.RunCmdOnNode("curl -sfL https://get.rke2.io | INSTALL_RKE_TYPE='agent' INSTALL_RKE2_ARTIFACT_PATH=/tmp/rke2-artifacts sh -"); err != nil {
+			if _, err := newAgent.RunCmdOnNode("curl -sfL https://raw.githubusercontent.com/rancher/rke2/refs/heads/master/install.sh | INSTALL_RKE_TYPE='agent' INSTALL_RKE2_ARTIFACT_PATH=/tmp/rke2-artifacts sh -"); err != nil {
 				return fmt.Errorf("failed to install agent: %v", err)
 			}
 
