@@ -40,7 +40,7 @@ VERSION_FLAGS="
 GO_LDFLAGS="${STATIC_FLAGS} ${EXTRA_LDFLAGS}"
 echo ${DEBUG_GO_GCFLAGS}
 GOOS=windows \
-    CGO_ENABLED=1 CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc \
+    CGO_ENABLED=1 CGO_CFLAGS="-DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_USE_ALLOCA=1" CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc \
     go build \
         -tags "${GO_BUILDTAGS}" \
         ${GO_GCFLAGS} ${GO_BUILD_FLAGS} \
