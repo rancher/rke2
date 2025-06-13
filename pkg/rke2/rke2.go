@@ -89,10 +89,9 @@ var (
 	}
 )
 
-// Valid CIS Profile versions
 const (
-	CISProfile123          = "cis-1.23"
-	CISProfile             = "cis"
+	ProfileCIS             = "cis"
+	ProfileETCD            = "etcd"
 	defaultAuditPolicyFile = "/etc/rancher/rke2/audit-policy.yaml"
 	KubeAPIServer          = "kube-apiserver"
 	KubeScheduler          = "kube-scheduler"
@@ -298,10 +297,18 @@ func removeDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems 
 
 func isCISMode(clx *cli.Context) bool {
 	profile := clx.String("profile")
-	if profile == CISProfile123 {
-		logrus.Fatal("cis-1.23 profile is deprecated. Please use 'cis' instead.")
+	return profile == ProfileCIS
+}
+
+func setProfileMode(clx *cli.Context) podexecutor.ProfileMode {
+	switch clx.String("profile") {
+	case ProfileCIS:
+		return podexecutor.ProfileModeCIS
+	case ProfileETCD:
+		return podexecutor.ProfileModeETCD
+	default:
+		return podexecutor.ProfileModeNone
 	}
-	return profile == CISProfile123 || profile == CISProfile
 }
 
 // TODO: move this into the podexecutor package, this logic is specific to that executor and should be there instead of here.

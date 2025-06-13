@@ -58,22 +58,12 @@ func (c cisErrors) Error() string {
 	return err.String()
 }
 
-// validateCISReqs checks if the system is in compliance
-// with CIS 1.5 benchmark requirements. The nodeType string
+// validateKernelReqs checks if the system is in compliance
+// with CIS benchmark requirements. The nodeType string
 // is used to filter out tests that may only be relevant to servers
 // or agents.
-func validateCISReqs(role CLIRole) error {
+func validateKernelReqs(role CLIRole) error {
 	ce := make(cisErrors, 0)
-
-	// etcd user only needs to exist on servers
-	if role == Server {
-		if _, err := user.Lookup("etcd"); err != nil {
-			ce = append(ce, pkgerrors.WithMessage(err, "missing required"))
-		}
-		if _, err := user.LookupGroup("etcd"); err != nil {
-			ce = append(ce, pkgerrors.WithMessage(err, "missing required"))
-		}
-	}
 
 	for kp, pv := range kernelRuntimeParameters {
 		cv, err := sysctl(kp)
@@ -85,6 +75,26 @@ func validateCISReqs(role CLIRole) error {
 		}
 		if cv != pv {
 			ce = append(ce, fmt.Errorf("invalid kernel parameter value %s=%d - expected %d", kp, cv, pv))
+		}
+	}
+	if len(ce) != 0 {
+		return ce
+	}
+	return nil
+}
+
+// validateETCDReqs checks if the system is in compliance
+// with CIS etcd benchmark requirements.
+func validateETCDReqs(role CLIRole) error {
+	ce := make(cisErrors, 0)
+
+	// etcd user only needs to exist on servers
+	if role == Server {
+		if _, err := user.Lookup("etcd"); err != nil {
+			ce = append(ce, pkgerrors.WithMessage(err, "missing required"))
+		}
+		if _, err := user.LookupGroup("etcd"); err != nil {
+			ce = append(ce, pkgerrors.WithMessage(err, "missing required"))
 		}
 	}
 	if len(ce) != 0 {
@@ -105,11 +115,16 @@ func setCISFlags(clx *cli.Context) error {
 
 func validateProfile(clx *cli.Context, role CLIRole) {
 	switch clx.String("profile") {
-	case rke2.CISProfile123, rke2.CISProfile:
-		if err := validateCISReqs(role); err != nil {
+	case rke2.ProfileCIS:
+		if err := validateKernelReqs(role); err != nil {
 			logrus.Fatal(err)
 		}
 		if err := setCISFlags(clx); err != nil {
+			logrus.Fatal(err)
+		}
+		fallthrough // cis profile also requires etcd validation
+	case rke2.ProfileETCD:
+		if err := validateETCDReqs(role); err != nil {
 			logrus.Fatal(err)
 		}
 	case "":
