@@ -50,6 +50,7 @@ GO_LDFLAGS="${STATIC_FLAGS} ${EXTRA_LDFLAGS}"
 echo ${DEBUG_GO_GCFLAGS}
 
 # passing boringcrypto to GOEXPERIMENT variable to build with goboring library
+CGO_ENABLED=1 CGO_CFLAGS="-DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_USE_ALLOCA=1" \
 GOEXPERIMENT=boringcrypto go build \
     -tags "${GO_BUILDTAGS}" \
     ${GO_GCFLAGS} ${GO_BUILD_FLAGS} \
