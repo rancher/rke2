@@ -82,8 +82,8 @@ require (
 	github.com/containernetworking/plugins v1.6.2
 	github.com/google/go-containerregistry v0.20.2
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
-	github.com/k3s-io/helm-controller v0.16.10
-	github.com/k3s-io/k3s v1.30.14-0.20250613180831-3dd82e9f9959 // release-1.30
+	github.com/k3s-io/helm-controller v0.16.11
+	github.com/k3s-io/k3s v1.30.14-0.20250616233114-22ff8cfe25ab // release-1.30
 	github.com/k3s-io/kine v0.13.15
 	github.com/libp2p/go-netroute v0.2.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible
@@ -93,7 +93,7 @@ require (
 	github.com/rancher/permissions v0.0.0-20240523180510-4001d3d637f7
 	github.com/rancher/wharfie v0.6.7
 	github.com/rancher/wins v0.1.1
-	github.com/rancher/wrangler/v3 v3.2.0-rc.3
+	github.com/rancher/wrangler/v3 v3.2.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/pflag v1.0.6
 	github.com/tigera/operator v1.28.1
@@ -374,7 +374,7 @@ require (
 	github.com/quic-go/quic-go v0.50.1 // indirect
 	github.com/quic-go/webtransport-go v0.8.1-0.20241018022711-4ac2c9250e66 // indirect
 	github.com/rancher/dynamiclistener v0.6.3 // indirect
-	github.com/rancher/lasso v0.2.1 // indirect
+	github.com/rancher/lasso v0.2.2 // indirect
 	github.com/rancher/remotedialer v0.4.1 // indirect
 	github.com/raulk/go-watchdog v1.3.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
