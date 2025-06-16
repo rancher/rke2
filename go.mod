@@ -80,7 +80,7 @@ require (
 	github.com/google/go-containerregistry v0.20.2
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.10
-	github.com/k3s-io/k3s v1.32.5-rc1.0.20250516182639-8e8f2a4726fd // release-v1.32
+	github.com/k3s-io/k3s v1.32.6-0.20250613180821-7ce96aa080b2 // release-v1.32
 	github.com/k3s-io/kine v0.13.15
 	github.com/libp2p/go-netroute v0.2.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
@@ -327,7 +327,7 @@ require (
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.50.1 // indirect
 	github.com/quic-go/webtransport-go v0.8.1-0.20241018022711-4ac2c9250e66 // indirect
-	github.com/rancher/dynamiclistener v0.6.0-rc1 // indirect
+	github.com/rancher/dynamiclistener v0.6.3 // indirect
 	github.com/rancher/lasso v0.2.1 // indirect
 	github.com/rancher/remotedialer v0.4.1 // indirect
 	github.com/raulk/go-watchdog v1.3.0 // indirect
