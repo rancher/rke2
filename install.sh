@@ -560,7 +560,7 @@ name=Rancher RKE2 Common (${1})
 baseurl=https://${rpm_site}/rke2/${rke2_rpm_channel}/common/${rpm_site_infix}/noarch
 enabled=1
 gpgcheck=1
-repo_gpgcheck=0
+repo_gpgcheck=1
 gpgkey=https://${rpm_site}/public.key
 EOF
 
@@ -571,7 +571,7 @@ name=Rancher RKE2 ${rke2_majmin} (${1})
 baseurl=https://${rpm_site}/rke2/${rke2_rpm_channel}/${rke2_majmin}/${rpm_site_infix}/$(uname -m)
 enabled=1
 gpgcheck=1
-repo_gpgcheck=0
+repo_gpgcheck=1
 gpgkey=https://${rpm_site}/public.key
 EOF
     fi
