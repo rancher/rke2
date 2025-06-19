@@ -15,14 +15,15 @@ See also SURE-8203.
 In addition, the thick plugin deployment should become the default method from upstream in the future.
 
 ### Pros
-- allow the use of [multus-dynamic-networks-controller](https://github.com/k8snetworkplumbingwg/multus-dynamic-networks-controller) by Harvester
+- allows the use of [multus-dynamic-networks-controller](https://github.com/k8snetworkplumbingwg/multus-dynamic-networks-controller) by Harvester to implement [interface hotplugging](https://kubevirt.io/user-guide/network/hotplug_interfaces/) with Kubevirt
 - Multus thick plugin provides better metrics
 
 ### Cons
 - higher resource consumption than with thin plugin
+- increased complexity to support the multus CRI shim
 - more complex multus chart to support
     - new optional components
-    - a different configuration is needed for each CNI we support (https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/docs/thick-plugin.md#configure-deployment)
+    - a different configuration is needed for each CNI we support (https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/docs/thick-plugin.md#configure-deployment) because the delegate CNI is called from inside the multus-dameon pod.
 - more cases to test in QA
 
 ## Implementation steps
