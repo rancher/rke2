@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM alpine:3.21 AS build
+FROM --platform=$BUILDPLATFORM alpine:3.22 AS build
 
 RUN apk --no-cache add \
     curl \
