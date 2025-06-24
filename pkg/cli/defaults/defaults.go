@@ -29,20 +29,16 @@ func Set(_ *cli.Context, dataDir string) error {
 	cmds.ServerConfig.HTTPSPort = 6443
 	cmds.ServerConfig.APIServerPort = 6443
 	cmds.ServerConfig.APIServerBindAddress = "0.0.0.0"
-	if err := AppendToStringSlice(&cmds.ServerConfig.ExtraAPIArgs, []string{
+	cmds.ServerConfig.ExtraAPIArgs = PrependToStringSlice(cmds.ServerConfig.ExtraAPIArgs, []string{
 		"enable-admission-plugins=NodeRestriction",
-	}); err != nil {
-		return err
-	}
-	if err := AppendToStringSlice(&cmds.AgentConfig.ExtraKubeletArgs, []string{
+	})
+	cmds.AgentConfig.ExtraKubeletArgs = PrependToStringSlice(cmds.AgentConfig.ExtraKubeletArgs, []string{
 		"stderrthreshold=FATAL",
 		"log-file-max-size=50",
 		"alsologtostderr=false",
 		"logtostderr=false",
 		"log-file=" + filepath.Join(logsDir, "kubelet.log"),
-	}); err != nil {
-		return err
-	}
+	})
 	if !cmds.Debug {
 		l := grpclog.NewLoggerV2(ioutil.Discard, ioutil.Discard, os.Stderr)
 		grpclog.SetLoggerV2(l)
@@ -51,13 +47,10 @@ func Set(_ *cli.Context, dataDir string) error {
 	return nil
 }
 
-// With urfaveCLI/v2, we cannot directly access the []string value of a cli.StringSlice
-// so we need to individually append each value to the slice using the Set method
-func AppendToStringSlice(ss *cli.StringSlice, values []string) error {
-	for _, v := range values {
-		if err := ss.Set(v); err != nil {
-			return err
-		}
-	}
-	return nil
+// With urfaveCLI/v2, we cannot directly access the internal []string of a cli.StringSlice
+// so we create a new []string with the values we want to prepend
+// and replace the original StringSlice with the new one.
+func PrependToStringSlice(ss cli.StringSlice, values []string) cli.StringSlice {
+	values = append(values, ss.Value()...)
+	return *cli.NewStringSlice(values...)
 }
