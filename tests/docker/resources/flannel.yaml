@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-app-flannel-server
+spec:
+  selector:
+    matchLabels:
+      k8s-app: nginx-app-flannel
+      node-role: server
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        k8s-app: nginx-app-flannel
+        node-role: server
+    spec:
+      containers:
+      - name: nginx
+        image: ranchertest/mytestcontainer
+        ports:
+        - containerPort: 80
+      nodeSelector:
+        node-role: "server"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-app-flannel-agent
+spec:
+  selector:
+    matchLabels:
+      k8s-app: nginx-app-flannel
+      node-role: agent
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        k8s-app: nginx-app-flannel
+        node-role: agent
+    spec:
+      containers:
+      - name: nginx
+        image: ranchertest/mytestcontainer
+        ports:
+        - containerPort: 80
+      nodeSelector:
+        node-role: "agent"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-flannel-nodeport-service
+spec:
+  selector:
+    k8s-app: nginx-app-flannel
+    node-role: server 
+  ports:
+    - protocol: TCP
+      port: 80        
+      targetPort: 80  
+      nodePort: 30080 
+                      
+  type: NodePort      
