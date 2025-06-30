@@ -87,6 +87,10 @@ const (
 )
 
 func Server(clx *cli.Context, cfg Config) error {
+	disableAgent := clx.Bool("disable-agent")
+	if disableAgent {
+		cmds.ServerConfig.DisableAgent = true
+	}
 	if err := setup(clx, cfg, true); err != nil {
 		return err
 	}
@@ -113,13 +117,26 @@ func Server(clx *cli.Context, cfg Config) error {
 		metav1.NamespaceDefault,
 		metav1.NamespacePublic,
 	}
+
 	dataDir := clx.String("data-dir")
+
+	if !disableAgent {
+		cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
+			reconcileStaticPods(cmds.AgentConfig.ContainerRuntimeEndpoint, dataDir),
+		)
+	}
 	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
 		setNetworkPolicies(cisMode, defaultNamespaces),
 		setClusterRoles(),
 		restrictServiceAccounts(cisMode, defaultNamespaces),
 		setKubeProxyDisabled(),
-		cleanupStaticPodsOnSelfDelete(dataDir),
+	)
+	if !disableAgent {
+		cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
+			cleanupStaticPodsOnSelfDelete(dataDir),
+		)
+	}
+	cmds.ServerConfig.StartupHooks = append(cmds.ServerConfig.StartupHooks,
 		setRuntimes(),
 	)
 
@@ -189,7 +206,11 @@ func setup(clx *cli.Context, cfg Config, isServer bool) error {
 		}
 	}
 
-	return removeDisabledPods(dataDir, containerRuntimeEndpoint, disabledItems, clusterReset)
+	if !clx.Bool("disable-agent") {
+		return removeDisabledPods(dataDir, containerRuntimeEndpoint, disabledItems, clusterReset)
+	}
+
+	return nil
 }
 
 func ForceRestartFile(dataDir string) string {
