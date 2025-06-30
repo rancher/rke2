@@ -102,7 +102,7 @@ check_target_ro() {
 
 # setup_env defines needed environment variables.
 setup_env() {
-    STORAGE_URL="https://rke2-ci-builds.s3.amazonaws.com"
+    STORAGE_URL="https://rke2-ci-builds.s3.dualstack.us-east-1.amazonaws.com"
     DEFAULT_TAR_PREFIX="/usr/local"
     # --- bail if we are not root ---
     if [ ! $(id -u) -eq 0 ]; then
