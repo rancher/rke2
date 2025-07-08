@@ -166,7 +166,7 @@ func platformType() (string, error) {
 	hostnameEc2Uri := "http://169.254.169.254/latest/meta-data/local-hostname"
 	ec2Resp, err := http.Get(hostnameEc2Uri)
 	if err != nil && hasTimedOut(err) {
-		logrus.Debugf("Timed out trying to get information from '%s' (EC2). Defaulting to 'bare-metal'", hostnameEc2Uri)
+		logrus.Warnf("Timed out trying to get EC2 instance metadata from %q; defaulting to 'bare-metal' Calico platform", hostnameEc2Uri)
 		return "bare-metal", nil
 	}
 	if ec2Resp != nil {
@@ -186,7 +186,7 @@ func platformType() (string, error) {
 	req.Header.Add("Metadata-Flavor", "Google")
 	gceResp, err := client.Do(req)
 	if err != nil && hasTimedOut(err) {
-		logrus.Debugf("Timed out trying to get information from '%s' (GCE). Defaulting to 'bare-metal'", hostnameGoogleUri)
+		logrus.Warnf("Timed out trying to get GCE instance metadata from %q; defaulting to 'bare-metal' Calico platform", hostnameGoogleUri)
 		return "bare-metal", nil
 	}
 	if gceResp != nil {
