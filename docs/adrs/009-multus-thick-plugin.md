@@ -20,16 +20,14 @@ In addition, the thick plugin deployment should become the default method from u
 
 ### Cons
 - higher resource consumption than with thin plugin
-- increased complexity to support the multus CRI shim
-- more complex multus chart to support
-    - new optional components
-    - a different configuration is needed for each CNI we support (https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/docs/thick-plugin.md#configure-deployment) because the delegate CNI is called from inside the multus-dameon pod.
+- more complex Multus chart to support
+    - new optional components are added to the chart
+    - both plugins need to be validated
 - more cases to test in QA
 
 ## Implementation steps
 ### In rke2
-- new cni option 'multus-thick'
-- integrate the thick-plugin shim with containerd
+- no changes needed
 
 ### In rke2-charts
 - build the new hardened images:
