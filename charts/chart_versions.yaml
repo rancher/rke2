@@ -23,7 +23,7 @@ charts:
   - version: 34.2.002
     filename: /charts/rke2-traefik-crd.yaml
     bootstrap: false
-  - version: 3.12.202
+  - version: 3.12.203
     filename: /charts/rke2-metrics-server.yaml
     bootstrap: false
   - version: v4.2.106
