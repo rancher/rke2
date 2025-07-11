@@ -73,19 +73,19 @@ replace (
 )
 
 require (
-	github.com/Microsoft/hcsshim v0.12.9
+	github.com/Microsoft/hcsshim v0.13.0
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/containerd/continuity v0.4.5 // indirect
-	github.com/containernetworking/plugins v1.6.2
+	github.com/containernetworking/plugins v1.7.1
 	github.com/google/go-containerregistry v0.20.2
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.11
-	github.com/k3s-io/k3s v1.32.6-0.20250616230230-7a7331f25f41 // release-v1.32
+	github.com/k3s-io/k3s v1.32.7-0.20250711064513-a437cddfbe4e // release-v1.32
 	github.com/k3s-io/kine v0.13.15
 	github.com/libp2p/go-netroute v0.2.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
-	github.com/onsi/ginkgo/v2 v2.22.2
-	github.com/onsi/gomega v1.36.2
+	github.com/onsi/ginkgo/v2 v2.23.4
+	github.com/onsi/gomega v1.37.0
 	github.com/pkg/errors v0.9.1
 	github.com/rancher/permissions v0.0.0-20240523180510-4001d3d637f7
 	github.com/rancher/wharfie v0.6.9
@@ -97,12 +97,12 @@ require (
 	golang.org/x/sync v0.13.0
 	golang.org/x/sys v0.32.0
 	google.golang.org/grpc v1.72.0
-	k8s.io/api v0.32.5
-	k8s.io/apimachinery v0.32.5
-	k8s.io/apiserver v0.32.5
+	k8s.io/api v0.32.6
+	k8s.io/apimachinery v0.32.6
+	k8s.io/apiserver v0.32.6
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/component-base v0.32.5
-	k8s.io/cri-api v0.32.5
+	k8s.io/component-base v0.32.6
+	k8s.io/cri-api v0.32.6
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/kubernetes v1.32.0
 	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738
@@ -145,7 +145,7 @@ require (
 	github.com/containerd/stargz-snapshotter/estargz v0.16.3 // indirect
 	github.com/containerd/ttrpc v1.2.7 // indirect
 	github.com/containerd/typeurl/v2 v2.2.3 // indirect
-	github.com/containernetworking/cni v1.2.3 // indirect
+	github.com/containernetworking/cni v1.3.0 // indirect
 	github.com/coreos/go-iptables v0.8.0 // indirect
 	github.com/coreos/go-oidc v2.2.1+incompatible // indirect
 	github.com/coreos/go-semver v0.3.1 // indirect
@@ -158,7 +158,7 @@ require (
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/cli v27.3.1+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
-	github.com/docker/docker v27.1.1+incompatible // indirect
+	github.com/docker/docker v27.5.1+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
@@ -171,7 +171,7 @@ require (
 	github.com/euank/go-kmsg-parser v2.0.0+incompatible // indirect
 	github.com/evanphx/json-patch v5.9.11+incompatible // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/flannel-io/flannel v0.26.7 // indirect
+	github.com/flannel-io/flannel v0.27.0 // indirect
 	github.com/flynn/noise v1.1.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
@@ -203,14 +203,14 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/gopacket v1.1.19 // indirect
-	github.com/google/pprof v0.0.0-20250208200701-d0013a598941 // indirect
+	github.com/google/pprof v0.0.0-20250403155104-27863c87afa6 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.24.0 // indirect
 	github.com/hanwen/go-fuse/v2 v2.6.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -312,7 +312,7 @@ require (
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/opencontainers/runc v1.2.6 // indirect
 	github.com/opencontainers/runtime-spec v1.2.0 // indirect
-	github.com/opencontainers/selinux v1.11.1 // indirect
+	github.com/opencontainers/selinux v1.12.0 // indirect
 	github.com/otiai10/copy v1.7.0 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
@@ -350,7 +350,7 @@ require (
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20220101234140-673ab2c3ae75 // indirect
 	github.com/urfave/cli/v2 v2.27.6
 	github.com/vbatts/tar-split v0.11.6 // indirect
-	github.com/vishvananda/netlink v1.3.1-0.20250206174618-62fb240731fa // indirect
+	github.com/vishvananda/netlink v1.3.1 // indirect
 	github.com/vishvananda/netns v0.0.5 // indirect
 	github.com/whyrusleeping/go-keyspace v0.0.0-20160322163242-5b898ac5add1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
@@ -375,7 +375,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.34.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.34.0 // indirect
 	go.opentelemetry.io/otel/trace v1.34.0 // indirect
-	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
+	go.opentelemetry.io/proto/otlp v1.4.0 // indirect
 	go.uber.org/dig v1.18.0 // indirect
 	go.uber.org/fx v1.23.0 // indirect
 	go.uber.org/mock v0.5.0 // indirect
@@ -403,26 +403,26 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.32.5 // indirect
-	k8s.io/cli-runtime v0.32.5 // indirect
-	k8s.io/cloud-provider v0.32.5 // indirect
+	k8s.io/apiextensions-apiserver v0.32.6 // indirect
+	k8s.io/cli-runtime v0.32.6 // indirect
+	k8s.io/cloud-provider v0.32.6 // indirect
 	k8s.io/cluster-bootstrap v0.0.0 // indirect
-	k8s.io/component-helpers v0.32.5 // indirect
+	k8s.io/component-helpers v0.32.6 // indirect
 	k8s.io/controller-manager v0.27.10 // indirect
-	k8s.io/cri-client v0.32.5 // indirect
+	k8s.io/cri-client v0.32.6 // indirect
 	k8s.io/csi-translation-lib v0.0.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
 	k8s.io/endpointslice v0.0.0 // indirect
 	k8s.io/kms v0.27.10 // indirect
-	k8s.io/kube-aggregator v0.32.5 // indirect
+	k8s.io/kube-aggregator v0.32.6 // indirect
 	k8s.io/kube-controller-manager v0.0.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff // indirect
 	k8s.io/kube-proxy v0.0.0 // indirect
 	k8s.io/kube-scheduler v0.0.0 // indirect
-	k8s.io/kubectl v0.32.5 // indirect
-	k8s.io/kubelet v0.32.5 // indirect
+	k8s.io/kubectl v0.32.6 // indirect
+	k8s.io/kubelet v0.32.6 // indirect
 	k8s.io/metrics v0.0.0 // indirect
-	k8s.io/mount-utils v0.32.5 // indirect
+	k8s.io/mount-utils v0.32.6 // indirect
 	k8s.io/pod-security-admission v0.0.0 // indirect
 	lukechampine.com/blake3 v1.4.0 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.31.0 // indirect
@@ -435,7 +435,7 @@ require (
 require (
 	cel.dev/expr v0.18.0 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/Microsoft/hnslib v0.0.8 // indirect
+	github.com/Microsoft/hnslib v0.1.1 // indirect
 	github.com/containerd/containerd/v2 v2.0.5 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/fuse-overlayfs-snapshotter/v2 v2.1.0 // indirect
@@ -471,5 +471,6 @@ require (
 	github.com/wlynxg/anet v0.0.5 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
+	go.uber.org/automaxprocs v1.6.0 // indirect
 	k8s.io/externaljwt v1.32.0 // indirect
 )
