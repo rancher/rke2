@@ -99,7 +99,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-flannel.txt
-    ${REGISTRY}/rancher/hardened-flannel:v0.27.0-build20250611
+    ${REGISTRY}/rancher/hardened-flannel:v0.27.1-build20250710
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.7.1-build20250611
 EOF
 fi
