@@ -91,7 +91,7 @@ EOF
 xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
     ${REGISTRY}/rancher/harvester-cloud-provider:v0.2.4
     ${REGISTRY}/rancher/mirrored-kube-vip-kube-vip-iptables:v0.8.7
-    ${REGISTRY}/rancher/harvester-csi-driver:v0.2.2
+    ${REGISTRY}/rancher/harvester-csi-driver:v0.2.3
     ${REGISTRY}/rancher/mirrored-longhornio-csi-node-driver-registrar:v2.3.0
     ${REGISTRY}/rancher/mirrored-longhornio-csi-resizer:v1.2.0
     ${REGISTRY}/rancher/mirrored-longhornio-csi-provisioner:v2.1.2
