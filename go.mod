@@ -77,8 +77,8 @@ require (
 	github.com/containernetworking/plugins v1.7.1
 	github.com/google/go-containerregistry v0.20.3
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
-	github.com/k3s-io/helm-controller v0.16.11
-	github.com/k3s-io/k3s v1.33.0-rc1.0.20250616230153-e8062bff7849 // master
+	github.com/k3s-io/helm-controller v0.16.12-0.20250703174217-fcdaa90161e6
+	github.com/k3s-io/k3s v1.33.0-rc1.0.20250710163854-66102c5651b1 // master
 	github.com/k3s-io/kine v0.13.15
 	github.com/libp2p/go-netroute v0.2.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
@@ -97,14 +97,14 @@ require (
 	golang.org/x/sync v0.13.0
 	golang.org/x/sys v0.32.0
 	google.golang.org/grpc v1.72.0
-	k8s.io/api v0.33.1
-	k8s.io/apimachinery v0.33.1
-	k8s.io/apiserver v0.33.1
+	k8s.io/api v0.33.2
+	k8s.io/apimachinery v0.33.2
+	k8s.io/apiserver v0.33.2
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/component-base v0.33.1
-	k8s.io/cri-api v0.33.1
+	k8s.io/component-base v0.33.2
+	k8s.io/cri-api v0.33.2
 	k8s.io/klog/v2 v2.130.1
-	k8s.io/kubernetes v1.33.1
+	k8s.io/kubernetes v1.33.2
 	k8s.io/utils v0.0.0-20250321185631-1f6e0b77f77e
 	sigs.k8s.io/yaml v1.4.0
 )
@@ -400,24 +400,24 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.33.1 // indirect
-	k8s.io/cli-runtime v0.33.1 // indirect
-	k8s.io/cloud-provider v0.33.1 // indirect
+	k8s.io/apiextensions-apiserver v0.33.2 // indirect
+	k8s.io/cli-runtime v0.33.2 // indirect
+	k8s.io/cloud-provider v0.33.2 // indirect
 	k8s.io/cluster-bootstrap v0.0.0 // indirect
-	k8s.io/component-helpers v0.33.1 // indirect
+	k8s.io/component-helpers v0.33.2 // indirect
 	k8s.io/controller-manager v0.27.10 // indirect
-	k8s.io/cri-client v0.33.1 // indirect
+	k8s.io/cri-client v0.33.2 // indirect
 	k8s.io/csi-translation-lib v0.0.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
 	k8s.io/endpointslice v0.0.0 // indirect
 	k8s.io/kms v0.27.10 // indirect
-	k8s.io/kube-aggregator v0.33.1 // indirect
+	k8s.io/kube-aggregator v0.33.2 // indirect
 	k8s.io/kube-controller-manager v0.0.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff // indirect
 	k8s.io/kube-proxy v0.0.0 // indirect
 	k8s.io/kube-scheduler v0.0.0 // indirect
-	k8s.io/kubectl v0.33.1 // indirect
-	k8s.io/kubelet v0.33.1 // indirect
+	k8s.io/kubectl v0.33.2 // indirect
+	k8s.io/kubelet v0.33.2 // indirect
 	k8s.io/metrics v0.0.0 // indirect
 	k8s.io/mount-utils v0.32.4 // indirect
 	k8s.io/pod-security-admission v0.0.0 // indirect
@@ -432,7 +432,7 @@ require (
 require (
 	cel.dev/expr v0.19.1 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/Microsoft/hnslib v0.0.8 // indirect
+	github.com/Microsoft/hnslib v0.1.1 // indirect
 	github.com/containerd/containerd/v2 v2.0.5 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/fuse-overlayfs-snapshotter/v2 v2.1.0 // indirect
@@ -442,7 +442,7 @@ require (
 	github.com/google/go-tpm v0.9.3 // indirect
 	github.com/inetaf/tcpproxy v0.0.0-20240214030015-3ce58045626c // indirect
 	github.com/ipfs/go-log v1.0.5 // indirect
-	github.com/k3s-io/api v0.1.1 // indirect
+	github.com/k3s-io/api v0.1.2-0.20250707203559-eba70d696089 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/libp2p/go-yamux/v5 v5.0.0 // indirect
 	github.com/minio/crc64nvme v1.0.1 // indirect
