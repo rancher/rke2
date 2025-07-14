@@ -96,7 +96,14 @@ uninstall_remove_files()
             if [ "${TRANSACTIONAL_UPDATE=false}" != "true" ] && [ -x /usr/sbin/transactional-update ]; then
                 uninstall_cmd="transactional-update -c --no-selfupdate -d run $uninstall_cmd"
             fi
+            set +e
             $uninstall_cmd
+            zypper_exit_code=$?
+            set -e
+            # Ignore 104 - ZYPPER_EXIT_INF_CAP_NOT_FOUND, which indicates that the package was not found
+            if [ $zypper_exit_code -ne 0 ] && [ $zypper_exit_code -ne 104 ]; then
+                exit $zypper_exit_code
+            fi
             rm -f /etc/zypp/repos.d/rancher-rke2*.repo
          fi
     fi
