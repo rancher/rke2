@@ -19,7 +19,7 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20250612
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.8.0-build20250704
     ${REGISTRY}/rancher/hardened-addon-resizer:1.8.23-build20250612
-    ${REGISTRY}/rancher/klipper-helm:v0.9.7-build20250616
+    ${REGISTRY}/rancher/klipper-helm:v0.9.8-build20250709
     ${REGISTRY}/rancher/klipper-lb:v0.4.13
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.6.0
