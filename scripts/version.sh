@@ -2,7 +2,7 @@
 set -x
 
 PROG=rke2
-REGISTRY=docker.io
+REGISTRY=${REGISTRY:-docker.io}
 REPO=${REPO:-rancher}
 K3S_PKG=github.com/k3s-io/k3s
 RKE2_PKG=github.com/rancher/rke2
@@ -32,11 +32,11 @@ REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code;
 PLATFORM=${GOOS}-${GOARCH}
 RELEASE=${PROG}.${PLATFORM}
 # hardcode versions unless set specifically
-KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.32.1}
-KUBERNETES_IMAGE_TAG=${KUBERNETES_IMAGE_TAG:-v1.32.1-rke2r1-build20250115}
-ETCD_VERSION=${ETCD_VERSION:-v3.5.18-k3s1}
+KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.33.3}
+KUBERNETES_IMAGE_TAG=${KUBERNETES_IMAGE_TAG:-v1.33.3-rke2r1-build20250716}
+ETCD_VERSION=${ETCD_VERSION:-v3.5.21-k3s1}
 PAUSE_VERSION=${PAUSE_VERSION:-3.6}
-CCM_VERSION=${CCM_VERSION:-v1.32.0-rc3.0.20241220224140-68fbd1a6b543-build20250101}
+CCM_VERSION=${CCM_VERSION:-v1.33.1-0.20250516163953-99d91538b132-build20250612}
 
 if [ -d .git ]; then
     if [ -z "$GIT_TAG" ]; then

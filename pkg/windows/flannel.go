@@ -6,6 +6,7 @@ package windows
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -17,7 +18,7 @@ import (
 	"github.com/Microsoft/hcsshim"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/version"
-	"github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/logging"
 	"github.com/sirupsen/logrus"
 	authv1 "k8s.io/api/authentication/v1"
@@ -249,7 +250,7 @@ func (f *Flannel) createKubeConfigAndClient(ctx context.Context, restConfig *res
 	serviceAccounts := client.CoreV1().ServiceAccounts("kube-system")
 	token, err := serviceAccounts.CreateToken(ctx, "flannel", &req, metav1.CreateOptions{})
 	if err != nil {
-		return nil, nil, errors.Wrapf(err, "failed to create token for service account (kube-system/flannel)")
+		return nil, nil, pkgerrors.WithMessagef(err, "failed to create token for service account (kube-system/flannel)")
 	}
 
 	flannelKubeConfig.Token = token.Status.Token
@@ -300,7 +301,7 @@ func startFlannel(ctx context.Context, config *FlannelConfig, logPath string) {
 
 	logrus.Infof("Flanneld Envs: %s and args: %v", specificEnvs, args)
 	cmd := exec.CommandContext(ctx, "flanneld.exe", args...)
-	cmd.Env = append(specificEnvs)
+	cmd.Env = specificEnvs
 	cmd.Stdout = outputFile
 	cmd.Stderr = outputFile
 	if err := cmd.Run(); err != nil {

@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -25,13 +25,13 @@ func setPSAs(cisMode bool) error {
 	if !cisMode { // non-CIS mode
 		psaConfig := unrestrictedPSAConfig()
 		if err := ioutil.WriteFile(defaultPSAConfigFile, []byte(psaConfig), 0600); err != nil {
-			return errors.Wrapf(err, "psa: failed to write psa unrestricted config")
+			return pkgerrors.WithMessagef(err, "psa: failed to write psa unrestricted config")
 		}
 
 	} else { // CIS mode
 		psaConfig := restrictedPSAConfig()
 		if err := ioutil.WriteFile(defaultPSAConfigFile, []byte(psaConfig), 0600); err != nil {
-			return errors.Wrapf(err, "psa: failed to write psa restricted config")
+			return pkgerrors.WithMessagef(err, "psa: failed to write psa restricted config")
 		}
 	}
 	return nil

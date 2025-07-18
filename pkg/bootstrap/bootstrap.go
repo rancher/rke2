@@ -22,7 +22,7 @@ import (
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/util"
 	"github.com/k3s-io/k3s/pkg/version"
-	"github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/wharfie/pkg/credentialprovider/plugin"
 	"github.com/rancher/wharfie/pkg/extract"
@@ -114,7 +114,7 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 		if img == nil {
 			registry, err := registries.GetPrivateRegistries(cfg.PrivateRegistry)
 			if err != nil {
-				return "", errors.Wrapf(err, "failed to load private registry configuration from %s", cfg.PrivateRegistry)
+				return "", pkgerrors.WithMessagef(err, "failed to load private registry configuration from %s", cfg.PrivateRegistry)
 			}
 			// Override registry config with version provided by (and potentially modified by) k3s agent setup
 			registry.Registry = nodeConfig.AgentConfig.Registry
@@ -135,7 +135,7 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 			images.Pull(imagesDir, images.Runtime, ref)
 			img, err = registry.Image(ref, remote.WithPlatform(v1.Platform{Architecture: runtime.GOARCH, OS: runtime.GOOS}))
 			if err != nil {
-				return "", errors.Wrapf(err, "failed to get runtime image %s", ref.Name())
+				return "", pkgerrors.WithMessagef(err, "failed to get runtime image %s", ref.Name())
 			}
 		}
 
@@ -145,7 +145,7 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 			"/charts": refChartsDir,
 		}
 		if err := extract.ExtractDirs(img, extractPaths); err != nil {
-			return "", errors.Wrap(err, "failed to extract runtime image")
+			return "", pkgerrors.WithMessage(err, "failed to extract runtime image")
 		}
 		// Ensure correct permissions on bin dir
 		if err := os.Chmod(refBinDir, 0755); err != nil {
@@ -184,13 +184,13 @@ func UpdateManifests(resolver *images.Resolver, ingressController string, nodeCo
 	// Copy all charts into the manifests directory, since the K3s
 	// deploy controller will delete them if they are disabled.
 	if err := copyDir(manifestsDir, refChartsDir); err != nil {
-		return errors.Wrap(err, "failed to copy runtime charts")
+		return pkgerrors.WithMessage(err, "failed to copy runtime charts")
 	}
 
 	// Fix up HelmCharts to pass through configured values.
 	// This needs to be done every time in order to sync values from the CLI
 	if err := setChartValues(manifestsDir, ingressController, nodeConfig, cfg); err != nil {
-		return errors.Wrap(err, "failed to rewrite HelmChart manifests to pass through CLI values")
+		return pkgerrors.WithMessage(err, "failed to rewrite HelmChart manifests to pass through CLI values")
 	}
 	return nil
 }
@@ -355,7 +355,7 @@ func setChartValues(manifestsDir, ingressController string, nodeConfig *daemonco
 func rewriteChart(fileName string, info os.FileInfo, chartValues map[string]string) error {
 	fh, err := os.OpenFile(fileName, os.O_RDWR, info.Mode())
 	if err != nil {
-		return errors.Wrapf(err, "failed to open manifest %s", fileName)
+		return pkgerrors.WithMessagef(err, "failed to open manifest %s", fileName)
 	}
 	defer fh.Close()
 
@@ -418,23 +418,23 @@ OBJECTS:
 
 	data, err := yaml.Export(objs...)
 	if err != nil {
-		return errors.Wrapf(err, "failed to export modified manifest %s", fileName)
+		return pkgerrors.WithMessagef(err, "failed to export modified manifest %s", fileName)
 	}
 
 	if _, err := fh.Seek(0, 0); err != nil {
-		return errors.Wrapf(err, "failed to seek in manifest %s", fileName)
+		return pkgerrors.WithMessagef(err, "failed to seek in manifest %s", fileName)
 	}
 
 	if err := fh.Truncate(0); err != nil {
-		return errors.Wrapf(err, "failed to truncate manifest %s", fileName)
+		return pkgerrors.WithMessagef(err, "failed to truncate manifest %s", fileName)
 	}
 
 	if _, err := fh.Write(data); err != nil {
-		return errors.Wrapf(err, "failed to write modified manifest %s", fileName)
+		return pkgerrors.WithMessagef(err, "failed to write modified manifest %s", fileName)
 	}
 
 	if err := fh.Sync(); err != nil {
-		return errors.Wrapf(err, "failed to sync modified manifest %s", fileName)
+		return pkgerrors.WithMessagef(err, "failed to sync modified manifest %s", fileName)
 	}
 
 	logrus.Infof("Updated manifest %s to set cluster configuration values", fileName)

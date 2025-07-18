@@ -21,6 +21,9 @@ jobs:
         chmod +x /usr/local/bin/dapper
     - name: Build
       run: dapper -f Dockerfile --target dapper make dapper-ci
+    - name: Load kernel modules
+      run: |
+        sudo modprobe br_netfilter overlay
     - name: Test
       run: dapper -f Dockerfile --target dapper make test
     - name: Prepare Test Logs on Failure
@@ -47,4 +50,3 @@ jobs:
     - name: Build
       run: |
         dapper -f Dockerfile --target dapper make dapper-ci
-        

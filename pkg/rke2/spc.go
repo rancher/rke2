@@ -2,6 +2,7 @@ package rke2
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,7 +11,8 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/util"
 	"github.com/k3s-io/k3s/pkg/version"
-	"github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
+	"github.com/rancher/rke2/pkg/podexecutor"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -86,11 +88,11 @@ func watchForSelfDelete(ctx context.Context, dataDir string, client kubernetes.I
 // cleanupStaticPods deletes all the control-plane and etc static pod manifests.
 func cleanupStaticPods(dataDir string) error {
 	components := []string{"kube-apiserver", "kube-scheduler", "kube-controller-manager", "cloud-controller-manager", "etcd"}
-	manifestDir := podManifestsDir(dataDir)
+	manifestDir := podexecutor.PodManifestsDir(dataDir)
 	for _, component := range components {
 		manifestName := filepath.Join(manifestDir, component+".yaml")
 		if err := os.RemoveAll(manifestName); err != nil {
-			return errors.Wrapf(err, "unable to delete %s manifest", component)
+			return pkgerrors.WithMessagef(err, "unable to delete %s manifest", component)
 		}
 	}
 	return nil

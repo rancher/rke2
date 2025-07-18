@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
+	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/wrangler/v3/pkg/merr"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 var (
@@ -35,15 +35,15 @@ func (k K3SFlagSet) CopyInto(d K3SFlagSet) {
 	}
 }
 
-func mustCmdFromK3S(cmd cli.Command, flagOpts K3SFlagSet) cli.Command {
+func mustCmdFromK3S(cmd *cli.Command, flagOpts K3SFlagSet) *cli.Command {
 	cmd, err := commandFromK3S(cmd, flagOpts)
 	if err != nil {
-		panic(errors.Wrapf(err, "failed to wrap command %q", cmd.Name))
+		panic(pkgerrors.WithMessagef(err, "failed to wrap command %q", cmd.Name))
 	}
 	return cmd
 }
 
-func commandFromK3S(cmd cli.Command, flagOpts K3SFlagSet) (cli.Command, error) {
+func commandFromK3S(cmd *cli.Command, flagOpts K3SFlagSet) (*cli.Command, error) {
 	var (
 		newFlags []cli.Flag
 		seen     = map[string]bool{}
@@ -66,7 +66,7 @@ func commandFromK3S(cmd cli.Command, flagOpts K3SFlagSet) (cli.Command, error) {
 			continue
 		}
 
-		if strFlag, ok := flag.(cli.StringFlag); ok {
+		if strFlag, ok := flag.(*cli.StringFlag); ok {
 			if opt.Usage != "" {
 				strFlag.Usage = opt.Usage
 			}
@@ -77,33 +77,6 @@ func commandFromK3S(cmd cli.Command, flagOpts K3SFlagSet) (cli.Command, error) {
 				strFlag.Hidden = true
 			}
 			flag = strFlag
-		} else if strFlag, ok := flag.(*cli.StringFlag); ok {
-			if opt.Usage != "" {
-				strFlag.Usage = opt.Usage
-			}
-			if opt.Default != "" {
-				strFlag.Value = opt.Default
-			}
-			if opt.Hide {
-				strFlag.Hidden = true
-			}
-			flag = strFlag
-		} else if strSliceFlag, ok := flag.(cli.StringSliceFlag); ok {
-			if opt.Usage != "" {
-				strSliceFlag.Usage = opt.Usage
-			}
-			if opt.Default != "" {
-				slice := &cli.StringSlice{}
-				parts := strings.Split(opt.Default, ",")
-				for _, val := range parts {
-					slice.Set(val)
-				}
-				strSliceFlag.Value = slice
-			}
-			if opt.Hide {
-				strSliceFlag.Hidden = true
-			}
-			flag = strSliceFlag
 		} else if strSliceFlag, ok := flag.(*cli.StringSliceFlag); ok {
 			if opt.Usage != "" {
 				strSliceFlag.Usage = opt.Usage
@@ -120,14 +93,6 @@ func commandFromK3S(cmd cli.Command, flagOpts K3SFlagSet) (cli.Command, error) {
 				strSliceFlag.Hidden = true
 			}
 			flag = strSliceFlag
-		} else if intFlag, ok := flag.(cli.IntFlag); ok {
-			if opt.Usage != "" {
-				intFlag.Usage = opt.Usage
-			}
-			if opt.Hide {
-				intFlag.Hidden = true
-			}
-			flag = intFlag
 		} else if intFlag, ok := flag.(*cli.IntFlag); ok {
 			if opt.Usage != "" {
 				intFlag.Usage = opt.Usage
@@ -136,14 +101,6 @@ func commandFromK3S(cmd cli.Command, flagOpts K3SFlagSet) (cli.Command, error) {
 				intFlag.Hidden = true
 			}
 			flag = intFlag
-		} else if boolFlag, ok := flag.(cli.BoolFlag); ok {
-			if opt.Usage != "" {
-				boolFlag.Usage = opt.Usage
-			}
-			if opt.Hide {
-				boolFlag.Hidden = true
-			}
-			flag = boolFlag
 		} else if boolFlag, ok := flag.(*cli.BoolFlag); ok {
 			if opt.Usage != "" {
 				boolFlag.Usage = opt.Usage
@@ -152,22 +109,6 @@ func commandFromK3S(cmd cli.Command, flagOpts K3SFlagSet) (cli.Command, error) {
 				boolFlag.Hidden = true
 			}
 			flag = boolFlag
-		} else if boolTFlag, ok := flag.(cli.BoolTFlag); ok {
-			if opt.Usage != "" {
-				boolTFlag.Usage = opt.Usage
-			}
-			if opt.Hide {
-				boolTFlag.Hidden = true
-			}
-			flag = boolTFlag
-		} else if boolTFlag, ok := flag.(*cli.BoolTFlag); ok {
-			if opt.Usage != "" {
-				boolTFlag.Usage = opt.Usage
-			}
-			if opt.Hide {
-				boolTFlag.Hidden = true
-			}
-			flag = boolTFlag
 		} else if durationFlag, ok := flag.(*cli.DurationFlag); ok {
 			if opt.Usage != "" {
 				durationFlag.Usage = opt.Usage
@@ -201,7 +142,7 @@ func commandFromK3S(cmd cli.Command, flagOpts K3SFlagSet) (cli.Command, error) {
 // Flags with short versions may be named "flag", "flag,f", "f,flag", "flag, f" and so on.
 // This returns just the first long version, or the short version if no long is available.
 func parseName(flag cli.Flag) string {
-	names := strings.Split(flag.GetName(), ",")
+	names := flag.Names()
 	for _, n := range names {
 		n = strings.TrimSpace(n)
 		if len(n) > 1 {

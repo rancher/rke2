@@ -13,7 +13,7 @@ import (
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/version"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 	syswin "golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/svc/mgr"
 )
@@ -22,7 +22,7 @@ const (
 	defaultServiceDescription = "Rancher Kubernetes Engine v2 (agent) see docs https://github.com/rancher/rke2#readme"
 )
 
-var serviceSubcommand = cli.Command{
+var serviceSubcommand = &cli.Command{
 	Name:   "service",
 	Usage:  "Manage RKE2 as a Windows Service",
 	Action: serviceAction,

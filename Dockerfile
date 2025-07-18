@@ -1,7 +1,7 @@
 ARG KUBERNETES_VERSION=dev
 
 # Build environment
-FROM rancher/hardened-build-base:v1.23.4b1 AS build
+FROM rancher/hardened-build-base:v1.24.4b1 AS build
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
 RUN set -x && \
@@ -30,7 +30,7 @@ RUN zypper install -y systemd-rpm-macros
 
 # Dapper/Drone/CI environment
 FROM build AS dapper
-ENV DAPPER_ENV GODEBUG CI GOCOVER REPO TAG GITHUB_ACTION_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY DOCKER_USERNAME DOCKER_PASSWORD GH_TOKEN
+ENV DAPPER_ENV GODEBUG CI GOCOVER REPO TAG GITHUB_ACTION_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY DOCKER_USERNAME DOCKER_PASSWORD GH_TOKEN REGISTRY
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
 ENV DAPPER_OUTPUT ./dist ./bin ./build
@@ -116,10 +116,10 @@ RUN rm -vf /charts/*.sh /charts/*.md /charts/chart_versions.yaml
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
-FROM rancher/hardened-kubernetes:v1.32.1-rke2r1-build20250115 AS kubernetes
-FROM rancher/hardened-containerd:v2.0.2-k3s1-build20250120 AS containerd
-FROM rancher/hardened-crictl:v1.32.0-build20250211 AS crictl
-FROM rancher/hardened-runc:v1.2.4-build20250109 AS runc
+FROM rancher/hardened-kubernetes:v1.33.3-rke2r1-build20250716 AS kubernetes
+FROM rancher/hardened-containerd:v2.0.5-k3s2-build20250711 AS containerd
+FROM rancher/hardened-crictl:v1.33.0-build20250612 AS crictl
+FROM rancher/hardened-runc:v1.2.6-build20250626 AS runc
 
 FROM scratch AS runtime-collect
 COPY --from=runc \

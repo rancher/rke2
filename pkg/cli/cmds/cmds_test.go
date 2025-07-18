@@ -3,7 +3,7 @@ package cmds
 import (
 	"testing"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 // Test_NewCommands confirms that all the top-level commands can be created
@@ -13,7 +13,7 @@ import (
 func Test_NewCommands(t *testing.T) {
 	app := cli.NewApp()
 	app.Name = "rke2"
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		NewServerCommand(),
 		NewAgentCommand(),
 		NewEtcdSnapshotCommand(),

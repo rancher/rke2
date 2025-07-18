@@ -5,6 +5,7 @@ package rke2
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"unsafe"
@@ -13,12 +14,11 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/cluster/managed"
 	"github.com/k3s-io/k3s/pkg/etcd"
-	"github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/pebinaryexecutor"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 	"golang.org/x/sys/windows"
 )
 
@@ -83,8 +83,8 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*pebinaryexecuto
 	}
 
 	var ingressControllerName string
-	if IngressControllerFlag.Value != nil && len(*IngressControllerFlag.Value) > 0 {
-		ingressControllerName = (*IngressControllerFlag.Value)[0]
+	if len(cfg.IngressController.Value()) > 0 {
+		ingressControllerName = cfg.IngressController.Value()[0]
 	}
 
 	return &pebinaryexecutor.PEBinaryConfig{

@@ -5,6 +5,7 @@ on:
       - "**.md"
       - "channel.yaml"
       - "install.sh"
+      - "updatecli/**"
       - ".github/**"
       - "!.github/workflows/test-suite.yaml"
   pull_request:
@@ -12,6 +13,7 @@ on:
       - "**.md"
       - "channel.yaml"
       - "install.sh"
+      - "updatecli/**"
       - ".github/**"
       - "!.github/workflows/test-suite.yaml"
   workflow_dispatch: {}
@@ -22,7 +24,7 @@ permissions:
 jobs:
   build:
     name: Build RKE2 Images and Binary
-    runs-on: ubuntu-24.04
+    runs-on: ${{ github.repository == 'rancher/rke2' && 'runs-on,runner=16cpu-linux-x64' || 'ubuntu-24.04' }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -105,7 +107,77 @@ jobs:
     - name: On Failure, Dump Server Logs
       if: ${{ failure() }}
       run: cat ./tests/integration/${{ matrix.itest }}/r2log.txt
-
+  docker: 
+    name: "Docker Tests"
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        dtest: [basics, dualstack, flannel, profile, secretsencryption]
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - name: Install Go
+        uses: ./.github/actions/setup-go
+      - name: Download RKE2 Binary and Runtime Image
+        uses: actions/download-artifact@v4
+        with:
+          name: rke2-test-artifacts
+          path: ./artifacts
+      - name: Place the artifacts back and compute sha256sum
+        run: |
+          mkdir -p ./dist/artifacts
+          mkdir -p ./build/images
+          mkdir -p ./bin
+          mv ./artifacts/rke2-* ./build/images/
+          mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
+          sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+      - name: Load kernel modules
+        run: |
+          sudo modprobe br_netfilter overlay
+      - name: Run ${{ matrix.dtest }} Test
+        run: |
+          go test -v -timeout=20m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci
+  docker-large:
+    name: "Docker Tests (Large)"
+    needs: build
+    if: github.repository == 'rancher/rke2'
+    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        dtest: [splitserver]
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with: {fetch-depth: 1}
+      - name: Check Memory
+        run: lsmem
+      - name: Install Go
+        uses: ./.github/actions/setup-go
+      - name: Download RKE2 Binary and Runtime Image
+        uses: actions/download-artifact@v4
+        with:
+          name: rke2-test-artifacts
+          path: ./artifacts
+      - name: Place the artifacts back and compute sha256sum
+        run: |
+          mkdir -p ./dist/artifacts
+          mkdir -p ./build/images
+          mkdir -p ./bin
+          mv ./artifacts/rke2-* ./build/images/
+          mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
+          sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+      - name: Load kernel modules
+        run: |
+          sudo modprobe br_netfilter overlay
+      - name: Run ${{ matrix.dtest }} Test
+        run: |
+          go test -v -timeout=30m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci
   e2e:
     name: "E2E Tests"
     needs: build
@@ -114,7 +186,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        etest: [dnscache, kine]
+        etest: [kine, ciliumnokp, multus]
       max-parallel: 3
     steps:
     - name: "Checkout"
@@ -123,12 +195,20 @@ jobs:
     
     - name: Set up vagrant and libvirt
       uses: ./.github/actions/vagrant-setup
-    - name: "Vagrant Cache"
+    - name: Vagrant R/W Cache
+      if: github.ref == 'refs/heads/master'
       uses: actions/cache@v4
       with:
         path: |
             ~/.vagrant.d/boxes
-        key: vagrant-box-ubuntu-2004
+        key: vagrant-box-ubuntu-2404
+    - name: Vagrant Read Cache
+      if: github.ref != 'refs/heads/master'
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+            ~/.vagrant.d/boxes
+        key: vagrant-box-ubuntu-2404
     - name: "Vagrant Plugin(s)"
       run: vagrant plugin install vagrant-rke2 vagrant-reload vagrant-scp
     

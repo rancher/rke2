@@ -13,7 +13,7 @@
     Type of rke2 service. Only the "agent" type is supported on Windows.
     Default is "agent".`
 .Parameter Version
-    Version of rke2 to download from github.`
+    Version of rke2 to download.`
 .Parameter TarPrefix
     Installation prefix when using the tar installation method. This needs to match the value of CATTLE_AGENT_BIN_PREFIX
     Default is C:/usr/local, unless C:/usr/local is read-only or has a dedicated mount point,
@@ -25,6 +25,9 @@
 .Parameter AgentImagesDir
     Installation path for airgap images when installing from CI commit.
     Default is C:/var/lib/rancher/rke2/agent/images`
+.Parameter ArtifactURL
+    URL prefix for RKE2 release artifacts.
+    Default is https://github.com/rancher/rke2/releases/download
 .Parameter ArtifactPath
     If set, the install script will use the local path for sourcing the rke2.windows-$SUFFIX and sha256sum-$ARCH.txt files
     rather than the downloading the files from the internet.
@@ -68,6 +71,9 @@ param (
     [Parameter()]
     [String]
     $AgentImagesDir = "C:/var/lib/rancher/rke2/agent/images",
+    [Parameter()]
+    [String]
+    $ArtifactURL = "https://github.com/rancher/rke2/releases/download",
     [Parameter()]
     [String]
     $ArtifactPath = "",
@@ -210,7 +216,7 @@ function Get-BinaryChecksums() {
         $Rke2Version,
         [Parameter()]
         [String]
-        $Rke2GitHubUrl,
+        $Rke2ArtifactUrl,
         [Parameter()]
         [String]
         $TempBinaryChecksums
@@ -229,7 +235,8 @@ function Get-BinaryChecksums() {
         return Find-Checksum -ChecksumFilePath $TempBinaryChecksums -Pattern "rke2.$suffix.tar.gz"
     }
     else {
-        $binaryChecksumsUrl = "$Rke2GitHubUrl/releases/download/$Rke2Version/sha256sum-$arch.txt"
+        $versionUrlSafe = $Rke2Version.Replace("+", "%2B")
+        $binaryChecksumsUrl = "$Rke2ArtifactUrl/$versionUrlSafe/sha256sum-$arch.txt"
         Write-Host "downloading binary checksum from $binaryChecksumsUrl"
         curl.exe -sfL $binaryChecksumsUrl -o $TempBinaryChecksums
 
@@ -253,7 +260,7 @@ function Get-ImageChecksums() {
         $Rke2Version,
         [Parameter()]
         [String]
-        $Rke2GitHubUrl,
+        $Rke2ArtifactUrl,
         [Parameter()]
         [String]
         $TempImageChecksums
@@ -272,7 +279,8 @@ function Get-ImageChecksums() {
         return Find-Checksum -ChecksumFilePath $TempImageChecksums -Pattern "rke2-images.$suffix.tar.zst"
     }
     else {
-        $imageChecksumsUrl = "$Rke2GitHubUrl/releases/download/$Rke2Version/sha256sum-$arch.txt"
+        $versionUrlSafe = $Rke2Version.Replace("+", "%2B")
+        $imageChecksumsUrl = "$Rke2ArtifactUrl/$versionUrlSafe/sha256sum-$arch.txt"
         Write-Host "downloading image checksum from $imageChecksumsUrl"
         curl.exe -sfL $imageChecksumsUrl -o $TempImageChecksums
 
@@ -294,7 +302,7 @@ function Get-BinaryTarball() {
         $Rke2Version,
         [Parameter()]
         [String]
-        $Rke2GitHubUrl,
+        $Rke2ArtifactUrl,
         [Parameter()]
         [String]
         $TempTarball
@@ -310,7 +318,8 @@ function Get-BinaryTarball() {
         curl.exe -sfL $tarballUrl -o $TempTarball
     }
     else {
-        $tarballUrl = "$Rke2GitHubUrl/releases/download/$Rke2Version/rke2.$suffix.tar.gz"
+        $versionUrlSafe = $Rke2Version.Replace("+", "%2B")
+        $tarballUrl = "$Rke2ArtifactUrl/$versionUrlSafe/rke2.$suffix.tar.gz"
         Write-InfoLog "downloading binary tarball at $tarballUrl"
         curl.exe -sfL $tarballUrl -o $TempTarball
     }
@@ -574,7 +583,8 @@ function Get-AirgapTarball() {
     }
     # prepare for windows airgap image bug fix
     else {
-        $AirgapTarballUrl = "$Rke2GitHubUrl/releases/download/$Rke2Version/rke2-windows-$BuildVersion-$arch-images.tar.gz"
+        $versionUrlSafe = $Rke2Version.Replace("+", "%2B")
+        $AirgapTarballUrl = "$Rke2ArtifactUrl/$versionUrlSafe/rke2-windows-$BuildVersion-$arch-images.tar.gz"
         Write-InfoLog "downloading airgap tarball from $AirgapTarballUrl"
         curl.exe -sfL $AirgapTarballUrl -o $TempAirgapTarball
     }
@@ -665,7 +675,6 @@ function Install-AirgapTarball() {
 
 # Globals
 $STORAGE_URL = "https://rke2-ci-builds.s3.amazonaws.com"
-$INSTALL_RKE2_GITHUB_URL = "https://github.com/rancher/rke2"
 
 Confirm-WindowsFeatures -RequiredFeatures @("Containers")
 Set-Environment 
@@ -716,11 +725,11 @@ switch ($Method) {
         else {
             $Version = Get-ReleaseVersion
             Write-InfoLog "using $Version as release"
-            Write-InfoLog "Version: $Version `r`nStorage URL: $STORAGE_URL `r`nGithub URL: $INSTALL_RKE2_GITHUB_URL `r`nBinary Checksums: $TMP_BINARY_CHECKSUMS `r`nImage Checksums: $TMP_AIRGAP_CHECKSUMS"
-            $AIRGAP_CHECKSUM_EXPECTED = Get-ImageChecksums -CommitHash $Commit -StorageUrl $STORAGE_URL -Rke2Version $Version -Rke2GitHubUrl $INSTALL_RKE2_GITHUB_URL -TempImageChecksums $TMP_AIRGAP_CHECKSUMS
+            Write-InfoLog "Version: $Version `r`nStorage URL: $STORAGE_URL `r`nArtifact URL: $ArtifactURL `r`nBinary Checksums: $TMP_BINARY_CHECKSUMS `r`nImage Checksums: $TMP_AIRGAP_CHECKSUMS"
+            $AIRGAP_CHECKSUM_EXPECTED = Get-ImageChecksums -CommitHash $Commit -StorageUrl $STORAGE_URL -Rke2Version $Version -Rke2ArtifactUrl $ArtifactURL -TempImageChecksums $TMP_AIRGAP_CHECKSUMS
             Get-AirgapTarball -CommitHash $Commit -StorageUrl $STORAGE_URL -TempAirgapTarball $TMP_AIRGAP_TARBALL
-            $BINARY_CHECKSUM_EXPECTED = Get-BinaryChecksums -CommitHash $Commit -StorageUrl $STORAGE_URL -Rke2Version $Version -Rke2GitHubUrl $INSTALL_RKE2_GITHUB_URL -TempBinaryChecksums $TMP_BINARY_CHECKSUMS
-            Get-BinaryTarball -CommitHash $Commit -StorageUrl $STORAGE_URL -Rke2Version $Version -Rke2GitHubUrl $INSTALL_RKE2_GITHUB_URL -TempTarball $TMP_BINARY_TARBALL
+            $BINARY_CHECKSUM_EXPECTED = Get-BinaryChecksums -CommitHash $Commit -StorageUrl $STORAGE_URL -Rke2Version $Version -Rke2ArtifactUrl $ArtifactURL -TempBinaryChecksums $TMP_BINARY_CHECKSUMS
+            Get-BinaryTarball -CommitHash $Commit -StorageUrl $STORAGE_URL -Rke2Version $Version -Rke2ArtifactUrl $ArtifactURL -TempTarball $TMP_BINARY_TARBALL
         }
         Test-AirgapTarballChecksum -CommitHash $Commit -ExpectedImageAirgapChecksum $AIRGAP_CHECKSUM_EXPECTED -TempAirGapTarball $TMP_AIRGAP_TARBALL
         Install-AirgapTarball -CommitHash $Commit -InstallAgentImageDir $AgentImagesDir -TempAirgapTarball $TMP_AIRGAP_TARBALL -ExpectedImageAirgapChecksum $AIRGAP_CHECKSUM_EXPECTED -TempImageChecksums $TMP_AIRGAP_CHECKSUMS

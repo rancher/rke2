@@ -9,7 +9,7 @@ import (
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/rancher/wrangler/v3/pkg/slice"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -20,10 +20,30 @@ const (
 var (
 	config = rke2.Config{}
 
+	CNIFlag = &cli.StringSliceFlag{
+		Name:        "cni",
+		Usage:       "(networking) CNI Plugins to deploy, one of none, " + strings.Join(rke2.CNIItems, ", ") + "; optionally with multus as the first value to enable the multus meta-plugin",
+		EnvVars:     []string{"RKE2_CNI"},
+		Value:       cli.NewStringSlice("canal"),
+		Destination: &config.CNI,
+	}
+	IngressControllerFlag = &cli.StringSliceFlag{
+		Name:        "ingress-controller",
+		Usage:       "(networking) Ingress Controllers to deploy, one of none, " + strings.Join(rke2.IngressItems, ", ") + "; the first value will be set as the default ingress class",
+		EnvVars:     []string{"RKE_INGRESS_CONTROLLER"},
+		Value:       cli.NewStringSlice("ingress-nginx"),
+		Destination: &config.IngressController,
+	}
+	ServiceLBFlag = &cli.BoolFlag{
+		Name:    "enable-servicelb",
+		Usage:   "(components) Enable rke2 default cloud controller manager's service controller",
+		EnvVars: []string{"RKE2_ENABLE_SERVICELB"},
+	}
+
 	serverFlag = []cli.Flag{
-		rke2.CNIFlag,
-		rke2.IngressControllerFlag,
-		rke2.ServiceLBFlag,
+		CNIFlag,
+		IngressControllerFlag,
+		ServiceLBFlag,
 	}
 
 	k3sServerBase = mustCmdFromK3S(cmds.NewServerCommand(ServerRun), K3SFlagSet{
@@ -87,6 +107,7 @@ var (
 		"disable-etcd":                      copyFlag,
 		"etcd-disable-snapshots":            copyFlag,
 		"etcd-snapshot-schedule-cron":       copyFlag,
+		"etcd-snapshot-reconcile-interval":  copyFlag,
 		"etcd-snapshot-retention":           copyFlag,
 		"etcd-snapshot-dir":                 copyFlag,
 		"etcd-snapshot-name":                copyFlag,
@@ -127,6 +148,7 @@ var (
 		"agent-token-file":                  copyFlag,
 		"server":                            copyFlag,
 		"secrets-encryption":                hideFlag,
+		"secrets-encryption-provider":       copyFlag,
 		"protect-kernel-defaults":           copyFlag,
 		"snapshotter":                       copyFlag,
 		"selinux":                           copyFlag,
@@ -137,6 +159,7 @@ var (
 		"etcd-s3":                           copyFlag,
 		"etcd-s3-access-key":                copyFlag,
 		"etcd-s3-bucket":                    copyFlag,
+		"etcd-s3-bucket-lookup-type":        copyFlag,
 		"etcd-s3-config-secret":             copyFlag,
 		"etcd-s3-endpoint":                  copyFlag,
 		"etcd-s3-endpoint-ca":               copyFlag,
@@ -155,7 +178,7 @@ var (
 	})
 )
 
-func NewServerCommand() cli.Command {
+func NewServerCommand() *cli.Command {
 	cmd := k3sServerBase
 	cmd.Flags = append(cmd.Flags, serverFlag...)
 	cmd.Flags = append(cmd.Flags, commonFlag...)
@@ -173,7 +196,7 @@ func ServerRun(clx *cli.Context) error {
 
 // validateCNI validates the CNI selection, and disables any un-selected CNI charts
 func validateCNI(clx *cli.Context) {
-	disableExceptSelected(clx, rke2.CNIItems, rke2.CNIFlag, func(values cli.StringSlice) (cli.StringSlice, error) {
+	disableExceptSelected(clx, rke2.CNIItems, CNIFlag, func(values []string) ([]string, error) {
 		switch len(values) {
 		case 0:
 			values = append(values, "canal")
@@ -198,10 +221,7 @@ func validateCNI(clx *cli.Context) {
 
 // validateCNI validates the ingress controller selection, and disables any un-selected ingress controller charts
 func validateIngress(clx *cli.Context) {
-	disableExceptSelected(clx, rke2.IngressItems, rke2.IngressControllerFlag, func(values cli.StringSlice) (cli.StringSlice, error) {
-		if len(values) == 0 {
-			values = append(values, "ingress-nginx")
-		}
+	disableExceptSelected(clx, rke2.IngressItems, IngressControllerFlag, func(values []string) ([]string, error) {
 		return values, nil
 	})
 }
@@ -212,22 +232,17 @@ func validateIngress(clx *cli.Context) {
 // Finally, charts for any valid items not selected are added to the --disable list.
 // A value of 'none' will cause all valid items to be disabled.
 // Errors from the validation function, or selection of a value not in the valid list, will cause a fatal error to be logged.
-func disableExceptSelected(clx *cli.Context, valid []string, flag *cli.StringSliceFlag, validateFunc func(cli.StringSlice) (cli.StringSlice, error)) {
+func disableExceptSelected(clx *cli.Context, valid []string, flag *cli.StringSliceFlag, validateFunc func([]string) ([]string, error)) {
 	// split comma-separated values
-	values := cli.StringSlice{}
-	if flag.Value != nil {
-		for _, value := range *flag.Value {
-			for _, v := range strings.Split(value, ",") {
-				values = append(values, v)
-			}
-		}
+	values := []string{}
+	for _, v := range clx.StringSlice(flag.Name) {
+		values = append(values, strings.Split(v, ",")...)
 	}
-
 	// validate the flag after splitting values
 	if v, err := validateFunc(values); err != nil {
 		logrus.Fatalf("Failed to validate --%s flag: %v", flag.Name, err)
 	} else {
-		flag.Value = &v
+		values = v
 	}
 
 	// prepare a list of items to disable, based on all valid components.
@@ -239,10 +254,10 @@ func disableExceptSelected(clx *cli.Context, valid []string, flag *cli.StringSli
 	}
 
 	// re-enable components for any selected flag values
-	for _, d := range *flag.Value {
+	for _, d := range values {
 		switch {
 		case d == "none":
-			break
+			continue
 		case slice.ContainsString(valid, d):
 			disabledCharts.Delete("rke2-"+d, "rke2-"+d+"-crd")
 		default:

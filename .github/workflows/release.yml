@@ -56,13 +56,17 @@ jobs:
       # in the Dockerfile to include the new trivy version that supports VEX
       run: |
         docker run --rm -v "$(pwd)/build:/build" -v "$(pwd):/workspace" \
-          -w /workspace rancher/hardened-build-base:v1.23.3b1 \
+          -w /workspace rancher/hardened-build-base:v1.24.2b1 \
           make scan-images
     - name: Upload Scan Results
       uses: actions/upload-artifact@v4
       with:
         name: release-trivy-scan
         path: trivy_scan_report.txt
+
+    - name: Load kernel modules
+      run: |
+       sudo modprobe br_netfilter overlay
         
     - name: Test
       run: |
@@ -271,3 +275,111 @@ jobs:
           --title "$GITHUB_ACTION_TAG" \
           --latest="false" \
           --notes "Automated release created from $GITHUB_ACTION_TAG tag in ${{ github.repository }}"
+  sync-prime-images:
+    name: "Sync Prime images"
+    needs: [release-amd64, release-arm64, manifest]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install crane
+        uses: ./.github/actions/install-crane
+      - name: "Read secrets"
+        uses: rancher-eio/read-vault-secrets@main
+        with:
+          secrets: |
+            secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
+            secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
+            secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD ;
+      - name: Log in to prime registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.PRIME_REGISTRY }}
+          username: ${{ env.PRIME_REGISTRY_USERNAME }}
+          password: ${{ env.PRIME_REGISTRY_PASSWORD }}
+      - name: Download image lists
+        run: |
+          gh release download ${{ env.GITHUB_ACTION_TAG }} --repo ${{ github.repository }} --pattern '*.txt'
+      - name: Sync images
+        run: |
+          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images-all.linux-amd64.txt
+          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images-all.linux-arm64.txt
+          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images.windows-amd64.txt
+
+  sync-prime-ribs:
+    name: "Sync Prime ribs"
+    needs: [manifest]
+    runs-on: runs-on,runner=${{ matrix.runner }},run-id=${{ github.run_id }},image=${{ matrix.image }},hdd=256
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - arm64
+          - amd64
+        include:
+          - arch: arm64
+            runner: 8cpu-linux-arm64
+            image: ubuntu22-full-arm64
+          - arch: amd64
+            runner: 8cpu-linux-x64
+            image: ubuntu22-full-x64
+    env:
+      TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Dapper
+        run: |
+          curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
+          chmod +x /usr/local/bin/dapper
+      - name: Make artifacts directory
+        run: |
+          mkdir -p dist/artifacts
+      - name: Read secrets
+        uses: rancher-eio/read-vault-secrets@main
+        with:
+          secrets: |
+            secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
+            secret/data/github/repo/${{ github.repository }}/prime-artifacts-uploader/credentials accessKeyId | AWS_ACCESS_KEY_ID;
+            secret/data/github/repo/${{ github.repository }}/prime-artifacts-uploader/credentials secretAccessKey | AWS_SECRET_ACCESS_KEY;
+            secret/data/github/repo/${{ github.repository }}/prime-artifacts-uploader/credentials primeArtifactsBucketName | PRIME_ARTIFACTS_BUCKET_NAME
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Pull rke2-runtime
+        env:
+          REGISTRY: ${{ env.PRIME_REGISTRY }}
+        run: |
+          docker pull "${REGISTRY}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
+      - name: Download Binaries
+        run: |
+          gh release download "$TAG" --repo "${{ github.repository }}" --dir ./dist/artifacts -p "rke2.*" -p "*.exe"
+      - name: Package Images
+        env:
+          REGISTRY: ${{ env.PRIME_REGISTRY }}
+        run: |
+          dapper -f Dockerfile --target dapper make package-images
+      - name: Package windows images
+        if: ${{ matrix.arch == 'amd64' }}
+        env:
+          REGISTRY: ${{ env.PRIME_REGISTRY }}
+        run: |
+          dapper -f Dockerfile --target dapper make package-windows-images
+      - name: Checksum Artifacts
+        run: |
+          dapper -f Dockerfile --target dapper make checksum
+      - name: Upload Artifacts
+        env:
+          S3_PATH: s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/rke2/${{ env.TAG }}
+        run: |
+          aws s3 sync ./dist/artifacts "$S3_PATH" --quiet --no-progress

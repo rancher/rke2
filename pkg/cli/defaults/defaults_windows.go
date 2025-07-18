@@ -4,11 +4,11 @@
 package defaults
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
-	"github.com/pkg/errors"
 	"github.com/rancher/permissions/pkg/access"
 	"github.com/rancher/permissions/pkg/acl"
 	"github.com/rancher/permissions/pkg/sid"

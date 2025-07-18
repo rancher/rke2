@@ -31,7 +31,7 @@ fi
 #     If both are set, INSTALL_RKE2_TYPE is preferred.
 #
 #   - INSTALL_RKE2_VERSION
-#     Version of rke2 to download from github.
+#     Version of rke2 to download.
 #
 #   - INSTALL_RKE2_RPM_RELEASE_VERSION
 #     Version of the rke2 RPM release to install.
@@ -49,6 +49,10 @@ fi
 #   - INSTALL_RKE2_AGENT_IMAGES_DIR
 #     Installation path for airgap images when installing from CI commit
 #     Default is /var/lib/rancher/rke2/agent/images
+#
+#   - INSTALL_RKE2_ARTIFACT_URL
+#     URL prefix for RKE2 release artifacts.
+#     Default is https://github.com/rancher/rke2/releases/download
 #
 #   - INSTALL_RKE2_ARTIFACT_PATH
 #     If set, the install script will use the local path for sourcing the rke2.linux-$SUFFIX and sha256sum-$ARCH.txt files
@@ -99,11 +103,15 @@ check_target_ro() {
 # setup_env defines needed environment variables.
 setup_env() {
     STORAGE_URL="https://rke2-ci-builds.s3.amazonaws.com"
-    INSTALL_RKE2_GITHUB_URL="https://github.com/rancher/rke2"
     DEFAULT_TAR_PREFIX="/usr/local"
     # --- bail if we are not root ---
     if [ ! $(id -u) -eq 0 ]; then
         fatal "You need to be root to perform this install"
+    fi
+
+    # --- make sure artifact url prefix has a value
+    if [ -z "${INSTALL_RKE2_ARTIFACT_URL}" ]; then
+        INSTALL_RKE2_ARTIFACT_URL="https://github.com/rancher/rke2/releases/download"
     fi
 
     # --- make sure install channel has a value
@@ -231,11 +239,7 @@ setup_tmp() {
 
 # --- use desired rke2 version if defined or find version from channel ---
 get_release_version() {
-    if [ -n "${INSTALL_RKE2_COMMIT}" ]; then
-        version="commit ${INSTALL_RKE2_COMMIT}"
-    elif [ -n "${INSTALL_RKE2_VERSION}" ]; then
-        version=${INSTALL_RKE2_VERSION}
-    else
+    if [ -z "${INSTALL_RKE2_COMMIT}" ] && [ -z "${INSTALL_RKE2_VERSION}" ]; then
         info "finding release for channel ${INSTALL_RKE2_CHANNEL}"
         INSTALL_RKE2_CHANNEL_URL=${INSTALL_RKE2_CHANNEL_URL:-'https://update.rke2.io/v1-release/channels'}
         version_url="${INSTALL_RKE2_CHANNEL_URL}/${INSTALL_RKE2_CHANNEL}"
@@ -295,10 +299,11 @@ download() {
 
 # download_checksums downloads hash from github url.
 download_checksums() {
+    version_urlsafe="$(echo ${INSTALL_RKE2_VERSION} | sed 's/\+/%2B/g')"
     if [ -n "${INSTALL_RKE2_COMMIT}" ]; then
         CHECKSUMS_URL=${STORAGE_URL}/rke2.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.gz.sha256sum
     else
-        CHECKSUMS_URL=${INSTALL_RKE2_GITHUB_URL}/releases/download/${INSTALL_RKE2_VERSION}/sha256sum-${ARCH}.txt
+        CHECKSUMS_URL=${INSTALL_RKE2_ARTIFACT_URL}/${version_urlsafe}/sha256sum-${ARCH}.txt
     fi
     info "downloading checksums at ${CHECKSUMS_URL}"
     download "${TMP_CHECKSUMS}" "${CHECKSUMS_URL}"
@@ -307,10 +312,11 @@ download_checksums() {
 
 # download_tarball downloads binary from github url.
 download_tarball() {
+    version_urlsafe="$(echo ${INSTALL_RKE2_VERSION} | sed 's/\+/%2B/g')"
     if [ -n "${INSTALL_RKE2_COMMIT}" ]; then
         TARBALL_URL=${STORAGE_URL}/rke2.${SUFFIX}-${INSTALL_RKE2_COMMIT}.tar.gz
     else
-        TARBALL_URL=${INSTALL_RKE2_GITHUB_URL}/releases/download/${INSTALL_RKE2_VERSION}/rke2.${SUFFIX}.tar.gz
+        TARBALL_URL=${INSTALL_RKE2_ARTIFACT_URL}/${version_urlsafe}/rke2.${SUFFIX}.tar.gz
     fi
     info "downloading tarball at ${TARBALL_URL}"
     download "${TMP_TARBALL}" "${TARBALL_URL}"
@@ -498,7 +504,7 @@ do_install_rpm() {
             ${transactional_update_run} mkdir -p /var/lib/rpm-state
             # configure infix and rpm_installer
             rpm_site_infix=microos
-            if [ "${VARIANT_ID:-}" = sle-micro ] || [ "${ID:-}" = sle-micro ]; then
+            if [ "${VARIANT_ID:-}" = sle-micro ] || [ "${ID:-}" = sle-micro ] || [ "${ID:-}" = sl-micro ]; then
                 rpm_site_infix=slemicro
                 package_installer=zypper
             fi
@@ -554,7 +560,7 @@ name=Rancher RKE2 Common (${1})
 baseurl=https://${rpm_site}/rke2/${rke2_rpm_channel}/common/${rpm_site_infix}/noarch
 enabled=1
 gpgcheck=1
-repo_gpgcheck=0
+repo_gpgcheck=1
 gpgkey=https://${rpm_site}/public.key
 EOF
 
@@ -565,7 +571,7 @@ name=Rancher RKE2 ${rke2_majmin} (${1})
 baseurl=https://${rpm_site}/rke2/${rke2_rpm_channel}/${rke2_majmin}/${rpm_site_infix}/$(uname -m)
 enabled=1
 gpgcheck=1
-repo_gpgcheck=0
+repo_gpgcheck=1
 gpgkey=https://${rpm_site}/public.key
 EOF
     fi

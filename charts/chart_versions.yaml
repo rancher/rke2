@@ -1,53 +1,53 @@
 charts:
-  - version: 1.17.000
+  - version: 1.17.401
     filename: /charts/rke2-cilium.yaml
     bootstrap: true
-  - version: v3.29.2-build2025020600
+  - version: v3.30.2-build2025071100
     filename: /charts/rke2-canal.yaml
     bootstrap: true
-  - version: v3.29.200
+  - version: v3.30.100
     filename: /charts/rke2-calico.yaml
     bootstrap: true
-  - version: v3.29.101
+  - version: v3.30.100
     filename: /charts/rke2-calico-crd.yaml
     bootstrap: true
-  - version: 1.36.102
+  - version: 1.42.302
     filename: /charts/rke2-coredns.yaml
     bootstrap: true
-  - version: 4.12.004
+  - version: 4.12.400
     filename: /charts/rke2-ingress-nginx.yaml
     bootstrap: false
-  - version: 34.2.000
+  - version: 34.2.002
     filename: /charts/rke2-traefik.yaml
     bootstrap: false
-  - version: 34.2.000
+  - version: 34.2.002
     filename: /charts/rke2-traefik-crd.yaml
     bootstrap: false
-  - version: 3.12.200
+  - version: 3.12.203
     filename: /charts/rke2-metrics-server.yaml
     bootstrap: false
-  - version: v4.1.403
+  - version: v4.2.106
     filename: /charts/rke2-multus.yaml
     bootstrap: true
-  - version: v0.26.402
+  - version: v0.27.100
     filename: /charts/rke2-flannel.yaml
     bootstrap: true
-  - version: 1.10.000
+  - version: 1.11.000
     filename: /charts/rancher-vsphere-cpi.yaml
     bootstrap: true
-  - version: 3.3.1-rancher900
+  - version: 3.3.1-rancher1000
     filename: /charts/rancher-vsphere-csi.yaml
     bootstrap: true
-  - version: 0.2.900
+  - version: 0.2.1000
     filename: /charts/harvester-cloud-provider.yaml
     bootstrap: true
-  - version: 0.1.2300
+  - version: 0.1.2400
     filename: /charts/harvester-csi-driver.yaml
     bootstrap: true
-  - version: 4.0.002
+  - version: 4.0.003
     filename: /charts/rke2-snapshot-controller.yaml
     bootstrap: false
-  - version: 4.0.002
+  - version: 4.0.003
     filename: /charts/rke2-snapshot-controller-crd.yaml
     bootstrap: false
   - version: 0.0.0  # this empty chart addon can be removed in v1.34, after we have shipped two minor versions that have never included it.
