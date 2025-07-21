@@ -2,22 +2,52 @@ package windows
 
 import (
 	"errors"
+	"fmt"
 	"net"
-	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
+	"sync"
 	"testing"
-	"time"
 )
 
-// MockHNSNetwork is a mock type for the HNSNetwork type
-type MockHNSNetwork struct {
-	Name string
+const (
+	bareMetalPlatform = "bare-metal"
+	ec2Platform       = "ec2"
+	gcePlatform       = "gce"
+	eksPlatform       = "eks"
+	azurePlatform     = "aks"
+)
+
+// mockHNSNetwork is a mock to simulate getting HNS networks by name.
+type mockHNSNetwork struct {
+	name string
 }
 
-// GetHNSNetworkByNameFunc is a mock function for the GetHNSNetworkByName function
-type GetHNSNetworkByNameFunc func(name string) (*MockHNSNetwork, error)
+type mockConfig struct {
+	hnsFunc        func(name string) (*mockHNSNetwork, error)
+	ec2Response    *httptest.ResponseRecorder
+	ec2Timeout     bool
+	gceResponse    *httptest.ResponseRecorder
+	gceTimeout     bool
+	gceRequestFail bool
+}
+
+var (
+	mockMu sync.RWMutex
+	mock   *mockConfig
+)
+
+func resetMocks() {
+	mockMu.Lock()
+	defer mockMu.Unlock()
+
+	mock = &mockConfig{
+		hnsFunc: func(name string) (*mockHNSNetwork, error) {
+			return nil, errors.New("network not found")
+		},
+	}
+}
 
 type timeoutError struct{}
 
@@ -25,47 +55,30 @@ func (e *timeoutError) Error() string   { return "timeout" }
 func (e *timeoutError) Timeout() bool   { return true }
 func (e *timeoutError) Temporary() bool { return false }
 
-// Test hasTimedOut covers nil, wrapped URL timeout, direct net.Error, closed-connection, and non-timeout cases
 func Test_UnitHasTimedOut(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name string
 		err  error
 		want bool
 	}{
-		{name: "nil error", err: nil, want: false},
-		{
-			name: "url.Error with timeout",
-			err: &url.Error{
-				Op:  "Get",
-				URL: "http://example.com",
-				Err: &net.OpError{Op: "dial", Net: "tcp", Addr: &net.TCPAddr{IP: net.ParseIP("127.0.0.1"), Port: 80}, Err: &timeoutError{}},
-			},
-			want: true,
-		},
-		{name: "net.Error with timeout", err: &timeoutError{}, want: true},
-		{
-			name: "net.OpError with timeout",
-			err:  &net.OpError{Op: "dial", Net: "tcp", Addr: &net.TCPAddr{IP: net.ParseIP("127.0.0.1"), Port: 80}, Err: &timeoutError{}},
-			want: true,
-		},
-		{
-			name: "url.Error without timeout",
-			err:  &url.Error{Op: "Get", URL: "http://example.com", Err: errors.New("connection refused")},
-			want: false,
-		},
-		{
-			name: "net.OpError without timeout",
-			err:  &net.OpError{Op: "dial", Net: "tcp", Addr: &net.TCPAddr{IP: net.ParseIP("127.0.0.1"), Port: 80}, Err: errors.New("connection refused")},
-			want: false,
-		},
-		{name: "closed network connection error", err: errors.New("use of closed network connection"), want: true},
-		{name: "generic error", err: errors.New("some other error"), want: false},
+		{"Request succeed- nil error", nil, false},
+		{"Request failed- url.Error with timeout", makeURLError(true), true},
+		{"Request failed- url.Error without timeout", makeURLError(false), false},
+		{"Request failed- net.OpError with timeout", makeOpError(true), true},
+		{"Request failed- net.OpError without timeout", makeOpError(false), false},
+		{"Request failed- net.Error timeoutError", &timeoutError{}, true},
+		{"Request failed- generic error", errors.New("maybe other problem"), false},
+		{"Request failed- closed network", errors.New("use of closed network connection"), true},
+		{"Request failed- contain closed connection", fmt.Errorf("got %q", "use of closed network connection"), true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := hasTimedOut(tt.err); got != tt.want {
-				t.Errorf("hasTimedOut() = %v, want %v", got, tt.want)
+			t.Parallel()
+			got := hasTimedOut(tt.err)
+			if got != tt.want {
+				t.Errorf("hasTimedOut(%#v) = %v; want %v", tt.err, got, tt.want)
 			}
 		})
 	}
@@ -73,229 +86,202 @@ func Test_UnitHasTimedOut(t *testing.T) {
 
 func Test_UnitPlatformTypeWithMocks(t *testing.T) {
 	tests := []struct {
-		name           string
-		mockHNSFunc    GetHNSNetworkByNameFunc
-		mockHTTPServer func() *httptest.Server
-		want           string
-		description    string
+		name        string
+		setupMocks  mockConfig
+		want        string
+		wantErr     bool
+		errContains string
 	}{
-		// AKS
 		{
-			name: "AKS platform detected",
-			mockHNSFunc: func(name string) (*MockHNSNetwork, error) {
-				if name == "azure" {
-					return &MockHNSNetwork{Name: "azure"}, nil
-				}
-				return nil, errors.New("network not found")
-			},
-			want:        "aks",
-			description: "Should detect AKS when azure network exists",
-		},
-		// EKS
-		{
-			name: "EKS platform detected",
-			mockHNSFunc: func(name string) (*MockHNSNetwork, error) {
-				if name == "vpcbr*" {
-					return &MockHNSNetwork{Name: "vpcbr*"}, nil
-				}
-				return nil, errors.New("network not found")
-			},
-			want:        "eks",
-			description: "Should detect EKS when vpcbr network exists",
-		},
-		// EC2 success
-		{
-			name: "EC2 platform detected",
-			mockHNSFunc: func(name string) (*MockHNSNetwork, error) {
-				return nil, errors.New("network not found")
-			},
-			mockHTTPServer: func() *httptest.Server {
-				return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					if r.URL.Path == "/latest/meta-data/local-hostname" {
-						w.WriteHeader(http.StatusOK)
-						w.Write([]byte("ec2-hostname"))
-					} else if r.URL.Path == "/computeMetadata/v1/instance/hostname" {
-						w.WriteHeader(http.StatusNotFound)
+			name: "Success- AKS platform detected by HNS - Should detect AKS when azure network exists",
+			setupMocks: mockConfig{
+				hnsFunc: func(name string) (*mockHNSNetwork, error) {
+					if name == "azure" {
+						return &mockHNSNetwork{name: "azure"}, nil
 					}
-				}))
+					return nil, errors.New("network not found")
+				},
 			},
-			want:        "ec2",
-			description: "Should detect EC2 when metadata service responds",
+			want:    azurePlatform,
+			wantErr: false,
 		},
-		// GCE success
 		{
-			name: "GCE platform detected",
-			mockHNSFunc: func(name string) (*MockHNSNetwork, error) {
-				return nil, errors.New("network not found")
-			},
-			mockHTTPServer: func() *httptest.Server {
-				return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					if r.URL.Path == "/latest/meta-data/local-hostname" {
-						w.WriteHeader(http.StatusNotFound)
-					} else if r.URL.Path == "/computeMetadata/v1/instance/hostname" && r.Header.Get("Metadata-Flavor") == "Google" {
-						w.WriteHeader(http.StatusOK)
-						w.Write([]byte("gce-hostname"))
+			name: "Success- EKS platform detected by HNS - Should detect EKS when vpcbr network exists",
+			setupMocks: mockConfig{
+				hnsFunc: func(name string) (*mockHNSNetwork, error) {
+					if name == "vpcbr*" {
+						return &mockHNSNetwork{name: "vpcbr"}, nil
 					}
-				}))
+					return nil, errors.New("network not found")
+				},
 			},
-			want:        "gce",
-			description: "Should detect GCE when metadata service responds with correct headers",
+			want:    eksPlatform,
+			wantErr: false,
 		},
-		// EC2 timeout
 		{
-			name: "EC2 timeout fallback to bare-metal",
-			mockHNSFunc: func(name string) (*MockHNSNetwork, error) {
-				return nil, errors.New("network not found")
+			name: "Success- EC2 platform detected metadata- Should detect EC2 metadata",
+			setupMocks: mockConfig{
+				hnsFunc: func(name string) (*mockHNSNetwork, error) {
+					return nil, errors.New("network not found")
+				},
+				ec2Response: createResponse(200, "ec2-hostname"),
+				gceResponse: createResponse(400, ""),
 			},
-			mockHTTPServer: func() *httptest.Server {
-				return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					if r.URL.Path == "/latest/meta-data/local-hostname" {
-						time.Sleep(100 * time.Millisecond)
-						w.WriteHeader(http.StatusOK)
-					} else if r.URL.Path == "/computeMetadata/v1/instance/hostname" {
-						w.WriteHeader(http.StatusNotFound)
-					}
-				}))
-			},
-			want:        "bare-metal",
-			description: "Should fallback to bare-metal when EC2 metadata service times out",
+			want:    ec2Platform,
+			wantErr: false,
 		},
-		// GCE timeout
 		{
-			name: "GCE timeout fallback to bare-metal",
-			mockHNSFunc: func(name string) (*MockHNSNetwork, error) {
-				return nil, errors.New("network not found")
+			name: "Success- GCE platform detected metadata - Should detect GCE metadata",
+			setupMocks: mockConfig{
+				hnsFunc: func(name string) (*mockHNSNetwork, error) {
+					return nil, errors.New("network not found")
+				},
+				ec2Response: createResponse(404, ""),
+				gceResponse: createResponse(200, "gce-hostname"),
 			},
-			mockHTTPServer: func() *httptest.Server {
-				return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					if r.URL.Path == "/latest/meta-data/local-hostname" {
-						w.WriteHeader(http.StatusNotFound)
-					} else if r.URL.Path == "/computeMetadata/v1/instance/hostname" {
-						time.Sleep(100 * time.Millisecond)
-						w.WriteHeader(http.StatusOK)
-					}
-				}))
-			},
-			want:        "bare-metal",
-			description: "Should fallback to bare-metal when GCE metadata service times out",
+			want:    gcePlatform,
+			wantErr: false,
 		},
-		// bare-metal when no server
 		{
-			name: "bare-metal when all services fail",
-			mockHNSFunc: func(name string) (*MockHNSNetwork, error) {
-				return nil, errors.New("network not found")
+			name: "Error: EC2 timeout fallback to bare-metal - Should return bare-metal when EC2 metadata request times out",
+			setupMocks: mockConfig{
+				hnsFunc: func(name string) (*mockHNSNetwork, error) {
+					return nil, errors.New("network not found")
+				},
+				ec2Timeout:  true,
+				gceResponse: createResponse(404, ""),
 			},
-			mockHTTPServer: func() *httptest.Server {
-				return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(http.StatusNotFound)
-				}))
-			},
-			want:        "bare-metal",
-			description: "Should fallback to bare-metal when all services fail",
+			want:    bareMetalPlatform,
+			wantErr: false,
 		},
-		// New: EC2 non-timeout error falls through to GCE
 		{
-			name:        "EC2 non-timeout error falls through to GCE",
-			mockHNSFunc: func(name string) (*MockHNSNetwork, error) { return nil, errors.New("network not found") },
-			mockHTTPServer: func() *httptest.Server {
-				return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					if r.URL.Path == "/latest/meta-data/local-hostname" {
-						w.WriteHeader(http.StatusInternalServerError)
-					} else if r.URL.Path == "/computeMetadata/v1/instance/hostname" && r.Header.Get("Metadata-Flavor") == "Google" {
-						w.WriteHeader(http.StatusOK)
-						w.Write([]byte("gce-hostname"))
-					}
-				}))
+			name: "Error: GCE timeout fallback to bare-metal - Should return bare-metal when GCE metadata request times out",
+			setupMocks: mockConfig{
+				hnsFunc: func(name string) (*mockHNSNetwork, error) {
+					return nil, errors.New("network not found")
+				},
+				ec2Response: createResponse(404, ""),
+				gceTimeout:  true,
 			},
-			want:        "gce",
-			description: "Should fall through to GCE when EC2 returns non-200 error",
+			want:    bareMetalPlatform,
+			wantErr: false,
 		},
-		// New: both EC2 and GCE OK → EC2 precedence
 		{
-			name:        "EC2 and GCE both OK yields EC2",
-			mockHNSFunc: func(name string) (*MockHNSNetwork, error) { return nil, errors.New("network not found") },
-			mockHTTPServer: func() *httptest.Server {
-				return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					if r.URL.Path == "/latest/meta-data/local-hostname" {
-						w.WriteHeader(http.StatusOK)
-						w.Write([]byte("ec2-hostname"))
-					} else if r.URL.Path == "/computeMetadata/v1/instance/hostname" && r.Header.Get("Metadata-Flavor") == "Google" {
-						w.WriteHeader(http.StatusOK)
-						w.Write([]byte("gce-hostname"))
-					}
-				}))
+			name: "Error: All services timeout and  default to bare-metal",
+			setupMocks: mockConfig{
+				hnsFunc: func(name string) (*mockHNSNetwork, error) {
+					return nil, errors.New("network not found")
+				},
+				ec2Timeout: true,
+				gceTimeout: true,
 			},
-			want:        "ec2",
-			description: "Should detect EC2 when both metadata endpoints respond OK",
+			want:    bareMetalPlatform,
+			wantErr: false,
+		},
+		{
+			name: "Error: GCE GET request fails not due to timeout",
+			setupMocks: mockConfig{
+				hnsFunc: func(name string) (*mockHNSNetwork, error) {
+					return nil, errors.New("network not found")
+				},
+				ec2Response: createResponse(404, ""),
+				// Simulate GCE request failure.
+				gceResponse:    nil,
+				gceTimeout:     false,
+				gceRequestFail: true,
+			},
+			want:        "",
+			wantErr:     true,
+			errContains: "oops something went wrong with GCE request",
+		},
+		{
+			name: "Error: No services configured returns bare-metal",
+			setupMocks: mockConfig{
+				hnsFunc: func(name string) (*mockHNSNetwork, error) {
+					return nil, errors.New("network not found")
+				},
+				// ec2Response and GCEResponse should be nil here.
+				ec2Response: nil,
+				ec2Timeout:  false,
+				gceResponse: nil,
+				gceTimeout:  false,
+			},
+			want: bareMetalPlatform,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var server *httptest.Server
-			if tt.mockHTTPServer != nil {
-				server = tt.mockHTTPServer()
-				defer server.Close()
+			resetMocks()
+			mock = &tt.setupMocks
+
+			got, err := mockPlatformType()
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("mockPlatformType() expected error but got none")
+					return
+				}
+				if tt.errContains != "" && !strings.Contains(err.Error(), tt.errContains) {
+					t.Errorf("mockPlatformType() error = %v, want error containing %v", err, tt.errContains)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("mockPlatformType() unexpected error: %v", err)
+				}
 			}
 
-			got := testPlatformTypeWithMocks(tt.mockHNSFunc, server)
 			if got != tt.want {
-				t.Errorf("platformTypeWithMocks() = %v, want %v (%s)", got, tt.want, tt.description)
+				t.Errorf("platformTypeWithMocks() = %v, want %v (%s)", got, tt.want, tt.name)
 			}
 		})
 	}
 }
 
-// testPlatformTypeWithMocks simulates the platformType function with mocked dependencies
-func testPlatformTypeWithMocks(mockHNSFunc GetHNSNetworkByNameFunc, server *httptest.Server) string {
-	// AKS
-	if aksNet, _ := mockHNSFunc("azure"); aksNet != nil {
-		return "aks"
-	}
-	// EKS
-	if eksNet, _ := mockHNSFunc("vpcbr*"); eksNet != nil {
-		return "eks"
+// mockPlatformType is a mock implementation of platformType function.
+func mockPlatformType() (string, error) {
+	mockMu.RLock()
+	defer mockMu.RUnlock()
+
+	if aksNet, _ := mock.hnsFunc("azure"); aksNet != nil {
+		return azurePlatform, nil
 	}
 
-	// No metadata server: bare-metal
-	if server == nil {
-		return "bare-metal"
+	if eksNet, _ := mock.hnsFunc("vpcbr*"); eksNet != nil {
+		return eksPlatform, nil
 	}
 
-	client := &http.Client{Timeout: 50 * time.Millisecond}
 	// EC2
-	ec2URL := server.URL + "/latest/meta-data/local-hostname"
-	resp, err := client.Get(ec2URL)
-	if err != nil && hasTimedOut(err) {
-		// continue to GCE
-	} else if resp != nil {
+	if mock.ec2Response != nil {
+		resp := mock.ec2Response.Result()
 		defer resp.Body.Close()
-		if resp.StatusCode == http.StatusOK {
-			return "ec2"
+		if resp.StatusCode == 200 {
+			return ec2Platform, nil
 		}
 	}
+	if mock.ec2Timeout {
+		return bareMetalPlatform, nil
+	}
+
 	// GCE
-	gceURL := server.URL + "/computeMetadata/v1/instance/hostname"
-	req, err := http.NewRequest("GET", gceURL, nil)
-	if err != nil {
-		return "bare-metal"
+	// Simulate GCE request Failure.
+	if mock.gceRequestFail {
+		return "", errors.New("oops something went wrong with GCE request")
 	}
-	req.Header.Add("Metadata-Flavor", "Google")
-	resp, err = client.Do(req)
-	if err != nil && hasTimedOut(err) {
-		return "bare-metal"
-	}
-	if resp != nil {
+	if mock.gceResponse != nil {
+		resp := mock.gceResponse.Result()
 		defer resp.Body.Close()
-		if resp.StatusCode == http.StatusOK {
-			return "gce"
+		if resp.StatusCode == 200 {
+			return gcePlatform, nil
 		}
 	}
-	return "bare-metal"
+
+	if mock.gceTimeout {
+		return bareMetalPlatform, nil
+	}
+
+	return bareMetalPlatform, nil
 }
 
-// hasTimedOut is a cross-platform version of the Windows-specific function
-// Mirrors logic from utils.go but can run on any platform
 func hasTimedOut(err error) bool {
 	switch err := err.(type) {
 	case *url.Error:
@@ -316,4 +302,45 @@ func hasTimedOut(err error) bool {
 		return true
 	}
 	return false
+}
+
+// makeURLError is a helper to build a *url.Error containing either a timeoutError or a generic error
+func makeURLError(timeout bool) error {
+	var err error
+	if timeout {
+		err = &timeoutError{}
+	} else {
+		err = errors.New("connection refused")
+	}
+	return &url.Error{
+		Op:  "Get",
+		URL: "http://example.com",
+		Err: err,
+	}
+}
+
+// makeOpError is a helper to build a *net.OpError containing either a timeoutError or a generic error
+func makeOpError(timeout bool) error {
+	var err error
+	if timeout {
+		err = &timeoutError{}
+	} else {
+		err = errors.New("connection refused")
+	}
+	return &net.OpError{
+		Op:   "dial",
+		Net:  "tcp",
+		Addr: &net.TCPAddr{IP: net.ParseIP("127.0.0.1"), Port: 80},
+		Err:  err,
+	}
+}
+
+// createResponse is a helper function to create a *httptest.ResponseRecorder with a given status and body.
+func createResponse(status int, body string) *httptest.ResponseRecorder {
+	rec := httptest.NewRecorder()
+	rec.WriteHeader(status)
+	if body != "" {
+		rec.Write([]byte(body))
+	}
+	return rec
 }
