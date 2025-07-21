@@ -1,5 +1,5 @@
 charts:
-  - version: 1.17.401
+  - version: 1.17.600
     filename: /charts/rke2-cilium.yaml
     bootstrap: true
   - version: v3.30.2-build2025071100
@@ -14,7 +14,7 @@ charts:
   - version: 1.42.302
     filename: /charts/rke2-coredns.yaml
     bootstrap: true
-  - version: 4.12.400
+  - version: 4.12.401
     filename: /charts/rke2-ingress-nginx.yaml
     bootstrap: false
   - version: 34.2.002
