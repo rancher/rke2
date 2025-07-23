@@ -12,7 +12,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/util"
 	"github.com/k3s-io/k3s/pkg/version"
 	pkgerrors "github.com/pkg/errors"
-	"github.com/rancher/rke2/pkg/podexecutor"
+	"github.com/rancher/rke2/pkg/executor/staticpod"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -88,7 +88,7 @@ func watchForSelfDelete(ctx context.Context, dataDir string, client kubernetes.I
 // cleanupStaticPods deletes all the control-plane and etc static pod manifests.
 func cleanupStaticPods(dataDir string) error {
 	components := []string{"kube-apiserver", "kube-scheduler", "kube-controller-manager", "cloud-controller-manager", "etcd"}
-	manifestDir := podexecutor.PodManifestsDir(dataDir)
+	manifestDir := staticpod.PodManifestsDir(dataDir)
 	for _, component := range components {
 		manifestName := filepath.Join(manifestDir, component+".yaml")
 		if err := os.RemoveAll(manifestName); err != nil {

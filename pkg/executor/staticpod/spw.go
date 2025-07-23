@@ -1,4 +1,4 @@
-package podexecutor
+package staticpod
 
 import (
 	"context"
