@@ -6,6 +6,7 @@ import (
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/configfilearg"
+	rke2cli "github.com/rancher/rke2/pkg/cli"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/rancher/wrangler/v3/pkg/slice"
 	"github.com/sirupsen/logrus"
@@ -18,18 +19,16 @@ const (
 )
 
 var (
-	config = rke2.Config{}
-
 	CNIFlag = &cli.StringSliceFlag{
 		Name:        "cni",
-		Usage:       "(networking) CNI Plugins to deploy, one of none, " + strings.Join(rke2.CNIItems, ", ") + "; optionally with multus as the first value to enable the multus meta-plugin",
+		Usage:       "(networking) CNI Plugins to deploy, one of none, " + strings.Join(rke2cli.CNIItems, ", ") + "; optionally with multus as the first value to enable the multus meta-plugin",
 		EnvVars:     []string{"RKE2_CNI"},
 		Value:       cli.NewStringSlice("canal"),
 		Destination: &config.CNI,
 	}
 	IngressControllerFlag = &cli.StringSliceFlag{
 		Name:        "ingress-controller",
-		Usage:       "(networking) Ingress Controllers to deploy, one of none, " + strings.Join(rke2.IngressItems, ", ") + "; the first value will be set as the default ingress class",
+		Usage:       "(networking) Ingress Controllers to deploy, one of none, " + strings.Join(rke2cli.IngressItems, ", ") + "; the first value will be set as the default ingress class",
 		EnvVars:     []string{"RKE_INGRESS_CONTROLLER"},
 		Value:       cli.NewStringSlice("ingress-nginx"),
 		Destination: &config.IngressController,
@@ -96,7 +95,7 @@ var (
 		"kine-tls":                          dropFlag,
 		"default-local-storage-path":        dropFlag,
 		"disable": {
-			Usage: "(components) Do not deploy packaged components and delete any deployed components (valid items: " + strings.Join(rke2.DisableItems, ", ") + ")",
+			Usage: "(components) Do not deploy packaged components and delete any deployed components (valid items: " + strings.Join(rke2cli.DisableItems, ", ") + ")",
 		},
 		"disable-scheduler":                 copyFlag,
 		"disable-cloud-controller":          copyFlag,
@@ -196,7 +195,7 @@ func ServerRun(clx *cli.Context) error {
 
 // validateCNI validates the CNI selection, and disables any un-selected CNI charts
 func validateCNI(clx *cli.Context) {
-	disableExceptSelected(clx, rke2.CNIItems, CNIFlag, func(values []string) ([]string, error) {
+	disableExceptSelected(clx, rke2cli.CNIItems, CNIFlag, func(values []string) ([]string, error) {
 		switch len(values) {
 		case 0:
 			values = append(values, "canal")
@@ -221,7 +220,7 @@ func validateCNI(clx *cli.Context) {
 
 // validateCNI validates the ingress controller selection, and disables any un-selected ingress controller charts
 func validateIngress(clx *cli.Context) {
-	disableExceptSelected(clx, rke2.IngressItems, IngressControllerFlag, func(values []string) ([]string, error) {
+	disableExceptSelected(clx, rke2cli.IngressItems, IngressControllerFlag, func(values []string) ([]string, error) {
 		return values, nil
 	})
 }
