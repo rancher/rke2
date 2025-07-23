@@ -114,7 +114,7 @@ func Test_UnitPlatformType(t *testing.T) {
 				httpClient = &http.Client{
 					Transport: &mockRoundTripper{
 						responses: make(map[string]*http.Response),
-						errors:    make(map[string]error),
+						errors:    nil,
 					},
 				}
 			},
@@ -132,7 +132,7 @@ func Test_UnitPlatformType(t *testing.T) {
 				httpClient = &http.Client{
 					Transport: &mockRoundTripper{
 						responses: make(map[string]*http.Response),
-						errors:    make(map[string]error),
+						errors:    nil,
 					},
 				}
 			},
@@ -154,7 +154,7 @@ func Test_UnitPlatformType(t *testing.T) {
 								Header:     make(http.Header),
 							},
 						},
-						errors: make(map[string]error),
+						errors: nil,
 					},
 				}
 			},
@@ -181,7 +181,7 @@ func Test_UnitPlatformType(t *testing.T) {
 								Header:     make(http.Header),
 							},
 						},
-						errors: make(map[string]error),
+						errors: nil,
 					},
 				}
 			},
@@ -196,7 +196,7 @@ func Test_UnitPlatformType(t *testing.T) {
 				}
 				httpClient = &http.Client{
 					Transport: &mockRoundTripper{
-						responses: make(map[string]*http.Response),
+						responses: nil,
 						errors: map[string]error{
 							"http://169.254.169.254/latest/meta-data/local-hostname": context.DeadlineExceeded,
 						},
@@ -226,7 +226,7 @@ func Test_UnitPlatformType(t *testing.T) {
 								Header:     make(http.Header),
 							},
 						},
-						errors: make(map[string]error),
+						errors: nil,
 					},
 				}
 			},

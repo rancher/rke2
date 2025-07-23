@@ -43,7 +43,7 @@ func (d defaultNetworkProvider) GetHNSNetworkByName(name string) (*hcsshim.HNSNe
 
 var (
 	netProvider networkProvider = defaultNetworkProvider{}
-	httpClient  *http.Client    = &http.Client{}
+	httpClient  *http.Client    = http.DefaultClient
 )
 
 // createHnsNetwork creates the network that will connect nodes and returns its managementIP
