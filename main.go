@@ -22,6 +22,6 @@ func main() {
 	}
 
 	if err := app.Run(configfilearg.MustParse(os.Args)); err != nil {
-		logrus.Fatal(err)
+		logrus.Fatalf("Error: %v", err)
 	}
 }
