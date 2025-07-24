@@ -1,7 +1,7 @@
 //go:build linux
 // +build linux
 
-package podexecutor
+package staticpod
 
 import (
 	"os/exec"

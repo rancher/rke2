@@ -13,16 +13,18 @@ import (
 	"github.com/k3s-io/k3s/pkg/agent/config"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/cluster/managed"
+	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/etcd"
+	rke2cli "github.com/rancher/rke2/pkg/cli"
 	"github.com/rancher/rke2/pkg/cli/defaults"
+	"github.com/rancher/rke2/pkg/executor/pebinary"
 	"github.com/rancher/rke2/pkg/images"
-	"github.com/rancher/rke2/pkg/pebinaryexecutor"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/sys/windows"
 )
 
-func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*pebinaryexecutor.PEBinaryConfig, error) {
+func initExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) (executor.Executor, error) {
 	// This flag will only be set on servers, on agents this is a no-op and the
 	// resolver's default registry will get updated later when bootstrapping
 	cfg.Images.SystemDefaultRegistry = clx.String("system-default-registry")
@@ -47,7 +49,7 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*pebinaryexecuto
 		}
 		cmds.ServerConfig.DisableCCM = true
 	}
-	var cpConfig *pebinaryexecutor.CloudProviderConfig
+	var cpConfig *pebinary.CloudProviderConfig
 	if cfg.CloudProviderConfig != "" && cfg.CloudProviderName == "" {
 		return nil, fmt.Errorf("--cloud-provider-config requires --cloud-provider-name to be provided")
 	}
@@ -57,7 +59,7 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*pebinaryexecuto
 			cfg.CloudProviderMetadataHostname = true
 			cfg.CloudProviderName = ""
 		} else {
-			cpConfig = &pebinaryexecutor.CloudProviderConfig{
+			cpConfig = &pebinary.CloudProviderConfig{
 				Name: cfg.CloudProviderName,
 				Path: cfg.CloudProviderConfig,
 			}
@@ -87,7 +89,7 @@ func initExecutor(clx *cli.Context, cfg Config, isServer bool) (*pebinaryexecuto
 		ingressControllerName = cfg.IngressController.Value()[0]
 	}
 
-	return &pebinaryexecutor.PEBinaryConfig{
+	return &pebinary.PEBinaryConfig{
 		Resolver:          resolver,
 		ImagesDir:         agentImagesDir,
 		ManifestsDir:      agentManifestsDir,

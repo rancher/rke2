@@ -1,7 +1,7 @@
 //go:build windows
 // +build windows
 
-package pebinaryexecutor
+package pebinary
 
 import (
 	"context"
@@ -65,6 +65,9 @@ type PEBinaryConfig struct {
 	apiServerReady <-chan struct{}
 	criReady       chan struct{}
 }
+
+// explicit interface check
+var _ executor.Executor = &PEBinaryConfig{}
 
 type CloudProviderConfig struct {
 	Name string
