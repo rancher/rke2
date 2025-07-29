@@ -51,6 +51,10 @@ build-windows-images:                     ## Build only the Windows images and t
 build-image-runtime:                      ## Build the runtime image
 	./scripts/build-image-runtime
 
+.PHONY: build-image-supervisor
+build-image-supervisor:
+	./scripts/build-image-supervisor
+
 .PHONY: publish-image-runtime
 publish-image-runtime:
 	./scripts/publish-image-runtime
