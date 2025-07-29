@@ -144,6 +144,19 @@ LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-runtim
 LABEL org.opencontainers.image.source="https://github.com/rancher/rke2"
 COPY --from=runtime-collect / /
 
+FROM library/busybox:1.37.0 AS supervisor
+LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-supervisor"
+LABEL org.opencontainers.image.source="https://github.com/rancher/rke2"
+VOLUME /var/lib/rancher/rke2/server/manifests
+VOLUME /etc/rancher/rke2
+COPY --from=charts /charts /var/lib/rancher/rke2/data/0000000000000000000000000000000000000000000000000000000000000000/charts
+COPY --from=kubernetes /usr/local/bin/kubectl /var/lib/rancher/rke2/data/0000000000000000000000000000000000000000000000000000000000000000/bin/kubectl
+COPY --from=kubernetes /usr/share/zoneinfo /usr/share
+COPY bin/rke2 /bin/
+ENV PATH=/bin:/var/lib/rancher/rke2/data/0000000000000000000000000000000000000000000000000000000000000000/bin
+ENTRYPOINT ["/bin/rke2"]
+CMD ["server", "--disable-agent"]
+
 FROM ubuntu:24.04 AS test
 ARG TARGETARCH
 VOLUME /var/lib/rancher/rke2
