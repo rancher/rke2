@@ -27,6 +27,7 @@ import (
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/executor/hosted"
 	"github.com/rancher/rke2/pkg/executor/staticpod"
+	"github.com/rancher/rke2/pkg/hardening/profile"
 	"github.com/rancher/rke2/pkg/podtemplate"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -89,10 +90,12 @@ func initHostedExecutor(clx *cli.Context, cfg rke2cli.Config) (executor.Executor
 		return nil, pkgerrors.WithMessage(err, "failed to parse pod template config")
 	}
 
+	profileMode := profile.FromString(clx.String("profile"))
+
 	// Adding PSAs
 	podSecurityConfigFile := clx.String("pod-security-admission-config-file")
 	if podSecurityConfigFile == "" {
-		if err := setPSAs(isCISMode(clx)); err != nil {
+		if err := setPSAs(profileMode.IsCISMode()); err != nil {
 			return nil, err
 		}
 		podSecurityConfigFile = defaultPSAConfigFile
@@ -112,7 +115,7 @@ func initHostedExecutor(clx *cli.Context, cfg rke2cli.Config) (executor.Executor
 		Config:            *templateConfig,
 		Name:              clusterName,
 		Domain:            domain,
-		ProfileMode:       profileMode(clx),
+		ProfileMode:       profileMode,
 		KubeConfig:        os.Getenv("KUBECONFIG"),
 		AuditPolicyFile:   clx.String("audit-policy-file"),
 		PSAConfigFile:     podSecurityConfigFile,
@@ -220,10 +223,12 @@ func initStaticPodExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) 
 		return nil, pkgerrors.WithMessage(err, "failed to parse pod template config")
 	}
 
+	profileMode := profile.FromString(clx.String("profile"))
+
 	// Adding PSAs
 	podSecurityConfigFile := clx.String("pod-security-admission-config-file")
 	if podSecurityConfigFile == "" {
-		if err := setPSAs(isCISMode(clx)); err != nil {
+		if err := setPSAs(profileMode.IsCISMode()); err != nil {
 			return nil, err
 		}
 		podSecurityConfigFile = defaultPSAConfigFile
@@ -254,7 +259,7 @@ func initStaticPodExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) 
 	return &staticpod.StaticPodConfig{
 		Config:            *templateConfig,
 		ManifestsDir:      agentManifestsDir,
-		ProfileMode:       profileMode(clx),
+		ProfileMode:       profileMode,
 		CloudProvider:     cpConfig,
 		AuditPolicyFile:   clx.String("audit-policy-file"),
 		PSAConfigFile:     podSecurityConfigFile,

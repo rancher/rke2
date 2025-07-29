@@ -26,6 +26,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/util"
 	"github.com/rancher/rke2/pkg/bootstrap"
+	"github.com/rancher/rke2/pkg/hardening/profile"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/logging"
 	win "github.com/rancher/rke2/pkg/windows"
@@ -59,7 +60,7 @@ type PEBinaryConfig struct {
 	ImagesDir           string
 	KubeConfigKubeProxy string
 	IngressController   string
-	CISMode             bool
+	ProfileMode         profile.Mode
 	DisableETCD         bool
 	IsServer            bool
 

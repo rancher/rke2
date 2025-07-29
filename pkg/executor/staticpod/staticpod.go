@@ -33,6 +33,7 @@ import (
 	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/auth"
 	"github.com/rancher/rke2/pkg/bootstrap"
+	"github.com/rancher/rke2/pkg/hardening/profile"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/logging"
 	"github.com/rancher/rke2/pkg/podtemplate"
@@ -57,7 +58,7 @@ type StaticPodConfig struct {
 	AuditPolicyFile   string
 	PSAConfigFile     string
 	KubeletPath       string
-	ProfileMode       ProfileMode
+	ProfileMode       profile.Mode
 	DisableETCD       bool
 	ExternalDatabase  bool
 	IsServer          bool
@@ -215,7 +216,7 @@ func (s *StaticPodConfig) APIServer(_ context.Context, args []string) error {
 		args = append([]string{"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}, args...)
 	}
 
-	if s.ProfileMode.isCISMode() && s.AuditPolicyFile == "" {
+	if s.ProfileMode.IsCISMode() && s.AuditPolicyFile == "" {
 		s.AuditPolicyFile = podtemplate.DefaultAuditPolicyFile
 	}
 
@@ -420,7 +421,7 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, wg *sync.WaitGroup, args *ex
 	}
 	podSpec.HostNetwork = true
 
-	if s.ProfileMode.isAnyMode() {
+	if s.ProfileMode.IsAnyMode() {
 		etcdUser, err := user.Lookup("etcd")
 		if err != nil {
 			return err
@@ -610,7 +611,7 @@ func (s *StaticPodConfig) writeTemplate(spec *podtemplate.Spec) error {
 	if err != nil {
 		return err
 	}
-	if s.ProfileMode.isAnyMode() {
+	if s.ProfileMode.IsAnyMode() {
 		return writeFile(manifestPath, b, 0600)
 	}
 	return writeFile(manifestPath, b, 0644)

@@ -20,7 +20,7 @@ import (
 	"github.com/rancher/rke2/pkg/auth"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/controllers"
-	"github.com/rancher/rke2/pkg/executor/staticpod"
+	"github.com/rancher/rke2/pkg/hardening/profile"
 	"github.com/rancher/rke2/pkg/podtemplate"
 	"github.com/rancher/wrangler/v3/pkg/apply"
 	"github.com/rancher/wrangler/v3/pkg/leader"
@@ -48,7 +48,7 @@ type HostedConfig struct {
 	AuditPolicyFile   string
 	PSAConfigFile     string
 
-	ProfileMode staticpod.ProfileMode
+	ProfileMode profile.Mode
 	KubeConfig  string
 	Name        string
 	Domain      string
@@ -150,7 +150,7 @@ func (h *HostedConfig) APIServer(ctx context.Context, args []string) error {
 		args = append([]string{"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}, args...)
 	}
 
-	if h.ProfileMode == staticpod.ProfileModeETCD && h.AuditPolicyFile == "" {
+	if h.ProfileMode.IsCISMode() && h.AuditPolicyFile == "" {
 		h.AuditPolicyFile = podtemplate.DefaultAuditPolicyFile
 	}
 

@@ -18,17 +18,11 @@ import (
 	rke2cli "github.com/rancher/rke2/pkg/cli"
 	"github.com/rancher/rke2/pkg/controllers"
 	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
-	"github.com/rancher/rke2/pkg/executor/staticpod"
+	"github.com/rancher/rke2/pkg/hardening/profile"
 	"github.com/rancher/wrangler/v3/pkg/slice"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
-// Valid CIS Profile versions
-const (
-	ProfileCIS  = "cis"
-	ProfileETCD = "etcd"
 )
 
 func Server(clx *cli.Context, cfg rke2cli.Config) error {
@@ -53,7 +47,7 @@ func Server(clx *cli.Context, cfg rke2cli.Config) error {
 			return err
 		}
 	}
-	cisMode := isCISMode(clx)
+	cisMode := profile.FromString(clx.String("profile")).IsCISMode()
 	defaultNamespaces := []string{
 		metav1.NamespaceSystem,
 		metav1.NamespaceDefault,
@@ -122,22 +116,6 @@ func ForceRestartFile(dataDir string) string {
 
 func etcdNameFile(dataDir string) string {
 	return filepath.Join(dataDir, "server", "db", "etcd", "name")
-}
-
-func isCISMode(clx *cli.Context) bool {
-	profile := clx.String("profile")
-	return profile == ProfileCIS
-}
-
-func profileMode(clx *cli.Context) staticpod.ProfileMode {
-	switch clx.String("profile") {
-	case ProfileCIS:
-		return staticpod.ProfileModeCIS
-	case ProfileETCD:
-		return staticpod.ProfileModeETCD
-	default:
-		return staticpod.ProfileModeNone
-	}
 }
 
 func hostnameFromMetadataEndpoint(ctx context.Context) string {
