@@ -399,8 +399,8 @@ jobs:
           release generate rancher artifacts-index --write-path . --ignore-versions v2.6.4
       - name: Upload prime ribs index
         run: |
-          aws s3 cp index.html s3://prime-artifacts/index.html
-          aws s3 cp index-prerelease.html s3://prime-artifacts/index-prerelease.html
+          aws s3 cp index.html s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/index.html
+          aws s3 cp index-prerelease.html s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/index-prerelease.html
       - name: Invalidate cloudfront cache
         run: |
           aws cloudfront create-invalidation --distribution-id ${{ env.PRIME_ARTIFACTS_DISTRIBUTION_ID }} --paths "/*"
