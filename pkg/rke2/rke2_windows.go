@@ -18,6 +18,7 @@ import (
 	rke2cli "github.com/rancher/rke2/pkg/cli"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/executor/pebinary"
+	"github.com/rancher/rke2/pkg/hardening/profile"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -80,6 +81,8 @@ func initExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) (executor
 		}
 	}
 
+	profileMode := profile.FromString(clx.String("profile"))
+
 	if cfg.KubeletPath == "" {
 		cfg.KubeletPath = "kubelet"
 	}
@@ -93,7 +96,7 @@ func initExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) (executor
 		Resolver:          resolver,
 		ImagesDir:         agentImagesDir,
 		ManifestsDir:      agentManifestsDir,
-		CISMode:           isCISMode(clx),
+		ProfileMode:       profileMode,
 		CloudProvider:     cpConfig,
 		DataDir:           dataDir,
 		AuditPolicyFile:   clx.String("audit-policy-file"),

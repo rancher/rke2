@@ -12,7 +12,6 @@ docker buildx build ${IID_FILE_FLAG} \
     --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
     --build-arg MAJOR=${VERSION_MAJOR} \
     --build-arg MINOR=${VERSION_MINOR} \
-    --build-arg CACHEBUST="$(date +%s%N)" \
     --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
     --target windows-runtime \
     --file Dockerfile.windows \
