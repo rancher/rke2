@@ -13,7 +13,7 @@ EOF
 
 xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
-    ${REGISTRY}/rancher/hardened-coredns:v1.12.2-build20250611
+    ${REGISTRY}/rancher/hardened-coredns:v1.12.3-build20250806
     ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.10.2-build20250611
     ${REGISTRY}/rancher/hardened-dns-node-cache:1.26.0-build20250611
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20250612
