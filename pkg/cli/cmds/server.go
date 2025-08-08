@@ -170,6 +170,7 @@ var (
 		"etcd-s3-session-token":             copyFlag,
 		"etcd-s3-skip-ssl-verify":           copyFlag,
 		"etcd-s3-timeout":                   copyFlag,
+		"etcd-s3-retention":                 copyFlag,
 		"disable-helm-controller":           dropFlag,
 		"helm-job-image":                    copyFlag,
 		"enable-pprof":                      copyFlag,
