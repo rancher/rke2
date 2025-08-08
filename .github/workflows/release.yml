@@ -40,8 +40,6 @@ jobs:
       uses: rancher-eio/read-vault-secrets@main
       with:
         secrets: |
-          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials username | DOCKER_USERNAME ;
-          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials password | DOCKER_PASSWORD ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD
@@ -73,9 +71,8 @@ jobs:
         tag: ${{ github.ref_name }}
         make-target: publish-image-runtime
 
-        public-repo: rancher
-        public-username: ${{ env.DOCKER_USERNAME }}
-        public-password: ${{ env.DOCKER_PASSWORD }}
+        push-to-public: false
+        push-to-prime: true
 
         prime-repo: rancher
         prime-registry: ${{ env.PRIME_REGISTRY }}
@@ -92,9 +89,8 @@ jobs:
         tag: ${{ github.ref_name }}
         make-target: publish-image-runtime-windows
 
-        public-repo: rancher
-        public-username: ${{ env.DOCKER_USERNAME }}
-        public-password: ${{ env.DOCKER_PASSWORD }}
+        push-to-public: false
+        push-to-prime: true
 
         prime-repo: rancher
         prime-registry: ${{ env.PRIME_REGISTRY }}
@@ -109,11 +105,16 @@ jobs:
       run: |
         GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make checksum
 
-    - name: Publish Artifacts
-      run: |
-        dapper -f Dockerfile --target dapper make publish-binary
-      env:
-        GH_TOKEN: ${{ github.token }}
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: rke2-artifacts-amd64
+        path: |
+          dist/artifacts/*.txt
+          dist/artifacts/rke2.*
+          dist/artifacts/*.exe
+        if-no-files-found: error
+
   release-arm64:
     runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64,hdd=256
     steps:
@@ -137,8 +138,6 @@ jobs:
       uses: rancher-eio/read-vault-secrets@main
       with:
         secrets: |
-          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials username | DOCKER_USERNAME ;
-          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials password | DOCKER_PASSWORD ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD ;
@@ -162,9 +161,8 @@ jobs:
         tag: ${{ github.ref_name }}
         make-target: publish-image-runtime
 
-        public-repo: rancher
-        public-username: ${{ env.DOCKER_USERNAME }}
-        public-password: ${{ env.DOCKER_PASSWORD }}
+        push-to-public: false
+        push-to-prime: true
 
         prime-repo: rancher
         prime-registry: ${{ env.PRIME_REGISTRY }}
@@ -175,11 +173,15 @@ jobs:
       run: |
         GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make checksum
 
-    - name: Publish Artifacts
-      run: |
-        dapper -f Dockerfile --target dapper make publish-binary
-      env:
-        GH_TOKEN: ${{ github.token }}
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: rke2-artifacts-arm64
+        path: |
+          dist/artifacts/*.txt
+          dist/artifacts/rke2.*
+        if-no-files-found: error
+
   manifest:
     needs: [release-amd64, release-arm64]
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
@@ -196,8 +198,6 @@ jobs:
       uses: rancher-eio/read-vault-secrets@main
       with:
         secrets: |
-          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials username | DOCKER_USERNAME ;
-          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials password | DOCKER_PASSWORD ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD ;
@@ -212,60 +212,14 @@ jobs:
         tag: ${{ github.ref_name }}
         make-target: publish-manifest-runtime
 
-        public-repo: rancher
-        public-username: ${{ env.DOCKER_USERNAME }}
-        public-password: ${{ env.DOCKER_PASSWORD }}
+        push-to-public: false
+        push-to-prime: true
 
         prime-repo: rancher
         prime-registry: ${{ env.PRIME_REGISTRY }}
         prime-username: ${{ env.PRIME_REGISTRY_USERNAME }}
         prime-password: ${{ env.PRIME_REGISTRY_PASSWORD }}
 
-  release-downstream-components:
-    name: "Release downstream components"
-    needs: [release-amd64, release-arm64]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-    - name: "Read Secrets"
-      uses: rancher-eio/read-vault-secrets@main
-      with:
-        secrets: |
-          secret/data/github/repo/${{ github.repository }}/github/app-credentials appId | APP_ID ;
-          secret/data/github/repo/${{ github.repository }}/github/app-credentials privateKey | PRIVATE_KEY
-
-    - name: Generate GitHub App token
-      id: generate-token
-      uses: actions/create-github-app-token@v1
-      with:
-        app-id: ${{ env.APP_ID }}
-        private-key: ${{ env.PRIVATE_KEY }}
-        owner: rancher
-        repositories: |
-          rke2-upgrade
-          system-agent-installer-rke2
-
-    - name: Create release in `rancher/rke2-upgrade`
-      env:
-        GH_TOKEN: ${{ steps.generate-token.outputs.token }}
-      run: |
-        gh release create "$GITHUB_ACTION_TAG" \
-          --repo rancher/rke2-upgrade \
-          --title "$GITHUB_ACTION_TAG" \
-          --latest="false" \
-          --notes "Automated release created from $GITHUB_ACTION_TAG tag in ${{ github.repository }}"
-
-    - name: Create release in `rancher/system-agent-installer-rke2`
-      env:
-        GH_TOKEN: ${{ steps.generate-token.outputs.token }}
-      run: |
-        gh release create "$GITHUB_ACTION_TAG" \
-          --repo rancher/system-agent-installer-rke2 \
-          --title "$GITHUB_ACTION_TAG" \
-          --latest="false" \
-          --notes "Automated release created from $GITHUB_ACTION_TAG tag in ${{ github.repository }}"
   sync-prime-images:
     name: "Sync Prime images"
     needs: [release-amd64, release-arm64, manifest]
@@ -292,8 +246,11 @@ jobs:
           username: ${{ env.PRIME_REGISTRY_USERNAME }}
           password: ${{ env.PRIME_REGISTRY_PASSWORD }}
       - name: Download image lists
-        run: |
-          gh release download ${{ env.GITHUB_ACTION_TAG }} --repo ${{ github.repository }} --pattern '*.txt'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: rke2-artifacts-*
+          merge-multiple: true
+          path: .
       - name: Sync images
         run: |
           ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images-all.linux-amd64.txt
@@ -358,8 +315,10 @@ jobs:
         run: |
           docker pull "${REGISTRY}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
       - name: Download Binaries
-        run: |
-          gh release download "$TAG" --repo "${{ github.repository }}" --dir ./dist/artifacts -p "rke2.*" -p "*.exe"
+        uses: actions/download-artifact@v4
+        with:
+          name: rke2-artifacts-${{ matrix.arch }}
+          path: ./dist/artifacts
       - name: Package Images
         env:
           REGISTRY: ${{ env.PRIME_REGISTRY }}
