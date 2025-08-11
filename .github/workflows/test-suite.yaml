@@ -83,7 +83,7 @@ jobs:
       run: |
         mkdir -p ./bin ./build/images
     - name: Download RKE2 Binary and Runtime Image
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: rke2-test-artifacts
         path: ./build/images
@@ -123,7 +123,7 @@ jobs:
       - name: Install Go
         uses: ./.github/actions/setup-go
       - name: Download RKE2 Binary and Runtime Image
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: rke2-test-artifacts
           path: ./artifacts
@@ -160,7 +160,7 @@ jobs:
       - name: Install Go
         uses: ./.github/actions/setup-go
       - name: Download RKE2 Binary and Runtime Image
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: rke2-test-artifacts
           path: ./artifacts
@@ -219,7 +219,7 @@ jobs:
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
     - name: Download RKE2 Binary and Runtime Image
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: rke2-test-artifacts
         path: ./artifacts
