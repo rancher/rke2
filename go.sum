@@ -604,8 +604,8 @@ github.com/dgraph-io/ristretto v0.0.2/go.mod h1:KPxhHT9ZxKefz+PCeOGsrHpl1qZ7i70d
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-gk v0.0.0-20140819190930-201884a44051/go.mod h1:qm+vckxRlDt0aOla0RYJJVeqHZlWfOm2UIxHaqPB46E=
 github.com/dimchansky/utfbom v1.1.0/go.mod h1:rO41eb7gLfo8SF1jd9F8HplJm1Fewwi4mQvIirEdv+8=
-github.com/distribution/reference v0.5.0 h1:/FUIFXtfc/x2gpa5/VGfiGLuOIdYa1t65IKK2OFGvA0=
-github.com/distribution/reference v0.5.0/go.mod h1:BbU0aIcezP1/5jX/8MP0YiH4SdvB5Y4f/wlDRiLyi3E=
+github.com/distribution/reference v0.6.0 h1:0IXCQ5g4/QMHHkarYzh5l+u8T3t73zM5QvfrDyIgxBk=
+github.com/distribution/reference v0.6.0/go.mod h1:BbU0aIcezP1/5jX/8MP0YiH4SdvB5Y4f/wlDRiLyi3E=
 github.com/docker/cli v27.5.0+incompatible h1:aMphQkcGtpHixwwhAXJT1rrK/detk2JIvDaFkLctbGM=
 github.com/docker/cli v27.5.0+incompatible/go.mod h1:JLrzqnKDaYBop7H2jaqPtU4hHvMKP+vjCwu2uszcLI8=
 github.com/docker/distribution v2.8.3+incompatible h1:AtKxIZ36LoNK51+Z6RpzLpddBirtxJnzDrHLEKxTAYk=
@@ -1219,8 +1219,8 @@ github.com/k3s-io/cadvisor v0.52.1 h1:KeeADD5no2159ICWnTRTJfExlNbVfhqbo9ohixQ74G
 github.com/k3s-io/cadvisor v0.52.1/go.mod h1:OAhPcx1nOm5YwMh/JhpUOMKyv1YKLRtS9KgzWPndHmA=
 github.com/k3s-io/containerd/v2 v2.0.5-k3s2 h1:LQnClzWjDWyMBoJwnqYYor6h5uxUtC8MTMUPsnKjA50=
 github.com/k3s-io/containerd/v2 v2.0.5-k3s2/go.mod h1:8dzNB8eVPdY7/UNM3xZ9FIFjqvNHd092sCMqi6xg2Ck=
-github.com/k3s-io/cri-dockerd v0.3.17-k3s1 h1:z4BuruxM3kqlWxUaA6OlIlyQ8telEUxGy6Q78EaRfjk=
-github.com/k3s-io/cri-dockerd v0.3.17-k3s1/go.mod h1:4yt/MGrotvdjND8/THCHWLMujHh7TrCHJ77MxlmyFpE=
+github.com/k3s-io/cri-dockerd v0.3.19-k3s1 h1:i8jkI/n3A+hXitJ+4ielNIFB/MEjI+4qH9xJn6qRZ4E=
+github.com/k3s-io/cri-dockerd v0.3.19-k3s1/go.mod h1:4yt/MGrotvdjND8/THCHWLMujHh7TrCHJ77MxlmyFpE=
 github.com/k3s-io/etcd/api/v3 v3.5.21-k3s1 h1:iXBMuGT7PbQumlc9R5JOFQ+SgmGaH3dF35ZpO7e3XeA=
 github.com/k3s-io/etcd/api/v3 v3.5.21-k3s1/go.mod h1:c3aH5wcvXv/9dqIw2Y810LDXJfhSYdHQ0vxmP3CCHVY=
 github.com/k3s-io/etcd/client/pkg/v3 v3.5.21-k3s1 h1:iiDvDfnWCFUXjnwSdUigdmO4U/wk+Ac02RRvow6C1Xs=
@@ -1239,8 +1239,8 @@ github.com/k3s-io/etcd/server/v3 v3.5.21-k3s1 h1:N7yuD8/WUf7oEOu4nlXbsoSTvF5yPMM
 github.com/k3s-io/etcd/server/v3 v3.5.21-k3s1/go.mod h1:G1mOzdwuzKT1VRL7SqRchli/qcFrtLBTAQ4lV20sXXo=
 github.com/k3s-io/helm-controller v0.16.13 h1:jMD5lI4Mzo9uclZjLgJ8Yak6wSnXaL/tuTU+dEEx69Q=
 github.com/k3s-io/helm-controller v0.16.13/go.mod h1:mw6sVaH/eli+81sUnRqRYh5wV7YVzYp+U7OucLT5kUc=
-github.com/k3s-io/k3s v1.33.0-rc1.0.20250806161551-ff6abe8a845f h1:NLJhYYTEwcxUyvoFXouAA29wBWmqgrrXvScQsUDRXdE=
-github.com/k3s-io/k3s v1.33.0-rc1.0.20250806161551-ff6abe8a845f/go.mod h1:thIdAdUIuAd52hUScba+sjGvMLcy3szioq9bGWtFhUw=
+github.com/k3s-io/k3s v1.33.0-rc1.0.20250812185615-3d4c2cf2cfd9 h1:B3di3xNjNQbsxuC5xqbTVH7/NnVcfyD3Do2lJAo46sU=
+github.com/k3s-io/k3s v1.33.0-rc1.0.20250812185615-3d4c2cf2cfd9/go.mod h1:thIdAdUIuAd52hUScba+sjGvMLcy3szioq9bGWtFhUw=
 github.com/k3s-io/kine v0.13.17 h1:P2pInxDHWHGleL0hmZGcreaJufqZ9Wqkaof6X1XOteo=
 github.com/k3s-io/kine v0.13.17/go.mod h1:FswGrgQMNPyyHX3e6ct1PEdlJ1ug6h5JrKKL9Cg9XTg=
 github.com/k3s-io/klog v1.0.0-k3s2/go.mod h1:4Bi6QPql/J/LkTDqv7R/cd3hPo4k2DG6Ptcz060Ez5I=

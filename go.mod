@@ -4,10 +4,9 @@ go 1.24.4
 
 replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.12.9
-	github.com/Mirantis/cri-dockerd => github.com/k3s-io/cri-dockerd v0.3.17-k3s1
+	github.com/Mirantis/cri-dockerd => github.com/k3s-io/cri-dockerd v0.3.19-k3s1
 	github.com/cloudnativelabs/kube-router/v2 => github.com/k3s-io/kube-router/v2 v2.5.0
 	github.com/containerd/containerd/v2 => github.com/k3s-io/containerd/v2 v2.0.5-k3s2
-	github.com/distribution/reference => github.com/distribution/reference v0.5.0
 	github.com/docker/distribution => github.com/docker/distribution v2.8.3+incompatible
 	github.com/docker/docker => github.com/docker/docker v25.0.8+incompatible
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.4
@@ -78,7 +77,7 @@ require (
 	github.com/google/go-containerregistry v0.20.3
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.13
-	github.com/k3s-io/k3s v1.33.0-rc1.0.20250806161551-ff6abe8a845f // master
+	github.com/k3s-io/k3s v1.33.0-rc1.0.20250812185615-3d4c2cf2cfd9 // master
 	github.com/k3s-io/kine v0.13.17
 	github.com/libp2p/go-netroute v0.2.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
