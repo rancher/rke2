@@ -115,11 +115,9 @@ uninstall_remove_files()
     $transactional_update rm -f -- "${INSTALL_RKE2_ROOT}/bin/rke2"
     $transactional_update rm -f -- "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
     $transactional_update rm -rf -- "${INSTALL_RKE2_ROOT}/share/rke2"
-    rm -rf /etc/rancher/rke2
-    rm -rf /etc/rancher/node
+
+    rm -rf /etc/rancher/rke2 /etc/rancher/node /etc/cni /opt/cni/bin /var/lib/cni/ /var/log/pods/ /var/log/containers /var/log/calico
     rm -d /etc/rancher || true
-    rm -rf /etc/cni
-    rm -rf /opt/cni/bin
     rm --one-file-system -rf /var/lib/kubelet || true
     rm -rf -- "${RKE2_DATA_DIR}" || error "Failed to remove ${RKE2_DATA_DIR}"
     rm -d /var/lib/rancher || true
