@@ -383,17 +383,17 @@ jobs:
       - name: Checksum Artifacts
         run: |
           dapper -f Dockerfile --target dapper make checksum
+      - name: Configure Prime Artifact Uploader AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
       - name: Upload Artifacts
         env:
           S3_PATH: s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/rke2/${{ env.TAG }}
         run: |
           aws s3 sync ./dist/artifacts "$S3_PATH" --quiet --no-progress
-      - name: Configure Cache Invalidation AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID_CACHE_INVALIDATION }}
-          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY_CACHE_INVALIDATION }}
-          aws-region: us-east-1
       - name: Generate prime ribs index
         run: |
           ECM_AUTH_CONFIG=$(release config gen | jq '.auth | .aws_access_key_id |= "${{ env.AWS_ACCESS_KEY_ID }}" | .aws_secret_access_key |= "${{ env.AWS_SECRET_ACCESS_KEY }}" | .aws_session_token |= "" | .aws_default_region |= "${{ env.AWS_DEFAULT_REGION }}"')
@@ -403,6 +403,12 @@ jobs:
         run: |
           aws s3 cp index.html s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/index.html
           aws s3 cp index-prerelease.html s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/index-prerelease.html
+      - name: Configure Cache Invalidation AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID_CACHE_INVALIDATION }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY_CACHE_INVALIDATION }}
+          aws-region: us-east-1
       - name: Invalidate cloudfront cache
         run: |
           aws cloudfront create-invalidation --distribution-id ${{ env.PRIME_ARTIFACTS_DISTRIBUTION_ID }} --paths "/*"
