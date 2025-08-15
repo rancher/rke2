@@ -80,7 +80,7 @@ require (
 	github.com/google/go-containerregistry v0.20.2
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.13
-	github.com/k3s-io/k3s v1.32.8-0.20250812202818-2378be825547 // release-v1.32
+	github.com/k3s-io/k3s v1.32.8-rc1.0.20250814215348-fe896f7e7cf8 // release-v1.32
 	github.com/k3s-io/kine v0.13.17
 	github.com/libp2p/go-netroute v0.2.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
@@ -97,14 +97,14 @@ require (
 	golang.org/x/sync v0.13.0
 	golang.org/x/sys v0.32.0
 	google.golang.org/grpc v1.73.0
-	k8s.io/api v0.32.7
-	k8s.io/apimachinery v0.32.7
-	k8s.io/apiserver v0.32.7
+	k8s.io/api v0.32.8
+	k8s.io/apimachinery v0.32.8
+	k8s.io/apiserver v0.32.8
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/component-base v0.32.7
-	k8s.io/cri-api v0.32.7
+	k8s.io/component-base v0.32.8
+	k8s.io/cri-api v0.32.8
 	k8s.io/klog/v2 v2.130.1
-	k8s.io/kubernetes v1.32.7
+	k8s.io/kubernetes v1.32.8
 	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738
 	sigs.k8s.io/yaml v1.4.0
 )
@@ -404,25 +404,25 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.32.6 // indirect
-	k8s.io/cli-runtime v0.32.7 // indirect
-	k8s.io/cloud-provider v0.32.7 // indirect
+	k8s.io/cli-runtime v0.32.8 // indirect
+	k8s.io/cloud-provider v0.32.8 // indirect
 	k8s.io/cluster-bootstrap v0.0.0 // indirect
-	k8s.io/component-helpers v0.32.7 // indirect
+	k8s.io/component-helpers v0.32.8 // indirect
 	k8s.io/controller-manager v0.27.10 // indirect
-	k8s.io/cri-client v0.32.7 // indirect
+	k8s.io/cri-client v0.32.8 // indirect
 	k8s.io/csi-translation-lib v0.0.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
 	k8s.io/endpointslice v0.0.0 // indirect
 	k8s.io/kms v0.27.10 // indirect
-	k8s.io/kube-aggregator v0.32.7 // indirect
+	k8s.io/kube-aggregator v0.32.8 // indirect
 	k8s.io/kube-controller-manager v0.0.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff // indirect
 	k8s.io/kube-proxy v0.0.0 // indirect
 	k8s.io/kube-scheduler v0.0.0 // indirect
-	k8s.io/kubectl v0.32.7 // indirect
-	k8s.io/kubelet v0.32.7 // indirect
+	k8s.io/kubectl v0.32.8 // indirect
+	k8s.io/kubelet v0.32.8 // indirect
 	k8s.io/metrics v0.0.0 // indirect
-	k8s.io/mount-utils v0.32.7 // indirect
+	k8s.io/mount-utils v0.32.8 // indirect
 	k8s.io/pod-security-admission v0.0.0 // indirect
 	lukechampine.com/blake3 v1.4.0 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.31.0 // indirect
