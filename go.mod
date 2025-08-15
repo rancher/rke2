@@ -80,7 +80,7 @@ require (
 	github.com/google/go-containerregistry v0.20.2
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.13
-	github.com/k3s-io/k3s v1.31.12-0.20250812202823-ee389cb9d461 // release-1.31
+	github.com/k3s-io/k3s v1.31.12-rc1.0.20250814215358-2b53c7e4c817 // release-1.31
 	github.com/k3s-io/kine v0.13.17
 	github.com/libp2p/go-netroute v0.2.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
@@ -404,8 +404,8 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.32.1 // indirect
-	k8s.io/cli-runtime v0.31.11 // indirect
-	k8s.io/cloud-provider v0.31.11 // indirect
+	k8s.io/cli-runtime v0.31.12 // indirect
+	k8s.io/cloud-provider v0.31.12 // indirect
 	k8s.io/cluster-bootstrap v0.0.0 // indirect
 	k8s.io/component-helpers v0.32.0 // indirect
 	k8s.io/controller-manager v0.27.10 // indirect
@@ -419,7 +419,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20241105132330-32ad38e42d3f // indirect
 	k8s.io/kube-proxy v0.0.0 // indirect
 	k8s.io/kube-scheduler v0.0.0 // indirect
-	k8s.io/kubectl v0.31.11 // indirect
+	k8s.io/kubectl v0.31.12 // indirect
 	k8s.io/kubelet v0.32.0 // indirect
 	k8s.io/metrics v0.0.0 // indirect
 	k8s.io/mount-utils v0.32.0 // indirect
