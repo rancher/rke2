@@ -396,7 +396,9 @@ jobs:
           aws-region: us-east-1
       - name: Generate prime ribs index
         run: |
-          release generate rancher artifacts-index --write-path . --ignore-versions v2.6.4
+          ECM_AUTH_CONFIG=$(release config gen | jq '.auth | .aws_access_key_id |= "${{ env.AWS_ACCESS_KEY_ID }}" | .aws_secret_access_key |= "${{ env.AWS_SECRET_ACCESS_KEY }}" | .aws_session_token |= "" | .aws_default_region |= "${{ env.AWS_DEFAULT_REGION }}"')
+          ECM_CONFIG="{\"auth\": $ECM_AUTH_CONFIG}"
+          release generate rancher artifacts-index --config "$ECM_CONFIG" --write-path . --ignore-versions v2.6.4
       - name: Upload prime ribs index
         run: |
           aws s3 cp index.html s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/index.html
