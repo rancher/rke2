@@ -99,7 +99,7 @@ jobs:
   
     - name: Package windows images
       run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make package-windows-images
+        REGISTRY=${{ env.PRIME_REGISTRY }} GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make package-windows-images
 
     - name: Checksum Artifacts
       run: |
