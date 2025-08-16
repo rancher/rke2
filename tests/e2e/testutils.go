@@ -536,6 +536,29 @@ func GenKubeConfigFile(server VagrantNode) (string, error) {
 	return kubeConfigFile, nil
 }
 
+func CreateKubeSecretSnapshots(kubeconfig string, print bool) (string, error) {
+	cmd := "kubectl create secret generic rke2-etcd-s3-config --namespace=kube-system " +
+		"--from-literal=etcd-s3-insecure=true " +
+		"--from-literal=etcd-s3-bucket=test-bucket " +
+		"--from-literal=etcd-s3-folder=test-folder " +
+		"--from-literal=etcd-s3-endpoint=localhost:9090 " +
+		"--from-literal=etcd-s3-skip-ssl-verify=true " +
+		"--from-literal=etcd-s3-access-key=test " +
+		"--from-literal=etcd-s3-retention=1 " +
+		"--kubeconfig=" + kubeconfig
+
+	res, err := RunCommand(cmd)
+	if err != nil {
+		return "", fmt.Errorf("failed cmd: %s, %w", cmd, err)
+	}
+
+	if print {
+		fmt.Println(res)
+	}
+
+	return res, nil
+}
+
 func ParseNodes(kubeConfig string, print bool) ([]Node, error) {
 	nodes := make([]Node, 0, 10)
 	nodeList := ""
