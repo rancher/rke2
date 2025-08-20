@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -26,7 +27,7 @@ func binDir(dataDir string) string {
 
 // RemoveDisabledPods deletes the pod manifests for any disabled pods, as well as ensuring that the containers themselves are terminated.
 func RemoveDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems map[string]bool, clusterReset bool) error {
-	terminatePods := false
+	terminatePods := []string{}
 	execPath := binDir(dataDir)
 	manifestDir := PodManifestsDir(dataDir)
 
@@ -42,7 +43,6 @@ func RemoveDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems 
 	if clusterReset {
 		disabledItems["etcd"] = true
 		disabledItems["kube-apiserver"] = true
-		terminatePods = true
 	}
 
 	// check to see if there are manifests for any disabled components. If there are no manifests for
@@ -51,20 +51,18 @@ func RemoveDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems 
 		if disabled {
 			manifestName := filepath.Join(manifestDir, component+".yaml")
 			if _, err := os.Stat(manifestName); err == nil {
-				terminatePods = true
+				terminatePods = append(terminatePods, component)
 			}
 		}
 	}
 
-	if terminatePods {
-		logrus.Infof("Static pod cleanup in progress")
+	if len(terminatePods) > 0 {
+		logrus.WithField("pods", terminatePods).Infof("Static pod cleanup in progress")
 		// delete manifests for disabled items
-		for component, disabled := range disabledItems {
-			if disabled {
-				manifestName := filepath.Join(manifestDir, component+".yaml")
-				if err := os.RemoveAll(manifestName); err != nil {
-					return pkgerrors.WithMessagef(err, "unable to delete %s manifest", component)
-				}
+		for _, component := range terminatePods {
+			manifestName := filepath.Join(manifestDir, component+".yaml")
+			if err := os.RemoveAll(manifestName); err != nil {
+				return pkgerrors.WithMessagef(err, "unable to delete %s manifest", component)
 			}
 		}
 
@@ -74,12 +72,12 @@ func RemoveDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems 
 		containerdErr := make(chan error)
 
 		// start containerd, if necessary. The command will be terminated automatically when the context is cancelled.
-		if containerRuntimeEndpoint == "" {
+		if containerRuntimeEndpoint == ContainerdSock {
 			containerdCmd := exec.CommandContext(ctx, filepath.Join(execPath, "containerd"))
 			go startContainerd(ctx, dataDir, containerdErr, containerdCmd)
 		}
 		// terminate any running containers from the disabled items list
-		go terminateRunningContainers(ctx, containerRuntimeEndpoint, disabledItems, containerdErr)
+		go terminateRunningContainers(ctx, containerRuntimeEndpoint, terminatePods, containerdErr)
 
 		for {
 			select {
@@ -149,11 +147,7 @@ func startContainerd(_ context.Context, dataDir string, errChan chan error, cmd 
 	errChan <- cmd.Run()
 }
 
-func terminateRunningContainers(ctx context.Context, containerRuntimeEndpoint string, disabledItems map[string]bool, containerdErr chan error) {
-	if containerRuntimeEndpoint == "" {
-		containerRuntimeEndpoint = ContainerdSock
-	}
-
+func terminateRunningContainers(ctx context.Context, containerRuntimeEndpoint string, terminatePods []string, containerdErr chan error) {
 	// send on the subprocess error channel to wake up the select
 	// loop and shut everything down when the poll completes
 	containerdErr <- wait.PollUntilWithContext(ctx, 10*time.Second, func(ctx context.Context) (bool, error) {
@@ -174,10 +168,10 @@ func terminateRunningContainers(ctx context.Context, containerRuntimeEndpoint st
 			return false, nil
 		}
 
-		for component, disabled := range disabledItems {
+		for _, component := range terminatePods {
 			var found bool
 			for _, pod := range resp.Items {
-				if disabled && pod.Labels["component"] == component && pod.Annotations["kubernetes.io/config.source"] == "file" {
+				if pod.Labels["component"] == component && pod.Annotations["kubernetes.io/config.source"] == "file" {
 					found = true
 					logrus.Infof("Removing pod %s", pod.Metadata.Name)
 					if _, err := cRuntime.RemovePodSandbox(ctx, &runtimeapi.RemovePodSandboxRequest{PodSandboxId: pod.Id}); err != nil {
@@ -186,12 +180,12 @@ func terminateRunningContainers(ctx context.Context, containerRuntimeEndpoint st
 				}
 			}
 			// no pods found for this component or not disabled, remove it from the list to be checked
-			if !found || !disabled {
-				delete(disabledItems, component)
+			if !found {
+				terminatePods = slices.DeleteFunc(terminatePods, func(c string) bool { return c == component })
 			}
 		}
 
 		// once all disabled components have been removed, stop polling
-		return len(disabledItems) == 0, nil
+		return len(terminatePods) == 0, nil
 	})
 }
