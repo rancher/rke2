@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	pkgerrors "github.com/pkg/errors"
-	"github.com/rancher/rke2/pkg/rke2"
+	"github.com/rancher/rke2/pkg/hardening/profile"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
@@ -115,7 +115,7 @@ func setCISFlags(clx *cli.Context) error {
 
 func validateProfile(clx *cli.Context, role CLIRole) {
 	switch clx.String("profile") {
-	case rke2.ProfileCIS:
+	case profile.ProfileNameCIS:
 		if err := validateKernelReqs(role); err != nil {
 			logrus.Fatal(err)
 		}
@@ -123,12 +123,12 @@ func validateProfile(clx *cli.Context, role CLIRole) {
 			logrus.Fatal(err)
 		}
 		fallthrough // cis profile also requires etcd validation
-	case rke2.ProfileETCD:
+	case profile.ProfileNameETCD:
 		if err := validateETCDReqs(role); err != nil {
 			logrus.Fatal(err)
 		}
-	case "":
-		logrus.Warn("not running in CIS mode")
+	case profile.ProfileNameNone:
+		logrus.Warn("not running with any hardening profile")
 	default:
 		logrus.Fatal("invalid value provided for --profile flag")
 	}
