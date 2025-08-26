@@ -25,7 +25,7 @@ check_target_mountpoint() {
 
 # check_target_ro returns success if the target directory is read-only
 check_target_ro() {
-    touch "$1"/.rke2-ro-test && rm -rf "$1"/.rke2-ro-test
+    touch "$1"/.rke2-ro-test && rm -rf -- "$1"/.rke2-ro-test
     test $? -ne 0
 }
 
@@ -112,16 +112,16 @@ uninstall_remove_files()
     $transactional_update find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.service -type f -delete
     $transactional_update find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.env -type f -delete
     find /etc/systemd/system -name rke2-*.service -type f -delete
-    $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2"
-    $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
-    $transactional_update rm -rf "${INSTALL_RKE2_ROOT}/share/rke2"
+    $transactional_update rm -f -- "${INSTALL_RKE2_ROOT}/bin/rke2"
+    $transactional_update rm -f -- "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
+    $transactional_update rm -rf -- "${INSTALL_RKE2_ROOT}/share/rke2"
     rm -rf /etc/rancher/rke2
     rm -rf /etc/rancher/node
     rm -d /etc/rancher || true
     rm -rf /etc/cni
     rm -rf /opt/cni/bin
     rm --one-file-system -rf /var/lib/kubelet || true
-    rm -rf "${RKE2_DATA_DIR}" || error "Failed to remove /var/lib/rancher/rke2"
+    rm -rf -- "${RKE2_DATA_DIR}" || error "Failed to remove ${RKE2_DATA_DIR}"
     rm -d /var/lib/rancher || true
 
     if type fapolicyd >/dev/null 2>&1; then
@@ -140,7 +140,7 @@ uninstall_remove_self()
 {
     cleanup
     log "Removing uninstall script"
-    $transactional_update rm -f "${INSTALL_RKE2_ROOT}/bin/rke2-uninstall.sh"
+    $transactional_update rm -f -- "${INSTALL_RKE2_ROOT}/bin/rke2-uninstall.sh"
 }
 
 # Define a cleanup function that triggers on exit
