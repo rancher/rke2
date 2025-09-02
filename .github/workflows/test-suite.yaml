@@ -186,7 +186,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        etest: [kine, ciliumnokp, multus]
+        etest: [kine, ciliumnokp, multus, s3]
       max-parallel: 3
     steps:
     - name: "Checkout"
