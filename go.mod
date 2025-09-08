@@ -18,13 +18,13 @@ replace (
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.22.0
 	github.com/prometheus/common => github.com/prometheus/common v0.62.0
 	github.com/spegel-org/spegel => github.com/k3s-io/spegel v0.2.0-k3s1
-	go.etcd.io/etcd/api/v3 => github.com/k3s-io/etcd/api/v3 v3.6.4-k3s2
-	go.etcd.io/etcd/client/pkg/v3 => github.com/k3s-io/etcd/client/pkg/v3 v3.6.4-k3s2
+	go.etcd.io/etcd/api/v3 => github.com/k3s-io/etcd/api/v3 v3.6.4-k3s3
+	go.etcd.io/etcd/client/pkg/v3 => github.com/k3s-io/etcd/client/pkg/v3 v3.6.4-k3s3
 	go.etcd.io/etcd/client/v2 => github.com/k3s-io/etcd/client/v2 v2.305.21-k3s1
-	go.etcd.io/etcd/client/v3 => github.com/k3s-io/etcd/client/v3 v3.6.4-k3s2
-	go.etcd.io/etcd/etcdutl/v3 => github.com/k3s-io/etcd/etcdutl/v3 v3.6.4-k3s2
-	go.etcd.io/etcd/pkg/v3 => github.com/k3s-io/etcd/pkg/v3 v3.6.4-k3s2
-	go.etcd.io/etcd/server/v3 => github.com/k3s-io/etcd/server/v3 v3.6.4-k3s2
+	go.etcd.io/etcd/client/v3 => github.com/k3s-io/etcd/client/v3 v3.6.4-k3s3
+	go.etcd.io/etcd/etcdutl/v3 => github.com/k3s-io/etcd/etcdutl/v3 v3.6.4-k3s3
+	go.etcd.io/etcd/pkg/v3 => github.com/k3s-io/etcd/pkg/v3 v3.6.4-k3s3
+	go.etcd.io/etcd/server/v3 => github.com/k3s-io/etcd/server/v3 v3.6.4-k3s3
 	go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful => go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful v0.44.0
 	golang.org/x/crypto => golang.org/x/crypto v0.36.0
 	golang.org/x/net => golang.org/x/net v0.38.0
@@ -77,7 +77,7 @@ require (
 	github.com/google/go-containerregistry v0.20.3
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.13
-	github.com/k3s-io/k3s v1.33.0-rc1.0.20250905170743-4d1f1affcb3e // master
+	github.com/k3s-io/k3s v1.33.0-rc1.0.20250905195603-857412ae5891 // master
 	github.com/k3s-io/kine v0.14.0
 	github.com/libp2p/go-netroute v0.2.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
