@@ -12,7 +12,7 @@ jobs:
       pull-requests: read
     steps:
     - name: Check if comment author is a public member of rancher organization
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         # Catch 404 errors if user is not a member of the organization
         # 302 is expected as the GHA is not a member of the organization
