@@ -5,7 +5,7 @@ RUN apk --no-cache add \
     unzip
 
 # Dapper/Drone/CI environment
-FROM rancher/hardened-build-base:v1.24.2b1 AS dapper
+FROM rancher/hardened-build-base:v1.24.6b1 AS dapper
 ENV DAPPER_ENV GODEBUG REPO TAG GITHUB_ACTION_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY
 ARG DAPPER_HOST_ARCH
 ENV ARCH $DAPPER_HOST_ARCH
@@ -37,12 +37,12 @@ RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/ins
 WORKDIR /source
 # End Dapper stuff
 
-FROM --platform=$BUILDPLATFORM rancher/hardened-containerd:v2.0.5-k3s2-build20250711-amd64-windows AS containerd
+FROM --platform=$BUILDPLATFORM rancher/hardened-containerd:v2.1.4-k3s2-build20250904-amd64-windows AS containerd
 FROM build as windows-runtime-collect
 ARG KUBERNETES_VERSION=dev
 
 # windows runtime image
-ENV CRICTL_VERSION="v1.30.1"
+ENV CRICTL_VERSION="v1.34.0"
 ENV CALICO_VERSION="v3.30.3"
 ENV CNI_PLUGIN_VERSION="v1.8.0"
 ENV FLANNEL_VERSION="v0.27.3"

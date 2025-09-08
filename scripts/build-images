@@ -16,7 +16,7 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-coredns:v1.12.3-build20250806
     ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.10.2-build20250611
     ${REGISTRY}/rancher/hardened-dns-node-cache:1.26.0-build20250611
-    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20250612
+    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20250908
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.8.0-build20250704
     ${REGISTRY}/rancher/hardened-addon-resizer:1.8.23-build20250612
     ${REGISTRY}/rancher/klipper-helm:v0.9.8-build20250709
@@ -71,15 +71,15 @@ EOF
 
 if [ "${GOARCH}" != "arm64" ]; then
 xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere:v1.33.0
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.3.1
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v3.3.1
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-node-driver-registrar:v2.12.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-resizer:v1.10.1
-    ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.14.0
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.7.0
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere:v1.34.0
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.5.0
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v3.5.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-node-driver-registrar:v2.13.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-resizer:v1.12.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.15.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.8.1
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v4.0.1
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-snapshotter:v7.0.2
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-snapshotter:v8.2.0
 EOF
 fi
 
