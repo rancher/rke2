@@ -56,3 +56,4 @@ charts:
   - version: 0.1.000
     filename: /charts/rke2-runtimeclasses.yaml
     bootstrap: false
+    takeOwnership: true

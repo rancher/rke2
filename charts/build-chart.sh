@@ -45,5 +45,6 @@ metadata:
     rke2.cattle.io/inject-cluster-config: "true"
 spec:
   bootstrap: ${CHART_BOOTSTRAP:=false}
+  takeOwnership: ${CHART_TAKE_OWNERSHIP:=false}
   chartContent: $(base64 -w0 < "${CHART_TMP}.gz")
 EOF

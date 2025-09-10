@@ -66,7 +66,6 @@ func Server(clx *cli.Context, cfg rke2cli.Config) error {
 		restrictServiceAccounts(cisMode, defaultNamespaces),
 		setKubeProxyDisabled(),
 		cleanupStaticPodsOnSelfDelete(dataDir),
-		setRuntimes(),
 	)
 
 	var leaderControllers rawServer.CustomControllers
