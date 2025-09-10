@@ -29,7 +29,7 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-traefik.txt
-    ${REGISTRY}/rancher/mirrored-library-traefik:3.3.6
+    ${REGISTRY}/rancher/hardened-traefik:v3.5.1-build20250908
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
