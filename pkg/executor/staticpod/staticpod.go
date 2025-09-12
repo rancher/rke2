@@ -140,7 +140,6 @@ func (s *StaticPodConfig) Kubelet(ctx context.Context, args []string) error {
 	if s.CloudProvider != nil {
 		extraArgs = append(extraArgs,
 			"--cloud-provider="+s.CloudProvider.Name,
-			"--cloud-config="+s.CloudProvider.Path,
 		)
 	}
 
