@@ -92,8 +92,6 @@ if [ -d /sys/class/net/nodelocaldns ]; then
   ip link delete nodelocaldns
 fi
 
-rm -rf /var/lib/cni/ /var/log/pods/ /var/log/containers
-
 # Remove pod-manifests files for rke2 components
 POD_MANIFESTS_DIR=${RKE2_DATA_DIR}/agent/pod-manifests
 

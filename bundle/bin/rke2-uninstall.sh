@@ -123,6 +123,7 @@ uninstall_remove_files()
     rm --one-file-system -rf /var/lib/kubelet || true
     rm -rf -- "${RKE2_DATA_DIR}" || error "Failed to remove ${RKE2_DATA_DIR}"
     rm -d /var/lib/rancher || true
+    rm -rf /var/lib/cni/ /var/log/pods/ /var/log/containers /var/log/calico
 
     if type fapolicyd >/dev/null 2>&1; then
         log "Removing fapolicyd rules"
