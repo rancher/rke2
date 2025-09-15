@@ -340,7 +340,7 @@ jobs:
           curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
           chmod +x /usr/local/bin/dapper
       - name: setup ecm-distro-tools
-        uses: rancher/ecm-distro-tools@f27c269dda8a2440fdb71f849a51554d010a70ad # v0.54.0
+        uses: rancher/ecm-distro-tools@d6a480f92d2fc31919506c89dbef7e56f96b1e21 # v0.58.1
       - name: Make artifacts directory
         run: |
           mkdir -p dist/artifacts
