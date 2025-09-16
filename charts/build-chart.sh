@@ -5,7 +5,8 @@ set -eux -o pipefail
 : "${KUBERNETES_VERSION:=v0.0.0-0}"
 : "${CHART_FILE?required}"
 : "${CHART_NAME:="$(basename "${CHART_FILE%%.yaml}")"}"
-: "${CHART_PACKAGE:="${CHART_NAME%%-crd}"}"
+# traefik crds exist as a separately published chart
+: "${CHART_PACKAGE:=$([[ "$CHART_NAME" == *"traefik"* ]] && echo "$CHART_NAME" || echo "${CHART_NAME%%-crd}")}"
 : "${TAR_OPTS:=--owner=0 --group=0 --mode=gou-s+r --numeric-owner --no-acls --no-selinux --no-xattrs}"
 : "${CHART_URL:="${CHART_REPO:="https://rke2-charts.rancher.io"}/assets/${CHART_PACKAGE}/${CHART_NAME}-${CHART_VERSION:="0.0.0"}.tgz"}"
 : "${CHART_TMP:=$(mktemp --suffix .tar)}"
