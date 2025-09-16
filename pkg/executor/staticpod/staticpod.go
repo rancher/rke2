@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/k3s-io/k3s/pkg/agent/containerd"
@@ -367,14 +368,14 @@ func (s *StaticPodConfig) CurrentETCDOptions() (opts executor.InitialOptions, er
 }
 
 // ETCD starts the etcd static pod.
-func (s *StaticPodConfig) ETCD(ctx context.Context, args *executor.ETCDConfig, extraArgs []string, test executor.TestFunc) error {
+func (s *StaticPodConfig) ETCD(ctx context.Context, wg *sync.WaitGroup, args *executor.ETCDConfig, extraArgs []string, test executor.TestFunc) error {
 	go func() {
-		defer close(s.etcdReady)
 		for {
 			if err := test(ctx); err != nil {
 				logrus.Infof("Failed to test etcd connection: %v", err)
 			} else {
 				logrus.Info("Connection to etcd is ready")
+				close(s.etcdReady)
 				return
 			}
 
@@ -474,24 +475,21 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, args *executor.ETCDConfig, e
 }
 
 // Containerd starts the k3s implementation of containerd
-func (s *StaticPodConfig) Containerd(ctx context.Context, config *daemonconfig.Node) error {
-	defer close(s.criReady)
-	return containerd.Run(ctx, config)
+func (s *StaticPodConfig) Containerd(ctx context.Context, cfg *daemonconfig.Node) error {
+	return executor.CloseIfNilErr(containerd.Run(ctx, cfg), s.criReady)
 }
 
 // Docker starts the k3s implementation of cridockerd
-func (s *StaticPodConfig) Docker(ctx context.Context, config *daemonconfig.Node) error {
-	defer close(s.criReady)
-	return cridockerd.Run(ctx, config)
+func (s *StaticPodConfig) Docker(ctx context.Context, cfg *daemonconfig.Node) error {
+	return executor.CloseIfNilErr(cridockerd.Run(ctx, cfg), s.criReady)
 }
 
 func (s *StaticPodConfig) CRI(ctx context.Context, cfg *daemonconfig.Node) error {
-	defer close(s.criReady)
 	// agentless sets cri socket path to /dev/null to indicate no CRI is needed
 	if cfg.ContainerRuntimeEndpoint != "/dev/null" {
-		return cri.WaitForService(ctx, cfg.ContainerRuntimeEndpoint, "CRI")
+		return executor.CloseIfNilErr(cri.WaitForService(ctx, cfg.ContainerRuntimeEndpoint, "CRI"), s.criReady)
 	}
-	return nil
+	return executor.CloseIfNilErr(nil, s.criReady)
 }
 
 func (s *StaticPodConfig) APIServerReadyChan() <-chan struct{} {
@@ -513,6 +511,10 @@ func (s *StaticPodConfig) CRIReadyChan() <-chan struct{} {
 		panic("executor not bootstrapped")
 	}
 	return s.criReady
+}
+
+func (s *StaticPodConfig) IsSelfHosted() bool {
+	return true
 }
 
 // stopEtcd searches the container runtime endpoint for the etcd static pod, and terminates it.
