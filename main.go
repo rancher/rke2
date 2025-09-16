@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"os"
 
 	"github.com/k3s-io/k3s/pkg/configfilearg"
@@ -21,7 +23,7 @@ func main() {
 		cmds.NewCompletionCommand(),
 	}
 
-	if err := app.Run(configfilearg.MustParse(os.Args)); err != nil {
+	if err := app.Run(configfilearg.MustParse(os.Args)); err != nil && !errors.Is(err, context.Canceled) {
 		logrus.Fatalf("Error: %v", err)
 	}
 }

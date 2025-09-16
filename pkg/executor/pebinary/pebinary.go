@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Microsoft/hcsshim/hcn"
@@ -387,7 +388,7 @@ func (p *PEBinaryConfig) CloudControllerManager(ctx context.Context, ccmRBACRead
 }
 
 // ETCD isn't supported in the binary executor.
-func (p *PEBinaryConfig) ETCD(ctx context.Context, args *executor.ETCDConfig, extraArgs []string, test executor.TestFunc) error {
+func (p *PEBinaryConfig) ETCD(ctx context.Context, wg *sync.WaitGroup, args *executor.ETCDConfig, extraArgs []string, test executor.TestFunc) error {
 	panic("etcd is unsupported on windows")
 }
 
@@ -416,6 +417,10 @@ func (p *PEBinaryConfig) CRIReadyChan() <-chan struct{} {
 		panic("executor not bootstrapped")
 	}
 	return p.criReady
+}
+
+func (p *PEBinaryConfig) IsSelfHosted() bool {
+	return false
 }
 
 // addFeatureGate adds a feature gate with the correct syntax.
