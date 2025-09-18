@@ -29,7 +29,9 @@ var (
 		"image-credential-provider-bin-dir": copyFlag,
 		"image-credential-provider-config":  copyFlag,
 		"docker":                            dropFlag,
-		"container-runtime-endpoint":        copyFlag,
+		"container-runtime-endpoint": {
+			Usage: "(agent/runtime) Disable embedded containerd and use the CRI socket at the given path",
+		},
 		"disable-default-registry-endpoint": copyFlag,
 		"nonroot-devices":                   copyFlag,
 		"image-service-endpoint":            dropFlag,

@@ -38,7 +38,7 @@ WORKDIR /source
 # End Dapper stuff
 
 FROM --platform=$BUILDPLATFORM rancher/hardened-containerd:v2.1.4-k3s2-build20250904-amd64-windows AS containerd
-FROM build as windows-runtime-collect
+FROM build AS windows-runtime-collect
 ARG KUBERNETES_VERSION=dev
 
 # windows runtime image
