@@ -510,14 +510,9 @@ func (config *TestConfig) DumpServiceLogs(lines int) string {
 	return logs.String()
 }
 
-// Dump the journalctl logs for the rke2 service
+// Dump the journalctl logs
 func (node DockerNode) DumpServiceLogs(lines int) (string, error) {
-	var cmd string
-	if strings.Contains(node.Name, "agent") {
-		cmd = fmt.Sprintf("journalctl -u rke2-agent -n %d", lines)
-	} else {
-		cmd = fmt.Sprintf("journalctl -u rke2-server -n %d", lines)
-	}
+	cmd := fmt.Sprintf("journalctl -n %d", lines)
 	res, err := node.RunCmdOnNode(cmd)
 	if strings.Contains(res, "No entries") {
 		return "", fmt.Errorf("no logs found")

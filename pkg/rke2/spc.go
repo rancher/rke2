@@ -2,7 +2,6 @@ package rke2
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -18,6 +17,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
@@ -73,9 +73,10 @@ func watchForSelfDelete(ctx context.Context, dataDir string, client kubernetes.I
 		return false, fmt.Errorf("event object not of type Node")
 	}
 
-	_, err := toolswatch.UntilWithSync(ctx, lw, &v1.Node{}, nil, condition)
-	if err != nil && !errors.Is(err, context.Canceled) {
-		logrus.Errorf("spc: failed to wait for node deletion: %v", err)
+	if _, err := toolswatch.UntilWithSync(ctx, lw, &v1.Node{}, nil, condition); err != nil {
+		if !wait.Interrupted(err) {
+			logrus.Errorf("spc: failed to wait for node deletion: %v", err)
+		}
 		return
 	}
 
