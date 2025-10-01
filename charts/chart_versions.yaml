@@ -14,7 +14,7 @@ charts:
   - version: 1.43.302
     filename: /charts/rke2-coredns.yaml
     bootstrap: true
-  - version: 4.12.600
+  - version: 4.13.300
     filename: /charts/rke2-ingress-nginx.yaml
     bootstrap: false
   - version: 37.1.003
