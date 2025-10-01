@@ -64,6 +64,8 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
     ${REGISTRY}/rancher/mirrored-calico-csi:v3.30.3 
     ${REGISTRY}/rancher/mirrored-calico-node-driver-registrar:v3.30.3   
     ${REGISTRY}/rancher/mirrored-calico-envoy-gateway:v3.30.3   
+    ${REGISTRY}/rancher/mirrored-calico-envoy-proxy:v3.30.3   
+    ${REGISTRY}/rancher/mirrored-calico-envoy-ratelimit:v3.30.3   
     ${REGISTRY}/rancher/mirrored-calico-goldmane:v3.30.3    
     ${REGISTRY}/rancher/mirrored-calico-whisker:v3.30.3 
     ${REGISTRY}/rancher/mirrored-calico-whisker-backend:v3.30.3 
