@@ -22,8 +22,8 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/klipper-helm:v0.9.8-build20250709
     ${REGISTRY}/rancher/klipper-lb:v0.4.13
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
-    ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.6.2
-    ${REGISTRY}/rancher/nginx-ingress-controller:v1.12.6-hardened1
+    ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.6.3
+    ${REGISTRY}/rancher/nginx-ingress-controller:v1.13.3-hardened1
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
     ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-controller:v8.2.0
 EOF
