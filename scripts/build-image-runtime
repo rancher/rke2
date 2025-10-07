@@ -11,7 +11,6 @@ DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
     --build-arg MAJOR=${VERSION_MAJOR} \
     --build-arg MINOR=${VERSION_MINOR} \
     --build-arg DAPPER_HOST_ARCH=${GOARCH} \
-    --build-arg CACHEBUST="$(date +%s%N)" \
     --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
     --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH} \
     --target runtime \
@@ -24,7 +23,6 @@ if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ] && [ -z "$SKIP_WINDO
       --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
       --build-arg MAJOR=${VERSION_MAJOR} \
       --build-arg MINOR=${VERSION_MINOR} \
-      --build-arg CACHEBUST="$(date +%s%N)" \
       --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
       --target windows-runtime \
       --file Dockerfile.windows \

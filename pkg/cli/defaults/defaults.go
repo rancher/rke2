@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/grpclog"
 )
 
-func Set(_ *cli.Context, dataDir string) error {
+func Set(clx *cli.Context, dataDir string) error {
 	if err := createDataDir(dataDir, 0755); err != nil {
 		return pkgerrors.WithMessagef(err, "failed to create directory %s", dataDir)
 	}
@@ -24,10 +24,20 @@ func Set(_ *cli.Context, dataDir string) error {
 	cmds.ServerConfig.ClusterInit = true
 	cmds.ServerConfig.DisableNPC = true
 	cmds.ServerConfig.FlannelBackend = "none"
-	cmds.ServerConfig.AdvertisePort = 6443
-	cmds.ServerConfig.SupervisorPort = 9345
-	cmds.ServerConfig.HTTPSPort = 6443
-	cmds.ServerConfig.APIServerPort = 6443
+	if port := clx.Int("supervisor-port"); port != 0 {
+		cmds.ServerConfig.SupervisorPort = port
+	} else {
+		cmds.ServerConfig.SupervisorPort = 9345
+	}
+	if port := clx.Int("apiserver-port"); port != 0 {
+		cmds.ServerConfig.AdvertisePort = port
+		cmds.ServerConfig.HTTPSPort = port
+		cmds.ServerConfig.APIServerPort = port
+	} else {
+		cmds.ServerConfig.AdvertisePort = 6443
+		cmds.ServerConfig.HTTPSPort = 6443
+		cmds.ServerConfig.APIServerPort = 6443
+	}
 	cmds.ServerConfig.APIServerBindAddress = "0.0.0.0"
 	cmds.ServerConfig.ExtraAPIArgs = PrependToStringSlice(cmds.ServerConfig.ExtraAPIArgs, []string{
 		"enable-admission-plugins=NodeRestriction",

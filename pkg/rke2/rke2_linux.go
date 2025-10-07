@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,11 +20,14 @@ import (
 	"github.com/k3s-io/k3s/pkg/cluster/managed"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/etcd"
+	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/k3s-io/kine/pkg/util"
 	pkgerrors "github.com/pkg/errors"
 	rke2cli "github.com/rancher/rke2/pkg/cli"
 	"github.com/rancher/rke2/pkg/cli/defaults"
+	"github.com/rancher/rke2/pkg/executor/hosted"
 	"github.com/rancher/rke2/pkg/executor/staticpod"
+	"github.com/rancher/rke2/pkg/hardening/profile"
 	"github.com/rancher/rke2/pkg/podtemplate"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -46,7 +50,84 @@ func initExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) (executor
 		cmds.ServerConfig.DisableCCM = true
 	}
 
+	if clx.Bool("disable-agent") && isServer {
+		return initHostedExecutor(clx, cfg)
+	}
 	return initStaticPodExecutor(clx, cfg, isServer)
+}
+
+func initHostedExecutor(clx *cli.Context, cfg rke2cli.Config) (executor.Executor, error) {
+	clusterName := version.Program
+	if nameVal := os.Getenv("RKE2_CLUSTER_NAME"); nameVal != "" {
+		clusterName = nameVal
+	}
+
+	domain := ""
+	if kubeVal := os.Getenv("KUBERNETES_SERVICE_HOST"); kubeVal != "" {
+		if names, _ := net.LookupAddr(kubeVal); len(names) > 0 {
+			domain, _ = strings.CutPrefix(names[0], "kubernetes.default.svc.")
+			domain = strings.TrimSuffix(domain, ".")
+		}
+	}
+
+	// set fixed node name and IP so certs are not regenerated unnecessarily
+	cmds.AgentConfig.NodeName = clusterName + "-supervisor"
+	cmds.AgentConfig.NodeIP.Set("127.0.0.1")
+
+	// don't start containerd and kubelet
+	cmds.ServerConfig.DisableAgent = true
+
+	// disable the built-in helm controller, we will run a custom one that does not require bootstrap charts
+	// to run on control-plane nodes - since there will be no control-plane nodes.
+	cmds.ServerConfig.DisableHelmController = true
+
+	// use fixed rke2-runtime image digest for prestaged content baked into the supervisor image
+	cfg.Images.Runtime = "rancher/rke2-runtime@sha256:0000000000000000000000000000000000000000000000000000000000000000"
+
+	dataDir := clx.String("data-dir")
+	templateConfig, err := podtemplate.NewConfigFromCLI(dataDir, cfg)
+	if err != nil {
+		return nil, pkgerrors.WithMessage(err, "failed to parse pod template config")
+	}
+
+	profileMode := profile.FromString(clx.String("profile"))
+
+	// Adding PSAs
+	podSecurityConfigFile := clx.String("pod-security-admission-config-file")
+	if podSecurityConfigFile == "" {
+		if err := setPSAs(profileMode.IsCISMode()); err != nil {
+			return nil, err
+		}
+		podSecurityConfigFile = defaultPSAConfigFile
+	}
+
+	containerRuntimeEndpoint := cmds.AgentConfig.ContainerRuntimeEndpoint
+	if containerRuntimeEndpoint == "" {
+		containerRuntimeEndpoint = staticpod.ContainerdSock
+	}
+
+	var ingressControllerName string
+	if len(cfg.IngressController.Value()) > 0 {
+		ingressControllerName = cfg.IngressController.Value()[0]
+	}
+
+	h := &hosted.HostedConfig{
+		Config:            *templateConfig,
+		Name:              clusterName,
+		Domain:            domain,
+		ProfileMode:       profileMode,
+		KubeConfig:        os.Getenv("KUBECONFIG"),
+		AuditPolicyFile:   clx.String("audit-policy-file"),
+		PSAConfigFile:     podSecurityConfigFile,
+		IngressController: ingressControllerName,
+	}
+
+	if cmds.ServerConfig.DatastoreEndpoint == "" {
+		managed.Clear()
+		managed.RegisterDriver(h)
+	}
+
+	return h, pkgerrors.WithMessage(h.Init(clx.Context), "failed to create kubernetes client")
 }
 
 func initStaticPodExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) (executor.Executor, error) {
@@ -142,10 +223,12 @@ func initStaticPodExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) 
 		return nil, pkgerrors.WithMessage(err, "failed to parse pod template config")
 	}
 
+	profileMode := profile.FromString(clx.String("profile"))
+
 	// Adding PSAs
 	podSecurityConfigFile := clx.String("pod-security-admission-config-file")
 	if podSecurityConfigFile == "" {
-		if err := setPSAs(isCISMode(clx)); err != nil {
+		if err := setPSAs(profileMode.IsCISMode()); err != nil {
 			return nil, err
 		}
 		podSecurityConfigFile = defaultPSAConfigFile
@@ -176,7 +259,7 @@ func initStaticPodExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) 
 	return &staticpod.StaticPodConfig{
 		Config:            *templateConfig,
 		ManifestsDir:      agentManifestsDir,
-		ProfileMode:       profileMode(clx),
+		ProfileMode:       profileMode,
 		CloudProvider:     cpConfig,
 		AuditPolicyFile:   clx.String("audit-policy-file"),
 		PSAConfigFile:     podSecurityConfigFile,

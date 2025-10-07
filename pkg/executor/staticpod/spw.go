@@ -25,22 +25,6 @@ const (
 	ContainerdSock = "/run/k3s/containerd/containerd.sock"
 )
 
-type ProfileMode int
-
-const (
-	ProfileModeNone ProfileMode = iota
-	ProfileModeCIS
-	ProfileModeETCD
-)
-
-func (c ProfileMode) isAnyMode() bool {
-	return c != ProfileModeNone
-}
-
-func (c ProfileMode) isCISMode() bool {
-	return c == ProfileModeCIS
-}
-
 type containerInfo struct {
 	Config *runtimeapi.ContainerConfig `json:"config,omitempty"`
 }
