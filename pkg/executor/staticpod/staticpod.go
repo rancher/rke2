@@ -222,8 +222,12 @@ func (s *StaticPodConfig) APIServer(_ context.Context, args []string) error {
 		}
 		args = append(extraArgs, args...)
 	}
-	if s.ProfileMode.isCISMode() && s.AuditPolicyFile == "" {
-		s.AuditPolicyFile = podtemplate.DefaultAuditPolicyFile
+
+	if s.ProfileMode.isCISMode() {
+		args = append([]string{"--service-account-extend-token-expiration=false"}, args...)
+		if s.AuditPolicyFile == "" {
+			s.AuditPolicyFile = podtemplate.DefaultAuditPolicyFile
+		}
 	}
 
 	if s.AuditPolicyFile != "" {
