@@ -28,6 +28,9 @@ def provision(vm, roles, role_num, node_num)
   defaultOSConfigure(vm)
   if !HARDENED.empty? 
     cisPrep(vm)
+    profile = "cis"
+  else 
+    profile = ""
   end
   install_type = getInstallType(vm, RELEASE_VERSION, GITHUB_BRANCH)
   
@@ -47,6 +50,7 @@ def provision(vm, roles, role_num, node_num)
         node-ip: #{NETWORK_PREFIX}.100
         token: vagrant-rke2
         cni: #{CNI}
+        profile: #{profile}
       YAML
     end
   elsif roles.include?("server") && role_num != 0
