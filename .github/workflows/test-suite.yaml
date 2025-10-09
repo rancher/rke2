@@ -115,7 +115,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dtest: [basics, dualstack, flannel, profile, secretsencryption, traefik]
+        dtest: [basics, flannel, profile, secretsencryption, traefik]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v5
@@ -145,12 +145,12 @@ jobs:
     name: "Docker Tests (Large)"
     needs: build
     if: github.repository == 'rancher/rke2'
-    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }}
+    runs-on: runs-on,runner=8cpu-linux-x64,ram=16+24,run-id=${{ github.run_id }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        dtest: [splitserver]
+        dtest: [dualstack, splitserver]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v5
