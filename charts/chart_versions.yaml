@@ -1,5 +1,5 @@
 charts:
-  - version: 1.18.103
+  - version: 1.18.204
     filename: /charts/rke2-cilium.yaml
     bootstrap: true
   - version: v3.30.3-build2025090900
