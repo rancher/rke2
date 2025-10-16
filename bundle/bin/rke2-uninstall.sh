@@ -109,9 +109,9 @@ uninstall_remove_files()
     fi
 
     log "Removing rke2 files"
-    $transactional_update find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.service -type f -delete
-    $transactional_update find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name rke2-*.env -type f -delete
-    find /etc/systemd/system -name rke2-*.service -type f -delete
+    $transactional_update find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name "rke2-*.service" -delete
+    $transactional_update find "${INSTALL_RKE2_ROOT}/lib/systemd/system" -name "rke2-*.env" -delete
+    find /etc/systemd/system -name "rke2-*.service" -delete
     $transactional_update rm -f -- "${INSTALL_RKE2_ROOT}/bin/rke2"
     $transactional_update rm -f -- "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
     $transactional_update rm -rf -- "${INSTALL_RKE2_ROOT}/share/rke2"
