@@ -956,8 +956,8 @@ github.com/k3s-io/etcd/pkg/v3 v3.6.5-k3s1 h1:NOF2ounZfouZMXJfxAXoGv7Jj49nJJRqZDp
 github.com/k3s-io/etcd/pkg/v3 v3.6.5-k3s1/go.mod h1:uqrXrzmMIJDEy5j00bCqhVLzR5jEJIwDp5wTlLwPGOU=
 github.com/k3s-io/etcd/server/v3 v3.6.5-k3s1 h1:7nk12snclYRqXEfzo36KS+qtI+/2t85JQUvQ8akJmOw=
 github.com/k3s-io/etcd/server/v3 v3.6.5-k3s1/go.mod h1:PLuhyVXz8WWRhzXDsl3A3zv/+aK9e4A9lpQkqawIaH0=
-github.com/k3s-io/helm-controller v0.16.14 h1:UzTNhpxAzlTlNHuIOTJ69cekelVWj+dsgnDvWGoLf5s=
-github.com/k3s-io/helm-controller v0.16.14/go.mod h1:mw6sVaH/eli+81sUnRqRYh5wV7YVzYp+U7OucLT5kUc=
+github.com/k3s-io/helm-controller v0.16.15 h1:NSxqBAHh+/+tdvrvMjj5JybJEVOCwgbf/nmymXnsbGQ=
+github.com/k3s-io/helm-controller v0.16.15/go.mod h1:jmrgGttLQbh2yB1kcf9XFAigNW6U8oWCswCSuEjkxXU=
 github.com/k3s-io/k3s v1.33.0-rc1.0.20251010190006-0e5bc29d34d0 h1:x/7KW0fYEs2MN4VEgKwy7aN/+Fvkn20CjBZ3hoLBNok=
 github.com/k3s-io/k3s v1.33.0-rc1.0.20251010190006-0e5bc29d34d0/go.mod h1:nLVDrxioLAVz7dQcGjVdfQIInTxusAqgxLc381BfenU=
 github.com/k3s-io/kine v0.14.5 h1:hHZ9kpsivl2u+mVLB8VbR3x/0vkS+NzWfvmgof1ojUw=
