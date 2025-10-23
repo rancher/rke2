@@ -596,6 +596,14 @@ func ParsePods(kubeconfig string, print bool) ([]Pod, error) {
 	return pods, nil
 }
 
+func GetPodEvents(kubeconfig string, pod Pod) ([]string, error) {
+	cmd := "kubectl events --for pod/" + pod.Name + " -n " + pod.NameSpace + " --kubeconfig=" + kubeconfig
+	res, _ := RunCommand(cmd)
+	res = strings.TrimSpace(res)
+        events := strings.Split(res, "\n")
+	return events, nil
+}
+
 // RunCmdOnNode executes a command from within the given node as sudo
 func (v VagrantNode) RunCmdOnNode(cmd string) (string, error) {
 	switch v.Type {
