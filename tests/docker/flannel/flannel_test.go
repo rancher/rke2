@@ -84,24 +84,24 @@ node-label:
 
 	Context("Connectivity tests", func() {
 		It("should allow inter pod communication on the same node", func() {
-			cmd := "kubectl exec -it " + pods["server-1"].name + " --kubeconfig=" + tc.KubeconfigFile + " -- curl http://" + pods["server-2"].ip + ":80"
+			cmd := "kubectl exec -it " + pods["server-1"].name + " --kubeconfig=" + tc.KubeconfigFile + " -- wget -O - http://" + pods["server-2"].ip + ":80"
 			res, err := docker.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res).Should(ContainSubstring("Welcome to nginx"))
 
-			cmd = "kubectl exec -it " + pods["server-2"].name + " --kubeconfig=" + tc.KubeconfigFile + " -- curl http://" + pods["server-1"].ip + ":80"
+			cmd = "kubectl exec -it " + pods["server-2"].name + " --kubeconfig=" + tc.KubeconfigFile + " -- wget -O - http://" + pods["server-1"].ip + ":80"
 			res, err = docker.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res).Should(ContainSubstring("Welcome to nginx"))
 		})
 
 		It("should allow inter node pod communication", func() {
-			cmd := "kubectl exec -it " + pods["server-1"].name + " --kubeconfig=" + tc.KubeconfigFile + " -- curl http://" + pods["agent-1"].ip + ":80"
+			cmd := "kubectl exec -it " + pods["server-1"].name + " --kubeconfig=" + tc.KubeconfigFile + " -- wget -O - http://" + pods["agent-1"].ip + ":80"
 			res, err := docker.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res).Should(ContainSubstring("Welcome to nginx"))
 
-			cmd = "kubectl exec -it " + pods["agent-2"].name + " --kubeconfig=" + tc.KubeconfigFile + " -- curl http://" + pods["server-2"].ip + ":80"
+			cmd = "kubectl exec -it " + pods["agent-2"].name + " --kubeconfig=" + tc.KubeconfigFile + " -- wget -O - http://" + pods["server-2"].ip + ":80"
 			res, err = docker.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res).Should(ContainSubstring("Welcome to nginx"))
@@ -109,7 +109,7 @@ node-label:
 
 		It("should grant pods external access", func() {
 			Eventually(func(g Gomega) {
-				cmd := "curl http://" + tc.Servers[0].IP + ":30080"
+				cmd := "wget -O - http://" + tc.Servers[0].IP + ":30080"
 				res, err := docker.RunCommand(cmd)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(res).Should(ContainSubstring("Welcome to nginx"))
