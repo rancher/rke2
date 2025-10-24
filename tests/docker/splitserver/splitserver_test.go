@@ -98,7 +98,7 @@ var _ = Describe("Verify Create", Ordered, func() {
 				return tests.PodReady("dnsutils", "default", tc.KubeconfigFile)
 			}, "20s", "5s").Should(BeTrue())
 
-			cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default"
+			cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default.svc.cluster.local"
 			Eventually(func() (string, error) {
 				return docker.RunCommand(cmd)
 			}, "120s", "2s").Should(ContainSubstring("kubernetes.default.svc.cluster.local"), "failed cmd: "+cmd)

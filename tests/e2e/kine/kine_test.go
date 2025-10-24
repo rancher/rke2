@@ -161,7 +161,7 @@ var _ = Describe("Verify Basic Cluster Creation with Kine", Ordered, func() {
 	It("Verifies dns access", func() {
 		_, err := tc.DeployWorkload("dnsutils.yaml")
 		Expect(err).NotTo(HaveOccurred())
-		cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default"
+		cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default.svc.cluster.local"
 		Eventually(func() (string, error) {
 			return e2e.RunCommand(cmd)
 		}, "120s", "2s").Should(ContainSubstring("kubernetes.default.svc.cluster.local"))
