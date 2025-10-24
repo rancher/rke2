@@ -94,13 +94,13 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 		}, "620s", "10s").Should(ContainSubstring("10.42"), "failed getClientIPs")
 
 		// Test Linux -> Windows communication
-		cmd := "kubectl exec svc/client-curl --kubeconfig=" + tc.KubeconfigFile + " -- curl -m7 windows-app-svc:3000"
+		cmd := "kubectl exec svc/client-wget --kubeconfig=" + tc.KubeconfigFile + " -- wget -T7 -O - windows-app-svc:3000"
 		Eventually(func() (string, error) {
 			return e2e.RunCommand(cmd)
 		}, "120s", "3s").Should(ContainSubstring("Welcome to PSTools for K8s Debugging"), "failed cmd: "+cmd)
 
 		// Test Windows -> Linux communication
-		cmd = "kubectl exec svc/windows-app-svc --kubeconfig=" + tc.KubeconfigFile + " -- curl -m7 client-curl:8080"
+		cmd = "kubectl exec svc/windows-app-svc --kubeconfig=" + tc.KubeconfigFile + " -- wget -T7 -O - client-wget:8080"
 		Eventually(func() (string, error) {
 			return e2e.RunCommand(cmd)
 		}, "20s", "3s").Should(ContainSubstring("Welcome to nginx!"), "failed cmd: "+cmd)
