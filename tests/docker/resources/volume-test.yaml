@@ -19,7 +19,10 @@ metadata:
 spec:
   containers:
   - name: volume-test
-    image: rancher/mirrored-pause:3.6
+    image: rancher/mirrored-library-busybox:1.36.1
+    command:
+      - sleep
+      - infinity
     imagePullPolicy: IfNotPresent
     volumeMounts:
     - name: volv
