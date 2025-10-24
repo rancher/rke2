@@ -43,9 +43,12 @@ metadata:
             }]'
 spec:
   containers:
-  - image: praqma/network-multitool
+  - image: rancher/mirrored-library-busybox:1.36.1
+    command:
+      - sleep
+      - infinity
     imagePullPolicy: Always
-    name: multitool
+    name: busybox
     securityContext:
       capabilities:
         add: ["NET_ADMIN","NET_RAW"]
@@ -66,9 +69,12 @@ metadata:
             }]'
 spec:
   containers:
-  - image: praqma/network-multitool
+  - image: rancher/mirrored-library-busybox:1.36.1
+    command:
+      - sleep
+      - infinity
     imagePullPolicy: Always
-    name: multitool
+    name: busybox
     securityContext:
       capabilities:
         add: ["NET_ADMIN","NET_RAW"]

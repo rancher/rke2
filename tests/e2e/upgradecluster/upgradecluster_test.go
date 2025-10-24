@@ -174,7 +174,7 @@ var _ = Describe("Verify Upgrade", Ordered, func() {
 				return e2e.RunCommand(cmd)
 			}, "420s", "2s").Should(ContainSubstring("dnsutils"))
 
-			cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default"
+			cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default.svc.cluster.local"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
 			}, "420s", "2s").Should(ContainSubstring("kubernetes.default.svc.cluster.local"))
@@ -326,7 +326,7 @@ var _ = Describe("Verify Upgrade", Ordered, func() {
 		})
 		It("After upgrade verifies dns access", func() {
 			Eventually(func() (string, error) {
-				cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default"
+				cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default.svc.cluster.local"
 				return e2e.RunCommand(cmd)
 			}, "180s", "2s").Should((ContainSubstring("kubernetes.default.svc.cluster.local")))
 		})

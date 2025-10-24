@@ -46,6 +46,7 @@ spec:
      terminationGracePeriodSeconds: 60
      containers:
      - name: testcontainer
-       image: ranchertest/mytestcontainer
+       image: rancher/mirrored-library-busybox:1.36.1
+       args: ['sh', '-c', 'echo Welcome to nginx! > index.html; hostname > name.html; httpd -vvf']
        ports:
        - containerPort: 80

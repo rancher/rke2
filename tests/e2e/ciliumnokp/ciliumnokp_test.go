@@ -151,7 +151,7 @@ var _ = Describe("Verify DualStack in Cilium without kube-proxy configuration", 
 		clientIPs, err := e2e.PodIPsUsingLabel(tc.KubeconfigFile, "app=client")
 		Expect(err).NotTo(HaveOccurred())
 		for _, ip := range clientIPs {
-			cmd := "kubectl exec svc/client-curl --kubeconfig=" + tc.KubeconfigFile + " -- curl -m7 " + ip.Ipv4 + "/name.html"
+			cmd := "kubectl exec svc/client-wget --kubeconfig=" + tc.KubeconfigFile + " -- wget -T7 -O - " + ip.Ipv4 + "/name.html"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
 			}, "20s", "3s").Should(ContainSubstring("client-deployment"), "failed cmd: "+cmd)
