@@ -59,7 +59,7 @@ jobs:
           -w /workspace rancher/hardened-build-base:v1.24.6b1 \
           make scan-images
     - name: Upload Scan Results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: release-trivy-scan
         path: trivy_scan_report.txt
