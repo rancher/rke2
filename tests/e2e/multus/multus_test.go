@@ -66,6 +66,31 @@ var _ = Describe("Verify multus Configuration", Ordered, func() {
 		Eventually(func(g Gomega) {
 			pods, err := e2e.ParsePods(tc.KubeconfigFile, false)
 			g.Expect(err).NotTo(HaveOccurred())
+
+
+			fmt.Println("--- Current Pod Status Check ---")
+			for _, pod := range pods {
+				fmt.Printf("Pod Name: %s | Status: %s\n", pod.Name, pod.Status)
+			}
+			fmt.Println("--------------------------------")
+			for _, pod := range pods {
+				expectedStatus := "Running"
+				if strings.Contains(pod.Name, "helm-install") {
+					expectedStatus = "Completed"
+				}
+				if pod.Status != expectedStatus {
+					events, err := e2e.GetPodEvents(tc.KubeconfigFile, pod)
+					fmt.Printf("\n--- FAILED Pod: %s/%s (Status: %s) ---\n", pod.NameSpace, pod.Name, pod.Status)
+					if err != nil {
+						fmt.Printf("Error fetching events: %v\n", err)
+					} else {
+						for _, event := range events {
+							fmt.Println(event)
+						}
+					}
+					fmt.Println("----------------------------------------------------------")
+				}
+			}
 			for _, pod := range pods {
 				if strings.Contains(pod.Name, "helm-install") {
 					g.Expect(pod.Status).Should(Equal("Completed"), pod.Name)
@@ -74,6 +99,7 @@ var _ = Describe("Verify multus Configuration", Ordered, func() {
 				}
 			}
 		}, "420s", "5s").Should(Succeed())
+
 		_, err := e2e.ParsePods(tc.KubeconfigFile, true)
 		Expect(err).NotTo(HaveOccurred())
 	})
