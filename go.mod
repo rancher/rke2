@@ -81,8 +81,8 @@ require (
 	github.com/google/go-containerregistry v0.20.2
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.15
-	github.com/k3s-io/k3s v1.32.10-0.20251010190908-d439f1a03318 // release-v1.32
-	github.com/k3s-io/kine v0.14.5-k3s1.32
+	github.com/k3s-io/k3s v1.32.10-0.20251030184347-45f6abd26b11 // release-v1.32
+	github.com/k3s-io/kine v0.14.6-k3s1.32
 	github.com/libp2p/go-netroute v0.2.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/onsi/ginkgo/v2 v2.23.4
@@ -238,7 +238,7 @@ require (
 	github.com/josharian/native v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/karrick/godirwalk v1.17.0 // indirect
-	github.com/klauspost/compress v1.18.0 // indirect
+	github.com/klauspost/compress v1.18.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/koron/go-ssdp v0.0.6 // indirect
 	github.com/libopenstorage/openstorage v1.0.0 // indirect
@@ -397,10 +397,10 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.32.6 // indirect
+	k8s.io/apiextensions-apiserver v0.32.9 // indirect
 	k8s.io/cli-runtime v0.32.9 // indirect
 	k8s.io/cloud-provider v0.32.9 // indirect
-	k8s.io/cluster-bootstrap v0.0.0 // indirect
+	k8s.io/cluster-bootstrap v0.32.9 // indirect
 	k8s.io/component-helpers v0.32.9 // indirect
 	k8s.io/controller-manager v0.27.10 // indirect
 	k8s.io/cri-client v0.32.9 // indirect
@@ -411,7 +411,7 @@ require (
 	k8s.io/kube-aggregator v0.32.9 // indirect
 	k8s.io/kube-controller-manager v0.0.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff // indirect
-	k8s.io/kube-proxy v0.0.0 // indirect
+	k8s.io/kube-proxy v0.32.9 // indirect
 	k8s.io/kube-scheduler v0.0.0 // indirect
 	k8s.io/kubectl v0.32.9 // indirect
 	k8s.io/kubelet v0.32.9 // indirect

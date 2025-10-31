@@ -1119,10 +1119,10 @@ github.com/k3s-io/etcd/server/v3 v3.5.21-k3s1 h1:N7yuD8/WUf7oEOu4nlXbsoSTvF5yPMM
 github.com/k3s-io/etcd/server/v3 v3.5.21-k3s1/go.mod h1:G1mOzdwuzKT1VRL7SqRchli/qcFrtLBTAQ4lV20sXXo=
 github.com/k3s-io/helm-controller v0.16.15 h1:NSxqBAHh+/+tdvrvMjj5JybJEVOCwgbf/nmymXnsbGQ=
 github.com/k3s-io/helm-controller v0.16.15/go.mod h1:jmrgGttLQbh2yB1kcf9XFAigNW6U8oWCswCSuEjkxXU=
-github.com/k3s-io/k3s v1.32.10-0.20251010190908-d439f1a03318 h1:dYmvzwv1X4E9uaN2E/9qr7gjNB2QKKdfKDC6WZXOyoE=
-github.com/k3s-io/k3s v1.32.10-0.20251010190908-d439f1a03318/go.mod h1:gYeJjVqDYpA6KjhrFrRHHyDs5LIrxKcKfuEFvnIKwrY=
-github.com/k3s-io/kine v0.14.5-k3s1.32 h1:jvdVuIQdEI3ws94MzNt9y7fgJ66c56GUDC1Si1Fg0ug=
-github.com/k3s-io/kine v0.14.5-k3s1.32/go.mod h1:rfwYu6KT1tLBvcttcvvvOsVFJJmO54LlXjXJ1/9+lvI=
+github.com/k3s-io/k3s v1.32.10-0.20251030184347-45f6abd26b11 h1:UpYuQGqhepioveldfMV5QY0g2cmlEsSzbvnHS0KL4PE=
+github.com/k3s-io/k3s v1.32.10-0.20251030184347-45f6abd26b11/go.mod h1:VttQnBmZx0Z7VTcW4S7UGjTEVUL8TDsQaXiYPHiTBcU=
+github.com/k3s-io/kine v0.14.6-k3s1.32 h1:9TGiXXlYx3y2Gnr6khxX2EDZQkuvgyUuHR5+wuEOqbs=
+github.com/k3s-io/kine v0.14.6-k3s1.32/go.mod h1:ASTPT/An64cRJ/FKn1U9r9scLLeacubtHCwcxmbNxVk=
 github.com/k3s-io/klog v1.0.0-k3s2/go.mod h1:4Bi6QPql/J/LkTDqv7R/cd3hPo4k2DG6Ptcz060Ez5I=
 github.com/k3s-io/klog/v2 v2.120.1-k3s1 h1:7twAHPFpZA21KdMnMNnj68STQMPldAxF2Zsaol57dxw=
 github.com/k3s-io/klog/v2 v2.120.1-k3s1/go.mod h1:3Jpz1GvMt720eyJH1ckRHK1EDfpxISzJ7I9OYgaDtPE=
@@ -1197,8 +1197,8 @@ github.com/kisielk/sqlstruct v0.0.0-20201105191214-5f3e10d3ab46/go.mod h1:yyMNCy
 github.com/kisom/goutils v1.4.3/go.mod h1:Lp5qrquG7yhYnWzZCI/68Pa/GpFynw//od6EkGnWpac=
 github.com/klauspost/asmfmt v1.3.2/go.mod h1:AG8TuvYojzulgDAMCnYn50l/5QV3Bs/tp6j0HLHbNSE=
 github.com/klauspost/compress v1.15.9/go.mod h1:PhcZ0MbTNciWF3rruxRgKxI5NkcHHrHUDtV4Yw2GlzU=
-github.com/klauspost/compress v1.18.0 h1:c/Cqfb0r+Yi+JtIEq73FWXVkRonBlf0CRNYc8Zttxdo=
-github.com/klauspost/compress v1.18.0/go.mod h1:2Pp+KzxcywXVXMr50+X0Q/Lsb43OQHYWRCY2AiWywWQ=
+github.com/klauspost/compress v1.18.1 h1:bcSGx7UbpBqMChDtsF28Lw6v/G94LPrrbMbdC3JH2co=
+github.com/klauspost/compress v1.18.1/go.mod h1:ZQFFVG+MdnR0P+l6wpXgIL4NTtwiKIdBnrBd8Nrxr+0=
 github.com/klauspost/cpuid/v2 v2.0.1/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa0213Md/qVLRg=
 github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa0213Md/qVLRg=
 github.com/klauspost/cpuid/v2 v2.3.0 h1:S4CRMLnYUhGeDFDqkGriYKdfoFlDnMtqTiI/sFzhA9Y=
