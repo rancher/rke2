@@ -66,7 +66,7 @@ replace (
 	k8s.io/sample-apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-apiserver v1.34.1-k3s1
 	k8s.io/sample-cli-plugin => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-cli-plugin v1.34.1-k3s1
 	k8s.io/sample-controller => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-controller v1.34.1-k3s1
-	sigs.k8s.io/cri-tools => github.com/k3s-io/cri-tools v1.34.1-k3s2
+	sigs.k8s.io/cri-tools => github.com/k3s-io/cri-tools v1.34.0-k3s2
 )
 
 require (
@@ -77,8 +77,8 @@ require (
 	github.com/google/go-containerregistry v0.20.3
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.15
-	github.com/k3s-io/k3s v1.34.2-0.20251010190833-cf0d35a732d1 // release-1.34
-	github.com/k3s-io/kine v0.14.5
+	github.com/k3s-io/k3s v1.34.2-0.20251030184334-b7627aee8d5a // release-1.34
+	github.com/k3s-io/kine v0.14.6
 	github.com/libp2p/go-netroute v0.2.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/onsi/ginkgo/v2 v2.25.0
@@ -229,7 +229,7 @@ require (
 	github.com/josharian/native v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/karrick/godirwalk v1.17.0 // indirect
-	github.com/klauspost/compress v1.18.0 // indirect
+	github.com/klauspost/compress v1.18.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/koron/go-ssdp v0.0.6 // indirect
 	github.com/libopenstorage/openstorage v1.0.0 // indirect
@@ -384,7 +384,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.34.1 // indirect
 	k8s.io/cli-runtime v0.34.1 // indirect
 	k8s.io/cloud-provider v0.34.1 // indirect
-	k8s.io/cluster-bootstrap v0.0.0 // indirect
+	k8s.io/cluster-bootstrap v0.34.1 // indirect
 	k8s.io/component-helpers v0.34.1 // indirect
 	k8s.io/controller-manager v0.34.1 // indirect
 	k8s.io/cri-client v0.34.1 // indirect
@@ -395,7 +395,7 @@ require (
 	k8s.io/kube-aggregator v0.34.1 // indirect
 	k8s.io/kube-controller-manager v0.0.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20250814151709-d7b6acb124c3 // indirect
-	k8s.io/kube-proxy v0.0.0 // indirect
+	k8s.io/kube-proxy v0.34.1 // indirect
 	k8s.io/kube-scheduler v0.0.0 // indirect
 	k8s.io/kubectl v0.34.1 // indirect
 	k8s.io/kubelet v0.34.1 // indirect
