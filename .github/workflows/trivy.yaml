@@ -45,24 +45,18 @@ jobs:
     - name: Build RKE2 Image
       id: build-image
       run: |
-        SKIP_WINDOWS=true make build-image-runtime
+        SKIP_WINDOWS=true PULL_CMD=echo make build-images
         TAG=$(docker images --format "{{.Repository}}:{{.Tag}} {{.CreatedAt}}" | grep "rancher/rke2-runtime" | sort -k2 -r | head -n1 | awk '{print $1}')
         echo "TAG=${TAG}" >> "$GITHUB_OUTPUT"
 
+    - name: Run Trivy on images
+      run: |
+        make scan-images
+        mv trivy_scan_report.txt trivy-images-report.txt
+    
     - name: Download Rancher's VEX Hub report
       run: curl -fsSO https://raw.githubusercontent.com/rancher/vexhub/refs/heads/main/reports/rancher.openvex.json
 
-    - name: Run Trivy on image
-      uses: aquasecurity/trivy-action@0.33.1
-      with:
-        image-ref: '${{ steps.build-image.outputs.TAG }}'
-        format: 'table'
-        severity: "HIGH,CRITICAL"
-        output: "trivy-image-report.txt"
-      env:
-        TRIVY_VEX: rancher.openvex.json
-        TRIVY_SHOW_SUPPRESSED: true
-    
     - name: Run Trivy on filesystem
       uses: aquasecurity/trivy-action@0.33.1
       with:
@@ -79,7 +73,7 @@ jobs:
       with:
         name: trivy-report
         path: |
-          trivy-image-report.txt
+          trivy-images-report.txt
           trivy-fs-report.txt
         retention-days: 2
         if-no-files-found: error

@@ -11,7 +11,10 @@ awk '{print $1}' << EOF > build/images-core.txt
     ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
 EOF
 
-xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
+# use PULL_CMD=echo to print out the images without pulling them
+PULL_CMD=${PULL_CMD:-"docker image pull --quiet"}
+
+xargs -n1 -t $PULL_CMD << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
     ${REGISTRY}/rancher/hardened-coredns:v1.13.1-build20251015
     ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.10.2-build20251015
@@ -28,17 +31,17 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-controller:v8.2.0
 EOF
 
-xargs -n1 -t docker image pull --quiet << EOF > build/images-traefik.txt
+xargs -n1 -t $PULL_CMD << EOF > build/images-traefik.txt
     ${REGISTRY}/rancher/hardened-traefik:v3.5.4-build20251103
 EOF
 
-xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
+xargs -n1 -t $PULL_CMD << EOF > build/images-canal.txt
     ${REGISTRY}/rancher/hardened-calico:v3.30.3-build20251015
     ${REGISTRY}/rancher/hardened-flannel:v0.27.4-build20251015
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
-xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
+xargs -n1 -t $PULL_CMD << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.2.4
     ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.18.2
     ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.34.7-1757592137-1a52bb680a956879722f48c591a2ca90f7791324
@@ -52,7 +55,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.8.0-build20251014
 EOF
 
-xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
+xargs -n1 -t $PULL_CMD << EOF > build/images-calico.txt
     ${REGISTRY}/rancher/mirrored-calico-operator:v1.38.6
     ${REGISTRY}/rancher/mirrored-calico-ctl:v3.30.3 
     ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.30.3    
@@ -72,7 +75,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-calico.txt
 EOF
 
 if [ "${GOARCH}" != "arm64" ]; then
-xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
+xargs -n1 -t $PULL_CMD << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere:v1.34.0
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.5.0
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v3.5.0
@@ -85,7 +88,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
 EOF
 fi
 
-xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
+xargs -n1 -t $PULL_CMD << EOF > build/images-multus.txt
     ${REGISTRY}/rancher/hardened-multus-cni:v4.2.2-build20251015
     ${REGISTRY}/rancher/hardened-multus-thick:v4.2.2-build20251015
     ${REGISTRY}/rancher/hardened-multus-dynamic-networks-controller:v0.3.7-build20250711
@@ -94,7 +97,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-multus.txt
     ${REGISTRY}/rancher/mirrored-library-busybox:1.36.1
 EOF
 
-xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
+xargs -n1 -t $PULL_CMD << EOF > build/images-harvester.txt
     ${REGISTRY}/rancher/harvester-cloud-provider:v0.2.5
     ${REGISTRY}/rancher/mirrored-kube-vip-kube-vip-iptables:v0.9.2
     ${REGISTRY}/rancher/harvester-csi-driver:v0.2.4
@@ -105,7 +108,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-harvester.txt
     ${REGISTRY}/rancher/mirrored-longhornio-csi-snapshotter:v8.3.0-20250709
 EOF
 
-xargs -n1 -t docker image pull --quiet << EOF > build/images-flannel.txt
+xargs -n1 -t $PULL_CMD << EOF > build/images-flannel.txt
     ${REGISTRY}/rancher/hardened-flannel:v0.27.4-build20251015
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.8.0-build20251014
 EOF
