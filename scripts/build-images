@@ -22,14 +22,14 @@ xargs -n1 -t docker image pull --quiet << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/klipper-helm:v0.9.9-build20251021
     ${REGISTRY}/rancher/klipper-lb:v0.4.13
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
-    ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.6.3
-    ${REGISTRY}/rancher/nginx-ingress-controller:v1.13.3-hardened2
+    ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.6.4
+    ${REGISTRY}/rancher/nginx-ingress-controller:v1.13.4-hardened1
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
     ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-controller:v8.2.0
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-traefik.txt
-    ${REGISTRY}/rancher/hardened-traefik:v3.5.3-build20251020
+    ${REGISTRY}/rancher/hardened-traefik:v3.5.4-build20251103
 EOF
 
 xargs -n1 -t docker image pull --quiet << EOF > build/images-canal.txt
