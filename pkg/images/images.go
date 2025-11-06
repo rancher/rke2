@@ -250,8 +250,8 @@ func Pull(dir, name string, image name.Reference) error {
 }
 
 // checkPreloadedImages returns true if there are any files in dir that do not
-// end with a .txt extension. The presence of at least one such file is presumed to
-// indicate that there is an airgap image tarball available.
+// end with a .txt or .json extension. The presence of at least one such file
+// is presumed to indicate that there is an airgap image tarball available.
 func checkPreloadedImages(dir string) (bool, error) {
 	if _, err := os.Stat(dir); err != nil {
 		if os.IsNotExist(err) {
@@ -270,8 +270,8 @@ func checkPreloadedImages(dir string) (bool, error) {
 		if fileInfo.IsDir() {
 			continue
 		}
-		// return true if there is a file that doesn't end with .txt
-		if !strings.HasSuffix(fileInfo.Name(), ".txt") {
+		// return true if there is a file that doesn't end with .txt or .json
+		if name := fileInfo.Name(); !strings.HasSuffix(name, ".txt") && !strings.HasSuffix(name, ".json") {
 			return true, nil
 		}
 	}
