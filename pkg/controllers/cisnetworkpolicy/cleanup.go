@@ -26,7 +26,7 @@ func Cleanup(ctx context.Context, sc *server.Context) error {
 
 func unregister(ctx context.Context, nodes coreclient.NodeController) error {
 	logrus.Debugf("CISNetworkPolicyController: Removing controller hooks for NetworkPolicy %s", flannelHostNetworkPolicyName)
-	go wait.PollImmediateUntilWithContext(ctx, time.Second*30, func(_ context.Context) (bool, error) {
+	go wait.PollUntilContextCancel(ctx, time.Second*30, true, func(_ context.Context) (bool, error) {
 		nodesList, err := nodes.List(metav1.ListOptions{})
 		if err != nil {
 			logrus.Warnf("CISNetworkPolicyController: failed to list nodes: %v", err)
