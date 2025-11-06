@@ -481,6 +481,7 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, wg *sync.WaitGroup, args *ex
 // Containerd starts the k3s implementation of containerd
 func (s *StaticPodConfig) Containerd(ctx context.Context, cfg *daemonconfig.Node) error {
 	<-s.dataReadyChan()
+	logrus.Infof("Running containerd with PATH %s", os.Getenv("PATH"))
 	return executor.CloseIfNilErr(containerd.Run(ctx, cfg), s.criReady)
 }
 
@@ -647,6 +648,7 @@ func (s *StaticPodConfig) stageData(ctx context.Context, nodeConfig *daemonconfi
 	if err := os.Setenv("PATH", execPath+":"+os.Getenv("PATH")); err != nil {
 		return err
 	}
+	logrus.Infof("Set PATH %s", os.Getenv("PATH"))
 	if s.IsServer {
 		return bootstrap.UpdateManifests(s.Resolver, s.IngressController, nodeConfig, cfg)
 	}
