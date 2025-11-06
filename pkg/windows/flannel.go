@@ -263,7 +263,7 @@ func (f *Flannel) Start(ctx context.Context) error {
 	logPath := filepath.Join(f.CNICfg.ConfigPath, "logs", "flanneld.log")
 
 	// Wait for the node to be registered in the cluster
-	if err := wait.PollImmediateWithContext(ctx, 3*time.Second, 5*time.Minute, func(ctx context.Context) (bool, error) {
+	if err := wait.PollUntilContextTimeout(ctx, 3*time.Second, 5*time.Minute, true, func(ctx context.Context) (bool, error) {
 		_, err := f.KubeClient.CoreV1().Nodes().Get(ctx, f.CNICfg.Hostname, metav1.GetOptions{})
 		if err != nil {
 			logrus.WithError(err).Warningf("Flanneld can't start because it can't find node, retrying %s", f.CNICfg.Hostname)
@@ -316,7 +316,7 @@ func (f *Flannel) ReserveSourceVip(ctx context.Context) (string, error) {
 	var err error
 
 	logrus.Info("Reserving an IP on flannel HNS network for kube-proxy source vip")
-	if err := wait.PollImmediateWithContext(ctx, 10*time.Second, 5*time.Minute, func(ctx context.Context) (bool, error) {
+	if err := wait.PollUntilContextTimeout(ctx, 10*time.Second, 5*time.Minute, true, func(ctx context.Context) (bool, error) {
 		network, err = hcsshim.GetHNSNetworkByName(f.CNICfg.OverlayNetName)
 		if err != nil || network == nil {
 			logrus.Debugf("can't find flannel HNS network, retrying %s", f.CNICfg.OverlayNetName)

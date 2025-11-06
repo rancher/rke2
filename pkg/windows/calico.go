@@ -267,7 +267,7 @@ func (c *Calico) Start(ctx context.Context) error {
 	logPath := filepath.Join(c.CNICfg.ConfigPath, "logs")
 
 	// Wait for the node to be registered in the cluster
-	if err := wait.PollImmediateWithContext(ctx, 5*time.Second, 5*time.Minute, func(ctx context.Context) (bool, error) {
+	if err := wait.PollUntilContextTimeout(ctx, 5*time.Second, 5*time.Minute, true, func(ctx context.Context) (bool, error) {
 		_, err := c.KubeClient.CoreV1().Nodes().Get(ctx, c.CNICfg.Hostname, metav1.GetOptions{})
 		if err != nil {
 			logrus.WithError(err).Warningf("Calico can't start because it can't find node, retrying %s", c.CNICfg.Hostname)
@@ -520,7 +520,7 @@ func generateGeneralCalicoEnvs(config *CalicoConfig) []string {
 func (c *Calico) ReserveSourceVip(ctx context.Context) (string, error) {
 	var vip string
 
-	if err := wait.PollImmediateWithContext(ctx, 5*time.Second, 5*time.Minute, func(ctx context.Context) (bool, error) {
+	if err := wait.PollUntilContextTimeout(ctx, 5*time.Second, 5*time.Minute, true, func(ctx context.Context) (bool, error) {
 		// calico-node is creating an endpoint named Calico_ep for this purpose
 		endpoint, err := hcsshim.GetHNSEndpointByName("Calico_ep")
 		if err != nil {
@@ -536,7 +536,7 @@ func (c *Calico) ReserveSourceVip(ctx context.Context) (string, error) {
 	return vip, nil
 }
 
-//Get latest stored reboot
+// Get latest stored reboot
 func (c *Calico) getStoredLastBootTime() (string, error) {
 	lastRebootPath := filepath.Join(c.CNICfg.ConfigPath, "lastBootTime.txt")
 	lastStoredBoot, err := os.ReadFile(lastRebootPath)
@@ -550,7 +550,7 @@ func (c *Calico) getStoredLastBootTime() (string, error) {
 	return string(lastStoredBoot), nil
 }
 
-//Set last boot time on the registry
+// Set last boot time on the registry
 func (c *Calico) setStoredLastBootTime(lastBootTime string) error {
 	lastRebootPath := filepath.Join(c.CNICfg.ConfigPath, "lastBootTime.txt")
 	err := os.WriteFile(lastRebootPath, []byte(lastBootTime), 0644)
