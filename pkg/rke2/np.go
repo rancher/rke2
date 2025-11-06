@@ -274,7 +274,7 @@ func setNetworkPolicies(cisMode bool, namespaces []string) cmds.StartupHook {
 				logrus.Fatalf("np: new k8s client: %v", err)
 			}
 
-			go wait.PollImmediateInfiniteWithContext(ctx, 5*time.Second, func(ctx context.Context) (bool, error) {
+			go wait.PollUntilContextCancel(ctx, 5*time.Second, true, func(ctx context.Context) (bool, error) {
 				logrus.Info("Applying network policies...")
 				for _, namespace := range namespaces {
 					if err := setPoliciesFromTemplates(ctx, cs, defaultNamespacePolicies, namespace); err != nil {

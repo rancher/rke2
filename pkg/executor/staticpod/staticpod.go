@@ -151,7 +151,7 @@ func (s *StaticPodConfig) Kubelet(ctx context.Context, args []string) error {
 	s.stopKubelet = cancel
 
 	go func() {
-		wait.PollImmediateInfiniteWithContext(ctx, 5*time.Second, func(ctx context.Context) (bool, error) {
+		wait.PollUntilContextCancel(ctx, 5*time.Second, true, func(ctx context.Context) (bool, error) {
 			cmd := exec.CommandContext(ctx, s.KubeletPath, args...)
 			cmd.Stdout = logOut
 			cmd.Stderr = logOut

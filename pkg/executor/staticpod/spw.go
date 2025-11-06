@@ -54,7 +54,7 @@ func PodManifestsDir(dataDir string) string {
 // manually terminated, as the kubelet cannot be relied upon to terminate old pod when the apiserver is
 // not available.
 func reconcileStaticPods(ctx context.Context, containerRuntimeEndpoint, dataDir string) {
-	if err := wait.PollImmediateWithContext(ctx, 20*time.Second, 30*time.Minute, func(ctx context.Context) (bool, error) {
+	if err := wait.PollUntilContextTimeout(ctx, 20*time.Second, 30*time.Minute, true, func(ctx context.Context) (bool, error) {
 		if containerRuntimeEndpoint == "" {
 			containerRuntimeEndpoint = ContainerdSock
 		}
@@ -81,7 +81,7 @@ func reconcileStaticPods(ctx context.Context, containerRuntimeEndpoint, dataDir 
 			logrus.Infof("Pod for %s is synced", pod)
 		}
 		return true, nil
-	}); err != nil {
+	}); err != nil && !errors.Is(err, context.Canceled) {
 		logrus.Fatalf("Failed waiting for static pods to sync: %v", err)
 	}
 }
