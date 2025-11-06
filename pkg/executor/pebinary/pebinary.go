@@ -114,6 +114,12 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 
 	setWindowsAgentSpecificSettings(p.DataDir, nodeConfig)
 
+	if binDir, err := bootstrap.BinDir(p.Resolver, cfg); err != nil {
+		return err
+	} else {
+		os.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	}
+
 	// stage bootstrap content from runtime image, and close the dataReady channel when successful
 	go func() {
 		if err := p.stageData(ctx, nodeConfig, cfg); err != nil {
@@ -444,11 +450,7 @@ func (p *PEBinaryConfig) stageData(ctx context.Context, nodeConfig *config.Node,
 			return pkgerrors.WithMessage(err, "failed to wait for embedded registry")
 		}
 	}
-	execPath, err := bootstrap.Stage(ctx, p.Resolver, nodeConfig, cfg)
-	if err != nil {
-		return err
-	}
-	if err := os.Setenv("PATH", execPath+":"+os.Getenv("PATH")); err != nil {
+	if err := bootstrap.Stage(ctx, p.Resolver, nodeConfig, cfg); err != nil {
 		return err
 	}
 	if p.IsServer {
