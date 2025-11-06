@@ -12,7 +12,7 @@ awk '{print $1}' << EOF > build/images-core.txt
 EOF
 
 # use PULL_CMD=echo to print out the images without pulling them
-PULL_CMD=${PULL_CMD:-"docker image pull --quiet"}
+PULL_CMD="${PULL_CMD:-docker image pull --quiet}"
 
 xargs -n1 -t $PULL_CMD << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
