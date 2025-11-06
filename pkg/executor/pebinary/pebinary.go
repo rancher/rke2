@@ -24,7 +24,10 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
+	"github.com/k3s-io/k3s/pkg/signals"
+	"github.com/k3s-io/k3s/pkg/spegel"
 	"github.com/k3s-io/k3s/pkg/util"
+	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/logging"
@@ -32,6 +35,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -65,6 +69,7 @@ type PEBinaryConfig struct {
 
 	apiServerReady <-chan struct{}
 	criReady       chan struct{}
+	dataReady      chan struct{}
 }
 
 // explicit interface check
@@ -89,6 +94,7 @@ const (
 func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node, cfg cmds.Agent) error {
 	p.apiServerReady = util.APIServerReadyChan(ctx, nodeConfig.AgentConfig.KubeConfigK3sController, util.DefaultAPIServerReadyTimeout)
 	p.criReady = make(chan struct{})
+	p.dataReady = make(chan struct{})
 
 	// On servers this is set to an initial value from the CLI when the resolver is created, so that
 	// static pod manifests can be created before the agent bootstrap is complete. The agent itself
@@ -107,18 +113,15 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 	nodeConfig.AgentConfig.PauseImage = pauseImage.Name()
 
 	setWindowsAgentSpecificSettings(p.DataDir, nodeConfig)
-	// stage bootstrap content from runtime image
-	execPath, err := bootstrap.Stage(p.Resolver, nodeConfig, cfg)
-	if err != nil {
-		return err
-	}
-	if err := os.Setenv("PATH", execPath+";"+os.Getenv("PATH")); err != nil {
-		return err
-	}
 
-	if p.IsServer {
-		return bootstrap.UpdateManifests(p.Resolver, p.IngressController, nodeConfig, cfg)
-	}
+	// stage bootstrap content from runtime image, and close the dataReady channel when successful
+	go func() {
+		if err := p.stageData(ctx, nodeConfig, cfg); err != nil {
+			signals.RequestShutdown(err)
+		} else {
+			close(p.dataReady)
+		}
+	}()
 
 	restConfig, err := clientcmd.BuildConfigFromFlags("", nodeConfig.AgentConfig.KubeConfigK3sController)
 
@@ -275,12 +278,13 @@ func (p *PEBinaryConfig) KubeProxy(ctx context.Context, args []string) error {
 
 // Docker starts cri-dockerd as implemented in the k3s cridockerd package
 func (p *PEBinaryConfig) Docker(ctx context.Context, cfg *config.Node) error {
-	defer close(p.criReady)
-	return cridockerd.Run(ctx, cfg)
+	<-p.dataReadyChan()
+	return executor.CloseIfNilErr(cridockerd.Run(ctx, cfg), p.criReady)
 }
 
 // Containerd configures and starts containerd.
 func (p *PEBinaryConfig) Containerd(ctx context.Context, cfg *config.Node) error {
+	<-p.dataReadyChan()
 	defer close(p.criReady)
 	args := getContainerdArgs(cfg)
 	stdOut := io.Writer(os.Stdout)
@@ -393,12 +397,12 @@ func (p *PEBinaryConfig) ETCD(ctx context.Context, wg *sync.WaitGroup, args *exe
 }
 
 func (p *PEBinaryConfig) CRI(ctx context.Context, cfg *config.Node) error {
-	defer close(p.criReady)
+	<-p.dataReadyChan()
 	// agentless sets cri socket path to /dev/null to indicate no CRI is needed
 	if cfg.ContainerRuntimeEndpoint != "/dev/null" {
-		return cri.WaitForService(ctx, cfg.ContainerRuntimeEndpoint, "CRI")
+		return executor.CloseIfNilErr(cri.WaitForService(ctx, cfg.ContainerRuntimeEndpoint, "CRI"), p.criReady)
 	}
-	return nil
+	return executor.CloseIfNilErr(nil, p.criReady)
 }
 
 func (p *PEBinaryConfig) APIServerReadyChan() <-chan struct{} {
@@ -419,8 +423,38 @@ func (p *PEBinaryConfig) CRIReadyChan() <-chan struct{} {
 	return p.criReady
 }
 
+func (p *PEBinaryConfig) dataReadyChan() <-chan struct{} {
+	if p.dataReady == nil {
+		panic("executor not bootstrapped")
+	}
+	return p.dataReady
+}
+
 func (p *PEBinaryConfig) IsSelfHosted() bool {
 	return false
+}
+
+func (p *PEBinaryConfig) stageData(ctx context.Context, nodeConfig *config.Node, cfg cmds.Agent) error {
+	// if spegel is enabled, wait for it to start up so that we can attempt to pull content through it
+	if nodeConfig.EmbeddedRegistry && spegel.DefaultRegistry != nil {
+		if err := wait.PollUntilContextTimeout(ctx, time.Second, time.Minute, true, func(ctx context.Context) (bool, error) {
+			_, err := spegel.DefaultRegistry.Bootstrapper.Get(ctx)
+			return err == nil, nil
+		}); err != nil {
+			return pkgerrors.WithMessage(err, "failed to wait for embedded registry")
+		}
+	}
+	execPath, err := bootstrap.Stage(ctx, p.Resolver, nodeConfig, cfg)
+	if err != nil {
+		return err
+	}
+	if err := os.Setenv("PATH", execPath+":"+os.Getenv("PATH")); err != nil {
+		return err
+	}
+	if p.IsServer {
+		return bootstrap.UpdateManifests(p.Resolver, p.IngressController, nodeConfig, cfg)
+	}
+	return nil
 }
 
 // addFeatureGate adds a feature gate with the correct syntax.
