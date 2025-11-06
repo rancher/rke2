@@ -114,6 +114,12 @@ func (s *StaticPodConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfi
 	}
 	nodeConfig.AgentConfig.PauseImage = pauseImage.Name()
 
+	if binDir, err := bootstrap.BinDir(s.Resolver, cfg); err != nil {
+		return err
+	} else {
+		os.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	}
+
 	// stage bootstrap content from runtime image, and close the dataReady channel when successful
 	go func() {
 		if err := s.stageData(ctx, nodeConfig, cfg); err != nil {
@@ -640,11 +646,7 @@ func (s *StaticPodConfig) stageData(ctx context.Context, nodeConfig *daemonconfi
 			return pkgerrors.WithMessage(err, "failed to wait for embedded registry")
 		}
 	}
-	execPath, err := bootstrap.Stage(ctx, s.Resolver, nodeConfig, cfg)
-	if err != nil {
-		return err
-	}
-	if err := os.Setenv("PATH", execPath+":"+os.Getenv("PATH")); err != nil {
+	if err := bootstrap.Stage(ctx, s.Resolver, nodeConfig, cfg); err != nil {
 		return err
 	}
 	if s.IsServer {
