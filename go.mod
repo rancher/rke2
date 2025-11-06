@@ -326,7 +326,7 @@ require (
 	github.com/quic-go/webtransport-go v0.9.0 // indirect
 	github.com/rancher/dynamiclistener v0.6.4-rc.2 // indirect
 	github.com/rancher/lasso v0.2.2 // indirect
-	github.com/rancher/remotedialer v0.4.1 // indirect
+	github.com/rancher/remotedialer v0.4.5-rc.5 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rootless-containers/rootlesskit v1.1.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect
