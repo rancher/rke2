@@ -29,6 +29,8 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
+	"github.com/k3s-io/k3s/pkg/signals"
+	"github.com/k3s-io/k3s/pkg/spegel"
 	"github.com/k3s-io/k3s/pkg/util"
 	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/auth"
@@ -65,6 +67,7 @@ type StaticPodConfig struct {
 	apiServerReady <-chan struct{}
 	etcdReady      chan struct{}
 	criReady       chan struct{}
+	dataReady      chan struct{}
 }
 
 // explicit interface check
@@ -94,6 +97,7 @@ func (s *StaticPodConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfi
 	s.apiServerReady = apiserverSyncAndReady(ctx, nodeConfig, cfg)
 	s.etcdReady = make(chan struct{})
 	s.criReady = make(chan struct{})
+	s.dataReady = make(chan struct{})
 
 	// On servers this is set to an initial value from the CLI when the resolver is created, so that
 	// static pod manifests can be created before the agent bootstrap is complete. The agent itself
@@ -110,17 +114,14 @@ func (s *StaticPodConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfi
 	}
 	nodeConfig.AgentConfig.PauseImage = pauseImage.Name()
 
-	// stage bootstrap content from runtime image
-	execPath, err := bootstrap.Stage(s.Resolver, nodeConfig, cfg)
-	if err != nil {
-		return err
-	}
-	if err := os.Setenv("PATH", execPath+":"+os.Getenv("PATH")); err != nil {
-		return err
-	}
-	if s.IsServer {
-		return bootstrap.UpdateManifests(s.Resolver, s.IngressController, nodeConfig, cfg)
-	}
+	// stage bootstrap content from runtime image, and close the dataReady channel when successful
+	go func() {
+		if err := s.stageData(ctx, nodeConfig, cfg); err != nil {
+			signals.RequestShutdown(err)
+		} else {
+			close(s.dataReady)
+		}
+	}()
 
 	// Remove the kube-proxy static pod manifest before starting the agent.
 	// If kube-proxy should run, the manifest will be recreated after the apiserver is up.
@@ -488,15 +489,18 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, wg *sync.WaitGroup, args *ex
 
 // Containerd starts the k3s implementation of containerd
 func (s *StaticPodConfig) Containerd(ctx context.Context, cfg *daemonconfig.Node) error {
+	<-s.dataReadyChan()
 	return executor.CloseIfNilErr(containerd.Run(ctx, cfg), s.criReady)
 }
 
 // Docker starts the k3s implementation of cridockerd
 func (s *StaticPodConfig) Docker(ctx context.Context, cfg *daemonconfig.Node) error {
+	<-s.dataReadyChan()
 	return executor.CloseIfNilErr(cridockerd.Run(ctx, cfg), s.criReady)
 }
 
 func (s *StaticPodConfig) CRI(ctx context.Context, cfg *daemonconfig.Node) error {
+	<-s.dataReadyChan()
 	// agentless sets cri socket path to /dev/null to indicate no CRI is needed
 	if cfg.ContainerRuntimeEndpoint != "/dev/null" {
 		return executor.CloseIfNilErr(cri.WaitForService(ctx, cfg.ContainerRuntimeEndpoint, "CRI"), s.criReady)
@@ -523,6 +527,13 @@ func (s *StaticPodConfig) CRIReadyChan() <-chan struct{} {
 		panic("executor not bootstrapped")
 	}
 	return s.criReady
+}
+
+func (s *StaticPodConfig) dataReadyChan() <-chan struct{} {
+	if s.dataReady == nil {
+		panic("executor not bootstrapped")
+	}
+	return s.dataReady
 }
 
 func (s *StaticPodConfig) IsSelfHosted() bool {
@@ -626,6 +637,29 @@ func (s *StaticPodConfig) writeTemplate(spec *podtemplate.Spec) error {
 		return writeFile(manifestPath, b, 0600)
 	}
 	return writeFile(manifestPath, b, 0644)
+}
+
+func (s *StaticPodConfig) stageData(ctx context.Context, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
+	// if spegel is enabled, wait for it to start up so that we can attempt to pull content through it
+	if nodeConfig.EmbeddedRegistry && spegel.DefaultRegistry != nil {
+		if err := wait.PollUntilContextTimeout(ctx, time.Second, time.Minute, true, func(ctx context.Context) (bool, error) {
+			_, err := spegel.DefaultRegistry.Bootstrapper.Get(ctx)
+			return err == nil, nil
+		}); err != nil {
+			return pkgerrors.WithMessage(err, "failed to wait for embedded registry")
+		}
+	}
+	execPath, err := bootstrap.Stage(ctx, s.Resolver, nodeConfig, cfg)
+	if err != nil {
+		return err
+	}
+	if err := os.Setenv("PATH", execPath+":"+os.Getenv("PATH")); err != nil {
+		return err
+	}
+	if s.IsServer {
+		return bootstrap.UpdateManifests(s.Resolver, s.IngressController, nodeConfig, cfg)
+	}
+	return nil
 }
 
 func writeFile(dest string, content []byte, perm fs.FileMode) error {

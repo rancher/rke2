@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -83,7 +84,7 @@ func dirExists(dir string) bool {
 // Unique image detection is accomplished by hashing the image name and tag, or the image digest,
 // depending on what the runtime image reference points at.
 // If the bin directory already exists, or content is successfully extracted, the bin directory path is returned.
-func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Agent) (string, error) {
+func Stage(ctx context.Context, resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Agent) (string, error) {
 	var img v1.Image
 
 	ref, err := resolver.GetReference(images.Runtime)
@@ -133,7 +134,7 @@ func Stage(resolver *images.Resolver, nodeConfig *daemonconfig.Node, cfg cmds.Ag
 			logrus.Infof("Pulling runtime image %s", ref.Name())
 			// Make sure that the runtime image is also loaded into containerd
 			images.Pull(imagesDir, images.Runtime, ref)
-			img, err = registry.Image(ref, remote.WithPlatform(v1.Platform{Architecture: runtime.GOARCH, OS: runtime.GOOS}))
+			img, err = registry.Image(ref, remote.WithPlatform(v1.Platform{Architecture: runtime.GOARCH, OS: runtime.GOOS}), remote.WithContext(ctx))
 			if err != nil {
 				return "", pkgerrors.WithMessagef(err, "failed to get runtime image %s", ref.Name())
 			}
