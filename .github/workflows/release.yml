@@ -52,12 +52,8 @@ jobs:
     
     - name: Scan Images
       continue-on-error: true
-      # This is a temporary workaround until the base image is updated
-      # in the Dockerfile to include the new trivy version that supports VEX
       run: |
-        docker run --rm -v "$(pwd)/build:/build" -v "$(pwd):/workspace" \
-          -w /workspace rancher/hardened-build-base:v1.24.6b1 \
-          make scan-images
+        dapper -f Dockerfile --target dapper make scan-images
     - name: Upload Scan Results
       uses: actions/upload-artifact@v5
       with:
