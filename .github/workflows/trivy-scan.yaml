@@ -1,0 +1,146 @@
+name: Trivy Scan Result
+
+on:
+  workflow_run:
+    workflows: ["Trivy Scan Trigger"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  trivy_scan:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ${{ github.repository == 'rancher/rke2' && 'runs-on,runner=4cpu-linux-x64' || 'ubuntu-latest' }}
+    outputs:
+      pr_number: ${{ steps.pr_context.outputs.pr_number }}
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      # For some reason with workflow_run.id, download-artifact does not work.
+      # Github Docs explicity provide an example of using github-script to download artifacts.
+      - name: 'Download artifact'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: context.payload.workflow_run.id,
+            });
+            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "pr-context-for-scan"
+            })[0];
+            let download = await github.rest.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            const fs = require('fs');
+            fs.writeFileSync('pr-context-for-scan.zip', Buffer.from(download.data));
+
+      - name: 'Unzip artifact to pr-context'
+        run: unzip pr-context-for-scan.zip -d pr-context
+
+      - name: Setup PR context
+        id: pr_context
+        run: |
+          pr_number=$(cat pr-context/pr_number)
+          echo "pr_number=$pr_number" >> $GITHUB_OUTPUT
+          mkdir -p build
+          mv pr-context/images*.txt build/
+
+      - name: Load RKE2 runtime image
+        run: docker load -i pr-context/rke2-runtime.tar
+
+      - name: Run Trivy on images
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
+          ./scripts/scan-images compact-report
+          mv trivy_scan_report.txt trivy-images-report.txt
+    
+      - name: Download Rancher's VEX Hub report
+        run: curl -fsSO https://raw.githubusercontent.com/rancher/vexhub/refs/heads/main/reports/rancher.openvex.json
+
+      - name: Run Trivy on filesystem
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          severity: "HIGH,CRITICAL"
+          output: "trivy-fs-report.txt"
+        env:
+          TRIVY_VEX: rancher.openvex.json
+          TRIVY_DISABLE_VEX_NOTICE: true
+
+      - name: Upload Trivy Reports
+        uses: actions/upload-artifact@v5
+        with:
+          name: trivy-report
+          path: |
+            trivy-images-report.txt
+            trivy-fs-report.txt
+          retention-days: 2
+          if-no-files-found: error
+
+  report_results:
+    needs: trivy_scan
+    if: always() # Run even if the scan fails.
+    runs-on: ${{ github.repository == 'rancher/rke2' && 'runs-on,runner=4cpu-linux-x64' || 'ubuntu-latest' }}
+    permissions:
+      pull-requests: write # Required to post comments.
+    
+    steps:       
+      - name: Download Trivy Report artifact
+        uses: actions/download-artifact@v6
+        if: needs.trivy_scan.result == 'success'
+        with:
+          name: trivy-report
+          path: .
+
+      - name: Add Trivy Report to PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          SCAN_RESULT: ${{ needs.trivy_scan.result }}
+          PR_NUMBER: ${{ needs.trivy_scan.outputs.pr_number }}
+        run: |
+          if [[ "$SCAN_RESULT" == "failure" ]]; then
+            gh issue comment $PR_NUMBER -b ":x: Trivy scan action failed, check logs :x:"
+            exit 0
+          fi
+          cat trivy-images-report.txt trivy-fs-report.txt > trivy-report.txt
+          if [ -s trivy-report.txt ] && [ -n "$(grep -v '^\s*$' trivy-report.txt)" ]; then
+            {
+              echo '<details>'
+              echo '<summary>RKE2 Scan Report - Click to expand</summary>'
+              echo -e '\n```'
+              cat trivy-report.txt
+              echo -e '\n```'
+              echo '</details>'
+            } >> trivy-report-formatted.txt
+            gh issue comment $PR_NUMBER -F trivy-report-formatted.txt
+          else
+            echo ':star2: No High or Critical CVEs Found :star2:' > trivy-report.txt
+            gh issue comment $PR_NUMBER -F trivy-report.txt
+          fi
+
+  remove_label:
+    if: always() # Run even if the scan fails.
+    needs: trivy_scan
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # Required to remove labels from the PR.
+
+    steps:
+      - name: Remove 'scan-with-trivy' label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ needs.trivy_scan.outputs.pr_number }}
+        run: |
+          gh pr edit $PR_NUMBER --remove-label "scan-with-trivy"

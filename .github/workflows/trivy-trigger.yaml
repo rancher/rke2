@@ -1,0 +1,76 @@
+name: Trivy Scan Trigger
+
+# This workflow is triggered when a pull request is labeled with 'scan-with-trivy'.
+# This can only be initiated by a user who is a member of the rancher organization and has write permissions.
+# It isolates the built of RKE2 within a unprivileged enviroment. 
+# The follow up workflow will then use the artifacts created here to run the scan
+# and report the results back to the PR.
+
+on:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: read
+
+jobs:
+  trigger-scan:
+    if: github.event.label.name == 'scan-with-trivy'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify actor is a member of rancher organization and has write permissions
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const org = 'rancher';
+            const actor = context.actor;
+            const { repo, owner } = context.repo; 
+            
+            try {
+              const result = await github.rest.orgs.checkMembershipForUser({
+                org,
+                username: actor,
+              });
+            } catch (error) {
+              core.setFailed(`User ${actor} is not an public member of the ${org} organization`);
+            }
+
+            const { data: { permission } } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner,
+              repo,
+              username: actor
+            });
+            
+            if (permission !== 'admin' && permission !== 'write') {
+              core.setFailed(`User @${actor} does not have write permission. Scan can only be triggered by repository collaborators with write access.`);
+            }
+      
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      
+        # We don't care about the go version, as we only use it to capture ENV vars
+      - name: Install Go
+        uses: ./.github/actions/setup-go
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build RKE2 image lists
+        run: |
+          SKIP_WINDOWS=true PULL_CMD=echo make build-images
+          TAG=$(docker images --format "{{.Repository}}:{{.Tag}} {{.CreatedAt}}" | grep "rancher/rke2-runtime" | sort -k2 -r | head -n1 | awk '{print $1}')
+          docker save -o rke2-runtime.tar ${TAG}
+      
+      - name: Create PR context artifact
+        run: |
+          mkdir -p pr-context
+          echo "${{ github.event.pull_request.number }}" > pr-context/pr_number
+          mv build/images-core.txt build/images-canal.txt build/images-flannel.txt build/images-traefik.txt pr-context
+          mv rke2-runtime.tar pr-context/rke2-runtime.tar
+
+      - name: Upload PR context artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: pr-context-for-scan
+          path: pr-context/
+          retention-days: 1
