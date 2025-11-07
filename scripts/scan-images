@@ -7,15 +7,44 @@ rm "$SCAN_OUTPUT"
 
 # Download the Rancher OpenVEX Trivy report
 curl -fsSO https://raw.githubusercontent.com/rancher/vexhub/refs/heads/main/reports/rancher.openvex.json
+export TRIVY_DISABLE_VEX_NOTICE=true
 
 for IMAGE in $(cat build/images*.txt); do
     echo "Scanning image: $IMAGE"
     
     # Run Trivy scan and append the report to the output file
-    trivy image "${IMAGE}" -q --no-progress \
+    if [ "$1" = "compact-report" ]; then
+      trivy image "${IMAGE}" -q --no-progress \
       --severity ${SEVERITIES:-CRITICAL,HIGH} \
-      --ignore-unfixed --show-suppressed \
-      --vex rancher.openvex.json >> "$SCAN_OUTPUT"
+      --ignore-unfixed \
+      -f json \
+      --exit-code 1 \
+      --vex rancher.openvex.json > "temp.json"
+      RC=$?
+      if [ ${RC} -gt 0 ]; then
+        {
+          echo -e "\nImage: ${IMAGE}"
+          printf '=%0.s' {1..27}
+          echo 
+        } >> "$SCAN_OUTPUT"
+        # Print the Target before each set of vulnerabilities
+        jq -rc '.Results[] | select(.Vulnerabilities != null) | .Target as $target | .Vulnerabilities[] | "\($target)\t\(.Severity)\t\(.PkgName)\t\(.VulnerabilityID)\t\(.InstalledVersion)\t\(.FixedVersion)"' "temp.json" | sort | while IFS=$'\t' read -r target severity library vuln_id installed fixed; do
+            # Print the Target as a header if it's the first occurrence
+            if [[ "$last_target" != "$target" ]]; then
+                echo -e "\nTarget: $target" >> "$SCAN_OUTPUT"
+                printf "%-20s %-20s %-10s %-15s %-15s\n" "Library" "VulnID" "Severity" "Installed" "Fixed" >> "$SCAN_OUTPUT"
+                last_target="$target"
+            fi
+            printf "%-20s %-20s %-10s %-15s %-15s\n" "$library" "$vuln_id" "$severity" "$installed" "$fixed" >> "$SCAN_OUTPUT"
+        done
+        echo >> "$SCAN_OUTPUT"
+      fi
+    else
+      trivy image "${IMAGE}" -q --no-progress \
+        --severity ${SEVERITIES:-CRITICAL,HIGH} \
+        --ignore-unfixed --show-suppressed \
+        --vex rancher.openvex.json >> "$SCAN_OUTPUT"
+    fi
     
     if [ "$1" = "dump-report" ]; then
       trivy image "${IMAGE}" -q --no-progress \
@@ -31,8 +60,10 @@ for IMAGE in $(cat build/images*.txt); do
         echo
       fi
     fi
+
+    
 done
 
 rm rancher.openvex.json
-[ "$1" = "dump-report" ] && rm temp.json
+[ "$1" = "dump-report" ] || [ "$1" = "compact-report" ] && rm temp.json
 echo "Trivy scan completed. Reports are saved in $SCAN_OUTPUT."
