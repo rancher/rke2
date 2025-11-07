@@ -56,22 +56,22 @@ xargs -n1 -t $PULL_CMD << EOF > build/images-cilium.txt
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > build/images-calico.txt
-    ${REGISTRY}/rancher/mirrored-calico-operator:v1.38.6
-    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.30.3 
-    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.30.3    
-    ${REGISTRY}/rancher/mirrored-calico-typha:v3.30.3   
-    ${REGISTRY}/rancher/mirrored-calico-node:v3.30.3    
-    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.30.3  
-    ${REGISTRY}/rancher/mirrored-calico-cni:v3.30.3 
-    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.30.3   
-    ${REGISTRY}/rancher/mirrored-calico-csi:v3.30.3 
-    ${REGISTRY}/rancher/mirrored-calico-node-driver-registrar:v3.30.3   
-    ${REGISTRY}/rancher/mirrored-calico-envoy-gateway:v3.30.3   
-    ${REGISTRY}/rancher/mirrored-calico-envoy-proxy:v3.30.3   
-    ${REGISTRY}/rancher/mirrored-calico-envoy-ratelimit:v3.30.3   
-    ${REGISTRY}/rancher/mirrored-calico-goldmane:v3.30.3    
-    ${REGISTRY}/rancher/mirrored-calico-whisker:v3.30.3 
-    ${REGISTRY}/rancher/mirrored-calico-whisker-backend:v3.30.3 
+    ${REGISTRY}/rancher/mirrored-calico-operator:v1.38.7
+    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-typha:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-node:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-cni:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-csi:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-node-driver-registrar:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-envoy-gateway:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-envoy-proxy:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-envoy-ratelimit:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-goldmane:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-whisker:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-whisker-backend:v3.30.4
 EOF
 
 if [ "${GOARCH}" != "arm64" ]; then
