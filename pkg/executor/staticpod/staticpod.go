@@ -382,7 +382,7 @@ func (s *StaticPodConfig) CurrentETCDOptions() (opts executor.InitialOptions, er
 func (s *StaticPodConfig) ETCD(ctx context.Context, wg *sync.WaitGroup, args *executor.ETCDConfig, extraArgs []string, test executor.TestFunc) error {
 	go func() {
 		for {
-			if err := test(ctx); err != nil {
+			if err := test(ctx, true); err != nil {
 				logrus.Infof("Failed to test etcd connection: %v", err)
 			} else {
 				logrus.Info("Connection to etcd is ready")
