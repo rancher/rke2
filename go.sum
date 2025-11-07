@@ -256,7 +256,6 @@ github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c h1:udKWzYgxTojEK
 github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/Azure/go-autorest v12.0.0+incompatible/go.mod h1:r+4oMnoxhatjLLJ6zxSWATqVooLgysK6ZNox3g/xq24=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/BurntSushi/toml v1.4.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
 github.com/BurntSushi/toml v1.5.0 h1:W5quZX/G/csjUnuI8SUYlsHs9M38FC7znL0lIO+DvMg=
 github.com/BurntSushi/toml v1.5.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
@@ -480,7 +479,6 @@ github.com/cpuguy83/go-md2man v1.0.10/go.mod h1:SmD6nW6nTyfqj6ABTjUi3V3JVMnlJmwc
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsrgA7czyZG/E6dU=
 github.com/cpuguy83/go-md2man/v2 v2.0.0/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsrgA7czyZG/E6dU=
 github.com/cpuguy83/go-md2man/v2 v2.0.4/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
-github.com/cpuguy83/go-md2man/v2 v2.0.5/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
 github.com/cpuguy83/go-md2man/v2 v2.0.7 h1:zbFlGlXEAKlwXpmvle3d8Oe3YnkKIK4xSRTd3sHPnBo=
 github.com/cpuguy83/go-md2man/v2 v2.0.7/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
@@ -490,8 +488,8 @@ github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ3
 github.com/creack/pty v1.1.11/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/creack/pty v1.1.18 h1:n56/Zwd5o6whRC5PMGretI4IdRLlmBXYNjScPaBgsbY=
 github.com/creack/pty v1.1.18/go.mod h1:MOBLtS5ELjhRRrroQr9kyvTxUAFNvYEK993ew/Vr4O4=
-github.com/cyphar/filepath-securejoin v0.4.1 h1:JyxxyPEaktOD+GAnqIqTf9A8tHyAG22rowi7HkoSU1s=
-github.com/cyphar/filepath-securejoin v0.4.1/go.mod h1:Sdj7gXlvMcPZsbhwhQ33GguGLDGQL7h7bg04C/+u9jI=
+github.com/cyphar/filepath-securejoin v0.5.1 h1:eYgfMq5yryL4fbWfkLpFFy2ukSELzaJOTaUTuh+oF48=
+github.com/cyphar/filepath-securejoin v0.5.1/go.mod h1:Sdj7gXlvMcPZsbhwhQ33GguGLDGQL7h7bg04C/+u9jI=
 github.com/daaku/go.zipexe v1.0.0/go.mod h1:z8IiR6TsVLEYKwXAoE/I+8ys/sDkgTzSL0CLnGVd57E=
 github.com/daaku/go.zipexe v1.0.1/go.mod h1:5xWogtqlYnfBXkSB1o9xysukNP9GTvaNkqzUZbt3Bw8=
 github.com/davecgh/go-spew v0.0.0-20161028175848-04cdfd42973b/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -1130,8 +1128,8 @@ github.com/k3s-io/etcd/server/v3 v3.5.21-k3s1 h1:N7yuD8/WUf7oEOu4nlXbsoSTvF5yPMM
 github.com/k3s-io/etcd/server/v3 v3.5.21-k3s1/go.mod h1:G1mOzdwuzKT1VRL7SqRchli/qcFrtLBTAQ4lV20sXXo=
 github.com/k3s-io/helm-controller v0.16.15 h1:NSxqBAHh+/+tdvrvMjj5JybJEVOCwgbf/nmymXnsbGQ=
 github.com/k3s-io/helm-controller v0.16.15/go.mod h1:jmrgGttLQbh2yB1kcf9XFAigNW6U8oWCswCSuEjkxXU=
-github.com/k3s-io/k3s v1.31.14-0.20251031045655-648634241d50 h1:VmvAuNn3YDoOMYOfcRGY88uzQGmbrxXROssN1lw6i6k=
-github.com/k3s-io/k3s v1.31.14-0.20251031045655-648634241d50/go.mod h1:HE3sWiNPkLUtM0COT+YJIggihvgyThTbUnSDN8bFvwI=
+github.com/k3s-io/k3s v1.31.14-0.20251107220129-ce259e591ac8 h1:idbn45k/Ujd97QOnp5ftuwgzb5XkbBbX4Mp7ST3Ln68=
+github.com/k3s-io/k3s v1.31.14-0.20251107220129-ce259e591ac8/go.mod h1:xth0V0ipPYpojD4PWQDr/hDDsdQYQ8ct+oy3RfEVKAE=
 github.com/k3s-io/kine v0.14.6-k3s1.31 h1:W2KLeTit3xpVaBxRDE/Vt/JvKmaKNMKIEqOlWmfOQME=
 github.com/k3s-io/kine v0.14.6-k3s1.31/go.mod h1:ASTPT/An64cRJ/FKn1U9r9scLLeacubtHCwcxmbNxVk=
 github.com/k3s-io/klog v1.0.0-k3s2/go.mod h1:4Bi6QPql/J/LkTDqv7R/cd3hPo4k2DG6Ptcz060Ez5I=
@@ -1535,8 +1533,8 @@ github.com/opencontainers/image-spec v1.0.1/go.mod h1:BtxoFyWECRxE4U/7sNtV5W15zM
 github.com/opencontainers/image-spec v1.1.1 h1:y0fUlFfIZhPF1W537XOLg0/fcx6zcHCJwooC2xJA040=
 github.com/opencontainers/image-spec v1.1.1/go.mod h1:qpqAh3Dmcf36wStyyWU+kCeDgrGnAve2nCC8+7h8Q0M=
 github.com/opencontainers/runc v0.0.0-20191031171055-b133feaeeb2e/go.mod h1:qT5XzbpPznkRYVz/mWwUaVBUv2rmF59PVA73FjuZG0U=
-github.com/opencontainers/runc v1.2.7 h1:xIxxt4f1UtSHkiB2VSW4IydAOnh14z/eIKJGZXjCjtc=
-github.com/opencontainers/runc v1.2.7/go.mod h1:dOQeFo29xZKBNeRBI0B19mJtfHv68YgCTh1X+YphA+4=
+github.com/opencontainers/runc v1.2.8 h1:RnEICeDReapbZ5lZEgHvj7E9Q3Eex9toYmaGBsbvU5Q=
+github.com/opencontainers/runc v1.2.8/go.mod h1:cC0YkmZcuvr+rtBZ6T7NBoVbMGNAdLa/21vIElJDOzI=
 github.com/opencontainers/runtime-spec v1.2.1 h1:S4k4ryNgEpxW1dzyqffOmhI1BHYcjzU8lpJfSlR0xww=
 github.com/opencontainers/runtime-spec v1.2.1/go.mod h1:jwyrGlmzljRJv/Fgzds9SsS/C5hL+LL3ko9hs6T5lQ0=
 github.com/opencontainers/selinux v1.11.0 h1:+5Zbo97w3Lbmb3PeqQtpmTkMwsW5nRI3YaLpt7tQ7oU=
@@ -1675,8 +1673,8 @@ github.com/rancher/permissions v0.0.0-20240523180510-4001d3d637f7 h1:0Kg2SGoMeU1
 github.com/rancher/permissions v0.0.0-20240523180510-4001d3d637f7/go.mod h1:fsbs0YOsGn1ofPD5p+BuI4qDhbMbSJtTegKt6Ucna+c=
 github.com/rancher/remotedialer v0.4.5-rc.5 h1:JQBWAMX1Dc4ofJRmPfO5/7XWV65rohfsmb/Ipyb+NmY=
 github.com/rancher/remotedialer v0.4.5-rc.5/go.mod h1:X/BE4dma7Lrd59pWvsb9UKVs+dF/Jl+RhBvtHRRCoTI=
-github.com/rancher/wharfie v0.6.7 h1:BhbBVJSLoDQMkZb+zVTLEKckUbq4sc3ZmEYqGakggSY=
-github.com/rancher/wharfie v0.6.7/go.mod h1:ew49A9PzRsTngdzXIkgakfhMq3mHMA650HS1OVQpaNA=
+github.com/rancher/wharfie v0.6.9 h1:w0xf8F/LqjuXBYYJRMWTcHWIF8p4zVKmFOOEqz74VhQ=
+github.com/rancher/wharfie v0.6.9/go.mod h1:PpyuDiBgnFVd56kKtNfSS3cMDTVcRJZVYfNwxcqv50I=
 github.com/rancher/wins v0.4.17 h1:Rh/3bVWNsXU4JOrn5/LpTdgQzCd3L8pYhW8a2sg6K60=
 github.com/rancher/wins v0.4.17/go.mod h1:31SyQWwDHjoYzU+jZRMmME90YzPKLJ2eCfsLVOwNoek=
 github.com/rancher/wrangler/v3 v3.2.1 h1:V51PnoGb8bZ5jJdxFlqKQApzWdSp4sEy5OPGuEGqVbI=
@@ -1856,8 +1854,6 @@ github.com/ulikunitz/xz v0.5.7/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oW
 github.com/urfave/cli v1.22.4/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/urfave/cli v1.22.5/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/urfave/cli v1.22.10/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
-github.com/urfave/cli v1.22.16 h1:MH0k6uJxdwdeWQTwhSO42Pwr4YLrNLwBtg1MRgTqPdQ=
-github.com/urfave/cli v1.22.16/go.mod h1:EeJR6BKodywf4zciqrdw6hpCPk68JO9z5LazXZMn5Po=
 github.com/urfave/cli/v2 v2.27.7 h1:bH59vdhbjLv3LAvIu6gd0usJHgoTTPhCFib8qqOwXYU=
 github.com/urfave/cli/v2 v2.27.7/go.mod h1:CyNAG/xg+iAOg0N4MPGZqVmv2rCoP267496AOXUZjA4=
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
