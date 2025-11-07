@@ -78,9 +78,18 @@ var _ = Describe("Verify Basic Cluster Creation with Kine", Ordered, func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
+	It("Verifies Ingress Controller Admission Webhook", func() {
+		Eventually(func(g Gomega) {
+			cmd := "kubectl get endpoints -n kube-system rke2-ingress-nginx-controller-admission -o 'jsonpath={.subsets[*]..ip}' --kubeconfig=" + tc.KubeconfigFile
+			out, err := e2e.RunCommand(cmd)
+			g.Expect(err).NotTo(HaveOccurred(), "failed to get ingress controller admission webhook endpoints: "+out)
+			g.Expect(out).To(MatchRegexp(`\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|([0-9A-Fa-f]{1,4}:)+:*[0-9A-Fa-f]{1,4}`))
+		}, "420s", "5s").Should(Succeed())
+	})
+
 	It("Verifies ClusterIP Service", func() {
-		_, err := tc.DeployWorkload("clusterip.yaml")
-		Expect(err).NotTo(HaveOccurred())
+		out, err := tc.DeployWorkload("clusterip.yaml")
+		Expect(err).NotTo(HaveOccurred(), "failed to deploy workload: "+out)
 		Eventually(func() (string, error) {
 			cmd := "kubectl get pods -o=name -l k8s-app=nginx-app-clusterip --field-selector=status.phase=Running --kubeconfig=" + tc.KubeconfigFile
 			return e2e.RunCommand(cmd)
@@ -93,8 +102,8 @@ var _ = Describe("Verify Basic Cluster Creation with Kine", Ordered, func() {
 		}
 	})
 	It("Verifies NodePort Service", func() {
-		_, err := tc.DeployWorkload("nodeport.yaml")
-		Expect(err).NotTo(HaveOccurred())
+		out, err := tc.DeployWorkload("nodeport.yaml")
+		Expect(err).NotTo(HaveOccurred(), "failed to deploy workload: "+out)
 		for _, server := range tc.Servers {
 			nodeExternalIP, err := server.FetchNodeExternalIP()
 			Expect(err).NotTo(HaveOccurred())
@@ -113,8 +122,8 @@ var _ = Describe("Verify Basic Cluster Creation with Kine", Ordered, func() {
 	})
 
 	It("Verifies LoadBalancer Service", func() {
-		_, err := tc.DeployWorkload("loadbalancer.yaml")
-		Expect(err).NotTo(HaveOccurred())
+		out, err := tc.DeployWorkload("loadbalancer.yaml")
+		Expect(err).NotTo(HaveOccurred(), "failed to deploy workload: "+out)
 		ip, err := tc.Servers[0].FetchNodeExternalIP()
 		Expect(err).NotTo(HaveOccurred(), "Loadbalancer manifest not deployed")
 		cmd := "kubectl get service nginx-loadbalancer-svc --kubeconfig=" + tc.KubeconfigFile + " --output jsonpath=\"{.spec.ports[0].port}\""
@@ -133,8 +142,8 @@ var _ = Describe("Verify Basic Cluster Creation with Kine", Ordered, func() {
 	})
 
 	It("Verifies Ingress", func() {
-		_, err := tc.DeployWorkload("ingress.yaml")
-		Expect(err).NotTo(HaveOccurred())
+		out, err := tc.DeployWorkload("ingress.yaml")
+		Expect(err).NotTo(HaveOccurred(), "failed to deploy workload: "+out)
 		for _, server := range tc.Servers {
 			ip, _ := server.FetchNodeExternalIP()
 			cmd := "curl  --header host:foo1.bar.com" + " http://" + ip + "/name.html"
@@ -145,8 +154,8 @@ var _ = Describe("Verify Basic Cluster Creation with Kine", Ordered, func() {
 	})
 
 	It("Verifies Daemonset", func() {
-		_, err := tc.DeployWorkload("daemonset.yaml")
-		Expect(err).NotTo(HaveOccurred())
+		out, err := tc.DeployWorkload("daemonset.yaml")
+		Expect(err).NotTo(HaveOccurred(), "failed to deploy workload: "+out)
 		nodes, err := e2e.ParseNodes(tc.KubeconfigFile, false)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -159,8 +168,8 @@ var _ = Describe("Verify Basic Cluster Creation with Kine", Ordered, func() {
 	})
 
 	It("Verifies dns access", func() {
-		_, err := tc.DeployWorkload("dnsutils.yaml")
-		Expect(err).NotTo(HaveOccurred())
+		out, err := tc.DeployWorkload("dnsutils.yaml")
+		Expect(err).NotTo(HaveOccurred(), "failed to deploy workload: "+out)
 		cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default"
 		Eventually(func() (string, error) {
 			return e2e.RunCommand(cmd)
@@ -168,8 +177,8 @@ var _ = Describe("Verify Basic Cluster Creation with Kine", Ordered, func() {
 	})
 
 	It("Verify Local Path Provisioner storage ", func() {
-		_, err := tc.DeployWorkload("local-path-provisioner.yaml")
-		Expect(err).NotTo(HaveOccurred())
+		out, err := tc.DeployWorkload("local-path-provisioner.yaml")
+		Expect(err).NotTo(HaveOccurred(), "failed to deploy workload: "+out)
 
 		Eventually(func() (string, error) {
 			cmd := "kubectl get pvc local-path-pvc --kubeconfig=" + tc.KubeconfigFile
@@ -189,8 +198,8 @@ var _ = Describe("Verify Basic Cluster Creation with Kine", Ordered, func() {
 		_, err = e2e.RunCommand(cmd)
 		Expect(err).NotTo(HaveOccurred())
 
-		_, err = tc.DeployWorkload("local-path-provisioner.yaml")
-		Expect(err).NotTo(HaveOccurred())
+		out, err = tc.DeployWorkload("local-path-provisioner.yaml")
+		Expect(err).NotTo(HaveOccurred(), "failed to deploy workload: "+out)
 
 		Eventually(func() (string, error) {
 			cmd = "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec volume-test -- cat /data/test"
