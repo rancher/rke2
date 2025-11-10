@@ -50,6 +50,7 @@ The collected data will include the following information:
 - serverNodeCount
 - agentNodeCount
 - cni-plugin
+- ingress-controller
 - os
 - selinux
 
@@ -65,19 +66,23 @@ Example payload structure:
     "serverNodeCount": 3,
     "agentNodeCount": 2,
     "cni-plugin": "flannel",
+    "ingress-controller": "rke2-ingress-nginx",
     "os": "ubuntu",
     "selinux": "enabled"
   }
 }
 ```
 
-The `clusteruuid` is needed to differentiate between different deployments (the UUID of `kube-system`). It is completely random and does not expose privacy considerations.
+The `clusteruuid` is needed to differentiate between different deployments (the UUID of `kube-system`). It is completely random and does not expose privacy considerations. We could even consider hashing it to increase the obfuscation.
 
 ### Configuration Interface Example
 
+The security-responder is packaged using a helm chart. We can interact with it as we do with other helm charts. For example, to disable it: 
+
 ```yaml
 # /etc/rancher/rke2/config.yaml
-security-responder-enabled: true # default
+disable:
+- rke2-security-responder
 ```
 
 ## Alternatives Considered
