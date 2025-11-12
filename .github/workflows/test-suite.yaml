@@ -150,7 +150,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dtest: [dualstack, splitserver]
+        dtest: [dualstack, splitserver, conformance]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v5
@@ -177,7 +177,11 @@ jobs:
           sudo modprobe br_netfilter overlay
       - name: Run ${{ matrix.dtest }} Test
         run: |
-          go test -v -timeout=30m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci
+          if [ "${{ matrix.dtest }}" = "conformance" ]; then
+            go test -v -timeout=30m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -serial -ginkgo.v -ci
+          else
+            go test -v -timeout=30m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci
+          fi
   e2e:
     name: "E2E Tests"
     needs: build
