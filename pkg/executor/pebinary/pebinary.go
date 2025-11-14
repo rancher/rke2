@@ -141,24 +141,17 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 
 	switch p.CNIName {
 	case "", CNICalico:
-		logrus.Info("Setting up Calico CNI")
 		p.CNIPlugin = &win.Calico{}
 	case CNIFlannel:
-		logrus.Info("Setting up Flannel CNI")
 		p.CNIPlugin = &win.Flannel{}
 	case CNINone:
-		logrus.Info("Skipping CNI setup")
 		return nil
 	default:
-		logrus.Fatal("Unsupported CNI: ", p.CNIName)
+		return fmt.Errorf("unsupported CNI %s", p.CNIName)
 	}
 
-	if err := p.CNIPlugin.Setup(ctx, nodeConfig, restConfig, p.DataDir); err != nil {
-		return err
-	}
-
-	logrus.Infof("Windows bootstrap okay. Exiting setup.")
-	return nil
+	logrus.Infof("Setting up %s CNI", p.CNIName)
+	return p.CNIPlugin.Setup(ctx, nodeConfig, restConfig, p.DataDir)
 }
 
 // Kubelet starts the kubelet in a subprocess with watching goroutine.
@@ -203,7 +196,7 @@ func (p *PEBinaryConfig) Kubelet(ctx context.Context, args []string) error {
 			if p.CNIName != CNINone {
 				go func() {
 					if err := p.CNIPlugin.Start(cniCtx); err != nil {
-						logrus.Errorf("error in cni start: %s", err)
+						logrus.Errorf("Failed to start %s CNI: %v", p.CNIName, err)
 					}
 				}()
 			}
@@ -288,10 +281,17 @@ func (p *PEBinaryConfig) Docker(ctx context.Context, cfg *config.Node) error {
 	return executor.CloseIfNilErr(cridockerd.Run(ctx, cfg), p.criReady)
 }
 
-// Containerd configures and starts containerd.
+// Containerd configures and starts containerd, and closes the CRI ready
+// channel if startup is successful.
 func (p *PEBinaryConfig) Containerd(ctx context.Context, cfg *config.Node) error {
 	<-p.dataReadyChan()
-	defer close(p.criReady)
+	return executor.CloseIfNilErr(p.containerd(ctx, cfg), p.criReady)
+}
+
+// containerd configures and starts containerd in a ProcessWaitGroup. Once it
+// is up, images are preloaded or pulled from files found in the agent images
+// directory. This is similar to containerd.Run for linux.
+func (p *PEBinaryConfig) containerd(ctx context.Context, cfg *config.Node) error {
 	args := getContainerdArgs(cfg)
 	stdOut := io.Writer(os.Stdout)
 	stdErr := io.Writer(os.Stderr)
