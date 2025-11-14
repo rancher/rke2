@@ -53,6 +53,12 @@ func chartsDirForDigest(dataDir string, refDigest string) string {
 	return filepath.Join(dataDir, "data", refDigest, "charts")
 }
 
+// completionMarkerForDigest returns the path to the file
+// created to mark successful extract of all image content
+func completionMarkerForDigest(dataDir string, refDigest string) string {
+	return filepath.Join(dataDir, "data", refDigest, ".extracted")
+}
+
 // manifestsDir returns the path to dataDir/server/manifests.
 func manifestsDir(dataDir string) string {
 	return filepath.Join(dataDir, "server", "manifests")
@@ -71,7 +77,15 @@ func symlinkBinDir(dataDir string) string {
 
 // dirExists returns true if a directory exists at the given path.
 func dirExists(dir string) bool {
-	if s, err := os.Stat(dir); err == nil && s.IsDir() {
+	if s, err := os.Stat(dir); err == nil && s.Mode().IsDir() {
+		return true
+	}
+	return false
+}
+
+// isRegular return true if a regular file exists at the given path.
+func isRegular(file string) bool {
+	if s, err := os.Stat(file); err == nil && s.Mode().IsRegular() {
 		return true
 	}
 	return false
@@ -114,9 +128,10 @@ func Stage(ctx context.Context, resolver *images.Resolver, nodeConfig *daemoncon
 
 	refBinDir := binDirForDigest(cfg.DataDir, refDigest)
 	refChartsDir := chartsDirForDigest(cfg.DataDir, refDigest)
+	refCompleteFile := completionMarkerForDigest(cfg.DataDir, refDigest)
 	imagesDir := imagesDir(cfg.DataDir)
 
-	if dirExists(refBinDir) && dirExists(refChartsDir) {
+	if dirExists(refBinDir) && dirExists(refChartsDir) && isRegular(refCompleteFile) {
 		logrus.Infof("Runtime image %s bin and charts directories already exist; skipping extract", ref.Name())
 	} else {
 		// Try to use configured runtime image from an airgap tarball
@@ -165,6 +180,10 @@ func Stage(ctx context.Context, resolver *images.Resolver, nodeConfig *daemoncon
 		}
 		// Ensure correct permissions on bin dir
 		if err := os.Chmod(refBinDir, 0755); err != nil {
+			return err
+		}
+		// Create file to indicate successful extract of all content
+		if err := os.WriteFile(refCompleteFile, []byte(ref.Name()), 0644); err != nil {
 			return err
 		}
 	}
