@@ -146,12 +146,7 @@ func (c *Calico) Setup(ctx context.Context, nodeConfig *daemonconfig.Node, restC
 		return err
 	}
 
-	if err := c.writeConfigFiles(); err != nil {
-		return err
-	}
-
-	logrus.Info("Generating HNS networks, please wait")
-	return c.generateCalicoNetworks()
+	return c.writeConfigFiles()
 }
 
 // initializeConfig sets the default configuration in CNIConfig
@@ -265,6 +260,11 @@ func (c *Calico) createKubeConfigAndClient(ctx context.Context, restConfig *rest
 // Start starts the CNI services on the Windows node.
 func (c *Calico) Start(ctx context.Context) error {
 	logPath := filepath.Join(c.CNICfg.ConfigPath, "logs")
+
+	logrus.Info("Generating HNS networks, please wait")
+	if err := c.generateCalicoNetworks(); err != nil {
+		return err
+	}
 
 	// Wait for the node to be registered in the cluster
 	if err := wait.PollUntilContextTimeout(ctx, 5*time.Second, 5*time.Minute, true, func(ctx context.Context) (bool, error) {
