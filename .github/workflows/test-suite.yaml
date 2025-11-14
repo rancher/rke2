@@ -115,7 +115,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dtest: [basics, flannel, profile, secretsencryption, traefik]
+        dtest: [basics, flannel, profile, traefik]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v5
@@ -150,7 +150,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dtest: [dualstack, splitserver]
+        dtest: [dualstack, secretsencryption, splitserver]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v5
