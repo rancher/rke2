@@ -228,7 +228,7 @@ jobs:
 
   release-downstream-components:
     name: "Release downstream components"
-    needs: [release-amd64, release-arm64]
+    needs: [release-amd64, release-arm64, sync-prime-ribs]
     runs-on: ubuntu-latest
     permissions:
       contents: read
