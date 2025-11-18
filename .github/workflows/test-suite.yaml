@@ -115,7 +115,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dtest: [basics, flannel, profile, traefik]
+        dtest: [basics, flannel, profile, traefik, ing_migration]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v6
