@@ -1,0 +1,180 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-migration
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whoami
+  namespace: test-migration
+  labels:
+    app: whoami
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: whoami
+  template:
+    metadata:
+      labels:
+        app: whoami
+    spec:
+      containers:
+      - name: whoami
+        image: traefik/whoami
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whoami-svc
+  namespace: test-migration
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: whoami
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: simple
+  namespace: test-migration
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: simple.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: whoami-svc
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: auth
+  namespace: test-migration
+  annotations:
+    # Tells Traefik to challenge the client for credentials
+    nginx.ingress.kubernetes.io/auth-type: basic
+    # Specifies the source of the credentials (must be created beforehand)
+    nginx.ingress.kubernetes.io/auth-secret: basic-auth-secret
+    # Sets the prompt text displayed in the user browser
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - annotations.example.com'
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: auth.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: whoami-svc
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cookie
+  namespace: test-migration
+  annotations:
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "test-traefik-cookie"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: cookie.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: whoami-svc
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nonworking-rewrite
+  namespace: test-migration
+  annotations:
+    # Defines a new path for the service to never see "/app"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: nonworking.rewrite.example.com
+    http:
+      paths:
+      - path: /app(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: whoami-svc
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ssl-redirect
+  namespace: test-migration
+  annotations:
+    # Nginx annotation for forced redirect
+    # automatically redirects all incoming HTTP traffic to its corresponding HTTPs endpoint
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - ssl.redirect.example.com
+    # Does not have to exist
+    secretName: dummy-tls-secret
+  rules:
+  - host: ssl.redirect.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: whoami-svc
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: upstream-vhost
+  namespace: test-migration
+  annotations:
+    # Nginx-specific annotation related to upstream vhost settings
+    nginx.ingress.kubernetes.io/upstream-vhost: "isitworking"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: nonworking.upstreamvhost.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: whoami-svc
+            port:
+              number: 80
+
