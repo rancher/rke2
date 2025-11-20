@@ -68,6 +68,10 @@ jobs:
       run: |
         dapper -f Dockerfile --target dapper make test
 
+    - name: Set environment variables
+      run: |
+        echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
+
     - name: Publish Image Runtime
       uses: rancher/ecm-distro-tools/actions/publish-image@master
       env:
@@ -75,7 +79,7 @@ jobs:
         GOOS: linux
       with:
         image: "rke2-runtime"
-        tag: ${{ github.ref_name }}
+        tag: ${{ env.GIT_TAG }}
         make-target: publish-image-runtime
 
         public-repo: rancher
@@ -94,7 +98,7 @@ jobs:
         GOOS: linux
       with:
         image: "rke2-runtime"
-        tag: ${{ github.ref_name }}
+        tag: ${{ env.GIT_TAG }}
         make-target: publish-image-runtime-windows
 
         public-repo: rancher
@@ -157,6 +161,10 @@ jobs:
       run: |
         dapper -f Dockerfile --target dapper make scan-images
 
+    - name: Set environment variables
+      run: |
+        echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
+
     - name: Publish Image Runtime
       uses: rancher/ecm-distro-tools/actions/publish-image@master
       env:
@@ -164,7 +172,7 @@ jobs:
         GOOS: linux
       with:
         image: "rke2-runtime"
-        tag: ${{ github.ref_name }}
+        tag: ${{ env.GIT_TAG }}
         make-target: publish-image-runtime
 
         public-repo: rancher
@@ -207,6 +215,10 @@ jobs:
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD ;
 
+    - name: Set environment variables
+      run: |
+        echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
+
     - name: Manifest
       uses: rancher/ecm-distro-tools/actions/publish-image@master
       env:
@@ -214,7 +226,7 @@ jobs:
         GOOS: linux
       with:
         image: "rke2-runtime"
-        tag: ${{ github.ref_name }}
+        tag: ${{ env.GIT_TAG }}
         make-target: publish-manifest-runtime
 
         public-repo: rancher
@@ -228,7 +240,7 @@ jobs:
 
   release-downstream-components:
     name: "Release downstream components"
-    needs: [release-amd64, release-arm64]
+    needs: [release-amd64, release-arm64, sync-prime-ribs]
     runs-on: ubuntu-latest
     permissions:
       contents: read
