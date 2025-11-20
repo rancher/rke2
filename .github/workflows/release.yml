@@ -220,6 +220,54 @@ jobs:
         prime-username: ${{ env.PRIME_REGISTRY_USERNAME }}
         prime-password: ${{ env.PRIME_REGISTRY_PASSWORD }}
 
+  release-downstream-components:
+    name: "Release downstream components"
+    needs: [release-amd64, release-arm64, sync-prime-ribs]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+    - name: "Read Secrets"
+      uses: rancher-eio/read-vault-secrets@main
+      with:
+        secrets: |
+          secret/data/github/repo/${{ github.repository }}/github/app-credentials appId | APP_ID ;
+          secret/data/github/repo/${{ github.repository }}/github/app-credentials privateKey | PRIVATE_KEY
+
+    - name: Generate GitHub App token
+      id: generate-token
+      uses: actions/create-github-app-token@v1
+      with:
+        app-id: ${{ env.APP_ID }}
+        private-key: ${{ env.PRIVATE_KEY }}
+        owner: rancher
+        repositories: |
+          rke2-upgrade
+          system-agent-installer-rke2
+
+    - name: Create release in `rancher/rke2-upgrade`
+      env:
+        GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+      run: |
+        gh release create "$GITHUB_ACTION_TAG" \
+          --repo rancher/rke2-upgrade \
+          --title "$GITHUB_ACTION_TAG" \
+          --latest="false" \
+          --target="prime-only" \
+          --notes "Automated release created from $GITHUB_ACTION_TAG tag in ${{ github.repository }}"
+
+    - name: Create release in `rancher/system-agent-installer-rke2`
+      env:
+        GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+      run: |
+        gh release create "$GITHUB_ACTION_TAG" \
+          --repo rancher/system-agent-installer-rke2 \
+          --title "$GITHUB_ACTION_TAG" \
+          --latest="false" \
+          --target="prime-only" \
+          --notes "Automated release created from $GITHUB_ACTION_TAG tag in ${{ github.repository }}"
+
   sync-prime-images:
     name: "Sync Prime images"
     needs: [release-amd64, release-arm64, manifest]
