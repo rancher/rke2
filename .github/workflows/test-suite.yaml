@@ -27,7 +27,7 @@ jobs:
     runs-on: ${{ github.repository == 'rancher/rke2' && 'runs-on,runner=16cpu-linux-x64' || 'ubuntu-24.04' }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         fetch-depth: 1
     - name: Find Go Version for Build
@@ -74,7 +74,7 @@ jobs:
       GOCOVERDIR: /tmp/rke2cov
     steps:
     - name: Checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         fetch-depth: 1
     - name: Install Go
@@ -118,7 +118,7 @@ jobs:
         dtest: [basics, flannel, profile, traefik]
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with: {fetch-depth: 1}
       - name: Install Go
         uses: ./.github/actions/setup-go
@@ -153,7 +153,7 @@ jobs:
         dtest: [dualstack, secretsencryption, splitserver]
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with: {fetch-depth: 1}
       - name: Check Memory
         run: lsmem
@@ -190,7 +190,7 @@ jobs:
       max-parallel: 3
     steps:
     - name: "Checkout"
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with: {fetch-depth: 1}
     
     - name: Set up vagrant and libvirt

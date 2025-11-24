@@ -46,7 +46,7 @@ jobs:
             }
       
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
         # We don't care about the go version, as we only use it to capture ENV vars
       - name: Install Go
