@@ -36,42 +36,42 @@ xargs -n1 -t $PULL_CMD << EOF > build/images-traefik.txt
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > build/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.30.3-build20251015
-    ${REGISTRY}/rancher/hardened-flannel:v0.27.4-build20251015
+    ${REGISTRY}/rancher/hardened-calico:v3.31.2-build20251205
+    ${REGISTRY}/rancher/hardened-flannel:v0.27.4-build20251204
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
 xargs -n1 -t $PULL_CMD << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.2.4
-    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.18.3
-    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.34.10-1761014632-c360e8557eb41011dfb5210f8fb53fed6c0b3222
-    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.18.3
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.18.3
+    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.18.4
+    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.34.10-1762597008-ff7ae7d623be00078865cff1b0672cc5d9bfc6d5
+    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.18.4
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.18.4
     ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.13.3
     ${REGISTRY}/rancher/mirrored-cilium-hubble-ui-backend:v0.13.3
-    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.18.3
-    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.18.3
-    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.18.3
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.8.0-build20251014
+    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.18.4
+    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.18.4
+    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.18.4
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.8.0-build20251204
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > build/images-calico.txt
-    ${REGISTRY}/rancher/mirrored-calico-operator:v1.38.7
-    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.30.4
-    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.30.4
-    ${REGISTRY}/rancher/mirrored-calico-typha:v3.30.4
-    ${REGISTRY}/rancher/mirrored-calico-node:v3.30.4
-    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.30.4
-    ${REGISTRY}/rancher/mirrored-calico-cni:v3.30.4
-    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.30.4
-    ${REGISTRY}/rancher/mirrored-calico-csi:v3.30.4
-    ${REGISTRY}/rancher/mirrored-calico-node-driver-registrar:v3.30.4
-    ${REGISTRY}/rancher/mirrored-calico-envoy-gateway:v3.30.4
-    ${REGISTRY}/rancher/mirrored-calico-envoy-proxy:v3.30.4
-    ${REGISTRY}/rancher/mirrored-calico-envoy-ratelimit:v3.30.4
-    ${REGISTRY}/rancher/mirrored-calico-goldmane:v3.30.4
-    ${REGISTRY}/rancher/mirrored-calico-whisker:v3.30.4
-    ${REGISTRY}/rancher/mirrored-calico-whisker-backend:v3.30.4
+    ${REGISTRY}/rancher/mirrored-calico-operator:v1.40.2
+    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.31.2
+    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.31.2
+    ${REGISTRY}/rancher/mirrored-calico-typha:v3.31.2
+    ${REGISTRY}/rancher/mirrored-calico-node:v3.31.2
+    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.31.2
+    ${REGISTRY}/rancher/mirrored-calico-cni:v3.31.2
+    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.31.2
+    ${REGISTRY}/rancher/mirrored-calico-csi:v3.31.2
+    ${REGISTRY}/rancher/mirrored-calico-node-driver-registrar:v3.31.2
+    ${REGISTRY}/rancher/mirrored-calico-envoy-gateway:v3.31.2
+    ${REGISTRY}/rancher/mirrored-calico-envoy-proxy:v3.31.2
+    ${REGISTRY}/rancher/mirrored-calico-envoy-ratelimit:v3.31.2
+    ${REGISTRY}/rancher/mirrored-calico-goldmane:v3.31.2
+    ${REGISTRY}/rancher/mirrored-calico-whisker:v3.31.2
+    ${REGISTRY}/rancher/mirrored-calico-whisker-backend:v3.31.2
 EOF
 
 if [ "${GOARCH}" != "arm64" ]; then
@@ -109,8 +109,8 @@ xargs -n1 -t $PULL_CMD << EOF > build/images-harvester.txt
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > build/images-flannel.txt
-    ${REGISTRY}/rancher/hardened-flannel:v0.27.4-build20251015
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.8.0-build20251014
+    ${REGISTRY}/rancher/hardened-flannel:v0.27.4-build20251204
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.8.0-build20251204
 EOF
 fi
 # Continue to provide a legacy airgap archive set with the default CNI images
