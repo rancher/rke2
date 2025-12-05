@@ -84,7 +84,7 @@ func ExtractFromArgs(args []string) ([]string, io.Writer) {
 }
 
 // GetLogger returns a new io.Writer that writes to the specified file
-func GetLogger(filename string, maxSize int) io.Writer {
+func GetLogger(filename string, maxSize int) io.WriteCloser {
 	return &lumberjack.Logger{
 		Filename:   filename,
 		MaxSize:    int(maxSize),
