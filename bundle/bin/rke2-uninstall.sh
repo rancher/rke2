@@ -143,16 +143,6 @@ uninstall_remove_self()
 
 # Define a cleanup function that triggers on exit
 cleanup() {
-  # Check if last command's exit status was not equal to 0
-  if [ $? -ne 0 ]; then
-    echo -e "\e[31mCleanup didn't complete successfully\e[0m"
-  else
-    log "Cleanup completed successfully"
-  fi
-}
-
-# Define a cleanup function that triggers on exit
-cleanup() {
 
   # Check if last command's exit status was not equal to 0
   if [ $? -ne 0 ]; then
