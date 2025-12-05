@@ -505,6 +505,11 @@ func (s *StaticPodConfig) CRI(ctx context.Context, cfg *daemonconfig.Node) error
 	return executor.CloseIfNilErr(nil, s.criReady)
 }
 
+func (s *StaticPodConfig) CNI(ctx context.Context, wg *sync.WaitGroup, config *daemonconfig.Node) error {
+	// CNI on linux is run in pods deployed by charts
+	return nil
+}
+
 func (s *StaticPodConfig) APIServerReadyChan() <-chan struct{} {
 	if s.apiServerReady == nil {
 		panic("executor not bootstrapped")
