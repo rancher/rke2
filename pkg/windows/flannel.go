@@ -263,7 +263,7 @@ func (f *Flannel) createKubeConfigAndClient(ctx context.Context, restConfig *res
 
 // Start waits for the node to be ready and starts flannel
 func (f *Flannel) Start(ctx context.Context) error {
-	logPath := filepath.Join(f.CNICfg.ConfigPath, "logs", "flanneld.log")
+	logPath := filepath.Join(f.CNICfg.ConfigPath, "logs")
 
 	// Wait for the node to be registered in the cluster
 	if err := wait.PollUntilContextTimeout(ctx, 3*time.Second, 5*time.Minute, true, func(ctx context.Context) (bool, error) {
@@ -284,8 +284,9 @@ func (f *Flannel) Start(ctx context.Context) error {
 }
 
 // startFlannel calls the flanneld binary with the correct config parameters and envs.
+// This will not return until the context is cancelled.
 func startFlannel(ctx context.Context, config *FlannelConfig, logPath string) {
-	outputFile := logging.GetLogger(logPath, 50)
+	logPath = filepath.Join(logPath, "flanneld.log")
 
 	specificEnvs := []string{
 		fmt.Sprintf("NODE_NAME=%s", config.Hostname),
@@ -302,14 +303,21 @@ func startFlannel(ctx context.Context, config *FlannelConfig, logPath string) {
 	}
 
 	logrus.Infof("Flanneld Envs: %s and args: %v", specificEnvs, args)
-	cmd := exec.CommandContext(ctx, "flanneld.exe", args...)
-	cmd.Env = specificEnvs
-	cmd.Stdout = outputFile
-	cmd.Stderr = outputFile
-	if err := cmd.Run(); err != nil {
-		logrus.Errorf("Flanneld has an error: %v. Check %s for extra information", err, logPath)
+	for {
+		logrus.Infof("Flanneld logging to %s", logPath)
+		outputFile := logging.GetLogger(logPath, 50)
+		cmd := exec.CommandContext(ctx, "flanneld.exe", args...)
+		cmd.Env = specificEnvs
+		cmd.Stdout = outputFile
+		cmd.Stderr = outputFile
+		err := cmd.Run()
+		if ctx.Err() != nil {
+			return
+		}
+		logrus.WithError(err).Info("Flanneld exited, restarting...")
+		outputFile.Close()
+		time.Sleep(time.Second)
 	}
-	logrus.Error("Flanneld exited")
 }
 
 // reserveFlannelVIP reserves an IP that will be used as source VIP by kube-proxy. It uses host-local CNI plugin to reserve the IP.
