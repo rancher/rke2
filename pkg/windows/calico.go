@@ -116,6 +116,9 @@ users:
 `))
 )
 
+// explicit interface check
+var _ CNIPlugin = &Calico{}
+
 type Calico struct {
 	CNICfg     *CalicoConfig
 	KubeClient *kubernetes.Clientset
@@ -296,9 +299,7 @@ func (c *Calico) Start(ctx context.Context) error {
 		policy.Delete()
 	}
 
-	logrus.Info("Calico started correctly")
-
-	return nil
+	return reserveCalicoVIP(ctx, c.CNICfg)
 }
 
 // generateCalicoNetworks creates the overlay networks for internode networking
@@ -516,24 +517,19 @@ func generateGeneralCalicoEnvs(config *CalicoConfig) []string {
 	}
 }
 
-// ReserveSourceVip reserves a source VIP for kube-proxy
-func (c *Calico) ReserveSourceVip(ctx context.Context) (string, error) {
-	var vip string
-
-	if err := wait.PollUntilContextTimeout(ctx, 5*time.Second, 5*time.Minute, true, func(ctx context.Context) (bool, error) {
+// reserveCalicoVIP reserves a source VIP for kube-proxy
+// If successful, the VIP is stored to config.CNICommonConfig.VIPAddress.
+func reserveCalicoVIP(ctx context.Context, config *CalicoConfig) error {
+	return wait.PollUntilContextTimeout(ctx, 5*time.Second, 5*time.Minute, true, func(ctx context.Context) (bool, error) {
 		// calico-node is creating an endpoint named Calico_ep for this purpose
 		endpoint, err := hcsshim.GetHNSEndpointByName("Calico_ep")
 		if err != nil {
-			logrus.WithError(err).Warning("can't find Calico_ep HNS endpoint, retrying")
+			logrus.WithError(err).Warning("Can't find Calico_ep HNS endpoint, retrying")
 			return false, nil
 		}
-		vip = endpoint.IPAddress.String()
+		config.CNICommonConfig.VIPAddress = endpoint.IPAddress.String()
 		return true, nil
-	}); err != nil {
-		return "", err
-	}
-
-	return vip, nil
+	})
 }
 
 // Get latest stored reboot
