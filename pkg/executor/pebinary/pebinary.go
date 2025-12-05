@@ -69,6 +69,7 @@ type PEBinaryConfig struct {
 
 	apiServerReady <-chan struct{}
 	criReady       chan struct{}
+	cniReady       chan struct{}
 	dataReady      chan struct{}
 }
 
@@ -94,6 +95,7 @@ const (
 func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node, cfg cmds.Agent) error {
 	p.apiServerReady = util.APIServerReadyChan(ctx, nodeConfig.AgentConfig.KubeConfigK3sController, util.DefaultAPIServerReadyTimeout)
 	p.criReady = make(chan struct{})
+	p.cniReady = make(chan struct{})
 	p.dataReady = make(chan struct{})
 
 	// On servers this is set to an initial value from the CLI when the resolver is created, so that
@@ -145,7 +147,7 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 	case CNIFlannel:
 		p.CNIPlugin = &win.Flannel{}
 	case CNINone:
-		return nil
+		p.CNIPlugin = &win.None{}
 	default:
 		return fmt.Errorf("unsupported CNI %s", p.CNIName)
 	}
@@ -192,22 +194,12 @@ func (p *PEBinaryConfig) Kubelet(ctx context.Context, args []string) error {
 	win.ProcessWaitGroup.StartWithContext(ctx, func(ctx context.Context) {
 		for {
 			logrus.Infof("Running RKE2 kubelet %v", cleanArgs)
-			cniCtx, cancel := context.WithCancel(ctx)
-			if p.CNIName != CNINone {
-				go func() {
-					if err := p.CNIPlugin.Start(cniCtx); err != nil {
-						logrus.Errorf("Failed to start %s CNI: %v", p.CNIName, err)
-					}
-				}()
-			}
-
 			cmd := exec.CommandContext(ctx, p.KubeletPath, cleanArgs...)
 			cmd.Stdout = logOut
 			cmd.Stderr = logOut
 			if err := cmd.Run(); err != nil {
 				logrus.Errorf("Kubelet exited: %v", err)
 			}
-			cancel()
 
 			// If the rke2-uninstall.ps1 script created the lock file, we are removing rke2 and thus we don't restart kubelet
 			if _, err := os.Stat(lockFile); err == nil {
@@ -226,23 +218,23 @@ func (p *PEBinaryConfig) Kubelet(ctx context.Context, args []string) error {
 	return nil
 }
 
-// KubeProxy starts the kubeproxy in a subprocess with watching goroutine.
+// KubeProxy starts the kube-proxy in a subprocess with watching goroutine.
+// kube-proxy must be started after the CNI, as most CNIs reserve a VIP for it
+// to use as the source for proxied traffic.
+// ref: https://github.com/kubernetes/kubernetes/issues/123014
 func (p *PEBinaryConfig) KubeProxy(ctx context.Context, args []string) error {
-	if p.CNIName == CNINone {
-		return nil
-	}
+	<-p.cniReady
 
-	CNIConfig := p.CNIPlugin.GetConfig()
-	vip, err := p.CNIPlugin.ReserveSourceVip(ctx)
-	if err != nil || vip == "" {
-		logrus.Errorf("Failed to reserve VIP for kube-proxy: %v", err)
+	extraArgs := map[string]string{}
+	config := p.CNIPlugin.GetConfig()
+	if config.OverlayNetName != "" {
+		extraArgs["network-name"] = config.OverlayNetName
 	}
-	logrus.Infof("Reserved VIP for kube-proxy: %s", vip)
-
-	extraArgs := map[string]string{
-		"network-name": CNIConfig.OverlayNetName,
-		"bind-address": CNIConfig.NodeIP,
-		"source-vip":   vip,
+	if config.NodeIP != "" {
+		extraArgs["bind-address"] = config.NodeIP
+	}
+	if config.VIPAddress != "" {
+		extraArgs["source-vip"] = config.VIPAddress
 	}
 
 	if err := hcn.DSRSupported(); err == nil {
@@ -409,6 +401,11 @@ func (p *PEBinaryConfig) CRI(ctx context.Context, cfg *config.Node) error {
 		return executor.CloseIfNilErr(cri.WaitForService(ctx, cfg.ContainerRuntimeEndpoint, "CRI"), p.criReady)
 	}
 	return executor.CloseIfNilErr(nil, p.criReady)
+}
+
+func (p *PEBinaryConfig) CNI(ctx context.Context, wg *sync.WaitGroup, cfg *config.Node) error {
+	logrus.Infof("Running RKE2 CNI: %s", p.CNIName)
+	return executor.CloseIfNilErr(p.CNIPlugin.Start(ctx), p.cniReady)
 }
 
 func (p *PEBinaryConfig) APIServerReadyChan() <-chan struct{} {
