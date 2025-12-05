@@ -15,7 +15,6 @@ type CNIPlugin interface {
 	Setup(ctx context.Context, nodeConfig *daemonconfig.Node, restConfig *rest.Config, dataDir string) error
 	Start(ctx context.Context) error
 	GetConfig() *CNICommonConfig
-	ReserveSourceVip(ctx context.Context) (string, error)
 }
 
 type KubeConfig struct {
@@ -41,6 +40,7 @@ type CNICommonConfig struct {
 	Interface      string
 	IpamType       string
 	CNIVersion     string
+	VIPAddress     string
 	KubeConfig     *KubeConfig
 }
 
