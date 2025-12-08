@@ -11,7 +11,7 @@ charts:
   - version: v3.30.401
     filename: /charts/rke2-calico-crd.yaml
     bootstrap: true
-  - version: 1.45.002
+  - version: 1.45.003
     filename: /charts/rke2-coredns.yaml
     bootstrap: true
   - version: 4.13.400
