@@ -17,10 +17,10 @@ charts:
   - version: 4.13.400
     filename: /charts/rke2-ingress-nginx.yaml
     bootstrap: false
-  - version: 37.1.201
+  - version: 37.4.001
     filename: /charts/rke2-traefik.yaml
     bootstrap: false
-  - version: 37.1.201
+  - version: 37.4.001
     filename: /charts/rke2-traefik-crd.yaml
     bootstrap: false
   - version: 3.13.004
