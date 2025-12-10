@@ -181,7 +181,7 @@ jobs:
   e2e:
     name: "E2E Tests"
     needs: build
-    runs-on: ubuntu-24.04
+    runs-on: runs-on,runner=8cpu-linux-x64,ram=16+24,run-id=${{ github.run_id }}
     timeout-minutes: 60
     strategy:
       fail-fast: false
