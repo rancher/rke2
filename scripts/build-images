@@ -32,7 +32,7 @@ xargs -n1 -t $PULL_CMD << EOF >> build/images-core.txt
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > build/images-traefik.txt
-    ${REGISTRY}/rancher/mirrored-library-traefik:2.11.30
+    ${REGISTRY}/rancher/mirrored-library-traefik:2.11.32
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > build/images-canal.txt
