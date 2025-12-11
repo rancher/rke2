@@ -80,7 +80,7 @@ require (
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.17
 	github.com/k3s-io/k3s v1.33.7-0.20251210094413-291666bcc1a4 // release-1.33
-	github.com/k3s-io/kine v0.14.8
+	github.com/k3s-io/kine v0.14.9
 	github.com/libp2p/go-netroute v0.2.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/onsi/ginkgo/v2 v2.23.4
