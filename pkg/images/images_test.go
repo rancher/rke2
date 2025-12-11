@@ -38,7 +38,7 @@ func Test_UnitPull(t *testing.T) {
 			},
 			setup: func(a *args) error {
 				var err error
-				a.image, err = getDefaultImage(KubeScheduler)
+				a.image, err = getDefaultImage(KubeScheduler, "")
 				return err
 			},
 			teardown: func(a *args) error {
@@ -54,7 +54,7 @@ func Test_UnitPull(t *testing.T) {
 			},
 			setup: func(a *args) error {
 				var err error
-				a.image, err = getDefaultImage(KubeScheduler)
+				a.image, err = getDefaultImage(KubeScheduler, "")
 				if err != nil {
 					return err
 				}
@@ -74,7 +74,7 @@ func Test_UnitPull(t *testing.T) {
 			},
 			setup: func(a *args) error {
 				var err error
-				a.image, err = getDefaultImage(KubeScheduler)
+				a.image, err = getDefaultImage(KubeScheduler, "")
 				if err != nil {
 					return err
 				}
