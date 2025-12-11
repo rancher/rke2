@@ -111,7 +111,7 @@ func (r *Resolver) ParseAndSetDefaultRegistry(s string) error {
 	}
 
 	r.registry = reg
-	r.repoPrefix = strings.Trim(prefix, "/")
+	r.repoPrefix = strings.TrimSuffix(prefix, "/")
 
 	return nil
 }
