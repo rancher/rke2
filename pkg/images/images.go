@@ -39,8 +39,9 @@ type ResolverOpt func(name.Reference) (name.Reference, error)
 
 // Resolver provides functionality to resolve an RKE2 image name to a reference.
 type Resolver struct {
-	registry  name.Registry
-	overrides map[string]name.Reference
+	registry   name.Registry
+	repoPrefix string // optional path segment to prepend to image repository
+	overrides  map[string]name.Reference
 }
 
 // ImageOverrideConfig stores configuration from the CLI.
@@ -64,8 +65,9 @@ func NewResolver(c ImageOverrideConfig) (*Resolver, error) {
 	}
 
 	r := Resolver{
-		registry:  registry,
-		overrides: map[string]name.Reference{},
+		registry:   registry,
+		repoPrefix: "",
+		overrides:  map[string]name.Reference{},
 	}
 
 	// Validate and set image overrides from config
@@ -90,11 +92,10 @@ func NewResolver(c ImageOverrideConfig) (*Resolver, error) {
 
 	// validate and set system-default-registry from config
 	if c.SystemDefaultRegistry != "" {
-		registry, err := name.NewRegistry(c.SystemDefaultRegistry)
+		err := r.ParseAndSetDefaultRegistry(c.SystemDefaultRegistry)
 		if err != nil {
 			return nil, pkgerrors.WithMessage(err, "failed to parse system-default-registry")
 		}
-		r.registry = registry
 	}
 	return &r, nil
 }
@@ -102,11 +103,16 @@ func NewResolver(c ImageOverrideConfig) (*Resolver, error) {
 // ParseAndSetDefaultRegistry updates the default registry, if it can be parsed
 // as a valid Registry
 func (r *Resolver) ParseAndSetDefaultRegistry(s string) error {
-	registry, err := name.NewRegistry(s)
+	host, prefix := splitRegistryAndPrefix(s)
+
+	reg, err := name.NewRegistry(host)
 	if err != nil {
-		return pkgerrors.WithMessage(err, "failed to parse system-default-registry")
+		return err
 	}
-	r.registry = registry
+
+	r.registry = reg
+	r.repoPrefix = strings.Trim(prefix, "/")
+
 	return nil
 }
 
@@ -144,8 +150,14 @@ func (r *Resolver) GetReference(i string, opts ...ResolverOpt) (name.Reference, 
 		// Use override if set
 		ref = o
 	} else {
+		// Build the full prefix (registry/repoPrefix) while resolving default images
+		var prefix string
+		if r.repoPrefix != "" {
+			prefix = fmt.Sprintf("%s/%s", r.registry.Name(), r.repoPrefix)
+		}
+
 		// No override; get compile-time default
-		d, err := getDefaultImage(i)
+		d, err := getDefaultImage(i, prefix)
 		if err != nil {
 			return nil, err
 		}
@@ -207,7 +219,7 @@ func setRegistry(ref name.Reference, registry name.Registry) (name.Reference, er
 }
 
 // getDefaultImage gets the compile-time default image for a given name.
-func getDefaultImage(i string) (name.Reference, error) {
+func getDefaultImage(i string, prefix string) (name.Reference, error) {
 	var s string
 	switch i {
 	case ETCD:
@@ -222,6 +234,11 @@ func getDefaultImage(i string) (name.Reference, error) {
 		s = DefaultKubernetesImage
 	default:
 		return nil, fmt.Errorf("unknown image %s", i)
+	}
+
+	// Apply prefix, if any
+	if prefix != "" {
+		s = fmt.Sprintf("%s/%s", prefix, s)
 	}
 
 	return name.ParseReference(s, name.WeakValidation)
@@ -276,4 +293,13 @@ func checkPreloadedImages(dir string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func splitRegistryAndPrefix(in string) (host, prefix string) {
+	// Accept "host[:port]/prefix[/more]" and split at the first slash.
+	// Scheme is not allowed (must be authority-only).
+	if i := strings.IndexByte(in, '/'); i >= 0 {
+		return in[:i], in[i+1:]
+	}
+	return in, ""
 }
