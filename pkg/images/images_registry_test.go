@@ -19,7 +19,7 @@ func TestResolver_RegistryOverrides(t *testing.T) {
 			ref:      Runtime,
 		},
 		{
-			name: "custom registry without prefix",
+			name: "custom registry without path",
 			cfg: ImageOverrideConfig{
 				SystemDefaultRegistry: "example.com",
 			},
@@ -27,7 +27,7 @@ func TestResolver_RegistryOverrides(t *testing.T) {
 			ref:      Runtime,
 		},
 		{
-			name: "registry with single level prefix",
+			name: "registry with single level path",
 			cfg: ImageOverrideConfig{
 				SystemDefaultRegistry: "example.com/docker.io",
 			},
@@ -43,7 +43,7 @@ func TestResolver_RegistryOverrides(t *testing.T) {
 			ref:      Runtime,
 		},
 		{
-			name: "registry with multi-level prefix",
+			name: "registry with multi-level path",
 			cfg: ImageOverrideConfig{
 				SystemDefaultRegistry: "example.com/path/to/registry",
 			},
@@ -51,7 +51,7 @@ func TestResolver_RegistryOverrides(t *testing.T) {
 			ref:      Runtime,
 		},
 		{
-			name: "registry with port and prefix",
+			name: "registry with port and path",
 			cfg: ImageOverrideConfig{
 				SystemDefaultRegistry: "example.com:5000/docker.io",
 			},
@@ -59,7 +59,7 @@ func TestResolver_RegistryOverrides(t *testing.T) {
 			ref:      Runtime,
 		},
 		{
-			name: "registry with port but no prefix",
+			name: "registry with port but no path",
 			cfg: ImageOverrideConfig{
 				SystemDefaultRegistry: "example.com:5000",
 			},
@@ -69,9 +69,9 @@ func TestResolver_RegistryOverrides(t *testing.T) {
 		{
 			name: "registry with trailing slash",
 			cfg: ImageOverrideConfig{
-				SystemDefaultRegistry: "example.com/prefix/",
+				SystemDefaultRegistry: "example.com/path/",
 			},
-			expected: "example.com/prefix/rancher/rke2-runtime:latest",
+			expected: "example.com/path/rancher/rke2-runtime:latest",
 			ref:      Runtime,
 		},
 	}
@@ -98,53 +98,53 @@ func TestResolver_RegistryOverrides(t *testing.T) {
 	}
 }
 
-func TestSplitRegistryAndPrefix(t *testing.T) {
+func TestSplitRegistryAndPath(t *testing.T) {
 	tests := []struct {
-		name           string
-		input          string
-		expectedHost   string
-		expectedPrefix string
+		name         string
+		input        string
+		expectedHost string
+		expectedPath string
 	}{
 		{
-			name:           "simple registry without prefix",
-			input:          "example.com",
-			expectedHost:   "example.com",
-			expectedPrefix: "",
+			name:         "simple registry without path",
+			input:        "example.com",
+			expectedHost: "example.com",
+			expectedPath: "",
 		},
 		{
-			name:           "registry with single level prefix",
-			input:          "example.com/docker.io",
-			expectedHost:   "example.com",
-			expectedPrefix: "docker.io",
+			name:         "registry with single level path",
+			input:        "example.com/docker.io",
+			expectedHost: "example.com",
+			expectedPath: "docker.io",
 		},
 		{
-			name:           "registry with multi-level prefix",
-			input:          "example.com/path/to/registry",
-			expectedHost:   "example.com",
-			expectedPrefix: "path/to/registry",
+			name:         "registry with multi-level path",
+			input:        "example.com/path/to/registry",
+			expectedHost: "example.com",
+			expectedPath: "path/to/registry",
 		},
 		{
-			name:           "registry with port and prefix",
-			input:          "example.com:5000/myrepo",
-			expectedHost:   "example.com:5000",
-			expectedPrefix: "myrepo",
+			name:         "registry with port and path",
+			input:        "example.com:5000/myrepo",
+			expectedHost: "example.com:5000",
+			expectedPath: "myrepo",
 		},
 		{
-			name:           "empty string",
-			input:          "",
-			expectedHost:   "",
-			expectedPrefix: "",
+			name:         "empty string",
+			input:        "",
+			expectedHost: "",
+			expectedPath: "",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			host, prefix := splitRegistryAndPath(tt.input)
+			host, path := splitRegistryAndPath(tt.input)
 			if host != tt.expectedHost {
 				t.Errorf("host: expected %q, got %q", tt.expectedHost, host)
 			}
-			if prefix != tt.expectedPrefix {
-				t.Errorf("prefix: expected %q, got %q", tt.expectedPrefix, prefix)
+			if path != tt.expectedPath {
+				t.Errorf("path: expected %q, got %q", tt.expectedPath, path)
 			}
 		})
 	}
