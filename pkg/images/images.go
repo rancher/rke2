@@ -40,6 +40,7 @@ type ResolverOpt func(name.Reference) (name.Reference, error)
 // Resolver provides functionality to resolve an RKE2 image name to a reference.
 type Resolver struct {
 	registry  name.Registry
+	repoPath  string // optional path segment to prepend to image repository
 	overrides map[string]name.Reference
 }
 
@@ -65,6 +66,7 @@ func NewResolver(c ImageOverrideConfig) (*Resolver, error) {
 
 	r := Resolver{
 		registry:  registry,
+		repoPath:  "",
 		overrides: map[string]name.Reference{},
 	}
 
@@ -90,11 +92,10 @@ func NewResolver(c ImageOverrideConfig) (*Resolver, error) {
 
 	// validate and set system-default-registry from config
 	if c.SystemDefaultRegistry != "" {
-		registry, err := name.NewRegistry(c.SystemDefaultRegistry)
+		err := r.ParseAndSetDefaultRegistry(c.SystemDefaultRegistry)
 		if err != nil {
 			return nil, pkgerrors.WithMessage(err, "failed to parse system-default-registry")
 		}
-		r.registry = registry
 	}
 	return &r, nil
 }
@@ -102,11 +103,16 @@ func NewResolver(c ImageOverrideConfig) (*Resolver, error) {
 // ParseAndSetDefaultRegistry updates the default registry, if it can be parsed
 // as a valid Registry
 func (r *Resolver) ParseAndSetDefaultRegistry(s string) error {
-	registry, err := name.NewRegistry(s)
+	host, path := splitRegistryAndPath(s)
+
+	reg, err := name.NewRegistry(host)
 	if err != nil {
-		return pkgerrors.WithMessage(err, "failed to parse system-default-registry")
+		return err
 	}
-	r.registry = registry
+
+	r.registry = reg
+	r.repoPath = path
+
 	return nil
 }
 
@@ -151,8 +157,12 @@ func (r *Resolver) GetReference(i string, opts ...ResolverOpt) (name.Reference, 
 		}
 		ref = d
 
+		reg := r.registry.Name()
+		if r.repoPath != "" {
+			reg = reg + "/" + r.repoPath
+		}
 		// Apply registry override
-		d, err = setRegistry(ref, r.registry)
+		d, err = setRegistry(ref, reg)
 		if err != nil {
 			return nil, err
 		}
@@ -179,12 +189,8 @@ func (r *Resolver) MustGetReference(i string, opts ...ResolverOpt) name.Referenc
 }
 
 // WithRegistry overrides the registry when resolving the reference to an image.
-func WithRegistry(s string) ResolverOpt {
+func WithRegistry(registry string) ResolverOpt {
 	return func(r name.Reference) (name.Reference, error) {
-		registry, err := name.NewRegistry(s)
-		if err != nil {
-			return nil, err
-		}
 		s, err := setRegistry(r, registry)
 		if err != nil {
 			return nil, err
@@ -195,14 +201,39 @@ func WithRegistry(s string) ResolverOpt {
 
 // setRegistry sets the registry on an image reference. This is necessary
 // because the Reference type doesn't expose the Registry field.
-func setRegistry(ref name.Reference, registry name.Registry) (name.Reference, error) {
+func setRegistry(ref name.Reference, reg string) (name.Reference, error) {
+	// Split to support registry.example.com/with/paths inputs
+	host, path := splitRegistryAndPath(reg)
+
+	registry, err := name.NewRegistry(host)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse registry from `%s`: %s", reg, err)
+	}
+
+	// Apply path prefix
+	if path != "" {
+		// Strip the registry off the fully-qualified image reference
+		refMinusRegistry := strings.TrimPrefix(strings.TrimPrefix(ref.Name(), ref.Context().RegistryStr()), "/")
+
+		// Build up a new reference with our path prefix applied
+		ref, err = name.ParseReference(fmt.Sprintf("%s/%s/%s", registry.Name(), path, refMinusRegistry), name.WeakValidation)
+		if err != nil {
+			return nil, err
+		}
+
+		return ref, nil
+	}
+
 	if t, ok := ref.(name.Tag); ok {
 		t.Registry = registry
 		return t, nil
-	} else if d, ok := ref.(name.Digest); ok {
+	}
+
+	if d, ok := ref.(name.Digest); ok {
 		d.Registry = registry
 		return d, nil
 	}
+
 	return ref, fmt.Errorf("unhandled Reference type: %T", ref)
 }
 
@@ -276,4 +307,14 @@ func checkPreloadedImages(dir string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func splitRegistryAndPath(in string) (host, prefix string) {
+	// Accept "host[:port]/prefix[/more]" and split at the first slash.
+	// Scheme is not allowed (must be authority-only).
+	if i := strings.IndexByte(in, '/'); i >= 0 {
+		return in[:i], strings.TrimSuffix(in[i+1:], "/")
+	}
+
+	return strings.TrimSuffix(in, "/"), ""
 }
