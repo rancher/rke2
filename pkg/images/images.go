@@ -207,7 +207,7 @@ func setRegistry(ref name.Reference, reg string) (name.Reference, error) {
 
 	registry, err := name.NewRegistry(host)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse registry from `%s` (host: `%s`, path: `%s`)", registry, host, path)
+		return nil, fmt.Errorf("unable to parse registry from `%s`: %s", reg, err)
 	}
 
 	// Apply path prefix
