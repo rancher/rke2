@@ -139,7 +139,7 @@ func TestSplitRegistryAndPrefix(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			host, prefix := splitRegistryAndPrefix(tt.input)
+			host, prefix := splitRegistryAndPath(tt.input)
 			if host != tt.expectedHost {
 				t.Errorf("host: expected %q, got %q", tt.expectedHost, host)
 			}
