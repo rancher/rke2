@@ -32,6 +32,7 @@ func Set(_ *cli.Context, dataDir string) error {
 	cmds.ServerConfig.ExtraAPIArgs = PrependToStringSlice(cmds.ServerConfig.ExtraAPIArgs, []string{
 		"enable-admission-plugins=NodeRestriction",
 	})
+	cmds.ServerConfig.HelmJobImage = "rancher/klipper-helm:v0.9.12-build20251215"
 	cmds.AgentConfig.ExtraKubeletArgs = PrependToStringSlice(cmds.AgentConfig.ExtraKubeletArgs, []string{
 		"stderrthreshold=FATAL",
 		"log-file-max-size=50",
