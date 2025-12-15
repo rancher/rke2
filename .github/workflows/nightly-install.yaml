@@ -29,7 +29,7 @@ jobs:
       # Don't cache Windows VMs, they are 5GB each, which would eat our entire 10GB cache
       - name: "Vagrant Cache"
         if: ${{ !contains(matrix.vm, 'windows') }}
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
              ~/.vagrant.d/boxes
