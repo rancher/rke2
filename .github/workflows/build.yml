@@ -46,7 +46,7 @@ jobs:
         sudo chown -R $USER:$USER ~/rke2-logs
     - name: Upload Test Logs on Failure
       if: ${{ failure() }}
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: rke2-test-logs
         path: ~/rke2-logs/

@@ -55,7 +55,7 @@ jobs:
       run: |
         dapper -f Dockerfile --target dapper make scan-images
     - name: Upload Scan Results
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: release-trivy-scan
         path: trivy_scan_report.txt

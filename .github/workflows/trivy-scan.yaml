@@ -78,7 +78,7 @@ jobs:
           TRIVY_DISABLE_VEX_NOTICE: true
 
       - name: Upload Trivy Reports
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: trivy-report
           path: |

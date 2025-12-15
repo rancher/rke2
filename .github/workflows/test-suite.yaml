@@ -56,7 +56,7 @@ jobs:
         cp ./dist/artifacts/rke2.*-amd64.tar.gz ./build/images/
         rm ./build/images/rke2-runtime.tar
     - name: Upload RKE2 Binary and Runtime Image
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: rke2-test-artifacts
         path: ./build/images/*
