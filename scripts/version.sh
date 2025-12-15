@@ -5,6 +5,7 @@ PROG=rke2
 REGISTRY=${REGISTRY:-docker.io}
 REPO=${REPO:-rancher}
 K3S_PKG=github.com/k3s-io/k3s
+HELMCTR_PKG=github.com/k3s-io/helm-controller
 RKE2_PKG=github.com/rancher/rke2
 GO=${GO-go}
 GOARCH=${GOARCH:-$("${GO}" env GOARCH)}
@@ -37,6 +38,7 @@ KUBERNETES_IMAGE_TAG=${KUBERNETES_IMAGE_TAG:-v1.34.3-rke2r1-build20251210}
 ETCD_VERSION=${ETCD_VERSION:-v3.6.6-k3s1}
 PAUSE_VERSION=${PAUSE_VERSION:-3.6}
 CCM_VERSION=${CCM_VERSION:-v1.34.3-0.20251210094406-1ff6ebef7028-build20251210}
+KLIPPERHELM_VERSION=${KLIPPERHELM_VERSION:-v0.9.12-build20251215}
 
 if [ -d .git ]; then
     if [ -z "$GIT_TAG" ]; then
