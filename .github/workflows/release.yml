@@ -23,18 +23,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v6
 
-    - name: Install Dapper
-      run: |
-        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
-        chmod +x /usr/local/bin/dapper
-
     - name: Validate Release
       run: |
-       dapper -f Dockerfile --target dapper make validate-release
+        make in-docker-validate-release
 
     - name: Build
       run: |
-        dapper -f Dockerfile --target dapper make dapper-ci
+        make ci
     
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@main
@@ -48,12 +43,12 @@ jobs:
 
     - name: Package Images
       run: |
-        dapper -f Dockerfile --target dapper make package-images
+        make in-docker-package-images
     
     - name: Scan Images
       continue-on-error: true
       run: |
-        dapper -f Dockerfile --target dapper make scan-images
+        make in-docker-scan-images
     - name: Upload Scan Results
       uses: actions/upload-artifact@v6
       with:
@@ -66,7 +61,7 @@ jobs:
         
     - name: Test
       run: |
-        dapper -f Dockerfile --target dapper make test
+        make in-docker-test
 
     - name: Set environment variables
       run: |
@@ -112,15 +107,15 @@ jobs:
   
     - name: Package windows images
       run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make package-windows-images
+        GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-package-windows-images
 
     - name: Checksum Artifacts
       run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make checksum
+        GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-checksum
 
     - name: Publish Artifacts
       run: |
-        dapper -f Dockerfile --target dapper make publish-binary
+        make in-docker-publish-binary
       env:
         GH_TOKEN: ${{ github.token }}
   release-arm64:
@@ -129,18 +124,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v6
 
-    - name: Install Dapper
-      run: |
-        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
-        chmod +x /usr/local/bin/dapper
-
     - name: Validate Release
       run: |
-       dapper -f Dockerfile --target dapper make validate-release
+       make in-docker-validate-release
 
     - name: Build
       run: |
-        dapper -f Dockerfile --target dapper make dapper-ci
+        make ci
     
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@main
@@ -154,12 +144,12 @@ jobs:
 
     - name: Package Images
       run: |
-        dapper -f Dockerfile --target dapper make package-images
+        make in-docker-package-images
     
     - name: Scan Images
       continue-on-error: true
       run: |
-        dapper -f Dockerfile --target dapper make scan-images
+        make in-docker-scan-images
 
     - name: Set environment variables
       run: |
@@ -186,11 +176,11 @@ jobs:
 
     - name: Checksum
       run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make checksum
+        GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-checksum
 
     - name: Publish Artifacts
       run: |
-        dapper -f Dockerfile --target dapper make publish-binary
+        make in-docker-publish-binary
       env:
         GH_TOKEN: ${{ github.token }}
   manifest:
@@ -199,11 +189,6 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
-
-    - name: Install Dapper
-      run: |
-        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
-        chmod +x /usr/local/bin/dapper
 
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@main
@@ -343,10 +328,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-      - name: Install Dapper
-        run: |
-          curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
-          chmod +x /usr/local/bin/dapper
       - name: setup ecm-distro-tools
         uses: rancher/ecm-distro-tools@df74c04bbc0176c3a2a04ebd8f6620c5a23229f6 # v0.61.0
       - name: Make artifacts directory
@@ -381,16 +362,16 @@ jobs:
         env:
           REGISTRY: ${{ env.PRIME_REGISTRY }}
         run: |
-          dapper -f Dockerfile --target dapper make package-images
+          make in-docker-package-images
       - name: Package windows images
         if: ${{ matrix.arch == 'amd64' }}
         env:
           REGISTRY: ${{ env.PRIME_REGISTRY }}
         run: |
-          dapper -f Dockerfile --target dapper make package-windows-images
+          make in-docker-package-windows-images
       - name: Checksum Artifacts
         run: |
-          dapper -f Dockerfile --target dapper make checksum
+          make in-docker-checksum
       - name: Configure Prime Artifact Uploader AWS Credentials
         uses: aws-actions/configure-aws-credentials@v5
         with:
