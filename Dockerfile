@@ -1,21 +1,21 @@
 ARG KUBERNETES_VERSION=dev
 
-# Build environment
-FROM rancher/hardened-build-base:v1.24.11b1 AS build
-ARG DAPPER_HOST_ARCH
-ENV ARCH $DAPPER_HOST_ARCH
+# Base image for common build tools
+FROM rancher/hardened-build-base:v1.24.11b2 AS base
+ARG BUILDARCH
+ENV ARCH $BUILDARCH
 RUN set -x && \
     apk --no-cache add \
     bash \
     curl \
     file \
     git \
+    findutils \
     libseccomp-dev \
     rsync \
     gcc \
     bsd-compat-headers \
-    py-pip \
-    py3-pip \
+    aws-cli \
     pigz \
     tar \
     yq \
@@ -28,15 +28,10 @@ RUN if [ "${ARCH}" = "amd64" ]; then \
 FROM registry.suse.com/bci/bci-base AS rpm-macros
 RUN zypper install -y systemd-rpm-macros
 
-# Dapper/Drone/CI environment
-FROM build AS dapper
-ENV DAPPER_ENV GODEBUG CI GOCOVER REPO TAG GITHUB_ACTION_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY DOCKER_USERNAME DOCKER_PASSWORD GH_TOKEN REGISTRY
-ARG DAPPER_HOST_ARCH
-ENV ARCH $DAPPER_HOST_ARCH
-ENV DAPPER_OUTPUT ./dist ./bin ./build
-ENV DAPPER_DOCKER_SOCKET true
-ENV DAPPER_TARGET dapper
-ENV DAPPER_RUN_ARGS "--privileged --network host -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy"
+# Build environment
+FROM base AS build-env
+ARG BUILDARCH
+ENV ARCH $BUILDARCH
 RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
         VERSION=0.56.10 OS=linux && \
         curl -sL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
@@ -51,7 +46,6 @@ RUN curl -sL https://dl.k8s.io/release/$( \
     )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
     chmod a+x /usr/local/bin/kubectl
 
-RUN python3 -m pip install awscli
 RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.55.2
 RUN set -x && \
     apk --no-cache add \
@@ -77,12 +71,12 @@ RUN GOCR_VERSION="v0.20.2" && \
     fi
 
 WORKDIR /source
+RUN git config --global --add safe.directory /source
 
 COPY --from=rpm-macros /usr/lib/rpm/macros.d/macros.systemd /usr/lib/rpm/macros.d
-# End Dapper stuff
 
 # Shell used for debugging
-FROM dapper AS shell
+FROM build-env AS shell
 RUN set -x && \
     apk --no-cache add \
     bash-completion \
@@ -103,7 +97,7 @@ VOLUME /var/lib/rancher/rke2
 # This makes it so we can run and debug k3s too
 VOLUME /var/lib/rancher/k3s
 
-FROM build AS charts
+FROM base AS charts
 ARG CHART_REPO="https://rke2-charts.rancher.io"
 ARG KUBERNETES_VERSION=""
 ARG CACHEBUST="cachebust"

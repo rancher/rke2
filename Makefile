@@ -3,21 +3,9 @@ default: in-docker-build                 ## Build using docker environment (defa
 	@echo "Run make help for info about other make targets"
 
 .PHONY: ci
-ci: in-docker-.ci                        ## Run CI locally
+ci: in-docker-.ci                 # Run CI in a docker environment
 
-.PHONY: ci-shell
-ci-shell: clean .dapper                  ## Launch a shell in the CI environment to troubleshoot. Runs clean first
-	@echo
-	@echo '######################################################'
-	@echo '# Run "make dapper-ci" to reproduce CI in this shell #'
-	@echo '######################################################'
-	@echo
-	./.dapper -f Dockerfile --target dapper -s
-
-.PHONY: dapper-ci
-dapper-ci: .ci                           ## Used by Drone CI, does the same as "ci" but in a Drone way
-
-.ci: validate validate-charts build package
+.ci: validate validate-charts build package ## Run CI locally
 
 .PHONY: build
 build:                                   ## Build using host go tools
@@ -125,7 +113,7 @@ publish-binary: 						## Upload binaries
 	./scripts/publish-binary
 
 .PHONY: package
-package: build 						## Package the rke2 binary
+package: 						    ## Package the rke2 binary
 	./scripts/package
 
 .PHONY: package-images
@@ -163,23 +151,16 @@ test-docker:
 checksum:
 	./scripts/checksum
 
-./.dapper:
-	@echo Downloading dapper
-	@curl -sL https://releases.rancher.com/dapper/v0.5.8/dapper-$$(uname -s)-$$(uname -m) > .dapper.tmp
-	@@chmod +x .dapper.tmp
-	@./.dapper.tmp -v
-	@mv .dapper.tmp .dapper
-
-in-docker-%: .dapper                     ## Advanced: wraps any target in Docker environment, for example: in-docker-build-debug
-	mkdir -p ./bin/ ./dist/ ./build
-	./.dapper -f Dockerfile --target dapper make $*
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD | sed 's/\//-/g')
+in-docker-%: ## Advanced: wraps any target in Docker environment, for example: in-docker-build-debug
+	mkdir -p ./bin/ ./dist ./build
+	docker buildx build -t rke2:$(BRANCH) --target build-env -f Dockerfile .
+	docker run --privileged --rm --network host \
+		-v $${PWD}:/source -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy \
+		-e GODEBUG -e CI -e GOCOVER -e REPO -e TAG -e GITHUB_ACTION_TAG -e KUBERNETES_VERSION -e IMAGE_NAME -e AWS_SECRET_ACCESS_KEY -e AWS_ACCESS_KEY_ID \
+		-e DOCKER_PASSWORD -e DOCKER_USERNAME -e GH_TOKEN -e SKIP_VALIDATE -e PACKAGE_SKIP_TARBALL \
+		rke2:$(BRANCH) make $*
 
 .PHONY: help
 help: ## this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
-
-serve-docs: mkdocs
-	docker run -p 8000:8000 --rm -it -v $${PWD}:/docs mkdocs serve -a 0.0.0.0:8000
-
-mkdocs:
-	docker build -t mkdocs -f Dockerfile.docs .
