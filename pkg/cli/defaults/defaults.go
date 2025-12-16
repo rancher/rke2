@@ -23,6 +23,7 @@ func Set(_ *cli.Context, dataDir string) error {
 
 	cmds.ServerConfig.ClusterInit = true
 	cmds.ServerConfig.DisableNPC = true
+	cmds.ServerConfig.FlannelBackend = "none"
 	cmds.ServerConfig.AdvertisePort = 6443
 	cmds.ServerConfig.SupervisorPort = 9345
 	cmds.ServerConfig.HTTPSPort = 6443
