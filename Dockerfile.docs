@@ -1,4 +1,0 @@
-FROM squidfunk/mkdocs-material
-RUN pip install mkdocs-markdownextradata-plugin
-RUN apk add -U git openssh
-
