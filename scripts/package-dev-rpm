@@ -49,7 +49,7 @@ git tag "${RPM_VERSION}"
 find -L "${TMPDIR}" -name 'build-*' -print >"${SCRIPT_LIST}"
 while IFS= read -r script; do
     if [ "${USER}" != 'root' ]; then
-        # Use /home/$USER instead of /root when running outside of dapper
+        # Use /home/$USER instead of /root when running outside of docker
         sed -i -e "s%/root%${HOME}%g" "${script}"
     fi
 
