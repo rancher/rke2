@@ -1,18 +1,13 @@
-FROM --platform=$BUILDPLATFORM alpine:3.22 AS build
+FROM --platform=$BUILDPLATFORM alpine:3.22 AS base
 
 RUN apk --no-cache add \
     curl \
     unzip
 
-# Dapper/Drone/CI environment
-FROM rancher/hardened-build-base:v1.24.9b1 AS dapper
-ENV DAPPER_ENV GODEBUG REPO TAG GITHUB_ACTION_TAG PAT_USERNAME PAT_TOKEN KUBERNETES_VERSION DOCKER_BUILDKIT DRONE_BUILD_EVENT IMAGE_NAME AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID ENABLE_REGISTRY
-ARG DAPPER_HOST_ARCH
-ENV ARCH $DAPPER_HOST_ARCH
-ENV DAPPER_OUTPUT ./dist ./bin ./build
-ENV DAPPER_DOCKER_SOCKET true
-ENV DAPPER_TARGET dapper
-ENV DAPPER_RUN_ARGS "--privileged --network host -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build"
+# Build environment
+FROM rancher/hardened-build-base:v1.24.9b1 AS build-env
+ARG BUILDARCH
+ENV ARCH $BUILDARCH
 RUN apk update
 RUN set -x && \
     apk add --no-cache \
@@ -35,10 +30,9 @@ RUN curl -sL https://dl.k8s.io/release/$( \
     chmod a+x /usr/local/bin/kubectl
 RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.55.2
 WORKDIR /source
-# End Dapper stuff
 
 FROM --platform=$BUILDPLATFORM rancher/hardened-containerd:v2.1.5-k3s1-build20251210-amd64-windows AS containerd
-FROM build AS windows-runtime-collect
+FROM base AS windows-runtime-collect
 ARG KUBERNETES_VERSION=dev
 
 # windows runtime image
