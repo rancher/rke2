@@ -16,7 +16,7 @@ When running RKE2 you will also need to install these packages:
 ## Building
 
 ```shell script
-# this will build inside of a container via dapper.
+# this will build inside of a container via docker.
 # use `make build` to leverage host-local tooling
 make
 ```
