@@ -15,17 +15,13 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
-    - name: Install Dapper
-      run: |
-        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
-        chmod +x /usr/local/bin/dapper
     - name: Build
-      run: dapper -f Dockerfile --target dapper make dapper-ci
+      run: make ci
     - name: Load kernel modules
       run: |
         sudo modprobe br_netfilter overlay
     - name: Test
-      run: dapper -f Dockerfile --target dapper make test
+      run: make in-docker-test
     - name: Prepare Test Logs on Failure
       if: ${{ failure() }}
       run: |
@@ -43,10 +39,6 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
-    - name: Install Dapper
-      run: |
-        curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
-        chmod +x /usr/local/bin/dapper
     - name: Build
       run: |
-        dapper -f Dockerfile --target dapper make dapper-ci
+        make ci
