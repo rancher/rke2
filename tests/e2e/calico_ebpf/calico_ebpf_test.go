@@ -26,6 +26,20 @@ func Test_E2ECalicoEBPF(t *testing.T) {
 	RunSpecs(t, "Validate dualstack in Calico eBPF Test Suite", suiteConfig, reporterConfig)
 }
 
+func getHelmCalicoLog(kubeConfig string) string {
+	cmd := "kubectl get pods -n tigera-operator -o name --kubeconfig=" + kubeConfig
+	helmPod, err := e2e.RunCommand(cmd)
+	if err != nil {
+		return fmt.Sprintf("error getting  tigera-operator pod: %v", err)
+	}
+	cmd = "kubectl logs -n tigera-operator " + strings.TrimSpace(helmPod) + " --kubeconfig=" + kubeConfig
+	logs, err := e2e.RunCommand(cmd)
+	if err != nil {
+		return fmt.Sprintf("error getting  tigera-operator logs: %v", err)
+	}
+	return logs
+}
+
 var tc *e2e.TestConfig
 var _ = ReportAfterEach(e2e.GenReport)
 
@@ -48,6 +62,12 @@ var _ = Describe("Verify DualStack in Calico eBPF configuration", Ordered, func(
 
 	It("Checks Node Status", func() {
 		Eventually(func(g Gomega) {
+			pods, err := e2e.ParsePods(tc.KubeconfigFile, false)
+			fmt.Printf("pods: %v\n", pods)
+
+			calicoLogs := getHelmCalicoLog(tc.KubeconfigFile)
+			fmt.Println(calicoLogs)
+
 			nodes, err := e2e.ParseNodes(tc.KubeconfigFile, false)
 			g.Expect(err).NotTo(HaveOccurred())
 			for _, node := range nodes {

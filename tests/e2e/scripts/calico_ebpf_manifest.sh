@@ -20,4 +20,4 @@ spec:
         kubeProxyManagement: Enabled
         linuxDataplane: BPF
     kubernetesServiceEndpoint:
-      host: localhost" >> /var/lib/rancher/rke2/server/manifests/e2e-calico.yaml
+      host: $ip4_addr" >> /var/lib/rancher/rke2/server/manifests/e2e-calico.yaml
