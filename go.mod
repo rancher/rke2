@@ -395,7 +395,7 @@ require (
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/fuse-overlayfs-snapshotter/v2 v2.1.6 // indirect
 	github.com/containerd/plugin v1.0.0 // indirect
-	github.com/expr-lang/expr v1.17.6 // indirect
+	github.com/expr-lang/expr v1.17.7 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/filecoin-project/go-clock v0.1.0 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
