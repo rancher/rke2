@@ -373,7 +373,7 @@ provision-server() {
         $RKE2_IMAGE server $ARGS $SERVER_ARGS ${!SERVER_INSTANCE_ARGS}
     docker exec $name mount --make-rshared /var/lib/kubelet
 
-    local ip=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' $name | tee $TEST_DIR/servers/$count/metadata/ip)
+    local ip=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $name | tee $TEST_DIR/servers/$count/metadata/ip)
     local url=$(echo "https://$ip:9345" | tee $TEST_DIR/servers/$count/metadata/url)
 
     echo "Started $name @ $url"
