@@ -101,7 +101,7 @@ FROM scratch AS windows-runtime
 LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-runtime"
 LABEL org.opencontainers.image.source="https://github.com/rancher/rke2"
 WORKDIR /bin/
+COPY --from=windows-runtime-collect ./charts /charts/
 COPY --from=containerd /usr/local/bin/*.exe /bin/
 COPY --from=windows-runtime-collect ./rancher/* /bin/
 COPY --from=windows-runtime-collect ./confd/ /bin/confd
-COPY --from=windows-runtime-collect ./charts /charts/
