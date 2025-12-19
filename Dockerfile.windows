@@ -5,7 +5,7 @@ RUN apk --no-cache add \
     unzip
 
 # Build environment
-FROM rancher/hardened-build-base:v1.24.9b1 AS build-env
+FROM rancher/hardened-build-base:v1.25.5b1 AS build-env
 ARG BUILDARCH
 ENV ARCH $BUILDARCH
 RUN apk update
@@ -36,7 +36,7 @@ FROM base AS windows-runtime-collect
 ARG KUBERNETES_VERSION=dev
 
 # windows runtime image
-ENV CRICTL_VERSION="v1.34.0"
+ENV CRICTL_VERSION="v1.35.0"
 ENV CALICO_VERSION="v3.31.2"
 ENV CNI_PLUGIN_VERSION="v1.8.0"
 ENV FLANNEL_VERSION="v0.27.4"
