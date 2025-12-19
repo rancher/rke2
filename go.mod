@@ -5,7 +5,7 @@ go 1.25.5
 replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.13.0
 	github.com/Mirantis/cri-dockerd => github.com/k3s-io/cri-dockerd v0.3.19-k3s3
-	github.com/cloudnativelabs/kube-router/v2 => github.com/k3s-io/kube-router/v2 v2.6.2
+	github.com/cloudnativelabs/kube-router/v2 => github.com/k3s-io/kube-router/v2 v2.6.3-k3s1
 	github.com/containerd/containerd/v2 => github.com/k3s-io/containerd/v2 v2.1.5-k3s1
 	github.com/containerd/stargz-snapshotter => github.com/k3s-io/stargz-snapshotter v0.17.0-k3s1
 	github.com/docker/distribution => github.com/docker/distribution v2.8.3+incompatible
@@ -26,11 +26,11 @@ replace (
 	go.etcd.io/etcd/pkg/v3 => github.com/k3s-io/etcd/pkg/v3 v3.6.6-k3s1
 	go.etcd.io/etcd/server/v3 => github.com/k3s-io/etcd/server/v3 v3.6.6-k3s1
 	go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful => go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful v0.44.0
-	golang.org/x/crypto => golang.org/x/crypto v0.36.0
-	golang.org/x/net => golang.org/x/net v0.38.0
-	golang.org/x/sys => golang.org/x/sys v0.31.0
+	golang.org/x/crypto => golang.org/x/crypto v0.45.0
+	golang.org/x/net => golang.org/x/net v0.47.0
+	golang.org/x/sys => golang.org/x/sys v0.38.0
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20241209162323-e6fa225c2576
-	google.golang.org/grpc => google.golang.org/grpc v1.72.1
+	google.golang.org/grpc => google.golang.org/grpc v1.72.2
 	k8s.io/api => github.com/k3s-io/kubernetes/staging/src/k8s.io/api v1.35.0-k3s1
 	k8s.io/apiextensions-apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/apiextensions-apiserver v1.35.0-k3s1
 	k8s.io/apimachinery => github.com/k3s-io/kubernetes/staging/src/k8s.io/apimachinery v1.35.0-k3s1
@@ -455,3 +455,5 @@ require (
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 )
+
+replace github.com/k3s-io/k3s => github.com/brandond/k3s v1.33.0-rc1.0.20251219220824-bc6a7be31f81
