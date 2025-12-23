@@ -73,7 +73,7 @@ require (
 	github.com/Microsoft/hcsshim v0.13.0
 	github.com/aws/aws-sdk-go v1.55.6
 	github.com/containerd/continuity v0.4.5 // indirect
-	github.com/containernetworking/plugins v1.7.1
+	github.com/containernetworking/plugins v1.9.0
 	github.com/google/go-containerregistry v0.20.3
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.17
