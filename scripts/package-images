@@ -13,7 +13,12 @@ mkdir -p dist/artifacts
 for FILE in build/images*.txt; do
     BASE=$(basename ${FILE} .txt)
     DEST=build/images/${PROG}-${BASE}.tar
-    docker image save --output ${DEST}.tmp $(<${FILE})
+    # For images.txt and images-core.txt, use docker as the rke2-runtime only exists locally
+    if [ "${BASE}" = "images" ] || [ "${BASE}" = "images-core" ]; then
+        docker image save --output ${DEST}.tmp $(<${FILE})
+    else
+        crane pull $(<${FILE}) ${DEST}.tmp --platform=linux/${GOARCH}
+    fi
     bsdtar -c -f ${DEST} --include=manifest.json --include=repositories @${DEST}.tmp
     bsdtar -r -f ${DEST} --exclude=manifest.json --exclude=repositories @${DEST}.tmp
     rm -f ${DEST}.tmp
