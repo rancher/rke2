@@ -596,6 +596,24 @@ func ParsePods(kubeconfig string, print bool) ([]Pod, error) {
 	return pods, nil
 }
 
+func ListPods(kubeconfig string) string {
+	cmd := "kubectl get pods -o wide --no-headers -A --kubeconfig=" + kubeconfig
+	res, err := RunCommand(cmd)
+	if err != nil {
+		return fmt.Sprintf("Failed to list pods: %v", err)
+	}
+	return res
+}
+
+func DescribePods(kubeconfig string) string {
+	cmd := "kubectl describe pod -A --kubeconfig=" + kubeconfig
+	res, err := RunCommand(cmd)
+	if err != nil {
+		return fmt.Sprintf("Failed to describe pods: %v", err)
+	}
+	return res
+}
+
 // RunCmdOnNode executes a command from within the given node as sudo
 func (v VagrantNode) RunCmdOnNode(cmd string) (string, error) {
 	switch v.Type {

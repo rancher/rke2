@@ -105,6 +105,10 @@ var _ = AfterSuite(func() {
 	if failed && !*ci {
 		fmt.Println("FAILED!")
 	} else {
+		if *ci {
+			AddReportEntry("pods wide", e2e.ListPods(tc.KubeconfigFile))
+			AddReportEntry("describe", e2e.DescribePods(tc.KubeconfigFile))
+		}
 		Expect(e2e.DestroyCluster()).To(Succeed())
 		Expect(os.Remove(tc.KubeconfigFile)).To(Succeed())
 	}
