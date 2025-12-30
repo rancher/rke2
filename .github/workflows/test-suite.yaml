@@ -192,7 +192,24 @@ jobs:
     - name: "Checkout"
       uses: actions/checkout@v6
       with: {fetch-depth: 1}
-    
+    - name: Remove Unnecessary Tools
+      run: |
+        sudo rm -rf \
+          /home/linuxbrew \
+          /home/packer \
+          /opt/az \
+          /opt/microsoft \
+          /usr/lib/firefox \
+          /usr/lib/google-cloud-sdk \
+          /usr/local/julia* \
+          /usr/local/share/boost \
+          /usr/local/share/chromium \
+          /usr/local/share/powershell \
+          /usr/share/az* \
+          /usr/share/dotnet \
+          /usr/share/miniconda \
+          /usr/share/swift
+        df -khl
     - name: Set up vagrant and libvirt
       uses: ./.github/actions/vagrant-setup
     - name: Vagrant R/W Cache
