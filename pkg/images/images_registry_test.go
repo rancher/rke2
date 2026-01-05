@@ -98,7 +98,7 @@ func Test_UnitResolver_NewResolver(t *testing.T) {
 	}
 }
 
-func TestSplitRegistryAndPath(t *testing.T) {
+func Test_UnitsplitRegistryAndPath(t *testing.T) {
 	tests := []struct {
 		name         string
 		input        string
