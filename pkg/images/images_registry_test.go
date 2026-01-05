@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestResolver_RegistryOverrides(t *testing.T) {
+func Test_UnitResolver_NewResolver(t *testing.T) {
 	tests := []struct {
 		name     string
 		cfg      ImageOverrideConfig
