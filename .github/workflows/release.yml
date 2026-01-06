@@ -39,7 +39,10 @@ jobs:
           secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials password | DOCKER_PASSWORD ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
-          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials registry |  PRIME_STAGING_REGISTRY ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials username |  PRIME_STAGING_REGISTRY_USERNAME ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials password |  PRIME_STAGING_REGISTRY_PASSWORD ;
 
     - name: Package Images
       run: |
@@ -67,7 +70,7 @@ jobs:
       run: |
         echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
 
-    - name: Publish Image Runtime
+    - name: Publish Image Runtime - Docker
       uses: rancher/ecm-distro-tools/actions/publish-image@master
       env:
         GOARCH: amd64
@@ -81,12 +84,42 @@ jobs:
         public-username: ${{ env.DOCKER_USERNAME }}
         public-password: ${{ env.DOCKER_PASSWORD }}
 
+        push-to-prime: false
+
+    - name: Publish Image Runtime - Staging
+      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      env:
+        GOARCH: amd64
+        GOOS: linux
+      with:
+        image: "rke2-runtime"
+        tag: ${{ env.GIT_TAG }}
+        make-target: publish-image-runtime
+        push-to-public: false
+
+        prime-repo: rancher
+        prime-registry: ${{ env.PRIME_STAGING_REGISTRY }}
+        prime-username: ${{ env.PRIME_STAGING_REGISTRY_USERNAME }}
+        prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
+
+    - name: Publish Image Runtime - Prime
+      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      if: ${{ !contains(github.ref_name, '-rc') }}
+      env:
+        GOARCH: amd64
+        GOOS: linux
+      with:
+        image: "rke2-runtime"
+        tag: ${{ env.GIT_TAG }}
+        make-target: publish-image-runtime
+        push-to-public: false
+
         prime-repo: rancher
         prime-registry: ${{ env.PRIME_REGISTRY }}
         prime-username: ${{ env.PRIME_REGISTRY_USERNAME }}
         prime-password: ${{ env.PRIME_REGISTRY_PASSWORD }}
 
-    - name: Publish Image Runtime (Windows)
+    - name: Publish Image Runtime (Windows) - Docker
       uses: rancher/ecm-distro-tools/actions/publish-image@master
       env:
         GOARCH: amd64
@@ -99,6 +132,36 @@ jobs:
         public-repo: rancher
         public-username: ${{ env.DOCKER_USERNAME }}
         public-password: ${{ env.DOCKER_PASSWORD }}
+
+        push-to-prime: false
+
+    - name: Publish Image Runtime (Windows) - Staging
+      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      env:
+        GOARCH: amd64
+        GOOS: linux
+      with:
+        image: "rke2-runtime"
+        tag: ${{ env.GIT_TAG }}
+        make-target: publish-image-runtime-windows
+        push-to-public: false
+
+        prime-repo: rancher
+        prime-registry: ${{ env.PRIME_STAGING_REGISTRY }}
+        prime-username: ${{ env.PRIME_STAGING_REGISTRY_USERNAME }}
+        prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
+
+    - name: Publish Image Runtime (Windows) - Prime
+      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      if: ${{ !contains(github.ref_name, '-rc') }}
+      env:
+        GOARCH: amd64
+        GOOS: linux
+      with:
+        image: "rke2-runtime"
+        tag: ${{ env.GIT_TAG }}
+        make-target: publish-image-runtime-windows
+        push-to-public: false
 
         prime-repo: rancher
         prime-registry: ${{ env.PRIME_REGISTRY }}
@@ -141,6 +204,9 @@ jobs:
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials registry |  PRIME_STAGING_REGISTRY ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials username |  PRIME_STAGING_REGISTRY_USERNAME ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials password |  PRIME_STAGING_REGISTRY_PASSWORD ;
 
     - name: Package Images
       run: |
@@ -155,7 +221,7 @@ jobs:
       run: |
         echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
 
-    - name: Publish Image Runtime
+    - name: Publish Image Runtime - Docker
       uses: rancher/ecm-distro-tools/actions/publish-image@master
       env:
         GOARCH: arm64
@@ -168,6 +234,36 @@ jobs:
         public-repo: rancher
         public-username: ${{ env.DOCKER_USERNAME }}
         public-password: ${{ env.DOCKER_PASSWORD }}
+
+        push-to-prime: false
+
+    - name: Publish Image Runtime - Staging
+      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      if: ${{ !contains(github.ref_name, '-rc') }}
+      env:
+        GOARCH: arm64
+        GOOS: linux
+      with:
+        image: "rke2-runtime"
+        tag: ${{ env.GIT_TAG }}
+        make-target: publish-image-runtime
+        push-to-public: false
+
+        prime-repo: rancher
+        prime-registry: ${{ env.PRIME_STAGING_REGISTRY }}
+        prime-username: ${{ env.PRIME_STAGING_REGISTRY_USERNAME }}
+        prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
+
+    - name: Publish Image Runtime - Prime
+      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      env:
+        GOARCH: arm64
+        GOOS: linux
+      with:
+        image: "rke2-runtime"
+        tag: ${{ env.GIT_TAG }}
+        make-target: publish-image-runtime
+        push-to-public: false
 
         prime-repo: rancher
         prime-registry: ${{ env.PRIME_REGISTRY }}
@@ -199,12 +295,15 @@ jobs:
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials registry |  PRIME_STAGING_REGISTRY ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials username |  PRIME_STAGING_REGISTRY_USERNAME ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials password |  PRIME_STAGING_REGISTRY_PASSWORD ;
 
     - name: Set environment variables
       run: |
         echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
 
-    - name: Manifest
+    - name: Manifest - Docker
       uses: rancher/ecm-distro-tools/actions/publish-image@master
       env:
         GOARCH: amd64
@@ -217,6 +316,37 @@ jobs:
         public-repo: rancher
         public-username: ${{ env.DOCKER_USERNAME }}
         public-password: ${{ env.DOCKER_PASSWORD }}
+
+        push-to-prime: false
+
+    - name: Manifest - Staging
+      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      env:
+        GOARCH: amd64
+        GOOS: linux
+      with:
+        image: "rke2-runtime"
+        tag: ${{ env.GIT_TAG }}
+        make-target: publish-manifest-runtime
+
+        push-to-public: false
+
+        prime-repo: rancher
+        prime-registry: ${{ env.PRIME_STAGING_REGISTRY }}
+        prime-username: ${{ env.PRIME_STAGING_REGISTRY_USERNAME }}
+        prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
+
+    - name: Manifest - Prime
+      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      env:
+        GOARCH: amd64
+        GOOS: linux
+      with:
+        image: "rke2-runtime"
+        tag: ${{ env.GIT_TAG }}
+        make-target: publish-manifest-runtime
+
+        push-to-public: false
 
         prime-repo: rancher
         prime-registry: ${{ env.PRIME_REGISTRY }}
