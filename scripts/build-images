@@ -18,9 +18,9 @@ PULL_CMD_CORE="${PULL_CMD_CORE:-docker image pull --quiet}"
 
 xargs -n1 -t $PULL_CMD_CORE << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
-    ${REGISTRY}/rancher/hardened-coredns:v1.13.1-build20251204
-    ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.10.2-build20251204
-    ${REGISTRY}/rancher/hardened-dns-node-cache:1.26.7-build20251204
+    ${REGISTRY}/rancher/hardened-coredns:v1.13.2-build20260106
+    ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.10.2-build20260106
+    ${REGISTRY}/rancher/hardened-dns-node-cache:1.26.7-build20260106
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20251210
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.8.0-build20251204
     ${REGISTRY}/rancher/hardened-addon-resizer:1.8.23-build20251204
@@ -38,23 +38,23 @@ xargs -n1 -t $PULL_CMD << EOF > build/images-traefik.txt
 EOF
 
 xargs -n1 -t $PULL_CMD_CORE << EOF > build/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.31.2-build20251205
-    ${REGISTRY}/rancher/hardened-flannel:v0.27.4-build20251204
+    ${REGISTRY}/rancher/hardened-calico:v3.31.3-build20260106
+    ${REGISTRY}/rancher/hardened-flannel:v0.28.0-build20260106
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
 xargs -n1 -t $PULL_CMD << EOF > build/images-cilium.txt
-    ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.2.4
-    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.18.4
-    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.34.10-1762597008-ff7ae7d623be00078865cff1b0672cc5d9bfc6d5
-    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.18.4
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.18.4
+    ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.3.1
+    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.18.5
+    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.34.12-1765374555-6a93b0bbba8d6dc75b651cbafeedb062b2997716
+    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.18.5
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.18.5
     ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.13.3
     ${REGISTRY}/rancher/mirrored-cilium-hubble-ui-backend:v0.13.3
-    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.18.4
-    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.18.4
-    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.18.4
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.8.0-build20251204
+    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.18.5
+    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.18.5
+    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.18.5
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.0-build20260106
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > build/images-calico.txt
@@ -91,11 +91,11 @@ EOF
 fi
 
 xargs -n1 -t $PULL_CMD << EOF > build/images-multus.txt
-    ${REGISTRY}/rancher/hardened-multus-cni:v4.2.3-build20251204
-    ${REGISTRY}/rancher/hardened-multus-thick:v4.2.3-build20251204
+    ${REGISTRY}/rancher/hardened-multus-cni:v4.2.3-build20260106
+    ${REGISTRY}/rancher/hardened-multus-thick:v4.2.3-build20260106
     ${REGISTRY}/rancher/hardened-multus-dynamic-networks-controller:v0.3.7-build20251209
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.8.0-build20251204
-    ${REGISTRY}/rancher/hardened-whereabouts:v0.9.2-build20251208
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.0-build20260106
+    ${REGISTRY}/rancher/hardened-whereabouts:v0.9.2-build20260106
     ${REGISTRY}/rancher/mirrored-library-busybox:1.36.1
 EOF
 
@@ -111,8 +111,8 @@ xargs -n1 -t $PULL_CMD << EOF > build/images-harvester.txt
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > build/images-flannel.txt
-    ${REGISTRY}/rancher/hardened-flannel:v0.27.4-build20251204
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.8.0-build20251204
+    ${REGISTRY}/rancher/hardened-flannel:v0.28.0-build20260106
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.0-build20260106
 EOF
 fi
 # Continue to provide a legacy airgap archive set with the default CNI images
