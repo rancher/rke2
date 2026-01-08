@@ -28,13 +28,13 @@ xargs -n1 -t $PULL_CMD_CORE << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/klipper-lb:v0.4.13
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.6.5
-    ${REGISTRY}/rancher/nginx-ingress-controller:v1.13.5-hardened2
+    ${REGISTRY}/rancher/nginx-ingress-controller:v1.14.1-hardened1
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
     ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-controller:v8.2.0
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > build/images-traefik.txt
-    ${REGISTRY}/rancher/hardened-traefik:v3.6.4-build20251208
+    ${REGISTRY}/rancher/hardened-traefik:v3.6.6-build20260107
 EOF
 
 xargs -n1 -t $PULL_CMD_CORE << EOF > build/images-canal.txt
