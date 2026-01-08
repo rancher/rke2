@@ -30,7 +30,7 @@ xargs -n1 -t $PULL_CMD_CORE << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.6.5
     ${REGISTRY}/rancher/nginx-ingress-controller:v1.14.1-hardened1
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
-    ${REGISTRY}/rancher/mirrored-sig-storage-snapshot-controller:v8.2.0
+    ${REGISTRY}/rancher/hardened-snapshot-controller:v8.4.0-build20260108
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > build/images-traefik.txt
@@ -86,7 +86,7 @@ xargs -n1 -t $PULL_CMD << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.15.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.9.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v4.0.1
-    ${REGISTRY}/rancher/mirrored-sig-storage-csi-snapshotter:v8.2.0
+    ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.4.0
 EOF
 fi
 
