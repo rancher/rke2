@@ -86,7 +86,7 @@ xargs -n1 -t $PULL_CMD << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.15.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.9.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v4.0.1
-    ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.4.0
+    ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.4.0-build20260108
 EOF
 fi
 
