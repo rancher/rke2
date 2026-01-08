@@ -44,10 +44,10 @@ charts:
   - version: 0.1.2500
     filename: /charts/harvester-csi-driver.yaml
     bootstrap: true
-  - version: 4.0.003
+  - version: 4.2.000
     filename: /charts/rke2-snapshot-controller.yaml
     bootstrap: false
-  - version: 4.0.003
+  - version: 4.2.000
     filename: /charts/rke2-snapshot-controller-crd.yaml
     bootstrap: false
   - version: 0.0.0  # this empty chart addon can be removed in v1.34, after we have shipped two minor versions that have never included it.
