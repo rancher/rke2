@@ -1,7 +1,7 @@
 ARG KUBERNETES_VERSION=dev
 
 # Base image for common build tools
-FROM rancher/hardened-build-base:v1.25.5b1 AS base
+FROM rancher/hardened-build-base:v1.25.5b2 AS base
 ARG BUILDARCH
 ENV ARCH $BUILDARCH
 RUN set -x && \
@@ -57,7 +57,7 @@ RUN set -x && \
     	apk add --no-cache rpm-dev; \
     fi
 
-RUN GOCR_VERSION="v0.20.2" && \
+RUN GOCR_VERSION="v0.20.7" && \
     if [ "${ARCH}" = "arm64" ]; then \
         wget https://github.com/google/go-containerregistry/releases/download/${GOCR_VERSION}/go-containerregistry_Linux_arm64.tar.gz && \
         tar -zxvf go-containerregistry_Linux_arm64.tar.gz && \
