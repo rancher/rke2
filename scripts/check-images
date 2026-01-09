@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -ex
+
+cd $(dirname $0)/..
+
+source ./scripts/version.sh
+
+# Check for a valid image for each line in the images files
+# Only prints when it cannot find an image
+for FILE in build/images*.txt; do
+    grep -v "rke2-runtime" "$FILE" | xargs -I {} -P 4 bash -c '
+        if ! crane digest "$1" > /dev/null 2>&1; then
+            echo "$1 not found"
+            exit 1
+        fi
+        ' -- {}
+done
