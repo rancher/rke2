@@ -9,6 +9,7 @@ mkdir -p build/images
 ./scripts/build-binary
 ./scripts/build-windows-binary
 ./scripts/build-images
+./scripts/check-images
 ./scripts/build-windows-images
 ./scripts/package-bundle
 ./scripts/package-windows-bundle
