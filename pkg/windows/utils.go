@@ -4,6 +4,7 @@
 package windows
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -145,9 +146,8 @@ func deleteAllNetworks() error {
 		}
 	}
 
-	// HNS overlay networks restart the physical interface when they are deleted. Wait until it comes back before returning
-	// TODO: Replace with non-deprecated PollUntilContextTimeout when our and Kubernetes code migrate to it
-	waitErr := wait.Poll(2*time.Second, 30*time.Second, func() (bool, error) {
+	// HNS overlay networks restart the physical interface when they are deleted. Wait until it comes back before returning.
+	waitErr := wait.PollUntilContextTimeout(context.Background(), 2*time.Second, 30*time.Second, false, func(ctx context.Context) (bool, error) {
 		for _, ip := range ips {
 			logrus.Debugf("Calico is waiting for the interface with ip: %s to come back", ip)
 			_, err := findInterface(ip)
@@ -158,11 +158,11 @@ func deleteAllNetworks() error {
 		return true, nil
 	})
 
-	if waitErr == wait.ErrWaitTimeout {
+	if errors.Is(waitErr, context.DeadlineExceeded) {
 		return fmt.Errorf("timed out waiting for the network interfaces to come back")
 	}
 
-	return nil
+	return waitErr
 }
 
 // platformType returns the platform where we are running
