@@ -635,7 +635,7 @@ func (s *StaticPodConfig) writeTemplate(spec *podtemplate.Spec) error {
 	if err != nil {
 		return err
 	}
-	if s.ProfileMode.isAnyMode() {
+	if s.ProfileMode.isCISMode() {
 		return writeFile(manifestPath, b, 0600)
 	}
 	return writeFile(manifestPath, b, 0644)
