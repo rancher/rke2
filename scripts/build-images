@@ -45,15 +45,15 @@ EOF
 if [ "${GOARCH}" != "s390x" ]; then
 xargs -n1 -t $PULL_CMD << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.3.1
-    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.18.5
-    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.34.12-1765374555-6a93b0bbba8d6dc75b651cbafeedb062b2997716
-    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.18.5
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.18.5
+    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.18.6
+    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.35.9-1767794330-db497dd19e346b39d81d7b5c0dedf6c812bcc5c9
+    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.18.6
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.18.6
     ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.13.3
     ${REGISTRY}/rancher/mirrored-cilium-hubble-ui-backend:v0.13.3
-    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.18.5
-    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.18.5
-    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.18.5
+    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.18.6
+    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.18.6
+    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.18.6
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.0-build20260106
 EOF
 
