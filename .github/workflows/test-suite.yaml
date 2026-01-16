@@ -233,7 +233,7 @@ jobs:
       uses: ./.github/actions/setup-go
     - name: Install Kubectl
       run: |
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          curl --retry 3 -LO "https://dl.k8s.io/release/$(curl --retry 3 -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
     - name: Download RKE2 Binary and Runtime Image
       uses: actions/download-artifact@v7
