@@ -111,7 +111,7 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 
 		// Test Windows -> Linux communication
 		fmt.Println("Testing Windows -> Linux communication")
-		cmd = "kubectl exec svc/windows-app-svc --kubeconfig=" + tc.KubeconfigFile + " -- wget -T7 -O - client-wget:8080"
+		cmd = "kubectl exec svc/windows-app-svc --kubeconfig=" + tc.KubeconfigFile + " -- curl -m7 client-wget:8080"
 		Eventually(func() (string, error) {
 			return e2e.RunCommand(cmd)
 		}, "20s", "3s").Should(ContainSubstring("Welcome to nginx!"), "failed cmd: "+cmd)
