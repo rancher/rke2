@@ -41,8 +41,8 @@ RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
 RUN curl -sL "https://github.com/cli/cli/releases/download/v2.53.0/gh_2.53.0_linux_${ARCH}.tar.gz" | \ 
     tar --strip-components=2 -xzvf - -C /usr/local/bin gh_2.53.0_linux_${ARCH}/bin/gh;
 
-RUN curl -sL https://dl.k8s.io/release/$( \
-    curl -sL https://dl.k8s.io/release/stable.txt \
+RUN curl --retry 3 -sL https://dl.k8s.io/release/$( \
+    curl --retry 3 -sL https://dl.k8s.io/release/stable.txt \
     )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
     chmod a+x /usr/local/bin/kubectl
 
