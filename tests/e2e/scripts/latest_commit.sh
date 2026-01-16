@@ -21,6 +21,11 @@ else
     response=$(curl -s -H 'Accept: application/vnd.github.v3+json' "https://api.github.com/repos/rancher/rke2/commits?per_page=10&sha=$branch")
 fi
 type=$(echo "$response" | jq -r type)
+if [ $? -ne 0 ]; then
+    echo "jq failed to parse response:"
+    echo "$response"
+    exit 1
+fi
 
 # Verify if the response is an array with the rke2 commits
 if [[ $type == "object" ]]; then
