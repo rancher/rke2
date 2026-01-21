@@ -91,11 +91,11 @@ EOF
 fi
 
 xargs -n1 -t $PULL_CMD << EOF > build/images-multus.txt
-    ${REGISTRY}/rancher/hardened-multus-cni:v4.2.3-build20260106
-    ${REGISTRY}/rancher/hardened-multus-thick:v4.2.3-build20260106
+    ${REGISTRY}/rancher/hardened-multus-cni:v4.2.3-build20260120
+    ${REGISTRY}/rancher/hardened-multus-thick:v4.2.3-build20260120
     ${REGISTRY}/rancher/hardened-multus-dynamic-networks-controller:v0.3.7-build20251209
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.0-build20260116
-    ${REGISTRY}/rancher/hardened-whereabouts:v0.9.2-build20260106
+    ${REGISTRY}/rancher/hardened-whereabouts:v0.9.2-build20260116
     ${REGISTRY}/rancher/mirrored-library-busybox:1.36.1
 EOF
 
