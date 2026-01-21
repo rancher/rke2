@@ -22,6 +22,13 @@ BUILD_IMAGES_FILE="scripts/build-images"
 RKE2_CHARTS_URL="https://rke2-charts.rancher.io/index.yaml"
 DRY_RUN="${DRY_RUN:-false}"
 
+# Kubernetes version constraints for extracting image versions
+# These should be updated when adding support for new Kubernetes versions
+K8S_VERSION_CONSTRAINTS=(
+    "~ 1.27"
+    ">= 1.24 < 1.28"
+)
+
 # List of charts to sync from rke2-charts
 # These are the bootstrap charts that are regularly updated
 CHARTS_TO_SYNC=(
@@ -36,7 +43,8 @@ CHARTS_TO_SYNC=(
 # Function to get the latest version of a chart from rke2-charts
 get_latest_chart_version() {
     local chart_name="${1}"
-    local version=$(curl -sfL "${RKE2_CHARTS_URL}" | yq -r '.entries.'"${chart_name}"'[].version' | sort -rV | head -n 1)
+    # Use proper yq string interpolation to avoid injection issues
+    local version=$(curl -sfL "${RKE2_CHARTS_URL}" | yq -r --arg chart "${chart_name}" '.entries[$chart][].version' | sort -rV | head -n 1)
     
     if [[ "${version}" = "null" ]] || [[ -z "${version}" ]]; then
         warn "failed to retrieve version for chart ${chart_name}"
@@ -50,7 +58,8 @@ get_latest_chart_version() {
 update_chart_version() {
     local chart_name="${1}"
     local new_version="${2}"
-    local current_version=$(yq -r '.charts[] | select(.filename == "/charts/'"${chart_name}"'.yaml") | .version' ${CHART_VERSIONS_FILE})
+    # Use proper yq string interpolation
+    local current_version=$(yq -r --arg chart "${chart_name}" '.charts[] | select(.filename == "/charts/\($chart).yaml") | .version' ${CHART_VERSIONS_FILE})
     
     if [ -z "${current_version}" ] || [ "${current_version}" = "null" ]; then
         warn "chart ${chart_name} not found in ${CHART_VERSIONS_FILE}"
@@ -60,8 +69,10 @@ update_chart_version() {
     if [ "${current_version}" != "${new_version}" ]; then
         info "updating chart ${chart_name} from ${current_version} to ${new_version} in ${CHART_VERSIONS_FILE}"
         if [ "$DRY_RUN" = "false" ]; then
-            # Use yq to update the version to avoid potential conflicts with similar version strings
-            yq -i '.charts[] |= (select(.filename == "/charts/'"${chart_name}"'.yaml") | .version = "'"${new_version}"'")' ${CHART_VERSIONS_FILE}
+            # Use yq with proper string interpolation to avoid injection
+            yq -i --arg chart "${chart_name}" --arg version "${new_version}" \
+                '.charts[] |= (select(.filename == "/charts/\($chart).yaml") | .version = $version)' \
+                ${CHART_VERSIONS_FILE}
         else
             info "dry-run mode: would update ${chart_name} to ${new_version}"
         fi
@@ -70,6 +81,43 @@ update_chart_version() {
         info "chart ${chart_name} already at version ${new_version}"
         return 1
     fi
+}
+
+# Function to extract image repository and tag pairs from YAML
+# Returns pairs as "repo|tag" one per line
+extract_image_pairs_from_yaml() {
+    local values_file="${1}"
+    
+    # Try to extract from versionOverrides first
+    for constraint in "${K8S_VERSION_CONSTRAINTS[@]}"; do
+        local override_values=$(yq -r --arg constraint "${constraint}" \
+            '.versionOverrides[] | select(.constraint == $constraint) | .values' \
+            "${values_file}" 2>/dev/null || echo "")
+        
+        if [ -n "${override_values}" ]; then
+            # Found a matching constraint, extract image pairs using yq
+            echo "${override_values}" | yq -r '
+                .. | 
+                select(type == "object" and has("repo") and has("tag")) |
+                .repo + "|" + (.tag | tostring)
+            ' 2>/dev/null || echo ""
+            return 0
+        fi
+    done
+    
+    # If no version overrides found, try to extract from root
+    yq -r '
+        .. | 
+        select(type == "object" and has("repo") and has("tag")) |
+        .repo + "|" + (.tag | tostring)
+    ' "${values_file}" 2>/dev/null || echo ""
+}
+
+# Function to escape special regex characters in a string
+escape_regex() {
+    local string="${1}"
+    # Escape characters that have special meaning in regex
+    echo "${string}" | sed 's/[]\/$*.^[]/\\&/g'
 }
 
 # Function to extract and update images from a chart
@@ -95,55 +143,43 @@ update_chart_images() {
         return 1
     fi
     
-    # Get images and tags - similar to update_chart_and_images.sh
-    # Try to extract from versionOverrides for latest Kubernetes version first
-    local images_tag=$(yq -y -r '.versionOverrides[] | select(.constraint == "~ 1.27" or .constraint == ">= 1.24 < 1.28") | .values' "${temp_dir}/${chart_name}/values.yaml" 2>/dev/null | grep -E "repo|tag" || echo "")
+    # Extract image pairs using the safer yq-based approach
+    local image_pairs=$(extract_image_pairs_from_yaml "${temp_dir}/${chart_name}/values.yaml")
     
-    if [ -z "${images_tag}" ]; then
-        warn "no version overrides found for chart ${chart_name}, trying default values"
-        # Fall back to default values if no version overrides
-        images_tag=$(yq -r '.' "${temp_dir}/${chart_name}/values.yaml" | grep -E "repo:|tag:" || echo "")
-    fi
-    
-    if [ -z "${images_tag}" ]; then
+    if [ -z "${image_pairs}" ]; then
         info "no images found in chart ${chart_name}"
         rm -rf "${temp_dir}"
         return 1
     fi
     
-    # Process each repo/tag pair
+    # Process each image/tag pair
     local updated=false
-    while IFS= read -r line; do
-        if grep "repo" <<< "${line}" &> /dev/null; then
-            local image=${line#*: }
-            # Get the corresponding tag line
-            local tag_line=$(echo "${images_tag}" | grep -A1 "${image}" 2>&1 | sed -n '2 p' | tr -d " ")
-            local tag=${tag_line#*:}
-            
-            if [ -n "${image}" ] && [ -n "${tag}" ] && [ "${tag}" != "${line}" ]; then
-                # Check if this image exists in build-images
-                if grep -q "${image}" "${BUILD_IMAGES_FILE}" 2>/dev/null; then
-                    local target_image=$(grep "${image}" "${BUILD_IMAGES_FILE}" | head -n1)
-                    local target_tag=${target_image#*:}
-                    # Clean up potential trailing characters
-                    target_tag=$(echo "${target_tag}" | awk '{print $1}')
-                    
-                    if [ "${target_tag}" != "${tag}" ]; then
-                        info "updating image ${image} in ${BUILD_IMAGES_FILE} from ${target_tag} to ${tag}"
-                        if [ "$DRY_RUN" = "false" ]; then
-                            # Use more precise regex to replace only the tag part
-                            sed -i -r 's~(.*'"${image}"':)'"${target_tag}"'(.*)~\1'"${tag}"'\2~g' "${BUILD_IMAGES_FILE}"
-                        else
-                            info "dry-run mode: would update ${image} to ${tag}"
-                        fi
-                        updated=true
+    while IFS='|' read -r image tag; do
+        if [ -n "${image}" ] && [ -n "${tag}" ]; then
+            # Check if this image exists in build-images
+            if grep -qF "${image}" "${BUILD_IMAGES_FILE}" 2>/dev/null; then
+                # Extract current tag from build-images
+                local target_line=$(grep -F "${image}" "${BUILD_IMAGES_FILE}" | head -n1)
+                local target_tag=$(echo "${target_line}" | sed 's/.*://;s/[[:space:]]*$//' | awk '{print $1}')
+                
+                if [ "${target_tag}" != "${tag}" ]; then
+                    info "updating image ${image} in ${BUILD_IMAGES_FILE} from ${target_tag} to ${tag}"
+                    if [ "$DRY_RUN" = "false" ]; then
+                        # Escape the image name for safe use in regex
+                        local escaped_image=$(escape_regex "${image}")
+                        local escaped_target_tag=$(escape_regex "${target_tag}")
+                        # Replace the specific tag for this image
+                        sed -i -r 's~(.*'"${escaped_image}"':)'"${escaped_target_tag}"'(.*)~\1'"${tag}"'\2~g' "${BUILD_IMAGES_FILE}"
                     else
-                        info "image ${image} already at ${tag}"
+                        info "dry-run mode: would update ${image} to ${tag}"
                     fi
+                    updated=true
+                else
+                    info "image ${image} already at ${tag}"
                 fi
             fi
         fi
-    done <<< "${images_tag}"
+    done <<< "${image_pairs}"
     
     rm -rf "${temp_dir}"
     

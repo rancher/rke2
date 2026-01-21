@@ -37,8 +37,9 @@ sources:
         needs_update=false
         
         for chart in "${charts[@]}"; do
-          latest_version=$(curl -sfL "${RKE2_CHARTS_URL}" | yq -r '.entries.'"${chart}"'[].version' | sort -rV | head -n 1)
-          current_version=$(yq -r '.charts[] | select(.filename == "/charts/'"${chart}"'.yaml") | .version' ${CHART_VERSIONS_FILE})
+          # Use proper yq string interpolation to avoid injection issues
+          latest_version=$(curl -sfL "${RKE2_CHARTS_URL}" | yq -r --arg chart "${chart}" '.entries[$chart][].version' | sort -rV | head -n 1)
+          current_version=$(yq -r --arg chart "${chart}" '.charts[] | select(.filename == "/charts/\($chart).yaml") | .version' ${CHART_VERSIONS_FILE})
           
           if [ -n "${latest_version}" ] && [ "${latest_version}" != "null" ] && [ "${current_version}" != "${latest_version}" ]; then
             echo "update-needed"
