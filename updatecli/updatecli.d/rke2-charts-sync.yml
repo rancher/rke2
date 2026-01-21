@@ -14,19 +14,10 @@ scms:
       branch: master
 
 sources:
-  rke2-charts-sync:
-    name: "Trigger sync from rke2-charts"
+  checkSync:
+    name: "Check if sync is needed"
     kind: "shell"
     spec:
-      # This will always return a timestamp to trigger the sync
-      command: date +%Y%m%d%H%M%S
-
-conditions:
-  shouldSync:
-    name: "Check if any charts need to be updated"
-    kind: shell
-    spec:
-      # Check if any chart versions differ from rke2-charts
       command: |
         #!/bin/bash
         set -eu
@@ -50,15 +41,24 @@ conditions:
           current_version=$(yq -r '.charts[] | select(.filename == "/charts/'"${chart}"'.yaml") | .version' ${CHART_VERSIONS_FILE})
           
           if [ -n "${latest_version}" ] && [ "${latest_version}" != "null" ] && [ "${current_version}" != "${latest_version}" ]; then
-            echo "[INFO] Chart ${chart} needs update: ${current_version} -> ${latest_version}"
-            needs_update=true
+            echo "update-needed"
+            exit 0
           fi
         done
         
-        if [ "${needs_update}" = "true" ]; then
+        echo "no-update"
+
+conditions:
+  shouldSync:
+    name: "Check if any charts need to be updated"
+    kind: shell
+    sourceid: checkSync
+    spec:
+      command: |
+        #!/bin/bash
+        if [ "{{ source `checkSync` }}" = "update-needed" ]; then
           exit 0
         else
-          echo "[INFO] All charts are up to date"
           exit 1
         fi
 
@@ -67,6 +67,7 @@ targets:
     name: "Sync charts and images from rke2-charts"
     kind: "shell"
     scmid: "rke2"
+    sourceid: checkSync
     spec:
       command: bash ./updatecli/scripts/sync_rke2_charts.sh
       changedif:
