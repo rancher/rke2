@@ -515,7 +515,7 @@ do_install_rpm() {
         else
             maj_ver=$(echo "$VERSION_ID" | sed -E -e "s/^([0-9]+)\.?[0-9]*$/\1/")
             case ${maj_ver} in
-                7|8|9)
+                7|8|9|10)
                     :
                     ;;
                 2023) # detect amazon linux 2023 distro
