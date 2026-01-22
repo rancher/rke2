@@ -19,14 +19,14 @@ fatal()
 # Files to update
 CHART_VERSIONS_FILE="charts/chart_versions.yaml"
 BUILD_IMAGES_FILE="scripts/build-images"
+DOCKERFILE_WINDOWS="Dockerfile.windows"
 RKE2_CHARTS_URL="https://rke2-charts.rancher.io/index.yaml"
 DRY_RUN="${DRY_RUN:-false}"
 
 # Kubernetes version constraints for extracting image versions
 # These should be updated when adding support for new Kubernetes versions
 K8S_VERSION_CONSTRAINTS=(
-    "~ 1.27"
-    ">= 1.24 < 1.28"
+    ">= 1.31 < 1.36"
 )
 
 # List of charts to sync from rke2-charts
@@ -190,6 +190,61 @@ update_chart_images() {
     fi
 }
 
+# Function to update Dockerfile.windows with CNI versions
+# This updates the base versions (without build tags) used on Windows
+update_dockerfile_windows() {
+    info "Updating Dockerfile.windows with CNI versions from build-images"
+    
+    local updated=false
+    
+    # Extract base versions from build-images for CNI components
+    # Map of ENV variable to image pattern in build-images
+    declare -A version_map=(
+        ["CALICO_VERSION"]="hardened-calico"
+        ["CNI_PLUGIN_VERSION"]="hardened-cni-plugins"
+        ["FLANNEL_VERSION"]="hardened-flannel"
+    )
+    
+    for env_var in "${!version_map[@]}"; do
+        local image_pattern="${version_map[$env_var]}"
+        
+        # Extract version from build-images (first occurrence)
+        local full_version=$(grep -m1 "${image_pattern}:" "${BUILD_IMAGES_FILE}" | sed 's/.*://;s/-build.*//' | awk '{print $1}')
+        
+        if [ -z "${full_version}" ]; then
+            warn "Could not find version for ${image_pattern} in ${BUILD_IMAGES_FILE}"
+            continue
+        fi
+        
+        # Get current version from Dockerfile.windows
+        local current_version=$(grep "^ENV ${env_var}=" "${DOCKERFILE_WINDOWS}" | sed 's/.*="\(.*\)"/\1/')
+        
+        if [ -z "${current_version}" ]; then
+            warn "Could not find ${env_var} in ${DOCKERFILE_WINDOWS}"
+            continue
+        fi
+        
+        if [ "${current_version}" != "${full_version}" ]; then
+            info "Updating ${env_var} in ${DOCKERFILE_WINDOWS} from ${current_version} to ${full_version}"
+            if [ "$DRY_RUN" = "false" ]; then
+                # Update the ENV line in Dockerfile.windows
+                sed -i "s/^ENV ${env_var}=\".*\"/ENV ${env_var}=\"${full_version}\"/" "${DOCKERFILE_WINDOWS}"
+            else
+                info "dry-run mode: would update ${env_var} to ${full_version}"
+            fi
+            updated=true
+        else
+            info "${env_var} in ${DOCKERFILE_WINDOWS} already at ${full_version}"
+        fi
+    done
+    
+    if [ "${updated}" = "true" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Main logic: Update all charts and their images
 main() {
     local any_updates=false
@@ -215,6 +270,14 @@ main() {
             warn "Could not get latest version for ${chart}"
         fi
     done
+    
+    # After processing all charts, update Dockerfile.windows with CNI versions
+    if update_dockerfile_windows; then
+        info "Successfully updated Dockerfile.windows"
+        any_updates=true
+    else
+        info "No Dockerfile.windows updates needed"
+    fi
     
     if [ "${any_updates}" = "false" ]; then
         info "No charts were updated - all charts are already at the latest version"

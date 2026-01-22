@@ -77,6 +77,7 @@ targets:
           files:
             - charts/chart_versions.yaml
             - scripts/build-images
+            - Dockerfile.windows
 
 actions:
   github:
@@ -96,5 +97,6 @@ actions:
         ## Changes
         - Updates chart versions in `charts/chart_versions.yaml`
         - Updates corresponding hardened images in `scripts/build-images`
+        - Updates CNI versions in `Dockerfile.windows`
         
         Please review the changes and ensure all image tags match the chart dependencies before merging.
