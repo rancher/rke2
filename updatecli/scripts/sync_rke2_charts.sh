@@ -209,10 +209,18 @@ update_dockerfile_windows() {
         local image_pattern="${version_map[$env_var]}"
         
         # Extract version from build-images (first occurrence)
-        local full_version=$(grep -m1 "${image_pattern}:" "${BUILD_IMAGES_FILE}" | sed 's/.*://;s/-build.*//' | awk '{print $1}')
+        local image_line=$(grep -m1 "${image_pattern}:" "${BUILD_IMAGES_FILE}" || echo "")
+        
+        if [ -z "${image_line}" ]; then
+            warn "Could not find ${image_pattern} in ${BUILD_IMAGES_FILE}"
+            continue
+        fi
+        
+        # Extract version: remove everything before colon, then remove build tag
+        local full_version=$(echo "${image_line}" | sed 's/.*://;s/-build.*//' | awk '{print $1}')
         
         if [ -z "${full_version}" ]; then
-            warn "Could not find version for ${image_pattern} in ${BUILD_IMAGES_FILE}"
+            warn "Could not extract version for ${image_pattern} from: ${image_line}"
             continue
         fi
         
@@ -227,8 +235,11 @@ update_dockerfile_windows() {
         if [ "${current_version}" != "${full_version}" ]; then
             info "Updating ${env_var} in ${DOCKERFILE_WINDOWS} from ${current_version} to ${full_version}"
             if [ "$DRY_RUN" = "false" ]; then
+                # Escape the variable name and version for safe regex usage
+                local escaped_env_var=$(echo "${env_var}" | sed 's/[]\/$*.^[]/\\&/g')
+                local escaped_full_version=$(echo "${full_version}" | sed 's/[\/&]/\\&/g')
                 # Update the ENV line in Dockerfile.windows
-                sed -i "s/^ENV ${env_var}=\".*\"/ENV ${env_var}=\"${full_version}\"/" "${DOCKERFILE_WINDOWS}"
+                sed -i "s/^ENV ${escaped_env_var}=\".*\"/ENV ${escaped_env_var}=\"${escaped_full_version}\"/" "${DOCKERFILE_WINDOWS}"
             else
                 info "dry-run mode: would update ${env_var} to ${full_version}"
             fi
