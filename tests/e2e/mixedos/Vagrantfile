@@ -17,7 +17,11 @@ def provision(vm, role, role_num, node_num)
   vm.hostname = role
   # An expanded netmask is required to allow VM<-->VM communication, virtualbox defaults to /32
   node_ip = "#{NETWORK_PREFIX}.#{100+node_num}"
-  vm.network "private_network", ip: node_ip, netmask: "255.255.255.0"
+  vm.network "private_network",
+    :ip => node_ip,
+    :netmask => "255.255.255.0",
+    :libvirt__dhcp_enabled => false,
+    :libvirt__forward_mode => "none"
 
   vagrant_defaults = '../vagrantdefaults.rb'
   load vagrant_defaults if File.exist?(vagrant_defaults)
@@ -38,7 +42,8 @@ def provision(vm, role, role_num, node_num)
     end
   else
     install_type = getInstallType(vm, RELEASE_VERSION, GITHUB_BRANCH)
-    vm.provision "Create Calico Manifest", type: "shell", path: "../scripts/calico_manifest.sh", args: [ "#{NETWORK_PREFIX}.1" ]
+    vm.provision "Configure second interface", type: "shell", path: "../scripts/configure_second_interface.sh", args: [ node_ip, "", "", vm.box ]
+    vm.provision "Create Calico Manifest", type: "shell", path: "../scripts/calico_manifest.sh", args: [ "#{NETWORK_PREFIX}.1"]
   end
 
   if role.include?("server") && role_num == 0
