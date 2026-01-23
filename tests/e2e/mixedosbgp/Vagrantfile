@@ -40,6 +40,7 @@ def provision(vm, role, role_num, node_num)
       install_type = "INSTALL_RKE2_COMMIT=$(head\ -n\ 1\ /tmp/rke2_commits)"
     end
     vm.provision "shell", inline: "ping -c 2 rke2.io"
+    vm.provision "Configure second interface", type: "shell", path: "../scripts/configure_second_interface.sh", args: [ node_ip, "", "", vm.box ]
     vm.provision "Create Calico Manifest", type: "shell", path: "../scripts/calico_manifestbgp.sh", args: [ "#{NETWORK_PREFIX}.1" ]
   end
 
