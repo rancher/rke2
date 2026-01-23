@@ -32,7 +32,8 @@ def provision(vm, roles, role_num, node_num)
   defaultOSConfigure(vm)
   
   scripts_location = Dir.exist?("./scripts") ? "./scripts" : "../scripts" 
-  vm.provision "IPv6 Setup", type: "shell", path: scripts_location + "/ipv6.sh", args: [node_ip4, node_ip6, node_ip6_gw, CNI, vm.box]
+  vm.provision "Configure second interface", type: "shell", path: scripts_location + "/configure_second_interface.sh", args: [ node_ip4, node_ip6, node_ip6_gw, vm.box ]
+  vm.provision "CNI Setup", type: "shell", path: scripts_location + "/cni-setup.sh", args: [ CNI ]
   
   install_type = getInstallType(vm, RELEASE_VERSION, GITHUB_BRANCH)
   
