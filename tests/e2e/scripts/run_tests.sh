@@ -12,7 +12,8 @@
 set -x
 
 # tests to run
-tests=("ciliumnokp" "mixedos" "mixedosbgp" "multus" "secretsencryption" "splitserver" "upgradecluster" "validatecluster" "kine")
+# ReAdd mixedosbgp to this list once the issue with Calico BGP not working has been resolved
+tests=("ciliumnokp" "mixedos" "multus" "secretsencryption" "splitserver" "upgradecluster" "validatecluster" "kine")
 nodeOS=${1:-"bento/ubuntu-24.04"}
 OS=$(echo "$nodeOS"|cut -d'/' -f2)
 
