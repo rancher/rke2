@@ -338,6 +338,7 @@ jobs:
 
     - name: Manifest - Prime
       uses: rancher/ecm-distro-tools/actions/publish-image@master
+      if: ${{ !contains(github.ref_name, '-rc') }}
       env:
         GOARCH: amd64
         GOOS: linux
@@ -398,6 +399,7 @@ jobs:
           --title "$GITHUB_ACTION_TAG" \
           --latest="false" \
           --notes "Automated release created from $GITHUB_ACTION_TAG tag in ${{ github.repository }}"
+
   sync-prime-images:
     name: "Sync Prime images"
     needs: [release-amd64, release-arm64, manifest]
@@ -410,6 +412,7 @@ jobs:
         uses: actions/checkout@v6
       - name: Install crane
         uses: ./.github/actions/install-crane
+
       - name: "Read secrets"
         uses: rancher-eio/read-vault-secrets@main
         with:
@@ -417,20 +420,47 @@ jobs:
             secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
             secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
             secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD ;
+            secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials registry |  PRIME_STAGING_REGISTRY ;
+            secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials username |  PRIME_STAGING_REGISTRY_USERNAME ;
+            secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials password |  PRIME_STAGING_REGISTRY_PASSWORD ;
+
+      - name: Set Registry variable
+        env:
+          IS_RC: ${{ contains(github.ref_name, '-rc') }}
+          STAGING_REG: ${{ env.PRIME_STAGING_REGISTRY }}
+          PROD_REG: ${{ env.PRIME_REGISTRY }}
+        run: |
+          if [ "$IS_RC" = "true" ]; then
+            echo "REGISTRY=$STAGING_REG" >> "$GITHUB_ENV"
+          else
+            echo "REGISTRY=$PROD_REG" >> "$GITHUB_ENV"
+          fi
+
+      - name: Log in to staging registry
+        uses: docker/login-action@v3
+        if: ${{ contains(github.ref_name, '-rc') }}
+        with:
+          registry: ${{ env.PRIME_STAGING_REGISTRY }}
+          username: ${{ env.PRIME_STAGING_REGISTRY_USERNAME }}
+          password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
+
       - name: Log in to prime registry
         uses: docker/login-action@v3
+        if: ${{ !contains(github.ref_name, '-rc') }}
         with:
           registry: ${{ env.PRIME_REGISTRY }}
           username: ${{ env.PRIME_REGISTRY_USERNAME }}
           password: ${{ env.PRIME_REGISTRY_PASSWORD }}
+
       - name: Download image lists
         run: |
           gh release download ${{ env.GITHUB_ACTION_TAG }} --repo ${{ github.repository }} --pattern '*.txt'
+
       - name: Sync images
         run: |
-          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images-all.linux-amd64.txt
-          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images-all.linux-arm64.txt
-          ./scripts/copy-images.sh -t ${{ env.PRIME_REGISTRY }} -i rke2-images.windows-amd64.txt
+          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i rke2-images-all.linux-amd64.txt
+          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i rke2-images-all.linux-arm64.txt
+          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i rke2-images.windows-amd64.txt
 
   sync-prime-ribs:
     name: "Sync Prime ribs"
@@ -468,66 +498,89 @@ jobs:
         with:
           secrets: |
             secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
+            secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials registry |  PRIME_STAGING_REGISTRY ;
             secret/data/github/repo/${{ github.repository }}/prime-artifacts-uploader/credentials accessKeyId | AWS_ACCESS_KEY_ID ;
             secret/data/github/repo/${{ github.repository }}/prime-artifacts-uploader/credentials secretAccessKey | AWS_SECRET_ACCESS_KEY ;
             secret/data/github/repo/${{ github.repository }}/prime-artifacts-uploader/credentials primeArtifactsBucketName | PRIME_ARTIFACTS_BUCKET_NAME ;
             secret/data/github/repo/${{ github.repository }}/aws/release-team-cloudfront-cache-invalidation/credentials accessKeyId | AWS_ACCESS_KEY_ID_CACHE_INVALIDATION ;
             secret/data/github/repo/${{ github.repository }}/aws/release-team-cloudfront-cache-invalidation/credentials secretAccessKey | AWS_SECRET_ACCESS_KEY_CACHE_INVALIDATION ;
             secret/data/github/repo/${{ github.repository }}/aws/release-team-cloudfront-cache-invalidation/credentials primeArtifactsDistributionId | PRIME_ARTIFACTS_DISTRIBUTION_ID ;
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Pull rke2-runtime
+
+      - name: Set Registry variable
         env:
-          REGISTRY: ${{ env.PRIME_REGISTRY }}
+          IS_RC: ${{ contains(github.ref_name, '-rc') }}
+          STAGING_REG: ${{ env.PRIME_STAGING_REGISTRY }}
+          PROD_REG: ${{ env.PRIME_REGISTRY }}
         run: |
-          docker pull "${REGISTRY}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
+          if [ "$IS_RC" = "true" ]; then
+            echo "REGISTRY=$STAGING_REG" >> "$GITHUB_ENV"
+          else
+            echo "REGISTRY=$PROD_REG" >> "$GITHUB_ENV"
+          fi
+
+      - name: Pull rke2-runtime
+        run: |
+          docker pull "${{ env.REGISTRY }}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
+
       - name: Download Binaries
         run: |
           gh release download "$TAG" --repo "${{ github.repository }}" --dir ./dist/artifacts -p "rke2.*" -p "*.exe"
+
       - name: Package Images
         env:
-          REGISTRY: ${{ env.PRIME_REGISTRY }}
+          REGISTRY: ${{ env.REGISTRY }}
         run: |
           make in-docker-package-images
+
       - name: Package windows images
         if: ${{ matrix.arch == 'amd64' }}
         env:
-          REGISTRY: ${{ env.PRIME_REGISTRY }}
+          REGISTRY: ${{ env.REGISTRY }}
         run: |
           make in-docker-package-windows-images
+
       - name: Checksum Artifacts
         run: |
           make in-docker-checksum
+
       - name: Configure Prime Artifact Uploader AWS Credentials
         uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+
       - name: Upload Artifacts
         env:
           S3_PATH: s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/rke2/${{ env.TAG }}
         run: |
           aws s3 sync ./dist/artifacts "$S3_PATH" --quiet --no-progress
+
       - name: Generate prime ribs index
         run: |
           ECM_AUTH_CONFIG=$(release config gen | jq '.auth | .aws_access_key_id |= "${{ env.AWS_ACCESS_KEY_ID }}" | .aws_secret_access_key |= "${{ env.AWS_SECRET_ACCESS_KEY }}" | .aws_session_token |= "" | .aws_default_region |= "${{ env.AWS_DEFAULT_REGION }}"')
           ECM_CONFIG="{\"auth\": $ECM_AUTH_CONFIG}"
           release generate rancher artifacts-index --config "$ECM_CONFIG" --write-path . --ignore-versions v2.6.4
+
       - name: Upload prime ribs index
         run: |
           aws s3 cp index.html s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/index.html
           aws s3 cp index-prerelease.html s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/index-prerelease.html
+
       - name: Configure Cache Invalidation AWS Credentials
         uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID_CACHE_INVALIDATION }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY_CACHE_INVALIDATION }}
           aws-region: us-east-1
+
       - name: Invalidate cloudfront cache
         run: |
           aws cloudfront create-invalidation --distribution-id ${{ env.PRIME_ARTIFACTS_DISTRIBUTION_ID }} --paths "/*"
