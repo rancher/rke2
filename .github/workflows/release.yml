@@ -424,6 +424,18 @@ jobs:
             secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials username |  PRIME_STAGING_REGISTRY_USERNAME ;
             secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials password |  PRIME_STAGING_REGISTRY_PASSWORD ;
 
+      - name: Set Registry variable
+        env:
+          IS_RC: ${{ contains(github.ref_name, '-rc') }}
+          STAGING_REG: ${{ env.PRIME_STAGING_REGISTRY }}
+          PROD_REG: ${{ env.PRIME_REGISTRY }}
+        run: |
+          if [ "$IS_RC" = "true" ]; then
+            echo "REGISTRY=$STAGING_REG" >> "$GITHUB_ENV"
+          else
+            echo "REGISTRY=$PROD_REG" >> "$GITHUB_ENV"
+          fi
+
       - name: Log in to staging registry
         uses: docker/login-action@v3
         if: ${{ contains(github.ref_name, '-rc') }}
@@ -445,15 +457,10 @@ jobs:
           gh release download ${{ env.GITHUB_ACTION_TAG }} --repo ${{ github.repository }} --pattern '*.txt'
 
       - name: Sync images
-        env:
-          REGISTRY: ${{ case(
-            contains(github.ref_name, '-rc'), env.PRIME_STAGING_REGISTRY,
-            env.PRIME_REGISTRY
-            ) }}
         run: |
-          ./scripts/copy-images.sh -t ${REGISTRY} -i rke2-images-all.linux-amd64.txt
-          ./scripts/copy-images.sh -t ${REGISTRY} -i rke2-images-all.linux-arm64.txt
-          ./scripts/copy-images.sh -t ${REGISTRY} -i rke2-images.windows-amd64.txt
+          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i rke2-images-all.linux-amd64.txt
+          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i rke2-images-all.linux-arm64.txt
+          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i rke2-images.windows-amd64.txt
 
   sync-prime-ribs:
     name: "Sync Prime ribs"
@@ -506,14 +513,21 @@ jobs:
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Pull rke2-runtime
+      - name: Set Registry variable
         env:
-          REGISTRY: ${{ case(
-            contains(github.ref_name, '-rc'), env.PRIME_STAGING_REGISTRY,
-            env.PRIME_REGISTRY
-            ) }}
+          IS_RC: ${{ contains(github.ref_name, '-rc') }}
+          STAGING_REG: ${{ env.PRIME_STAGING_REGISTRY }}
+          PROD_REG: ${{ env.PRIME_REGISTRY }}
         run: |
-          docker pull "${REGISTRY}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
+          if [ "$IS_RC" = "true" ]; then
+            echo "REGISTRY=$STAGING_REG" >> "$GITHUB_ENV"
+          else
+            echo "REGISTRY=$PROD_REG" >> "$GITHUB_ENV"
+          fi
+
+      - name: Pull rke2-runtime
+        run: |
+          docker pull "${{ env.REGISTRY }}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
 
       - name: Download Binaries
         run: |
@@ -521,20 +535,14 @@ jobs:
 
       - name: Package Images
         env:
-          REGISTRY: ${{ case(
-            contains(github.ref_name, '-rc'), env.PRIME_STAGING_REGISTRY,
-            env.PRIME_REGISTRY
-            ) }}
+          REGISTRY: ${{ env.REGISTRY }}
         run: |
           make in-docker-package-images
 
       - name: Package windows images
         if: ${{ matrix.arch == 'amd64' }}
         env:
-          REGISTRY: ${{ case(
-            contains(github.ref_name, '-rc'), env.PRIME_STAGING_REGISTRY,
-            env.PRIME_REGISTRY
-            ) }}
+          REGISTRY: ${{ env.REGISTRY }}
         run: |
           make in-docker-package-windows-images
 
