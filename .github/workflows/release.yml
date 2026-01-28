@@ -449,7 +449,7 @@ jobs:
           REGISTRY: ${{ case(
             contains(github.ref_name, '-rc'), env.PRIME_STAGING_REGISTRY,
             env.PRIME_REGISTRY
-          ) }}
+            ) }}
         run: |
           ./scripts/copy-images.sh -t ${REGISTRY} -i rke2-images-all.linux-amd64.txt
           ./scripts/copy-images.sh -t ${REGISTRY} -i rke2-images-all.linux-arm64.txt
@@ -511,7 +511,7 @@ jobs:
           REGISTRY: ${{ case(
             contains(github.ref_name, '-rc'), env.PRIME_STAGING_REGISTRY,
             env.PRIME_REGISTRY
-          ) }}
+            ) }}
         run: |
           docker pull "${REGISTRY}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
 
@@ -524,7 +524,7 @@ jobs:
           REGISTRY: ${{ case(
             contains(github.ref_name, '-rc'), env.PRIME_STAGING_REGISTRY,
             env.PRIME_REGISTRY
-          ) }}
+            ) }}
         run: |
           make in-docker-package-images
 
@@ -534,7 +534,7 @@ jobs:
           REGISTRY: ${{ case(
             contains(github.ref_name, '-rc'), env.PRIME_STAGING_REGISTRY,
             env.PRIME_REGISTRY
-          ) }}
+            ) }}
         run: |
           make in-docker-package-windows-images
 
