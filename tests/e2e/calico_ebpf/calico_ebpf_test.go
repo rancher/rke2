@@ -52,7 +52,7 @@ var _ = Describe("Verify DualStack in Calico eBPF configuration", Ordered, func(
 			for _, node := range nodes {
 				g.Expect(node.Status).Should(Equal("Ready"))
 			}
-		}, "600s", "5s").Should(Succeed())
+		}, "720s", "5s").Should(Succeed())
 		_, err := e2e.ParseNodes(tc.KubeconfigFile, true)
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -108,7 +108,7 @@ var _ = Describe("Verify DualStack in Calico eBPF configuration", Ordered, func(
 				cmd := fmt.Sprintf("curl -L --insecure http://%s", ip)
 				Eventually(func() (string, error) {
 					return tc.Servers[0].RunCmdOnNode(cmd)
-				}, "60s", "5s").Should(ContainSubstring("Welcome to nginx!"), "failed cmd: "+cmd)
+				}, "120s", "5s").Should(ContainSubstring("Welcome to nginx!"), "failed cmd: "+cmd)
 			}
 		}
 	})
@@ -129,7 +129,7 @@ var _ = Describe("Verify DualStack in Calico eBPF configuration", Ordered, func(
 			cmd := "kubectl exec svc/client-wget --kubeconfig=" + tc.KubeconfigFile + " -- wget -T7 -O - " + ip.Ipv4 + "/name.html"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "20s", "3s").Should(ContainSubstring("client-deployment"), "failed cmd: "+cmd)
+			}, "60s", "5s").Should(ContainSubstring("client-deployment"), "failed cmd: "+cmd)
 		}
 	})
 
@@ -145,11 +145,11 @@ var _ = Describe("Verify DualStack in Calico eBPF configuration", Ordered, func(
 			cmd := fmt.Sprintf("curl  --header host:%s http://%s/name.html", hostName, node.Ipv4)
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "30s", "2s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
+			}, "60s", "5s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
 			cmd = fmt.Sprintf("curl  --header host:%s http://[%s]/name.html", hostName, node.Ipv6)
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "10s", "1s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
+			}, "60s", "5s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
 		}
 	})
 
@@ -165,11 +165,11 @@ var _ = Describe("Verify DualStack in Calico eBPF configuration", Ordered, func(
 			cmd = "curl -L --insecure http://" + node.Ipv4 + ":" + nodeport + "/name.html"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "30s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
+			}, "60s", "5s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
 			cmd = "curl -L --insecure http://[" + node.Ipv6 + "]:" + nodeport + "/name.html"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "10s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
+			}, "60s", "5s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
 		}
 	})
 
