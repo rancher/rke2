@@ -239,7 +239,6 @@ jobs:
 
     - name: Publish Image Runtime - Staging
       uses: rancher/ecm-distro-tools/actions/publish-image@master
-      if: ${{ !contains(github.ref_name, '-rc') }}
       env:
         GOARCH: arm64
         GOOS: linux
@@ -256,6 +255,7 @@ jobs:
 
     - name: Publish Image Runtime - Prime
       uses: rancher/ecm-distro-tools/actions/publish-image@master
+      if: ${{ !contains(github.ref_name, '-rc') }}
       env:
         GOARCH: arm64
         GOOS: linux
