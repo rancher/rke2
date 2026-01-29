@@ -11,7 +11,7 @@ permissions:
     contents: read
 jobs:
   build-amd64:
-    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
+    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
@@ -35,7 +35,7 @@ jobs:
         name: rke2-test-logs
         path: ~/rke2-logs/
   build-arm64:
-    runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64,hdd=64
+    runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu24-full-arm64,hdd=64
     steps:
     - name: Checkout code
       uses: actions/checkout@v6

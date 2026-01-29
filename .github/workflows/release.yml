@@ -18,7 +18,7 @@ permissions:
     id-token: write
 jobs:
   release-amd64:
-    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=256
+    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=256
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
@@ -182,7 +182,7 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
   release-arm64:
-    runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64,hdd=256
+    runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu24-full-arm64,hdd=256
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
@@ -281,7 +281,7 @@ jobs:
         GH_TOKEN: ${{ github.token }}
   manifest:
     needs: [release-amd64, release-arm64]
-    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
+    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
@@ -478,10 +478,10 @@ jobs:
         include:
           - arch: arm64
             runner: 8cpu-linux-arm64
-            image: ubuntu22-full-arm64
+            image: ubuntu24-full-arm64
           - arch: amd64
             runner: 8cpu-linux-x64
-            image: ubuntu22-full-x64
+            image: ubuntu24-full-x64
     env:
       TAG: ${{ github.ref_name }}
       GH_TOKEN: ${{ github.token }}
