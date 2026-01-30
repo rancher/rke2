@@ -6,7 +6,7 @@ These tests are used to validate the installation and operation of RKE2 on a var
   - [CentOS 9 Stream](install/centos-9)
   - [Oracle 9](install/oracle-9)
   - [Alma Linux 10](install/alma-10) (stand-in for RHEL 10)
-  - [Leap 16.0](install/opensuse-leap) (stand-in for SLES)
+  - [Leap 15.6](install/opensuse-leap) (stand-in for SLES)
   - [Ubuntu 24.04](install/ubuntu-2404)
   - [Windows Server 2022](install/windows-2022)
   - [Windows Server 2025](install/windows-2025)
