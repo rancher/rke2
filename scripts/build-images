@@ -24,7 +24,7 @@ xargs -n1 -t $PULL_CMD_CORE << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20260126
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.8.0-build20260116
     ${REGISTRY}/rancher/hardened-addon-resizer:1.8.23-build20260119
-    ${REGISTRY}/rancher/klipper-helm:v0.9.10-build20251111
+    ${REGISTRY}/rancher/klipper-helm:${KLIPPERHELM_VERSION}
     ${REGISTRY}/rancher/klipper-lb:v0.4.13
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.6.5
