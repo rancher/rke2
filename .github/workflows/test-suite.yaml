@@ -24,7 +24,7 @@ permissions:
 jobs:
   build:
     name: Build RKE2 Images and Binary
-    runs-on: ${{ github.repository == 'rancher/rke2' && 'runs-on,runner=16cpu-linux-x64' || 'ubuntu-24.04' }}
+    runs-on: ${{ github.repository == 'rancher/rke2' && 'runs-on,runner=16cpu-linux-x64,image=ubuntu24-full-x64' || 'ubuntu-24.04' }}
     steps:
     - name: Checkout
       uses: actions/checkout@v6
@@ -145,7 +145,7 @@ jobs:
     name: "Docker Tests (Large)"
     needs: build
     if: github.repository == 'rancher/rke2'
-    runs-on: runs-on,runner=8cpu-linux-x64,ram=16+24,run-id=${{ github.run_id }}
+    runs-on: runs-on,runner=8cpu-linux-x64,ram=16+24,image=ubuntu24-full-x64,run-id=${{ github.run_id }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
