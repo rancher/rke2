@@ -3,6 +3,10 @@ on:
   schedule:
     - cron: "0 0 * * 1-5"
   workflow_dispatch: {}
+  pull_request:
+    paths:
+      - '.github/workflows/nightly-install.yaml'
+
 jobs:
   test:
     name: "Smoke Test"
@@ -12,9 +16,9 @@ jobs:
       fail-fast: false
       matrix:
         channel: [stable]
-        vm: [centos-9, rocky-8, opensuse-leap, ubuntu-2404, windows-2019, windows-2022]
+        vm: [centos-9, alma-10, opensuse-leap, ubuntu-2404, windows-2022, windows-2025]
         include:
-          - {channel: latest, vm: rocky-8}
+          - {channel: latest, vm: alma-10}
           - {channel: latest, vm: ubuntu-2404}
       max-parallel: 2
     defaults:
@@ -26,7 +30,25 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v6
         with: {fetch-depth: 1}
-      # Don't cache Windows VMs, they are 5GB each, which would eat our entire 10GB cache
+      - name: Remove Unnecessary Tools
+        run: |
+          sudo rm -rf \
+            /home/linuxbrew \
+            /home/packer \
+            /opt/az \
+            /opt/microsoft \
+            /usr/lib/firefox \
+            /usr/lib/google-cloud-sdk \
+            /usr/local/julia* \
+            /usr/local/share/boost \
+            /usr/local/share/chromium \
+            /usr/local/share/powershell \
+            /usr/share/az* \
+            /usr/share/dotnet \
+            /usr/share/miniconda \
+            /usr/share/swift
+          df -khl
+      # Don't cache Windows VMs, they are 5-7GB each, which would eat our entire 10GB cache
       - name: "Vagrant Cache"
         if: ${{ !contains(matrix.vm, 'windows') }}
         uses: actions/cache@v5
