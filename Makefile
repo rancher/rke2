@@ -158,7 +158,7 @@ in-docker-%: ## Advanced: wraps any target in Docker environment, for example: i
 	docker run --privileged --rm --network host \
 		-v $${PWD}:/source -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy \
 		-e GODEBUG -e CI -e GOCOVER -e REPO -e TAG -e GITHUB_ACTION_TAG -e KUBERNETES_VERSION -e IMAGE_NAME -e AWS_SECRET_ACCESS_KEY -e AWS_ACCESS_KEY_ID \
-		-e DOCKER_PASSWORD -e DOCKER_USERNAME -e GH_TOKEN -e SKIP_VALIDATE -e PACKAGE_SKIP_TARBALL \
+		-e DOCKER_PASSWORD -e DOCKER_USERNAME -e GH_TOKEN -e SKIP_VALIDATE -e PACKAGE_SKIP_TARBALL -e REGISTRY \
 		rke2:$(BRANCH) make $*
 
 .PHONY: help
