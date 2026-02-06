@@ -4,12 +4,12 @@ These tests are used to validate the installation and operation of RKE2 on a var
 
 - [Install Script](install) :arrow_right: scheduled nightly and on an install script change
   - [CentOS 9 Stream](install/centos-9)
-  - [Rocky Linux 8](install/rocky-8) (stand-in for RHEL 8)
   - [Oracle 9](install/oracle-9)
+  - [Alma Linux 10](install/alma-10) (stand-in for RHEL 10)
   - [Leap 15.6](install/opensuse-leap) (stand-in for SLES)
   - [Ubuntu 24.04](install/ubuntu-2404)
-  - [Windows Server 2019](install/windows-2019)
   - [Windows Server 2022](install/windows-2022)
+  - [Windows Server 2025](install/windows-2025)
 
 ## Format
 When adding new installer test(s) please copy the prevalent style for the `Vagrantfile`.
