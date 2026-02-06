@@ -168,7 +168,6 @@ func (p *PEBinaryConfig) Kubelet(ctx context.Context, args []string) error {
 	}
 	if p.CloudProvider != nil {
 		extraArgs["cloud-provider"] = p.CloudProvider.Name
-		extraArgs["cloud-config"] = p.CloudProvider.Path
 	}
 
 	args = append(getArgs(extraArgs), args...)
