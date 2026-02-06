@@ -83,8 +83,8 @@ require (
 	github.com/google/go-containerregistry v0.20.2
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.17
-	github.com/k3s-io/k3s v1.32.12-0.20260131005241-c9aa1d2889a0 // release-v1.32
-	github.com/k3s-io/kine v0.14.10
+	github.com/k3s-io/k3s v1.32.12-0.20260206170915-3cd01b4fb943 // release-v1.32
+	github.com/k3s-io/kine v0.14.11
 	github.com/libp2p/go-netroute v0.3.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/onsi/ginkgo/v2 v2.25.1
@@ -94,7 +94,7 @@ require (
 	github.com/rancher/wharfie v0.6.9
 	github.com/rancher/wins v0.4.17
 	github.com/rancher/wrangler/v3 v3.2.1
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/pflag v1.0.10
 	github.com/tigera/operator v1.28.1
 	golang.org/x/sync v0.19.0
@@ -178,7 +178,7 @@ require (
 	github.com/go-test/deep v1.0.7 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
-	github.com/gofrs/flock v0.8.1 // indirect
+	github.com/gofrs/flock v0.12.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
@@ -228,7 +228,7 @@ require (
 	github.com/jonboulle/clockwork v0.5.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.18.2 // indirect
+	github.com/klauspost/compress v1.18.3 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/koron/go-ssdp v0.0.6 // indirect
 	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
@@ -311,7 +311,6 @@ require (
 	github.com/rancher/lasso v0.2.2 // indirect
 	github.com/rancher/remotedialer v0.4.5-rc.5 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
-	github.com/rootless-containers/rootlesskit v1.1.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/scjalliance/comshim v0.0.0-20190308082608-cf06d2532c4e // indirect
@@ -458,6 +457,7 @@ require (
 	github.com/pion/turn/v4 v4.0.2 // indirect
 	github.com/pion/webrtc/v4 v4.1.2 // indirect
 	github.com/probe-lab/go-libdht v0.4.0 // indirect
+	github.com/rootless-containers/rootlesskit/v2 v2.3.6 // indirect
 	github.com/wlynxg/anet v0.0.5 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
