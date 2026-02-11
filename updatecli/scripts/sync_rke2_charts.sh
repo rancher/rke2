@@ -43,8 +43,8 @@ CHARTS_TO_SYNC=(
 # Function to get the latest version of a chart from rke2-charts
 get_latest_chart_version() {
     local chart_name="${1}"
-    # Use proper yq string interpolation to avoid injection issues
-    local version=$(curl -sfL "${RKE2_CHARTS_URL}" | yq -r --arg chart "${chart_name}" '.entries[$chart][].version' | sort -rV | head -n 1)
+    # Use yq v4 syntax with shell variable interpolation
+    local version=$(curl -sfL "${RKE2_CHARTS_URL}" | yq eval '.entries."'${chart_name}'"[].version' - | sort -rV | head -n 1)
     
     if [[ "${version}" = "null" ]] || [[ -z "${version}" ]]; then
         warn "failed to retrieve version for chart ${chart_name}"
@@ -58,8 +58,8 @@ get_latest_chart_version() {
 update_chart_version() {
     local chart_name="${1}"
     local new_version="${2}"
-    # Use proper yq string interpolation
-    local current_version=$(yq -r --arg chart "${chart_name}" '.charts[] | select(.filename == "/charts/\($chart).yaml") | .version' ${CHART_VERSIONS_FILE})
+    # Use yq v4 syntax
+    local current_version=$(yq eval '.charts[] | select(.filename == "/charts/'${chart_name}'.yaml") | .version' ${CHART_VERSIONS_FILE})
     
     if [ -z "${current_version}" ] || [ "${current_version}" = "null" ]; then
         warn "chart ${chart_name} not found in ${CHART_VERSIONS_FILE}"
@@ -69,9 +69,8 @@ update_chart_version() {
     if [ "${current_version}" != "${new_version}" ]; then
         info "updating chart ${chart_name} from ${current_version} to ${new_version} in ${CHART_VERSIONS_FILE}"
         if [ "$DRY_RUN" = "false" ]; then
-            # Use yq with proper string interpolation to avoid injection
-            yq -i --arg chart "${chart_name}" --arg version "${new_version}" \
-                '.charts[] |= (select(.filename == "/charts/\($chart).yaml") | .version = $version)' \
+            # Use yq v4 in-place edit
+            yq eval -i '(.charts[] | select(.filename == "/charts/'${chart_name}'.yaml") | .version) = "'${new_version}'"' \
                 ${CHART_VERSIONS_FILE}
         else
             info "dry-run mode: would update ${chart_name} to ${new_version}"
@@ -90,27 +89,18 @@ extract_image_pairs_from_yaml() {
     
     # Try to extract from versionOverrides first
     for constraint in "${K8S_VERSION_CONSTRAINTS[@]}"; do
-        local override_values=$(yq -r --arg constraint "${constraint}" \
-            '.versionOverrides[] | select(.constraint == $constraint) | .values' \
+        local override_values=$(yq eval '.versionOverrides[] | select(.constraint == "'${constraint}'") | .values' \
             "${values_file}" 2>/dev/null || echo "")
         
         if [ -n "${override_values}" ]; then
             # Found a matching constraint, extract image pairs using yq
-            echo "${override_values}" | yq -r '
-                .. | 
-                select(type == "object" and has("repo") and has("tag")) |
-                .repo + "|" + (.tag | tostring)
-            ' 2>/dev/null || echo ""
+            echo "${override_values}" | yq eval '.. | select(type == "!!map" and has("repo") and has("tag")) | .repo + "|" + (.tag | tostring)' - 2>/dev/null || echo ""
             return 0
         fi
     done
     
     # If no version overrides found, try to extract from root
-    yq -r '
-        .. | 
-        select(type == "object" and has("repo") and has("tag")) |
-        .repo + "|" + (.tag | tostring)
-    ' "${values_file}" 2>/dev/null || echo ""
+    yq eval '.. | select(type == "!!map" and has("repo") and has("tag")) | .repo + "|" + (.tag | tostring)' "${values_file}" 2>/dev/null || echo ""
 }
 
 # Function to escape special regex characters in a string
