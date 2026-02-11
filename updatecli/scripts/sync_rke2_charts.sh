@@ -40,9 +40,22 @@ CHARTS_TO_SYNC=(
     "rke2-flannel"
 )
 
+# Function to validate chart name against allowlist
+validate_chart_name() {
+    local name="${1}"
+    for valid_chart in "${CHARTS_TO_SYNC[@]}"; do
+        if [ "${name}" = "${valid_chart}" ]; then
+            return 0
+        fi
+    done
+    fatal "Invalid chart name: ${name}"
+}
+
 # Function to get the latest version of a chart from rke2-charts
 get_latest_chart_version() {
     local chart_name="${1}"
+    validate_chart_name "${chart_name}"
+    
     # Use yq v4 syntax with shell variable interpolation
     local version=$(curl -sfL "${RKE2_CHARTS_URL}" | yq eval '.entries."'${chart_name}'"[].version' - | sort -rV | head -n 1)
     
@@ -58,6 +71,8 @@ get_latest_chart_version() {
 update_chart_version() {
     local chart_name="${1}"
     local new_version="${2}"
+    validate_chart_name "${chart_name}"
+    
     # Use yq v4 syntax
     local current_version=$(yq eval '.charts[] | select(.filename == "/charts/'${chart_name}'.yaml") | .version' ${CHART_VERSIONS_FILE})
     
