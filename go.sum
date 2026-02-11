@@ -950,8 +950,8 @@ github.com/k3s-io/etcd/server/v3 v3.6.7-k3s1 h1:ZBV6n9XhjGex9MIOaEAefbhNriH5Gxo4
 github.com/k3s-io/etcd/server/v3 v3.6.7-k3s1/go.mod h1:LEM328bPA2uVMhN0+Ht/vAsADW127QS1oM7EuHrOTy0=
 github.com/k3s-io/helm-controller v0.16.17 h1:VXMmXQmmTB49x6bnN/PsJUTVKHb0r69b+SffIDUTMTM=
 github.com/k3s-io/helm-controller v0.16.17/go.mod h1:jmrgGttLQbh2yB1kcf9XFAigNW6U8oWCswCSuEjkxXU=
-github.com/k3s-io/k3s v1.34.4-0.20260206170921-e6ae09ad3e04 h1:h+1pitTZOUbCf4BJ08hYHDjoPzCM8eBqjNiS6su0ZBY=
-github.com/k3s-io/k3s v1.34.4-0.20260206170921-e6ae09ad3e04/go.mod h1:VduLNDuQT4KOE5Q7bYMN3JKf6vFBcQd3I45CtmXHZo4=
+github.com/k3s-io/k3s v1.34.4-rc1.0.20260211145917-c6017918a65c h1:8OUuiIQtJ+7XLxjXiespjpKQKHa15yrmNABqnsEWkJc=
+github.com/k3s-io/k3s v1.34.4-rc1.0.20260211145917-c6017918a65c/go.mod h1:qNGnmis2fD1zVeCgIgmcVR9lttba50xItpOXhBNxRws=
 github.com/k3s-io/kine v0.14.11 h1:7WHe7ydwVkahw3xbFGwwgWDbGkD+W2ftws/IZjnM9ig=
 github.com/k3s-io/kine v0.14.11/go.mod h1:lWjBE7QM7AQnSv8gRInRxGmABrbgaA4N0JuU8IE6tN0=
 github.com/k3s-io/klog/v2 v2.120.1-k3s1 h1:7twAHPFpZA21KdMnMNnj68STQMPldAxF2Zsaol57dxw=
@@ -2202,8 +2202,8 @@ honnef.co/go/tools v0.0.1-2019.2.3/go.mod h1:a3bituU0lyd329TUQxRnasdCoJDkEUEAqEt
 honnef.co/go/tools v0.0.1-2020.1.3/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9vFzvIQ3k=
 honnef.co/go/tools v0.0.1-2020.1.4/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9vFzvIQ3k=
 honnef.co/go/tools v0.1.3/go.mod h1:NgwopIslSNH47DimFoV78dnkksY2EFtX0ajyb3K/las=
-k8s.io/cri-client v0.34.3 h1:P1LMB7Aa52OfIaJ383FfHYJTlokZsLYUBn6Y7IEc9Oc=
-k8s.io/cri-client v0.34.3/go.mod h1:EEQXyjPYePB2RSBnrTs+4up14q/6lVKnHvPXUSMYR4A=
+k8s.io/cri-client v0.34.4 h1:Sy6gyeYitGvdswpMi1vM2iHSYk9PUyLsr5qrYG4HeVo=
+k8s.io/cri-client v0.34.4/go.mod h1:WTTksLTMDjq68gT44kH/TOPP3TgjR6hn/IEdYOmUYyE=
 k8s.io/gengo/v2 v2.0.0-20250604051438-85fd79dbfd9f/go.mod h1:EJykeLsmFC60UQbYJezXkEsG2FLrt0GPNkU5iK5GWxU=
 k8s.io/kube-openapi v0.0.0-20250710124328-f3f2b991d03b h1:MloQ9/bdJyIu9lb1PzujOPolHyvO06MXG5TUIj2mNAA=
 k8s.io/kube-openapi v0.0.0-20250710124328-f3f2b991d03b/go.mod h1:UZ2yyWbFTpuhSbFhv24aGNOdoRdJZgsIObGBUaYVsts=
