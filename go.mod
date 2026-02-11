@@ -79,7 +79,7 @@ require (
 	github.com/google/go-containerregistry v0.20.3
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.17
-	github.com/k3s-io/k3s v1.33.8-0.20260206162740-3b21a5488e2b // release-1.33
+	github.com/k3s-io/k3s v1.33.8-rc1.0.20260211145912-3552cfc26032 // release-1.33
 	github.com/k3s-io/kine v0.14.11
 	github.com/libp2p/go-netroute v0.3.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
@@ -105,7 +105,7 @@ require (
 	k8s.io/component-base v0.34.2
 	k8s.io/cri-api v0.34.3
 	k8s.io/klog/v2 v2.130.1
-	k8s.io/kubernetes v1.33.7
+	k8s.io/kubernetes v1.33.8
 	k8s.io/utils v0.0.0-20250604170112-4c0f3b243397
 	sigs.k8s.io/yaml v1.6.0
 )
@@ -368,19 +368,19 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.33.7 // indirect
-	k8s.io/cli-runtime v0.33.7 // indirect
-	k8s.io/cloud-provider v0.33.7 // indirect
-	k8s.io/cluster-bootstrap v0.33.7 // indirect
-	k8s.io/component-helpers v0.33.7 // indirect
+	k8s.io/apiextensions-apiserver v0.33.8 // indirect
+	k8s.io/cli-runtime v0.33.8 // indirect
+	k8s.io/cloud-provider v0.33.8 // indirect
+	k8s.io/cluster-bootstrap v0.33.8 // indirect
+	k8s.io/component-helpers v0.33.8 // indirect
 	k8s.io/controller-manager v0.27.10 // indirect
-	k8s.io/cri-client v0.33.7 // indirect
+	k8s.io/cri-client v0.33.8 // indirect
 	k8s.io/csi-translation-lib v0.0.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
 	k8s.io/kms v0.27.10 // indirect
-	k8s.io/kube-aggregator v0.33.7 // indirect
+	k8s.io/kube-aggregator v0.33.8 // indirect
 	k8s.io/kube-openapi v0.0.0-20250710124328-f3f2b991d03b // indirect
-	k8s.io/kube-proxy v0.33.7 // indirect
+	k8s.io/kube-proxy v0.33.8 // indirect
 	k8s.io/kubelet v0.34.0 // indirect
 	k8s.io/mount-utils v0.32.4 // indirect
 	k8s.io/pod-security-admission v0.0.0 // indirect
