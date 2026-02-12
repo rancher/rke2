@@ -294,8 +294,8 @@ require (
 	github.com/prometheus/common v0.66.1 // indirect
 	github.com/prometheus/procfs v0.17.0 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
-	github.com/quic-go/quic-go v0.57.1 // indirect
-	github.com/quic-go/webtransport-go v0.9.0 // indirect
+	github.com/quic-go/quic-go v0.59.0 // indirect
+	github.com/quic-go/webtransport-go v0.10.0 // indirect
 	github.com/rancher/dynamiclistener v0.7.1 // indirect
 	github.com/rancher/lasso v0.2.3 // indirect
 	github.com/rancher/remotedialer v0.6.0-rc.1.0.20250916111157-f160aa32568d // indirect
@@ -394,6 +394,7 @@ require (
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/fuse-overlayfs-snapshotter/v2 v2.1.6 // indirect
 	github.com/containerd/plugin v1.0.0 // indirect
+	github.com/dunglas/httpsfv v1.1.0 // indirect
 	github.com/expr-lang/expr v1.17.7 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/filecoin-project/go-clock v0.1.0 // indirect
