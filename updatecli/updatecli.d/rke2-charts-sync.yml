@@ -19,24 +19,18 @@ sources:
     kind: "shell"
     spec:
       command: |
-        #!/bin/bash
+        #!/bin/sh
         set -eu
         
         CHART_VERSIONS_FILE="charts/chart_versions.yaml"
         RKE2_CHARTS_URL="https://rke2-charts.rancher.io/index.yaml"
         
-        charts=(
-          "rke2-cilium"
-          "rke2-canal"
-          "rke2-coredns"
-          "rke2-metrics-server"
-          "rke2-multus"
-          "rke2-flannel"
-        )
+        # List of charts to check (space-separated for POSIX sh compatibility)
+        charts="rke2-cilium rke2-canal rke2-coredns rke2-metrics-server rke2-multus rke2-flannel"
         
         needs_update=false
         
-        for chart in "${charts[@]}"; do
+        for chart in $charts; do
           # Extract versions using yq v4 syntax
           latest_version=$(curl -sfL "${RKE2_CHARTS_URL}" | yq eval '.entries."'${chart}'"[].version' - | sort -rV | head -n 1)
           current_version=$(yq eval '.charts[] | select(.filename == "/charts/'${chart}'.yaml") | .version' ${CHART_VERSIONS_FILE})
@@ -56,7 +50,7 @@ conditions:
     sourceid: checkSync
     spec:
       command: |
-        #!/bin/bash
+        #!/bin/sh
         if [ "{{ source `checkSync` }}" = "update-needed" ]; then
           exit 0
         else
