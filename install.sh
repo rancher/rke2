@@ -102,6 +102,7 @@ check_target_ro() {
 
 # setup_env defines needed environment variables.
 setup_env() {
+    . /etc/os-release
     STORAGE_URL="https://rke2-ci-builds.s3.dualstack.us-east-1.amazonaws.com"
     DEFAULT_TAR_PREFIX="/usr/local"
     # --- bail if we are not root ---
@@ -125,8 +126,16 @@ setup_env() {
     fi
 
     # --- use rpm install method if available by default
-    if [ -z "${INSTALL_RKE2_ARTIFACT_PATH}" ] && [ -z "${INSTALL_RKE2_COMMIT}" ] && [ -z "${INSTALL_RKE2_METHOD}" ] && command -v yum >/dev/null 2>&1; then
-        INSTALL_RKE2_METHOD="rpm"
+    if [ -z "${INSTALL_RKE2_ARTIFACT_PATH}" ] && [ -z "${INSTALL_RKE2_COMMIT}" ] && [ -z "${INSTALL_RKE2_METHOD}" ]; then
+        if command -v yum >/dev/null 2>&1; then
+            INSTALL_RKE2_METHOD="rpm"
+        fi
+
+        if command -v zypper >/dev/null 2>&1; then
+            if [ "${ID:-}" = sles ] && [ "${VERSION_ID%%.*}" = "16" ]; then
+                INSTALL_RKE2_METHOD="rpm"
+            fi
+        fi
     fi
 
     # --- install tarball to /usr/local by default, except if /usr/local is on a separate partition or is read-only
@@ -504,7 +513,7 @@ do_install_rpm() {
             ${transactional_update_run} mkdir -p /var/lib/rpm-state
             # configure infix and rpm_installer
             rpm_site_infix=microos
-            if [ "${VARIANT_ID:-}" = sle-micro ] || [ "${ID:-}" = sle-micro ] || [ "${ID:-}" = sl-micro ]; then
+            if [ "${VARIANT_ID:-}" = sle-micro ] || [ "${ID:-}" = sle-micro ] || [ "${ID:-}" = sl-micro ] || [ "${ID:-}" = sles ]; then
                 rpm_site_infix=slemicro
                 package_installer=zypper
             fi
