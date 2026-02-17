@@ -18,6 +18,7 @@ var (
 	serverCount = flag.Int("serverCount", 1, "number of server nodes")
 	agentCount  = flag.Int("agentCount", 1, "number of agent nodes")
 	ci          = flag.Bool("ci", false, "running on CI, force cleanup")
+	registry    = flag.Bool("registry", false, "start and use a local registry mirror as a pull-through cache")
 
 	tc *docker.TestConfig
 )
