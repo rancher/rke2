@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -19,6 +20,7 @@ type TestConfig struct {
 	Token          string
 	Servers        []DockerNode
 	Agents         []DockerNode
+	Registries     []DockerNode
 	ServerYaml     string
 	AgentYaml      string
 	DualStack      bool // If true, the docker containers will be attached to a dual-stack network
@@ -75,6 +77,86 @@ func getPort() int {
 	return -1
 }
 
+// ProvisionRegistries starts registry proxy containers and writes registries.yaml for tests.
+func (config *TestConfig) ProvisionRegistries() error {
+	registries := []string{
+		"docker.io:registry-1.docker.io",
+		"k8s.gcr.io",
+		"gcr.io",
+		"quay.io",
+		"ghcr.io",
+	}
+	image := "docker.io/library/registry:3.0"
+	registriesPath := filepath.Join(config.TestDir, "test_registries.yaml")
+	hostport := 5000
+	config.Registries = nil
+
+	var registriesYaml strings.Builder
+	registriesYaml.WriteString("mirrors:\n")
+
+	for _, registry := range registries {
+		parts := strings.SplitN(registry, ":", 2)
+		registryName := parts[0]
+		registryEndpoint := registryName
+		if len(parts) == 2 && parts[1] != "" {
+			registryEndpoint = parts[1]
+		}
+
+		name := fmt.Sprintf("registry_%s", strings.ReplaceAll(registryName, ".", "_"))
+		statusCmd := fmt.Sprintf("docker inspect %s --format '{{ .State.Status }} {{ .Config.Image }} {{ (index .HostConfig.PortBindings \"5000/tcp\" 0).HostPort }}'", name)
+		status, _ := RunCommand(statusCmd)
+		statusFields := strings.Fields(status)
+		stateStatus := ""
+		configImage := ""
+		existingHostPort := ""
+		if len(statusFields) >= 1 {
+			stateStatus = statusFields[0]
+		}
+		if len(statusFields) >= 2 {
+			configImage = statusFields[1]
+		}
+		if len(statusFields) >= 3 {
+			existingHostPort = statusFields[2]
+		}
+
+		if stateStatus != "running" || configImage != image {
+			_, _ = RunCommand(fmt.Sprintf("docker rm --force %s", name))
+			runCmd := strings.Join([]string{
+				"docker run -d",
+				"--name", name,
+				"-p", fmt.Sprintf("0.0.0.0:%d:5000", hostport),
+				"-v", "registry-cache:/var/lib/registry",
+				"-e", "REGISTRY_HTTP_SECRET=shared-secret",
+				"-e", fmt.Sprintf("REGISTRY_PROXY_REMOTEURL=https://%s", registryEndpoint),
+				"-e", "REGISTRY_STORAGE_CACHE_BLOBDESCRIPTOR=inmemory",
+				"-e", fmt.Sprintf("REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/var/lib/registry/%s", registryName),
+				image,
+			}, " ")
+			if out, err := RunCommand(runCmd); err != nil {
+				return fmt.Errorf("failed to start registry container %s: %s: %v", name, out, err)
+			}
+		} else if existingHostPort != "" {
+			if parsedPort, err := strconv.Atoi(existingHostPort); err == nil {
+				hostport = parsedPort
+			}
+		}
+
+		registriesYaml.WriteString(fmt.Sprintf("  %s:\n    endpoint:\n    - http://172.17.0.1:%d\n", registryName, hostport))
+		config.Registries = append(config.Registries, DockerNode{
+			Name: name,
+			Port: hostport,
+			URL:  fmt.Sprintf("http://172.17.0.1:%d", hostport),
+		})
+		hostport++
+	}
+
+	if err := os.WriteFile(registriesPath, []byte(registriesYaml.String()), 0644); err != nil {
+		return fmt.Errorf("failed to write registries yaml: %v", err)
+	}
+
+	return nil
+}
+
 // ProvisionServers starts the required number of containers and
 // installs RKE2 as a service on each of them.
 func (config *TestConfig) ProvisionServers(numOfServers int) error {
@@ -126,6 +208,10 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 			}
 			dualStackConfig = "--network rke2-test-dualstack"
 		}
+		registryConfig := ""
+		if len(config.Registries) > 0 {
+			registryConfig = fmt.Sprintf("--mount type=bind,source=%s,target=/etc/rancher/rke2/registries.yaml", filepath.Join(config.TestDir, "test_registries.yaml"))
+		}
 
 		dRun := strings.Join([]string{"docker run -d",
 			"--name", name,
@@ -144,6 +230,7 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 			"-v", "/sys/fs/cgroup:/run/cilium/cgroupv2",
 			"-v", "/var/run/docker.sock:/var/run/docker.sock",
 			"-v", "/var/lib/docker:/var/lib/docker",
+			registryConfig,
 			"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/rke2.linux-amd64.tar.gz,target=/tmp/rke2-artifacts/rke2.linux-amd64.tar.gz",
 			"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/sha256sum-amd64.txt,target=/tmp/rke2-artifacts/sha256sum-amd64.txt",
 			"--mount", "type=bind,source=$(pwd)/../../../build/images/rke2-images.linux-amd64.tar.zst,target=/var/lib/rancher/rke2/agent/images/rke2-images.linux-amd64.tar.zst",
@@ -229,6 +316,10 @@ func (config *TestConfig) ProvisionAgents(numOfAgents int) error {
 			if config.DualStack {
 				dualStackConfig = "--network rke2-test-dualstack"
 			}
+			registryConfig := ""
+			if len(config.Registries) > 0 {
+				registryConfig = fmt.Sprintf("--mount type=bind,source=%s,target=/etc/rancher/rke2/registries.yaml", filepath.Join(config.TestDir, "test_registries.yaml"))
+			}
 
 			dRun := strings.Join([]string{"docker run -d",
 				"--name", name,
@@ -245,6 +336,7 @@ func (config *TestConfig) ProvisionAgents(numOfAgents int) error {
 				"-v", "/sys/fs/cgroup:/run/cilium/cgroupv2",
 				"-v", "/var/run/docker.sock:/var/run/docker.sock",
 				"-v", "/var/lib/docker:/var/lib/docker",
+				registryConfig,
 				"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/rke2.linux-amd64.tar.gz,target=/tmp/rke2-artifacts/rke2.linux-amd64.tar.gz",
 				"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/sha256sum-amd64.txt,target=/tmp/rke2-artifacts/sha256sum-amd64.txt",
 				"--mount", "type=bind,source=$(pwd)/../../../build/images/rke2-images.linux-amd64.tar.zst,target=/var/lib/rancher/rke2/agent/images/rke2-images.linux-amd64.tar.zst",
@@ -365,6 +457,17 @@ func (config *TestConfig) Cleanup() error {
 		}
 	}
 	config.Agents = nil
+
+	// Stop and remove all registries only if REMOVE_REG is set to true.
+	// For local testing, we want registries to persist across test runs
+	if getEnvOrDefault("REMOVE_REG", "false") == "true" {
+		for _, registry := range config.Registries {
+			if err := config.RemoveNode(registry.Name); err != nil {
+				errs = append(errs, err)
+			}
+		}
+	}
+	config.Registries = nil
 
 	// Remove volumes created by the agent/server containers
 	cmd := fmt.Sprintf("docker volume ls -q | grep -F %s | xargs -r docker volume rm", strings.ToLower(filepath.Base(config.TestDir)))
