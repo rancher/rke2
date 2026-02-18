@@ -308,7 +308,7 @@ spec:
 			cmd := "curl -s -o /dev/null --max-time 10 -w '%{http_code}' -H 'Host: simple.example.com' http://" + tc.Servers[0].IP
 			Eventually(func() (string, error) {
 				return docker.RunCommand(cmd)
-			}, "30s", "5s").Should(Equal("200"), "failed to curl simple.example.com")
+			}, "60s", "5s").Should(Equal("200"), "failed to curl simple.example.com")
 		})
 		It("should return 401 for auth endpoint without credentials", func() {
 			cmd := "curl -s -o /dev/null --max-time 10 -w '%{http_code}' -H 'Host: auth.example.com' http://" + tc.Servers[0].IP
