@@ -548,18 +548,30 @@ func RunCommand(cmd string) (string, error) {
 }
 
 // StageManifest loads a manifest into the node's manifest directory
-func StageManifest(manifest string, node DockerNode) error {
+func StageManifest(manifest string, nodes []DockerNode) (string, error) {
 	tempFile, err := os.CreateTemp("", "manifest-*.yaml")
 	if err != nil {
-		return fmt.Errorf("failed to create temp file for manifest: %v", err)
+		return "", fmt.Errorf("failed to create temp file for manifest: %v", err)
 	}
 	defer os.Remove(tempFile.Name())
 	if err := os.WriteFile(tempFile.Name(), []byte(manifest), 0644); err != nil {
-		return fmt.Errorf("failed to write manifest to temp file: %v", err)
+		return "", fmt.Errorf("failed to write manifest to temp file: %v", err)
 	}
-	cmd := fmt.Sprintf("docker cp %s %s:/var/lib/rancher/rke2/server/manifests/", tempFile.Name(), node.Name)
-	if _, err := RunCommand(cmd); err != nil {
-		return fmt.Errorf("failed to copy manifest to node: %v", err)
+	for _, node := range nodes {
+		cmd := fmt.Sprintf("docker cp %s %s:/var/lib/rancher/rke2/server/manifests/", tempFile.Name(), node.Name)
+		if _, err := RunCommand(cmd); err != nil {
+			return "", fmt.Errorf("failed to copy manifest to node: %v", err)
+		}
+	}
+	return tempFile.Name(), nil
+}
+
+func RemoveManifest(manifestFile string, nodes []DockerNode) error {
+	cmd := fmt.Sprintf("rm -f /var/lib/rancher/rke2/server/manifests/%s", filepath.Base(manifestFile))
+	for _, node := range nodes {
+		if _, err := node.RunCmdOnNode(cmd); err != nil {
+			return fmt.Errorf("failed to remove manifest from node: %v", err)
+		}
 	}
 	return nil
 }
