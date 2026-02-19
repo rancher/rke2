@@ -20,7 +20,8 @@ var (
 	ci          = flag.Bool("ci", false, "running on CI, force cleanup")
 	registry    = flag.Bool("registry", false, "start and use a local registry mirror as a pull-through cache")
 
-	tc *docker.TestConfig
+	tc               *docker.TestConfig
+	dualManifestFile = ""
 )
 
 // replaceConfigYaml replaces the rke2 config.yaml on the provided node
@@ -182,7 +183,9 @@ spec:
         ingressClass: "rke2-ingress-nginx-migration"
         controllerClass: 'rke2.cattle.io/ingress-nginx-migration'
 `
-			Expect(docker.StageManifest(dualIngressManifest, tc.Servers[0])).To(Succeed())
+			var err error
+			dualManifestFile, err = docker.StageManifest(dualIngressManifest, tc.Servers)
+			Expect(err).NotTo(HaveOccurred())
 			Expect(docker.RestartCluster(append(tc.Servers, tc.Agents...))).To(Succeed())
 			Eventually(func(g Gomega) {
 				g.Expect(tests.CheckDefaultDeployments(tc.KubeconfigFile)).To(Succeed())
@@ -274,6 +277,7 @@ spec:
 			newServerYaml := "ingress-controller: traefik"
 			Expect(replaceConfigYaml(newServerYaml, tc.Servers[0])).To(Succeed())
 			By("Updating traefik helm chart with the ingress-nginx compatibility settings")
+			Expect(docker.RemoveManifest(dualManifestFile, tc.Servers)).To(Succeed())
 			traefikManifest := `
 apiVersion: helm.cattle.io/v1
 kind: HelmChartConfig
@@ -285,10 +289,11 @@ spec:
     providers:
       kubernetesIngressNginx:
         enabled: true
-        ingressClass: "rke2-ingress-nginx-migration"
+        ingressClass: "nginx"
         controllerClass: 'rke2.cattle.io/ingress-nginx-migration'
 `
-			Expect(docker.StageManifest(traefikManifest, tc.Servers[0])).To(Succeed())
+			_, err := docker.StageManifest(traefikManifest, tc.Servers)
+			Expect(err).To(Succeed())
 			Expect(docker.RestartCluster(append(tc.Servers, tc.Agents...))).To(Succeed())
 			Eventually(func(g Gomega) {
 				g.Expect(tests.CheckDefaultDeployments(tc.KubeconfigFile)).To(Succeed())
@@ -342,6 +347,7 @@ var _ = AfterEach(func() {
 
 var _ = AfterSuite(func() {
 	if tc != nil && failed {
+		AddReportEntry("cluster-resources", tc.DumpResources())
 		AddReportEntry("pod-logs", tc.DumpPodLogs(20))
 		AddReportEntry("journald-logs", tc.DumpServiceLogs(20))
 		AddReportEntry("component-logs", tc.DumpComponentLogs(20))
