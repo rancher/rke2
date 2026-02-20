@@ -30,7 +30,6 @@ import (
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/signals"
-	"github.com/k3s-io/k3s/pkg/spegel"
 	"github.com/k3s-io/k3s/pkg/util"
 	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/auth"
@@ -643,13 +642,8 @@ func (s *StaticPodConfig) writeTemplate(spec *podtemplate.Spec) error {
 
 func (s *StaticPodConfig) stageData(ctx context.Context, nodeConfig *daemonconfig.Node, cfg cmds.Agent) error {
 	// if spegel is enabled, wait for it to start up so that we can attempt to pull content through it
-	if nodeConfig.EmbeddedRegistry && spegel.DefaultRegistry != nil {
-		if err := wait.PollUntilContextTimeout(ctx, time.Second, time.Minute, true, func(ctx context.Context) (bool, error) {
-			_, err := spegel.DefaultRegistry.Bootstrapper.Get(ctx)
-			return err == nil, nil
-		}); err != nil {
-			return pkgerrors.WithMessage(err, "failed to wait for embedded registry")
-		}
+	if err := bootstrap.WaitForEmbeddedRegistry(ctx, nodeConfig); err != nil {
+		logrus.Errorf("Failed to wait for embedded registry to become ready: %v", err)
 	}
 	if err := bootstrap.Stage(ctx, s.Resolver, nodeConfig, cfg); err != nil {
 		return err
