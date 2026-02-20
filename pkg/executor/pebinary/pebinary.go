@@ -25,9 +25,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/daemons/config"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/signals"
-	"github.com/k3s-io/k3s/pkg/spegel"
 	"github.com/k3s-io/k3s/pkg/util"
-	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/logging"
@@ -35,7 +33,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -438,13 +435,8 @@ func (p *PEBinaryConfig) IsSelfHosted() bool {
 
 func (p *PEBinaryConfig) stageData(ctx context.Context, nodeConfig *config.Node, cfg cmds.Agent) error {
 	// if spegel is enabled, wait for it to start up so that we can attempt to pull content through it
-	if nodeConfig.EmbeddedRegistry && spegel.DefaultRegistry != nil {
-		if err := wait.PollUntilContextTimeout(ctx, time.Second, time.Minute, true, func(ctx context.Context) (bool, error) {
-			_, err := spegel.DefaultRegistry.Bootstrapper.Get(ctx)
-			return err == nil, nil
-		}); err != nil {
-			return pkgerrors.WithMessage(err, "failed to wait for embedded registry")
-		}
+	if err := bootstrap.WaitForEmbeddedRegistry(ctx, nodeConfig); err != nil {
+		logrus.Errorf("Failed to wait for embedded registry to become ready: %v", err)
 	}
 	if err := bootstrap.Stage(ctx, p.Resolver, nodeConfig, cfg); err != nil {
 		return err
