@@ -74,6 +74,7 @@ replace (
 require (
 	github.com/Microsoft/hcsshim v0.14.0-rc.1
 	github.com/aws/aws-sdk-go v1.55.6
+	github.com/containerd/containerd/v2 v2.2.0
 	github.com/containernetworking/plugins v1.9.0
 	github.com/google/go-containerregistry v0.20.3
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
@@ -137,7 +138,6 @@ require (
 	github.com/cilium/ebpf v0.17.3 // indirect
 	github.com/containerd/cgroups/v3 v3.1.0 // indirect
 	github.com/containerd/containerd/api v1.10.0 // indirect
-	github.com/containerd/containerd/v2 v2.2.0 // indirect
 	github.com/containerd/continuity v0.4.5 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
