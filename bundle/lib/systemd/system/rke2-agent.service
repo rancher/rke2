@@ -3,7 +3,6 @@ Description=Rancher Kubernetes Engine v2 (agent)
 Documentation=https://github.com/rancher/rke2#readme
 Wants=network-online.target
 After=network-online.target
-Conflicts=rke2-server.service
 
 [Install]
 WantedBy=multi-user.target
@@ -22,6 +21,7 @@ TasksMax=infinity
 TimeoutStartSec=0
 Restart=always
 RestartSec=5s
+ExecCondition=/bin/sh -c 'if systemctl is-active --quiet rke2-server.service; then echo "Error: rke2-server is running!"; exit 1; fi'
 ExecStartPre=-/sbin/modprobe br_netfilter
 ExecStartPre=-/sbin/modprobe overlay
 ExecStart=/usr/local/bin/rke2 agent
