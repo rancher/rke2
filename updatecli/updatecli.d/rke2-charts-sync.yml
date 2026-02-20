@@ -1,0 +1,198 @@
+---
+name: "Sync chart and image versions with rancher/rke2-charts"
+
+scms:
+  rke2:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      username: "{{ requiredEnv .github.username }}"
+      token: '{{ requiredEnv .github.token }}'
+      owner: rancher
+      repository: rke2
+      branch: master
+
+sources:
+  checkSync:
+    name: "Check if sync is needed"
+    kind: "shell"
+    spec:
+      command: |
+        #!/bin/sh
+        set -eu
+        
+        CHART_VERSIONS_FILE="charts/chart_versions.yaml"
+        RKE2_CHARTS_URL="https://rke2-charts.rancher.io/index.yaml"
+        
+        # List of charts to check (space-separated for POSIX sh compatibility)
+        charts="rke2-cilium rke2-canal rke2-coredns rke2-metrics-server rke2-multus rke2-flannel"
+        
+        needs_update=false
+        
+        for chart in $charts; do
+          # Extract versions using yq v4 syntax
+          latest_version=$(curl -sfL "${RKE2_CHARTS_URL}" | yq eval '.entries."'${chart}'"[].version' - | sort -rV | head -n 1)
+          current_version=$(yq eval '.charts[] | select(.filename == "/charts/'${chart}'.yaml") | .version' ${CHART_VERSIONS_FILE})
+          
+          if [ -n "${latest_version}" ] && [ "${latest_version}" != "null" ] && [ "${current_version}" != "${latest_version}" ]; then
+            echo "update-needed"
+            exit 0
+          fi
+        done
+        
+        echo "no-update"
+
+conditions:
+  shouldSync:
+    name: "Check if any charts need to be updated"
+    kind: shell
+    sourceid: checkSync
+    spec:
+      command: |
+        #!/bin/sh
+        if [ "{{ source `checkSync` }}" = "update-needed" ]; then
+          exit 0
+        else
+          exit 1
+        fi
+
+targets:
+  syncCharts:
+    name: "Sync charts and images from rke2-charts"
+    kind: "shell"
+    scmid: "rke2"
+    sourceid: checkSync
+    spec:
+      command: |
+        #!/bin/sh
+        set -eu
+        
+        info() {
+            echo '[INFO] ' "$@"
+        }
+        warn() {
+            echo '[WARN] ' "$@" >&2
+        }
+        fatal() {
+            echo '[ERROR] ' "$@" >&2
+            exit 1
+        }
+        
+        CHART_VERSIONS_FILE="charts/chart_versions.yaml"
+        BUILD_IMAGES_FILE="scripts/build-images"
+        DOCKERFILE_WINDOWS="Dockerfile.windows"
+        RKE2_CHARTS_URL="https://rke2-charts.rancher.io/index.yaml"
+        
+        # List of charts to sync
+        charts="rke2-cilium rke2-canal rke2-coredns rke2-metrics-server rke2-multus rke2-flannel"
+        
+        any_updates=false
+        
+        for chart in $charts; do
+          info "Processing chart: ${chart}"
+          
+          # Get latest version from rke2-charts
+          latest_version=$(curl -sfL "${RKE2_CHARTS_URL}" | yq eval '.entries."'${chart}'"[].version' - | sort -rV | head -n 1)
+          if [ -z "${latest_version}" ] || [ "${latest_version}" = "null" ]; then
+            warn "Could not get latest version for ${chart}"
+            continue
+          fi
+          
+          # Get current version
+          current_version=$(yq eval '.charts[] | select(.filename == "/charts/'${chart}'.yaml") | .version' ${CHART_VERSIONS_FILE})
+          if [ "${current_version}" = "${latest_version}" ]; then
+            info "Chart ${chart} already at ${latest_version}"
+            continue
+          fi
+          
+          info "Updating ${chart} from ${current_version} to ${latest_version}"
+          
+          # Update chart version
+          yq eval -i '(.charts[] | select(.filename == "/charts/'${chart}'.yaml") | .version) = "'${latest_version}'"' ${CHART_VERSIONS_FILE}
+          
+          # Download and extract chart for image versions
+          temp_dir=$(mktemp -d)
+          chart_url="https://github.com/rancher/rke2-charts/raw/main/assets/${chart}/${chart}-${latest_version}.tgz"
+          if curl -sfL "${chart_url}" | tar xz -C "${temp_dir}" 2>/dev/null; then
+            if [ -f "${temp_dir}/${chart}/values.yaml" ]; then
+              # Extract images and update build-images
+              image_pairs=$(yq eval '.. | select(type == "!!map" and has("repo") and has("tag")) | .repo + "|" + (.tag | tostring)' "${temp_dir}/${chart}/values.yaml" 2>/dev/null || echo "")
+              
+              echo "${image_pairs}" | while IFS='|' read -r image tag; do
+                if [ -n "${image}" ] && [ -n "${tag}" ]; then
+                  if grep -qF "${image}" "${BUILD_IMAGES_FILE}" 2>/dev/null; then
+                    target_line=$(grep -F "${image}" "${BUILD_IMAGES_FILE}" | head -n1)
+                    target_tag=$(echo "${target_line}" | sed 's/.*://;s/[[:space:]]*$//' | awk '{print $1}')
+                    
+                    if [ "${target_tag}" != "${tag}" ]; then
+                      info "Updating image ${image} from ${target_tag} to ${tag}"
+                      escaped_image=$(echo "${image}" | sed 's/[]\/$*.^[]/\\&/g')
+                      escaped_target_tag=$(echo "${target_tag}" | sed 's/[\/&]/\\&/g')
+                      sed -i -r 's~(.*'"${escaped_image}"':)'"${escaped_target_tag}"'(.*)~\1'"${tag}"'\2~g' "${BUILD_IMAGES_FILE}"
+                    fi
+                  fi
+                fi
+              done
+            fi
+          fi
+          rm -rf "${temp_dir}"
+          
+          any_updates=true
+        done
+        
+        # Update Dockerfile.windows with CNI versions
+        for env_var in CALICO_VERSION CNI_PLUGIN_VERSION FLANNEL_VERSION; do
+          case ${env_var} in
+            CALICO_VERSION) image_pattern="hardened-calico" ;;
+            CNI_PLUGIN_VERSION) image_pattern="hardened-cni-plugins" ;;
+            FLANNEL_VERSION) image_pattern="hardened-flannel" ;;
+          esac
+          
+          image_line=$(grep -m1 "${image_pattern}:" "${BUILD_IMAGES_FILE}" || echo "")
+          if [ -n "${image_line}" ]; then
+            full_version=$(echo "${image_line}" | sed 's/.*://;s/-build.*//' | awk '{print $1}')
+            current_version=$(grep "^ENV ${env_var}=" "${DOCKERFILE_WINDOWS}" | sed 's/.*="\(.*\)"/\1/')
+            
+            if [ -n "${full_version}" ] && [ -n "${current_version}" ] && [ "${current_version}" != "${full_version}" ]; then
+              info "Updating ${env_var} in Dockerfile.windows from ${current_version} to ${full_version}"
+              sed -i "s/^ENV ${env_var}=\".*\"/ENV ${env_var}=\"${full_version}\"/" "${DOCKERFILE_WINDOWS}"
+            fi
+          fi
+        done
+        
+        if [ "${any_updates}" = "false" ]; then
+          info "No updates needed"
+          exit 1
+        else
+          info "Successfully synchronized charts and images"
+        fi
+      changedif:
+        kind: file/checksum
+        spec:
+          files:
+            - charts/chart_versions.yaml
+            - scripts/build-images
+            - Dockerfile.windows
+
+actions:
+  github:
+    kind: "github/pullrequest"
+    scmid: "rke2"
+    title: "Sync chart and image versions with rancher/rke2-charts main"
+    spec:
+      automerge: false
+      draft: false
+      mergemethod: squash
+      parent: false
+      description: |
+        Updates chart versions and corresponding container images to match the latest releases in rancher/rke2-charts main branch.
+        
+        This PR is automatically generated by updatecli to keep rke2 charts and images in sync with the upstream rke2-charts repository.
+        
+        ## Changes
+        - Updates chart versions in `charts/chart_versions.yaml`
+        - Updates corresponding hardened images in `scripts/build-images`
+        - Updates CNI versions in `Dockerfile.windows`
+        
+        Please review the changes and ensure all image tags match the chart dependencies before merging.
