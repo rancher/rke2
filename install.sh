@@ -132,7 +132,7 @@ setup_env() {
         fi
 
         if command -v zypper >/dev/null 2>&1; then
-            if [ "${ID:-}" = sles ] && [ "${VERSION_ID%%.*}" = "16" ]; then
+            if [ "${ID:-}" = sles ] && [ "${VERSION_ID%%.*}" = "16" ] && [ "${VARIANT_ID:-}" = "server" ] ; then
                 INSTALL_RKE2_METHOD="rpm"
             fi
         fi
