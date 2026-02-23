@@ -1,0 +1,61 @@
+---
+name: "Update Canal charts and images"
+# Make sure we can pull in github repos from multiple orgs
+scms:
+  rke2:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      username: "{{ requiredEnv .github.username }}"
+      token: '{{ requiredEnv .github.token }}'
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repo }}"
+      branch: master
+
+sources:
+  canal:
+    name: "Get Canal chart version"
+    kind: "helmchart"
+    spec:
+      url: https://rancher.github.io/rke2-charts
+      name: rke2-canal
+      versionfilter:
+        kind: "latest"
+  issue:
+    name: "Get issue number"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/create-issue.sh rke2-canal {{ source "canal" }}
+      environments:
+        - name: GH_TOKEN
+          value: '{{ requiredEnv .github.token }}'
+  
+conditions:
+  canalVersionShouldBeUpdated:
+    name: "Check if Canal chart should be updated or not"
+    kind: shell
+    sourceid: canal
+    spec:
+      command: bash ./updatecli/scripts/validate_version.sh rke2-canal
+
+targets:
+  canalCNI:
+    name: "Update the Canal airgap images"
+    kind: "shell"
+    scmid: "rke2"
+    sourceid: canal
+    spec:
+      command: bash ./updatecli/scripts/update_chart_and_images_cni.sh rke2-canal
+
+actions:
+  github:
+    kind: "github/pullrequest"
+    scmid: "rke2"
+    spec:
+      automerge: false
+      draft: false
+      mergemethod: squash
+      parent: false
+      title: 'Update Canal chart to {{ source "canal" }}'
+      description: 'This is an automated PR to update Helm chart versions. issue #{{ source "issue" }}'
