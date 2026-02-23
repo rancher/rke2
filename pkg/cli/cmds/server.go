@@ -41,11 +41,18 @@ var (
 		Usage:   "(components) Enable rke2 default cloud controller manager's service controller",
 		EnvVars: []string{"RKE2_ENABLE_SERVICELB"},
 	}
+	PrimeFlag = &cli.BoolFlag{
+		Name:    "prime",
+		Usage:   "Configures RKE2 to utilize the Rancher Prime Registry and features",
+		Hidden:  true,
+		EnvVars: []string{"RKE2_PRIME"},
+	}
 
 	serverFlag = []cli.Flag{
 		CNIFlag,
 		IngressControllerFlag,
 		ServiceLBFlag,
+		PrimeFlag,
 	}
 
 	k3sServerBase = mustCmdFromK3S(cmds.NewServerCommand(ServerRun), K3SFlagSet{
