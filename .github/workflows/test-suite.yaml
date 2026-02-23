@@ -112,10 +112,13 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
-        dtest: [basics, flannel, profile, traefik, ing_migration]
+        dtest: [basics, flannel, profile, traefik, ing_migration, prime]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v6
@@ -138,9 +141,20 @@ jobs:
       - name: Load kernel modules
         run: |
           sudo modprobe br_netfilter overlay
+      - name: "Read secrets"
+        if: github.event_name == 'push'
+        uses: rancher-eio/read-vault-secrets@main
+        with:
+          secrets: |
+            secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
       - name: Run ${{ matrix.dtest }} Test
+        if: matrix.dtest != 'prime'
         run: |
-          go test -v -timeout=20m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci
+            go test -v -timeout=20m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci
+      - name: Run ${{ matrix.dtest }} Merge Tests
+        if: matrix.dtest == 'prime' && github.event_name == 'push'
+        run: go test -v -timeout=20m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci -registry $PRIME_REGISTRY
+  
   docker-large:
     name: "Docker Tests (Large)"
     needs: build
