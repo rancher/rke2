@@ -1,4 +1,6 @@
 github:
+  owner: "rancher" 
+  repo: "rke2"
   user: "github-actions[bot]"
   email: "41898282+github-actions[bot]@users.noreply.github.com"
   username: "UPDATECLI_GITHUB_ACTOR"

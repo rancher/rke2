@@ -1,0 +1,62 @@
+---
+name: "Update Calico charts and images"
+# Make sure we can pull in github repos from multiple orgs
+scms:
+  rke2:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      username: "{{ requiredEnv .github.username }}"
+      token: '{{ requiredEnv .github.token }}'
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repo }}"
+      branch: master
+
+sources:
+  calico:
+    name: "Get Calico chart version"
+    kind: "helmchart"
+    spec:
+      url: https://rancher.github.io/rke2-charts
+      name: rke2-calico
+      versionfilter:
+        kind: "regex"
+        pattern: ^v?\d+\.\d+\.\d+$
+  issue:
+    name: "Get issue number"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/create-issue.sh rke2-calico {{ source "calico" }}
+      environments:
+        - name: GH_TOKEN
+          value: '{{ requiredEnv .github.token }}'
+  
+conditions:
+  calicoVersionShouldBeUpdated:
+    name: "Check if Calico chart should be updated or not"
+    kind: shell
+    sourceid: calico
+    spec:
+      command: bash ./updatecli/scripts/validate_version.sh rke2-calico
+
+targets:
+  calicoCNI:
+    name: "Update the Calico airgap images"
+    kind: "shell"
+    scmid: "rke2"
+    sourceid: calico
+    spec:
+      command: bash ./updatecli/scripts/update_chart_and_images_cni.sh rke2-calico
+
+actions:
+  github:
+    kind: "github/pullrequest"
+    scmid: "rke2"
+    spec:
+      automerge: false
+      draft: false
+      mergemethod: squash
+      parent: false
+      title: 'Update Calico chart to {{ source "calico" }}'
+      description: 'This is an automated PR to update Helm chart versions. issue #{{ source "issue" }}'

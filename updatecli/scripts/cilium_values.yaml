@@ -1,0 +1,14 @@
+clustermesh:
+  useAPIServer: true
+envoy:
+  enabled: true
+hubble:
+  ui:
+    enabled: true
+  tls:
+    enabled: true
+    auto:
+      method: cronJob
+  relay:
+    enabled: true
+  enabled: true

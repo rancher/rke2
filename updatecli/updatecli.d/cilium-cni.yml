@@ -1,0 +1,61 @@
+---
+name: "Update Cilium charts and images"
+# Make sure we can pull in github repos from multiple orgs
+scms:
+  rke2:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      username: "{{ requiredEnv .github.username }}"
+      token: '{{ requiredEnv .github.token }}'
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repo }}"
+      branch: master
+
+sources:
+  cilium:
+    name: "Get Cilium chart version"
+    kind: "helmchart"
+    spec:
+      url: https://rancher.github.io/rke2-charts
+      name: rke2-cilium
+      versionfilter:
+        kind: "latest"
+  issue:
+    name: "Get issue number"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/create-issue.sh rke2-cilium {{ source "cilium" }}
+      environments:
+        - name: GH_TOKEN
+          value: '{{ requiredEnv .github.token }}'
+  
+conditions:
+  ciliumVersionShouldBeUpdated:
+    name: "Check if Cilium chart should be updated or not"
+    kind: shell
+    sourceid: cilium
+    spec:
+      command: bash ./updatecli/scripts/validate_version.sh rke2-cilium
+
+targets:
+  ciliumCNI:
+    name: "Update the Cilium airgap images"
+    kind: "shell"
+    scmid: "rke2"
+    sourceid: cilium
+    spec:
+      command: bash ./updatecli/scripts/update_chart_and_images_cni.sh rke2-cilium
+
+actions:
+  github:
+    kind: "github/pullrequest"
+    scmid: "rke2"
+    spec:
+      automerge: false
+      draft: false
+      mergemethod: squash
+      parent: false
+      title: 'Update Cilium chart to {{ source "cilium" }}'
+      description: 'This is an automated PR to update Helm chart versions. issue #{{ source "issue" }}'
