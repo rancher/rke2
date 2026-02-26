@@ -34,7 +34,7 @@ xargs -n1 -t $PULL_CMD_CORE << EOF >> build/images-core.txt
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > build/images-traefik.txt
-    ${REGISTRY}/rancher/hardened-traefik:v3.6.7-build20260206
+    ${REGISTRY}/rancher/hardened-traefik:v3.6.9-build20260226
 EOF
 
 xargs -n1 -t $PULL_CMD_CORE << EOF > build/images-canal.txt
