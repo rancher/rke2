@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+DEFAULT_REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BUILD_ROOT="${BUILD_ROOT:-${DEFAULT_REPO_ROOT}}"
+REQUESTED_REF="${RKE2_REF:-}"
+TEMP_BUILD_ROOT=""
+
+if [ "${BUILD_LOCAL_FROM_WORKTREE:-0}" != "1" ] && [ -n "${RKE2_REF:-}" ]; then
+    TEMP_BUILD_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/rke2-build-ref.XXXXXX")"
+    trap 'rm -rf "${TEMP_BUILD_ROOT}"' EXIT
+
+    git clone --local --no-hardlinks "${DEFAULT_REPO_ROOT}" "${TEMP_BUILD_ROOT}" >/dev/null 2>&1
+    (
+        cd "${TEMP_BUILD_ROOT}"
+        git checkout --detach "${RKE2_REF}" >/dev/null
+    )
+    BUILD_ROOT="${TEMP_BUILD_ROOT}"
+    unset RKE2_REF
+fi
+
+cd "${BUILD_ROOT}"
+
+TARGETARCH="${TARGETARCH:-}"
+if [ -z "${TARGETARCH}" ]; then
+    case "$(uname -m)" in
+        x86_64|amd64)
+            TARGETARCH="amd64"
+            ;;
+        arm64|aarch64)
+            TARGETARCH="arm64"
+            ;;
+        s390x)
+            TARGETARCH="s390x"
+            ;;
+        *)
+            echo "Unsupported architecture: $(uname -m)" >&2
+            exit 1
+            ;;
+    esac
+fi
+
+BUNDLE_TAR="dist/artifacts/rke2-images.linux-${TARGETARCH}.tar"
+BUNDLE_ZST="${BUNDLE_TAR}.zst"
+BRANCH_TAG="$(git rev-parse --abbrev-ref HEAD | sed 's/\//-/g')"
+TOOLING_IMAGE="rke2:${BRANCH_TAG}"
+
+make in-docker-build-binary
+make in-docker-build-images || true
+if [ ! -f build/images.txt ]; then
+    if [ -f build/images-core.txt ]; then
+        if [ ! -f build/images-canal.txt ]; then
+            : > build/images-canal.txt
+        fi
+        cat build/images-core.txt build/images-canal.txt > build/images.txt
+    else
+        echo "Unable to recover: build/images-core.txt was not generated" >&2
+        exit 1
+    fi
+fi
+
+RAW_VERSION=""
+if [ -n "${REQUESTED_REF}" ]; then
+    RAW_VERSION="${REQUESTED_REF}"
+else
+    RAW_VERSION="$(git tag -l --contains HEAD | head -n 1 || true)"
+fi
+if [ -n "${RAW_VERSION}" ]; then
+    DOCKERIZED_VERSION="${RAW_VERSION//+/-}"
+else
+    DOCKERIZED_VERSION="dev-$(git rev-parse --short HEAD)"
+fi
+REPO="rancher"
+PROG="rke2"
+GOOS="linux"
+
+DEFAULT_IMAGE_TAG="${REPO}/${PROG}-test:${DOCKERIZED_VERSION}-${GOOS}-${TARGETARCH}"
+SECONDARY_IMAGE_TAG="${REPO}/${PROG}-test:${DOCKERIZED_VERSION}"
+IMAGE_TAG="${IMAGE_TAG:-${DEFAULT_IMAGE_TAG}}"
+
+mkdir -p dist/artifacts
+xargs docker image save --output "${BUNDLE_TAR}" < build/images.txt
+
+docker run --rm -v "${PWD}:/work" "${TOOLING_IMAGE}" sh -lc \
+    "zstd -T0 -16 -f --long=25 --no-progress /work/${BUNDLE_TAR} -o /work/${BUNDLE_ZST}"
+
+mkdir -p build/images
+cp -f "${BUNDLE_ZST}" "build/images/rke2-images.linux-${TARGETARCH}.tar.zst"
+if [ "${TARGETARCH}" != "amd64" ]; then
+    cp -f "${BUNDLE_ZST}" "build/images/rke2-images.linux-amd64.tar.zst"
+fi
+
+docker build \
+    --build-arg TARGETARCH="${TARGETARCH}" \
+    --target test \
+    --file Dockerfile \
+    --tag "${IMAGE_TAG}" \
+    $( [ "${IMAGE_TAG}" = "${DEFAULT_IMAGE_TAG}" ] && printf -- '--tag %s' "${SECONDARY_IMAGE_TAG}" ) \
+    .
+
+echo "Built ${IMAGE_TAG}"
+if [ "${IMAGE_TAG}" = "${DEFAULT_IMAGE_TAG}" ]; then
+    echo "Built ${SECONDARY_IMAGE_TAG}"
+fi

@@ -21,6 +21,48 @@ When running RKE2 you will also need to install these packages:
 make
 ```
 
+## Local Docker Image Build
+
+### Image Targets
+- `build-env`: toolchain/build container (not runnable as an rke2 server)
+- `runtime`: runtime bundle image (`rke2-runtime`)
+- `test`: runnable local image that includes `/bin/rke2` and local airgap artifacts
+
+### Changes Required For Local `test` Image Builds
+- Fixed Dockerfile line continuation parse error in the `gh` install step.
+- Converted legacy `ENV key value` syntax to `ENV key=value`.
+- Updated the `test` stage airgap artifact path to use architecture-aware output:
+  - `dist/artifacts/rke2-images.linux-${TARGETARCH}.tar.zst`
+- Added compatibility handling in `scripts/build-local-test-image` so older refs that still
+  expect `build/images/rke2-images.linux-amd64.tar.zst` can be built from non-amd64 hosts.
+
+### One-Command Build (Recommended)
+Build a runnable local image with versioned tags:
+
+```shell
+make build-local-test-image
+```
+
+By default this now tags:
+- `rancher/rke2-test:<resolved-version>-<goos>-<arch>`
+- `rancher/rke2-test:<resolved-version>`
+
+Optional overrides:
+
+```shell
+IMAGE_TAG=my-rke2:test make build-local-test-image
+TARGETARCH=amd64 make build-local-test-image
+RKE2_REF=v1.34.4+rke2r1 make build-local-test-image
+```
+
+`RKE2_REF` builds from a git tag/branch in an isolated local clone, so older versions can be built without changing your current checkout.
+
+### What The One-Command Build Does
+1. Builds `bin/rke2` in Dockerized build env.
+2. Builds runtime/images metadata in Dockerized build env.
+3. Creates `dist/artifacts/rke2-images.linux-<arch>.tar.zst` from `build/images.txt`.
+4. Builds Docker `--target test` and tags the result with versioned test image tags.
+
 ## Running
 
 ### rke2 (dev-shell)

@@ -3,7 +3,7 @@ ARG KUBERNETES_VERSION=dev
 # Base image for common build tools
 FROM rancher/hardened-build-base:v1.25.6b1 AS base
 ARG BUILDARCH
-ENV ARCH $BUILDARCH
+ENV ARCH=$BUILDARCH
 RUN set -x && \
     apk --no-cache add \
     bash \
@@ -31,14 +31,14 @@ RUN zypper install -y systemd-rpm-macros
 # Build environment
 FROM base AS build-env
 ARG BUILDARCH
-ENV ARCH $BUILDARCH
+ENV ARCH=$BUILDARCH
 RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
         VERSION=0.56.10 OS=linux && \
         curl -sL "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_${OS}_${ARCH}.tar.gz" | \
         tar -xzf - -C /usr/local/bin; \
     fi
 
-RUN curl -sL "https://github.com/cli/cli/releases/download/v2.53.0/gh_2.53.0_linux_${ARCH}.tar.gz" | \ 
+RUN curl -sL "https://github.com/cli/cli/releases/download/v2.53.0/gh_2.53.0_linux_${ARCH}.tar.gz" | \
     tar --strip-components=2 -xzvf - -C /usr/local/bin gh_2.53.0_linux_${ARCH}/bin/gh;
 
 COPY channels.yaml /tmp/channels.yaml
@@ -148,7 +148,7 @@ VOLUME /var/lib/cni
 VOLUME /var/log
 COPY bin/rke2 /bin/
 # use built air-gap images
-COPY build/images/rke2-images.linux-amd64.tar.zst /var/lib/rancher/rke2/agent/images/
+COPY dist/artifacts/rke2-images.linux-${TARGETARCH}.tar.zst /var/lib/rancher/rke2/agent/images/
 COPY build/images.txt /images.txt
 
 # use rke2 bundled binaries
