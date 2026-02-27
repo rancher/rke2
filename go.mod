@@ -73,15 +73,13 @@ require (
 	github.com/Microsoft/hcsshim v0.14.0-rc.1
 	github.com/aws/aws-sdk-go v1.55.6
 	github.com/containerd/containerd/v2 v2.2.0
-	github.com/containerd/continuity v0.4.5 // indirect
 	github.com/containernetworking/plugins v1.9.0
 	github.com/google/go-containerregistry v0.20.3
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.16.17
-	github.com/k3s-io/k3s v1.35.1-0.20260211145931-c5b158798933 // head
-	github.com/k3s-io/kine v0.14.11
+	github.com/k3s-io/k3s v1.35.1-0.20260227165733-abc7cc85603f // main
+	github.com/k3s-io/kine v0.14.12
 	github.com/libp2p/go-netroute v0.3.0
-	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/onsi/ginkgo/v2 v2.27.2
 	github.com/onsi/gomega v1.38.2
 	github.com/pkg/errors v0.9.1
@@ -90,21 +88,22 @@ require (
 	github.com/rancher/wins v0.4.17
 	github.com/rancher/wrangler/v3 v3.2.3
 	github.com/sirupsen/logrus v1.9.4
-	github.com/spf13/cobra v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.10
 	github.com/tigera/operator v1.36.13
 	github.com/urfave/cli/v2 v2.27.7
+	golang.org/x/crypto v0.46.0
 	golang.org/x/sync v0.19.0
 	golang.org/x/sys v0.39.0
-	google.golang.org/grpc v1.77.0
-	k8s.io/api v0.35.1
-	k8s.io/apimachinery v0.35.1
-	k8s.io/apiserver v0.35.1
+	google.golang.org/grpc v1.79.1
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
+	k8s.io/api v0.35.2
+	k8s.io/apimachinery v0.35.2
+	k8s.io/apiserver v0.35.2
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/component-base v0.35.1
-	k8s.io/cri-api v0.35.1
+	k8s.io/component-base v0.35.2
+	k8s.io/cri-api v0.35.2
 	k8s.io/klog/v2 v2.130.1
-	k8s.io/kubernetes v1.35.1
+	k8s.io/kubernetes v1.35.2
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4
 	sigs.k8s.io/yaml v1.6.0
 )
@@ -136,6 +135,7 @@ require (
 	github.com/cilium/ebpf v0.17.3 // indirect
 	github.com/containerd/cgroups/v3 v3.1.0 // indirect
 	github.com/containerd/containerd/api v1.10.0 // indirect
+	github.com/containerd/continuity v0.4.5 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/fifo v1.1.0 // indirect
@@ -254,7 +254,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/k3s-io/api v0.1.4 // indirect
-	github.com/klauspost/compress v1.18.3 // indirect
+	github.com/klauspost/compress v1.18.4 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/koron/go-ssdp v0.0.6 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
@@ -276,7 +276,7 @@ require (
 	github.com/marten-seemann/tcp v0.0.0-20210406111302-dfbc87cc63fd // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-sqlite3 v1.14.33 // indirect
+	github.com/mattn/go-sqlite3 v1.14.34 // indirect
 	github.com/miekg/dns v1.1.69 // indirect
 	github.com/mikioh/tcpinfo v0.0.0-20190314235526-30a79bb1804b // indirect
 	github.com/mikioh/tcpopt v0.0.0-20190314235656-172688c1accc // indirect
@@ -313,6 +313,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mwitkow/go-http-dialer v0.0.0-20161116154839-378f744fb2b8 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
+	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/nats-io/jsm.go v0.3.0 // indirect
 	github.com/nats-io/jwt/v2 v2.8.0 // indirect
 	github.com/nats-io/nats-server/v2 v2.12.2 // indirect
@@ -323,8 +324,9 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/opencontainers/runtime-spec v1.2.1 // indirect
-	github.com/opencontainers/selinux v1.13.0 // indirect
-	github.com/otiai10/copy v1.7.0 // indirect
+	github.com/opencontainers/selinux v1.13.1 // indirect
+	github.com/otiai10/copy v1.14.1 // indirect
+	github.com/otiai10/mint v1.6.3 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
@@ -364,7 +366,7 @@ require (
 	github.com/rancher/lasso v0.2.3 // indirect
 	github.com/rancher/remotedialer v0.6.0-rc.1.0.20250916111157-f160aa32568d // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
-	github.com/rootless-containers/rootlesskit/v2 v2.3.6 // indirect
+	github.com/rootless-containers/rootlesskit v1.1.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/scjalliance/comshim v0.0.0-20190308082608-cf06d2532c4e // indirect
@@ -372,6 +374,7 @@ require (
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/spegel-org/spegel v1.0.18 // indirect
+	github.com/spf13/cobra v1.10.0 // indirect
 	github.com/stoewer/go-strcase v1.3.1 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/tidwall/btree v1.8.1 // indirect
@@ -387,23 +390,23 @@ require (
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	github.com/yl2chen/cidranger v1.0.2 // indirect
 	go.etcd.io/bbolt v1.4.3 // indirect
-	go.etcd.io/etcd/api/v3 v3.6.7 // indirect
-	go.etcd.io/etcd/client/pkg/v3 v3.6.7 // indirect
-	go.etcd.io/etcd/client/v3 v3.6.7 // indirect
+	go.etcd.io/etcd/api/v3 v3.6.8 // indirect
+	go.etcd.io/etcd/client/pkg/v3 v3.6.8 // indirect
+	go.etcd.io/etcd/client/v3 v3.6.8 // indirect
 	go.etcd.io/etcd/etcdutl/v3 v3.6.6 // indirect
-	go.etcd.io/etcd/pkg/v3 v3.6.7 // indirect
-	go.etcd.io/etcd/server/v3 v3.6.7 // indirect
+	go.etcd.io/etcd/pkg/v3 v3.6.8 // indirect
+	go.etcd.io/etcd/server/v3 v3.6.8 // indirect
 	go.etcd.io/raft/v3 v3.6.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.60.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.63.0 // indirect
-	go.opentelemetry.io/otel v1.38.0 // indirect
+	go.opentelemetry.io/otel v1.39.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.38.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.38.0 // indirect
-	go.opentelemetry.io/otel/metric v1.38.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.38.0 // indirect
-	go.opentelemetry.io/otel/trace v1.38.0 // indirect
+	go.opentelemetry.io/otel/metric v1.39.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.39.0 // indirect
+	go.opentelemetry.io/otel/trace v1.39.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.7.1 // indirect
 	go.uber.org/dig v1.19.0 // indirect
 	go.uber.org/fx v1.24.0 // indirect
@@ -412,41 +415,40 @@ require (
 	go.uber.org/zap v1.27.1 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/crypto v0.45.0
 	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 // indirect
 	golang.org/x/mod v0.30.0 // indirect
-	golang.org/x/net v0.47.0 // indirect
-	golang.org/x/oauth2 v0.32.0 // indirect
+	golang.org/x/net v0.48.0 // indirect
+	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/telemetry v0.0.0-20251111182119-bc8e575c7b54 // indirect
-	golang.org/x/term v0.37.0 // indirect
-	golang.org/x/text v0.31.0 // indirect
+	golang.org/x/term v0.38.0 // indirect
+	golang.org/x/text v0.32.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
 	golang.org/x/tools v0.39.0 // indirect
 	gonum.org/v1/gonum v0.16.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20250826171959-ef028d996bc1 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251022142026-3a174f9686a8 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20251202230838-ff82c1b0f217 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/go-jose/go-jose.v2 v2.6.3 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.35.1 // indirect
-	k8s.io/cli-runtime v0.35.1 // indirect
-	k8s.io/cloud-provider v0.35.1 // indirect
-	k8s.io/cluster-bootstrap v0.35.1 // indirect
-	k8s.io/component-helpers v0.35.1 // indirect
+	gotest.tools/v3 v3.5.2 // indirect
+	k8s.io/apiextensions-apiserver v0.35.2 // indirect
+	k8s.io/cli-runtime v0.35.2 // indirect
+	k8s.io/cloud-provider v0.35.2 // indirect
+	k8s.io/cluster-bootstrap v0.35.2 // indirect
+	k8s.io/component-helpers v0.35.2 // indirect
 	k8s.io/controller-manager v0.35.0 // indirect
-	k8s.io/cri-client v0.35.1 // indirect
+	k8s.io/cri-client v0.35.2 // indirect
 	k8s.io/csi-translation-lib v0.0.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
 	k8s.io/externaljwt v1.32.0 // indirect
 	k8s.io/kms v0.27.10 // indirect
 	k8s.io/kube-aggregator v0.35.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
-	k8s.io/kube-proxy v0.35.1 // indirect
-	k8s.io/kubelet v0.35.1 // indirect
+	k8s.io/kube-proxy v0.35.2 // indirect
+	k8s.io/kubelet v0.35.2 // indirect
 	k8s.io/mount-utils v0.35.0 // indirect
 	k8s.io/pod-security-admission v0.0.0 // indirect
 	lukechampine.com/blake3 v1.4.1 // indirect
