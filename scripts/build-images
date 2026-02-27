@@ -28,7 +28,7 @@ xargs -n1 -t $PULL_CMD_CORE << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/klipper-lb:v0.4.14
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.6.7
-    ${REGISTRY}/rancher/nginx-ingress-controller:v1.14.3-hardened2
+    ${REGISTRY}/rancher/nginx-ingress-controller:v1.14.3-hardened3
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
     ${REGISTRY}/rancher/hardened-snapshot-controller:v8.4.0-build20260205
 EOF
