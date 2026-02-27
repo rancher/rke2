@@ -11,7 +11,6 @@ export COMBARCH='x86_64-amd64'
 RPM_VERSION="${VERSION}.testing.0"
 
 TMPDIR=$(mktemp -d -t)
-SCRIPT_LIST=$(mktemp "${TMPDIR}/XXXXXX")
 cleanup() {
     exit_code=$?
     trap - EXIT INT
@@ -21,8 +20,9 @@ cleanup() {
 }
 trap cleanup EXIT INT
 
-curl -L https://github.com/rancher/rke2-packaging/archive/master.tar.gz | tar --strip-components=1 -xzC "${TMPDIR}"
+git clone https://github.com/rancher/rke2-packaging.git "${TMPDIR}"
 
+SCRIPT_LIST=$(mktemp "${TMPDIR}/XXXXXX")
 export SRC_PATH="${TMPDIR}/source"
 DIST_PATH=$(realpath -mq ./dist/rpms)
 USER=$(whoami)
