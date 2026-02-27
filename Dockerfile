@@ -1,7 +1,7 @@
 ARG KUBERNETES_VERSION=dev
 
 # Base image for common build tools
-FROM rancher/hardened-build-base:v1.25.6b1 AS base
+FROM rancher/hardened-build-base:v1.25.7b1 AS base
 ARG BUILDARCH
 ENV ARCH $BUILDARCH
 RUN set -x && \
@@ -113,7 +113,7 @@ RUN rm -vf /charts/*.sh /charts/*.md /charts/chart_versions.yaml
 FROM rancher/hardened-containerd:v2.1.5-k3s1-build20260109 AS containerd
 FROM rancher/hardened-crictl:v1.35.0-build20251219 AS crictl
 FROM rancher/hardened-runc:v1.4.0-build20251210 AS runc
-FROM rancher/hardened-kubernetes:v1.35.1-rke2r1-build20260210 AS kubernetes
+FROM rancher/hardened-kubernetes:v1.35.2-rke2r1-build20260227 AS kubernetes
 
 FROM scratch AS runtime-collect
 COPY --from=runc \
