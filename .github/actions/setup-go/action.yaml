@@ -16,13 +16,13 @@ runs:
       # Key is ubuntu<MAJOR>, as there is not other linux os in GHA other than Ubuntu
       run: echo "ImageOS=ubuntu$(lsb_release -rs | cut -d. -f1)" >> $GITHUB_ENV
 
-    - uses: actions/setup-go@v5
+    - uses: actions/setup-go@v6
       if: inputs.go-version == ''
       with:
         go-version-file: 'go.mod'  # Just use whatever version is in the go.mod file
         cache: ${{ github.ref == 'refs/heads/master' }}
     
-    - uses: actions/setup-go@v5
+    - uses: actions/setup-go@v6
       if: inputs.go-version != ''
       with:
         go-version: ${{ inputs.go-version }}
