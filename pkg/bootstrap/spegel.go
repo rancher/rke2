@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-const registryWaitTime = time.Minute
+const registryWaitTime = time.Second * 15
 
 // isEmbeddedRegistryConfigured returns true if the embedded registry is enabled
 // and has at least one valid mirror configured.
