@@ -45,6 +45,12 @@ jobs:
       uses: docker/setup-buildx-action@v3
     - name: Install OS Packages
       run: sudo apt-get update && sudo apt-get install -y libarchive-tools g++-mingw-w64-x86-64 gcc-mingw-w64-x86-64
+    - name: "Read secrets"
+      if: github.event_name != 'pull_request' && github.repository == 'rancher/rke2'
+      uses: rancher-eio/read-vault-secrets@main
+      with:
+        secrets: |
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
     # Can only upload from a single path, so we need to copy the binary to the image directory
     # Additionally, we have a rke2-runtime.tar and a rke2-images.linux-amd64.tar.zst which are the same thing
     # just compressed. We remove the rke2-runtime.tar as its not used by the install script.
