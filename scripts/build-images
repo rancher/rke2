@@ -5,9 +5,13 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-./scripts/build-image-runtime
+if [ -z "$SKIP_BUILD_IMAGE_RUNTIME" ]; then
+    ./scripts/build-image-runtime
+fi
 
-awk '{print $1}' << EOF > build/images-core.txt
+BUILD_DIR=${BUILD_DIR:-build}
+
+awk '{print $1}' << EOF > $BUILD_DIR/images-core.txt
     ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}
 EOF
 
@@ -16,7 +20,12 @@ PULL_CMD="${PULL_CMD:-echo}"
 # When packaging images.txt, we use docker as rke2-runtime only exists locally
 PULL_CMD_CORE="${PULL_CMD_CORE:-docker image pull --quiet}"
 
-xargs -n1 -t $PULL_CMD_CORE << EOF >> build/images-core.txt
+INGRESS_NGINX_TAG=v1.14.3-hardened3
+if [ "${REGISTRY}" != "docker.io" ]; then
+    INGRESS_NGINX_TAG=v1.14.3-prime5
+fi
+
+xargs -n1 -t $PULL_CMD_CORE << EOF >> $BUILD_DIR/images-core.txt
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
     ${REGISTRY}/rancher/hardened-coredns:v1.14.1-build20260206
     ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.10.3-build20260206
@@ -27,23 +36,23 @@ xargs -n1 -t $PULL_CMD_CORE << EOF >> build/images-core.txt
     ${REGISTRY}/rancher/klipper-helm:${KLIPPERHELM_VERSION}
     ${REGISTRY}/rancher/klipper-lb:v0.4.14
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
-    ${REGISTRY}/rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.6.7
-    ${REGISTRY}/rancher/nginx-ingress-controller:v1.14.3-hardened3
+    ${REGISTRY}/rancher/kube-webhook-certgen:v1.6.7
+    ${REGISTRY}/rancher/nginx-ingress-controller:${INGRESS_NGINX_TAG}
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
     ${REGISTRY}/rancher/hardened-snapshot-controller:v8.4.0-build20260205
 EOF
 
-xargs -n1 -t $PULL_CMD << EOF > build/images-traefik.txt
+xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-traefik.txt
     ${REGISTRY}/rancher/hardened-traefik:v3.6.9-build20260226
 EOF
 
-xargs -n1 -t $PULL_CMD_CORE << EOF > build/images-canal.txt
+xargs -n1 -t $PULL_CMD_CORE << EOF > $BUILD_DIR/images-canal.txt
     ${REGISTRY}/rancher/hardened-calico:v3.31.3-build20260206
     ${REGISTRY}/rancher/hardened-flannel:v0.28.1-build20260206
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
-xargs -n1 -t $PULL_CMD << EOF > build/images-cilium.txt
+xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.3.2
     ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.19.1
     ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.35.9-1770979049-232ed4a26881e4ab4f766f251f258ed424fff663
@@ -57,7 +66,7 @@ xargs -n1 -t $PULL_CMD << EOF > build/images-cilium.txt
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.0-build20260206
 EOF
 
-xargs -n1 -t $PULL_CMD << EOF > build/images-calico.txt
+xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-calico.txt
     ${REGISTRY}/rancher/mirrored-calico-operator:v1.40.3
     ${REGISTRY}/rancher/mirrored-calico-ctl:v3.31.3
     ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.31.3
@@ -90,7 +99,7 @@ xargs -n1 -t $PULL_CMD << EOF > build/images-vsphere.txt
 EOF
 fi
 
-xargs -n1 -t $PULL_CMD << EOF > build/images-multus.txt
+xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-multus.txt
     ${REGISTRY}/rancher/hardened-multus-cni:v4.2.3-build20260206
     ${REGISTRY}/rancher/hardened-multus-thick:v4.2.3-build20260206
     ${REGISTRY}/rancher/hardened-multus-dynamic-networks-controller:v0.3.7-build20260207
@@ -99,7 +108,7 @@ xargs -n1 -t $PULL_CMD << EOF > build/images-multus.txt
     ${REGISTRY}/rancher/mirrored-library-busybox:1.36.1
 EOF
 
-xargs -n1 -t $PULL_CMD << EOF > build/images-harvester.txt
+xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-harvester.txt
     ${REGISTRY}/rancher/harvester-cloud-provider:v0.2.5
     ${REGISTRY}/rancher/mirrored-kube-vip-kube-vip-iptables:v0.9.2
     ${REGISTRY}/rancher/harvester-csi-driver:v0.2.4
@@ -110,10 +119,10 @@ xargs -n1 -t $PULL_CMD << EOF > build/images-harvester.txt
     ${REGISTRY}/rancher/mirrored-longhornio-csi-snapshotter:v8.3.0-20250709
 EOF
 
-xargs -n1 -t $PULL_CMD << EOF > build/images-flannel.txt
+xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-flannel.txt
     ${REGISTRY}/rancher/hardened-flannel:v0.28.1-build20260206
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.0-build20260206
 EOF
 fi
 # Continue to provide a legacy airgap archive set with the default CNI images
-cat build/images-core.txt build/images-canal.txt > build/images.txt
+cat $BUILD_DIR/images-core.txt $BUILD_DIR/images-canal.txt > $BUILD_DIR/images.txt

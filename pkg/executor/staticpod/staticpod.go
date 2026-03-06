@@ -62,6 +62,7 @@ type StaticPodConfig struct {
 	DisableETCD       bool
 	ExternalDatabase  bool
 	IsServer          bool
+	Prime             bool
 
 	apiServerReady <-chan struct{}
 	etcdReady      chan struct{}
@@ -103,6 +104,11 @@ func (s *StaticPodConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfi
 	// really only needs to know about the runtime and pause images, all of which are configured after the
 	// default registry has been set by the server.
 	if nodeConfig.AgentConfig.SystemDefaultRegistry != "" {
+		if err := s.Resolver.ParseAndSetDefaultRegistry(nodeConfig.AgentConfig.SystemDefaultRegistry); err != nil {
+			return err
+		}
+	} else if s.Prime && nodeConfig.AgentConfig.SystemDefaultRegistry == "" {
+		nodeConfig.AgentConfig.SystemDefaultRegistry = images.PrimeRegistry
 		if err := s.Resolver.ParseAndSetDefaultRegistry(nodeConfig.AgentConfig.SystemDefaultRegistry); err != nil {
 			return err
 		}
@@ -658,7 +664,7 @@ func (s *StaticPodConfig) stageData(ctx context.Context, nodeConfig *daemonconfi
 		return err
 	}
 	if s.IsServer {
-		return bootstrap.UpdateManifests(s.Resolver, s.IngressController, nodeConfig, cfg)
+		return bootstrap.UpdateManifests(s.Resolver, s.IngressController, nodeConfig, cfg, s.Prime)
 	}
 	return nil
 }
