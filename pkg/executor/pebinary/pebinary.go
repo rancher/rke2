@@ -63,6 +63,7 @@ type PEBinaryConfig struct {
 	CISMode             bool
 	DisableETCD         bool
 	IsServer            bool
+	Prime               bool
 
 	apiServerReady <-chan struct{}
 	criReady       chan struct{}
@@ -100,6 +101,11 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 	// really only needs to know about the runtime and pause images, all of which are configured after the
 	// default registry has been set by the server.
 	if nodeConfig.AgentConfig.SystemDefaultRegistry != "" {
+		if err := p.Resolver.ParseAndSetDefaultRegistry(nodeConfig.AgentConfig.SystemDefaultRegistry); err != nil {
+			return err
+		}
+	} else if p.Prime && nodeConfig.AgentConfig.SystemDefaultRegistry == "" {
+		nodeConfig.AgentConfig.SystemDefaultRegistry = images.PrimeRegistry
 		if err := p.Resolver.ParseAndSetDefaultRegistry(nodeConfig.AgentConfig.SystemDefaultRegistry); err != nil {
 			return err
 		}
@@ -442,7 +448,7 @@ func (p *PEBinaryConfig) stageData(ctx context.Context, nodeConfig *config.Node,
 		return err
 	}
 	if p.IsServer {
-		return bootstrap.UpdateManifests(p.Resolver, p.IngressController, nodeConfig, cfg)
+		return bootstrap.UpdateManifests(p.Resolver, p.IngressController, nodeConfig, cfg, p.Prime)
 	}
 	return nil
 }

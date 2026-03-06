@@ -86,6 +86,9 @@ func (config *TestConfig) ProvisionRegistries() error {
 		"quay.io",
 		"ghcr.io",
 	}
+	if os.Getenv("PRIME_REGISTRY") != "" {
+		registries = append(registries, os.Getenv("PRIME_REGISTRY"))
+	}
 	image := "docker.io/library/registry:3.0"
 	registriesPath := filepath.Join(config.TestDir, "test_registries.yaml")
 	hostport := 5000
