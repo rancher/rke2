@@ -5,10 +5,10 @@ charts:
   - version: v3.31.3-build2026020600
     filename: /charts/rke2-canal.yaml
     bootstrap: true
-  - version: v3.31.300
+  - version: v3.31.400
     filename: /charts/rke2-calico.yaml
     bootstrap: true
-  - version: v3.31.300
+  - version: v3.31.400
     filename: /charts/rke2-calico-crd.yaml
     bootstrap: true
   - version: 1.45.201
