@@ -113,6 +113,7 @@ check_airgap() {
     chart_version=$1
     chart_name=$2
     chart_tmp=$3
+    image_list_dir=$4
 
     yaml_tmp=$(mktemp --suffix .yaml)
     values="vCenter.clusterId=test-id,global.clusterDNS=10.43.0.10\,2001:cafe:43::a,rke2-whereabouts.enabled=true"
@@ -138,7 +139,7 @@ check_airgap() {
     ' $yaml_tmp | \
     while read image
     do
-        if ! grep -q $image scripts/build-images; then
+        if ! grep -q $image $image_list_dir/images*.txt; then
             echo $image
         fi
     done
@@ -149,6 +150,10 @@ check_airgap() {
 
 declare -A NO_SYSTEM_REGISTRY
 declare -A NOT_FOUND
+
+# Produce image lists
+IMAGE_LIST_DIR=$(mktemp -d)
+BUILD_DIR=$IMAGE_LIST_DIR PULL_CMD_CORE="echo" SKIP_BUILD_IMAGE_RUNTIME=1 scripts/build-images
 
 while read version filename bootstrap; do    
     if [ "$version" == "0.0.0" ]; then
@@ -165,7 +170,7 @@ while read version filename bootstrap; do
         NO_SYSTEM_REGISTRY[$chart_name]=$no_system_registry
     fi
 
-    not_found=$(check_airgap $version $chart_name $chart_tmp)
+    not_found=$(check_airgap $version $chart_name $chart_tmp $IMAGE_LIST_DIR)
     if ! [ -z "$not_found" ]; then 
         NOT_FOUND[$chart_name]=$not_found
     fi
