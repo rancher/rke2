@@ -27,9 +27,12 @@ var (
 		Destination: &config.CNI,
 	}
 	IngressControllerFlag = &cli.StringSliceFlag{
-		Name:        "ingress-controller",
-		Usage:       "(networking) Ingress Controllers to deploy, one of none, " + strings.Join(rke2cli.IngressItems, ", ") + "; the first value will be set as the default ingress class",
-		EnvVars:     []string{"RKE_INGRESS_CONTROLLER"},
+		Name:  "ingress-controller",
+		Usage: "(networking) Ingress Controllers to deploy, one of none, " + strings.Join(rke2cli.IngressItems, ", ") + "; the first value will be set as the default ingress class",
+		// TODO: In v1.36, add warning about RKE_INGRESS_CONTROLLER deprecation
+		// In v1.37, add fatal error if RKE_INGRESS_CONTROLLER is used
+		// In v1.38, remove RKE_INGRESS_CONTROLLER entirely
+		EnvVars:     []string{"RKE2_INGRESS_CONTROLLER", "RKE_INGRESS_CONTROLLER"},
 		Value:       cli.NewStringSlice("ingress-nginx"),
 		Destination: &config.IngressController,
 	}
@@ -38,11 +41,18 @@ var (
 		Usage:   "(components) Enable rke2 default cloud controller manager's service controller",
 		EnvVars: []string{"RKE2_ENABLE_SERVICELB"},
 	}
+	PrimeFlag = &cli.BoolFlag{
+		Name:    "prime",
+		Usage:   "Configures RKE2 to utilize the Rancher Prime Registry and features",
+		Hidden:  true,
+		EnvVars: []string{"RKE2_PRIME"},
+	}
 
 	serverFlag = []cli.Flag{
 		CNIFlag,
 		IngressControllerFlag,
 		ServiceLBFlag,
+		PrimeFlag,
 	}
 
 	k3sServerBase = mustCmdFromK3S(cmds.NewServerCommand(ServerRun), K3SFlagSet{

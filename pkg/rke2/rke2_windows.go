@@ -27,7 +27,11 @@ import (
 func initExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) (executor.Executor, error) {
 	// This flag will only be set on servers, on agents this is a no-op and the
 	// resolver's default registry will get updated later when bootstrapping
-	cfg.Images.SystemDefaultRegistry = clx.String("system-default-registry")
+	if !clx.IsSet("system-default-registry") && clx.Bool("prime") {
+		cfg.Images.SystemDefaultRegistry = images.PrimeRegistry
+	} else {
+		cfg.Images.SystemDefaultRegistry = clx.String("system-default-registry")
+	}
 	resolver, err := images.NewResolver(cfg.Images)
 	if err != nil {
 		return nil, err
@@ -100,6 +104,7 @@ func initExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) (executor
 		KubeletPath:       cfg.KubeletPath,
 		DisableETCD:       clx.Bool("disable-etcd"),
 		IsServer:          isServer,
+		Prime:             clx.Bool("prime"),
 		IngressController: ingressControllerName,
 		CNIName:           "",
 	}, nil
