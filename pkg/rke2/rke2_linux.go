@@ -24,6 +24,7 @@ import (
 	rke2cli "github.com/rancher/rke2/pkg/cli"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/executor/staticpod"
+	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/podtemplate"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -32,7 +33,11 @@ import (
 func initExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) (executor.Executor, error) {
 	// This flag will only be set on servers, on agents this is a no-op and the
 	// resolver's default registry will get updated later when bootstrapping
-	cfg.Images.SystemDefaultRegistry = clx.String("system-default-registry")
+	if !clx.IsSet("system-default-registry") && clx.Bool("prime") {
+		cfg.Images.SystemDefaultRegistry = images.PrimeRegistry
+	} else {
+		cfg.Images.SystemDefaultRegistry = clx.String("system-default-registry")
+	}
 
 	dataDir := clx.String("data-dir")
 	if err := defaults.Set(clx, dataDir); err != nil {
@@ -185,6 +190,7 @@ func initStaticPodExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) 
 		DisableETCD:       clx.Bool("disable-etcd"),
 		ExternalDatabase:  externalDatabase,
 		IsServer:          isServer,
+		Prime:             clx.Bool("prime"),
 		IngressController: ingressControllerName,
 	}, nil
 }
