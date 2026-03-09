@@ -27,6 +27,7 @@ const (
 // These defaults are overridden at build time and do not need to be updated here
 var (
 	DefaultRegistry                    = name.DefaultRegistry
+	PrimeRegistry                      = ""
 	DefaultEtcdImage                   = "rancher/hardened-etcd"
 	DefaultKubernetesImage             = "rancher/hardened-kubernetes"
 	DefaultPauseImage                  = "rancher/mirrored-pause"
