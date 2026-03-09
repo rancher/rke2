@@ -42,7 +42,7 @@ jobs:
       with:
         go-version: ${{ steps.go-finder.outputs.VERSION_GOLANG }}
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4
     - name: Install OS Packages
       run: sudo apt-get update && sudo apt-get install -y libarchive-tools g++-mingw-w64-x86-64 gcc-mingw-w64-x86-64
     - name: "Read secrets"
