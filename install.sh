@@ -663,6 +663,25 @@ do_install_tar() {
     if [ -z "${INSTALL_RKE2_SKIP_RELOAD}" ]; then
         systemctl daemon-reload
     fi
+
+    # if rke2-selinux is installed, restorecon the systemd units and other relevant files
+    # since they will have wrong contexts after being installed with the tarball method
+    if command -v rpm >/dev/null 2>&1; then
+        if rpm -q --quiet rke2-selinux; then
+            info "applying correct SELinux contexts to RKE2 files"
+            restorecon -RT 0 -i /etc/systemd/system/rke2*
+            restorecon -RT 0 -i /usr/local/lib/systemd/system/rke2*
+            restorecon -RT 0 -i /usr/lib/systemd/system/rke2*
+            restorecon -RT 0 /var/lib/cni
+            restorecon -RT 0 /opt/cni
+            restorecon -RT 0 /etc/cni
+            restorecon -RT 0 /var/lib/kubelet
+            restorecon -RT 0 /var/lib/rancher/rke2
+            restorecon -RT 0 /var/run/k3s
+            restorecon -RT 0 /var/run/flannel
+        fi
+    fi
+    
 }
 
 setup_fapolicy_rules() {
