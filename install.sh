@@ -67,6 +67,10 @@ fi
 #   - INSTALL_RKE2_SKIP_FAPOLICY
 #     If set, the install script will skip adding fapolicy rules
 #     Default is not set.
+#
+#   - INSTALL_RKE2_SKIP_RESTORECON
+#     If set, the install script will skip the resorecon for selinux.
+#     Default is not set.
 
 
 # info logs the given argument at info log level.
@@ -662,6 +666,30 @@ do_install_tar() {
 
     if [ -z "${INSTALL_RKE2_SKIP_RELOAD}" ]; then
         systemctl daemon-reload
+    fi
+
+    if [ -z "${INSTALL_RKE2_SKIP_RESTORECON}" ]; then
+        do_restorecon_tar
+    fi
+}
+
+# if rke2-selinux is installed, restorecon the systemd units and the rke2 folders that have the bin
+# since they will have wrong contexts after being installed with the tarball method
+do_restorecon_tar() {
+    if command -v rpm >/dev/null 2>&1; then
+        if rpm -q --quiet rke2-selinux; then
+            info "applying correct SELinux contexts to RKE2 files"
+
+            # this is for the .service files
+            restorecon -RT 0 -i /etc/systemd/system/rke2*
+            restorecon -RT 0 -i /usr/local/lib/systemd/system/rke2*
+            restorecon -RT 0 -i /usr/lib/systemd/system/rke2*
+
+            # this one is for the bin
+            restorecon -RT 0 -i /opt/rke2
+            restorecon -RT 0 -i /usr/local/bin/rke2*
+            restorecon -RT 0 -i /usr/bin/rke2*
+        fi
     fi
 }
 
