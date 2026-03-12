@@ -34,7 +34,7 @@ xargs -n1 -t $PULL_CMD_CORE << EOF >> $BUILD_DIR/images-core.txt
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.8.1-build20260206
     ${REGISTRY}/rancher/hardened-addon-resizer:1.8.23-build20260206
     ${REGISTRY}/rancher/klipper-helm:${KLIPPERHELM_VERSION}
-    ${REGISTRY}/rancher/klipper-lb:v0.4.14
+    ${REGISTRY}/rancher/klipper-lb:v0.4.15
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/kube-webhook-certgen:v1.6.8
     ${REGISTRY}/rancher/nginx-ingress-controller:${INGRESS_NGINX_TAG}
