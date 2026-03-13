@@ -613,7 +613,7 @@ func (s *StaticPodConfig) writeTemplate(spec *podtemplate.Spec) error {
 	}
 	files, err := podtemplate.ReadFiles(spec.Args, spec.ExcludeFiles)
 	if err != nil {
-		return err
+		return pkgerrors.WithMessagef(err, "failed to read files for pod %s", spec.Command)
 	}
 
 	// TODO Check to make sure we aren't double mounting directories and the files in those directories
@@ -621,7 +621,7 @@ func (s *StaticPodConfig) writeTemplate(spec *podtemplate.Spec) error {
 	spec.Files = append(spec.Files, files...)
 	pod, err := podtemplate.Pod(spec)
 	if err != nil {
-		return err
+		return pkgerrors.WithMessagef(err, "failed to generate pod template for %s", spec.Command)
 	}
 
 	manifestPath := filepath.Join(s.ManifestsDir, spec.Command+".yaml")
