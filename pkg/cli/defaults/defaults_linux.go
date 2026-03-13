@@ -6,7 +6,7 @@ package defaults
 import (
 	"os"
 
-	pkgerrors "github.com/pkg/errors"
+	"github.com/k3s-io/k3s/pkg/util/errors"
 )
 
 func createDataDir(dataDir string, perm os.FileMode) error {
@@ -15,7 +15,7 @@ func createDataDir(dataDir string, perm os.FileMode) error {
 	}
 
 	if err := os.MkdirAll(dataDir, perm); err != nil {
-		return pkgerrors.WithMessagef(err, "failed to create directory %s", dataDir)
+		return errors.WithMessagef(err, "failed to create directory %s", dataDir)
 	}
 	return nil
 }

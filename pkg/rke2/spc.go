@@ -9,8 +9,8 @@ import (
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/util"
+	"github.com/k3s-io/k3s/pkg/util/errors"
 	"github.com/k3s-io/k3s/pkg/version"
-	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/executor/staticpod"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -82,7 +82,7 @@ func cleanupStaticPods(dataDir string) error {
 	for _, component := range components {
 		manifestName := filepath.Join(manifestDir, component+".yaml")
 		if err := os.RemoveAll(manifestName); err != nil {
-			return pkgerrors.WithMessagef(err, "unable to delete %s manifest", component)
+			return errors.WithMessagef(err, "unable to delete %s manifest", component)
 		}
 	}
 	return nil

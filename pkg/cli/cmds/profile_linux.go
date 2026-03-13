@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	pkgerrors "github.com/pkg/errors"
+	"github.com/k3s-io/k3s/pkg/util/errors"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -91,10 +91,10 @@ func validateETCDReqs(role CLIRole) error {
 	// etcd user only needs to exist on servers
 	if role == Server {
 		if _, err := user.Lookup("etcd"); err != nil {
-			ce = append(ce, pkgerrors.WithMessage(err, "missing required"))
+			ce = append(ce, errors.WithMessage(err, "missing required"))
 		}
 		if _, err := user.LookupGroup("etcd"); err != nil {
-			ce = append(ce, pkgerrors.WithMessage(err, "missing required"))
+			ce = append(ce, errors.WithMessage(err, "missing required"))
 		}
 	}
 	if len(ce) != 0 {
