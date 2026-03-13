@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/k3s-io/k3s/pkg/util/errors"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -51,7 +52,7 @@ func Pod(spec *Spec) (*v1.Pod, error) {
 
 	filehash, err := hashFiles(spec.Files)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithMessagef(err, "failed to hash files for pod %s", spec.Command)
 	}
 
 	p := &v1.Pod{
@@ -103,7 +104,7 @@ func Pod(spec *Spec) (*v1.Pod, error) {
 
 	if spec.CPURequest != "" {
 		if cpuRequest, err := resource.ParseQuantity(spec.CPURequest); err != nil {
-			logrus.Errorf("error parsing cpu request for static pod %s: %v", spec.Command, err)
+			logrus.Errorf("error parsing cpu request for pod %s: %v", spec.Command, err)
 		} else {
 			p.Spec.Containers[0].Resources.Requests[v1.ResourceCPU] = cpuRequest
 		}
@@ -111,7 +112,7 @@ func Pod(spec *Spec) (*v1.Pod, error) {
 
 	if spec.CPULimit != "" {
 		if cpuLimit, err := resource.ParseQuantity(spec.CPULimit); err != nil {
-			logrus.Errorf("error parsing cpu limit for static pod %s: %v", spec.Command, err)
+			logrus.Errorf("error parsing cpu limit for pod %s: %v", spec.Command, err)
 		} else {
 			p.Spec.Containers[0].Resources.Limits[v1.ResourceCPU] = cpuLimit
 		}
@@ -119,7 +120,7 @@ func Pod(spec *Spec) (*v1.Pod, error) {
 
 	if spec.MemoryRequest != "" {
 		if memoryRequest, err := resource.ParseQuantity(spec.MemoryRequest); err != nil {
-			logrus.Errorf("error parsing memory request for static pod %s: %v", spec.Command, err)
+			logrus.Errorf("error parsing memory request for pod %s: %v", spec.Command, err)
 		} else {
 			p.Spec.Containers[0].Resources.Requests[v1.ResourceMemory] = memoryRequest
 		}
@@ -127,7 +128,7 @@ func Pod(spec *Spec) (*v1.Pod, error) {
 
 	if spec.MemoryLimit != "" {
 		if memoryLimit, err := resource.ParseQuantity(spec.MemoryLimit); err != nil {
-			logrus.Errorf("error parsing memory limit for static pod %s: %v", spec.Command, err)
+			logrus.Errorf("error parsing memory limit for pod %s: %v", spec.Command, err)
 		} else {
 			p.Spec.Containers[0].Resources.Limits[v1.ResourceMemory] = memoryLimit
 		}
