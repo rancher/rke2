@@ -120,8 +120,8 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-harvester.txt
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-flannel.txt
-    ${REGISTRY}/rancher/hardened-flannel:v0.28.1-build20260206
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.0-build20260206
+    ${REGISTRY}/rancher/hardened-flannel:v0.28.1-build20260313
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.0-build20260309
 EOF
 fi
 # Continue to provide a legacy airgap archive set with the default CNI images
