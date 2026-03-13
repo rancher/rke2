@@ -6,7 +6,6 @@ package rke2
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -19,8 +18,8 @@ import (
 	"github.com/k3s-io/k3s/pkg/cluster/managed"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/etcd"
+	"github.com/k3s-io/k3s/pkg/util/errors"
 	"github.com/k3s-io/kine/pkg/util"
-	pkgerrors "github.com/pkg/errors"
 	rke2cli "github.com/rancher/rke2/pkg/cli"
 	"github.com/rancher/rke2/pkg/cli/defaults"
 	"github.com/rancher/rke2/pkg/executor/staticpod"
@@ -146,7 +145,7 @@ func initStaticPodExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) 
 
 	templateConfig, err := podtemplate.NewConfigFromCLI(dataDir, cfg)
 	if err != nil {
-		return nil, pkgerrors.WithMessage(err, "failed to parse pod template config")
+		return nil, errors.WithMessage(err, "failed to parse pod template config")
 	}
 
 	// Adding PSAs
