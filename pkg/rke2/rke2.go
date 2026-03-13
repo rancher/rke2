@@ -14,7 +14,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/server"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	rawServer "github.com/k3s-io/k3s/pkg/server"
-	pkgerrors "github.com/pkg/errors"
+	"github.com/k3s-io/k3s/pkg/util/errors"
 	rke2cli "github.com/rancher/rke2/pkg/cli"
 	"github.com/rancher/rke2/pkg/controllers"
 	"github.com/rancher/rke2/pkg/controllers/cisnetworkpolicy"
@@ -103,7 +103,7 @@ func setup(clx *cli.Context, cfg rke2cli.Config, isServer bool) (controllers.Ser
 
 	ex, err := initExecutor(clx, cfg, isServer)
 	if err != nil {
-		return nil, pkgerrors.Wrap(err, "failed to initialize executor")
+		return nil, errors.WithMessage(err, "failed to initialize executor")
 	}
 	executor.Set(ex)
 
