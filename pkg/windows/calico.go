@@ -16,8 +16,8 @@ import (
 	"github.com/Microsoft/hcsshim"
 	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
+	"github.com/k3s-io/k3s/pkg/util/errors"
 	"github.com/k3s-io/k3s/pkg/version"
-	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/logging"
 	"github.com/sirupsen/logrus"
 	opv1 "github.com/tigera/operator/api/v1"
@@ -252,7 +252,7 @@ func (c *Calico) createKubeConfigAndClient(ctx context.Context, restConfig *rest
 	serviceAccounts := client.CoreV1().ServiceAccounts(CalicoSystemNamespace)
 	token, err := serviceAccounts.CreateToken(ctx, calicoNode, &req, metav1.CreateOptions{})
 	if err != nil {
-		return nil, nil, pkgerrors.WithMessagef(err, "failed to create token for service account (%s/%s)", CalicoSystemNamespace, calicoNode)
+		return nil, nil, errors.WithMessagef(err, "failed to create token for service account (%s/%s)", CalicoSystemNamespace, calicoNode)
 	}
 
 	calicoKubeConfig.Token = token.Status.Token
@@ -304,11 +304,11 @@ func (c *Calico) Start(ctx context.Context) error {
 func (c *Calico) generateCalicoNetworks() error {
 	nodeRebooted, err := c.isNodeRebooted()
 	if err != nil {
-		return pkgerrors.WithMessagef(err, "failed to check last node reboot time")
+		return errors.WithMessagef(err, "failed to check last node reboot time")
 	}
 	if nodeRebooted {
 		if err = deleteAllNetworks(); err != nil {
-			return pkgerrors.WithMessagef(err, "failed to delete all networks before bootstrapping calico")
+			return errors.WithMessagef(err, "failed to delete all networks before bootstrapping calico")
 		}
 	}
 
