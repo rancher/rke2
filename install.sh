@@ -458,12 +458,20 @@ install_airgap_tarball() {
         gzip -dc "${TMP_AIRGAP_TARBALL}" > "${INSTALL_RKE2_AGENT_IMAGES_DIR}/rke2-images.${SUFFIX}.tar"
     fi
     # Search for and install additional rke2 images
-    for IMAGE in "${INSTALL_RKE2_ARTIFACT_PATH}"/rke2-images-*."${SUFFIX}"*; do 
-        if [ -f "${IMAGE}" ]; then
+    shopt -s nullglob
+
+    ADDITIONAL_IMAGES=( "${INSTALL_RKE2_ARTIFACT_PATH}"/rke2-images-*."${SUFFIX}"* )
+
+    if [ "${#ADDITIONAL_IMAGES[@]}" -eq 0 ]; then
+        info "No additional airgap images found in ${INSTALL_RKE2_ARTIFACT_PATH}"
+    else
+        for IMAGE in "${ADDITIONAL_IMAGES[@]}"; do
             info "Installing airgap image from ${IMAGE}"
-            cp "${IMAGE}" "${INSTALL_RKE2_AGENT_IMAGES_DIR}"
-        fi
-    done
+            cp -v "${IMAGE}" "${INSTALL_RKE2_AGENT_IMAGES_DIR}" || fatal "additional image installation failed for ${IMAGE}"
+        done
+    fi
+
+    shopt -u nullglob
 }
 
 # install_dev_rpm orchestrates the installation of RKE2 unsigned development rpms
