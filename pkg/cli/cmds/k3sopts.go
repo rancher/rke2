@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	pkgerrors "github.com/pkg/errors"
+	"github.com/k3s-io/k3s/pkg/util/errors"
 	"github.com/rancher/wrangler/v3/pkg/merr"
 	"github.com/urfave/cli/v2"
 )
@@ -38,7 +38,7 @@ func (k K3SFlagSet) CopyInto(d K3SFlagSet) {
 func mustCmdFromK3S(cmd *cli.Command, flagOpts K3SFlagSet) *cli.Command {
 	cmd, err := commandFromK3S(cmd, flagOpts)
 	if err != nil {
-		panic(pkgerrors.WithMessagef(err, "failed to wrap command %q", cmd.Name))
+		panic(errors.WithMessagef(err, "failed to wrap command %q", cmd.Name))
 	}
 	return cmd
 }
