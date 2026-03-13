@@ -53,7 +53,7 @@ jobs:
         uses: ./.github/actions/setup-go
       
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       
       - name: Build RKE2 image lists
         run: |
