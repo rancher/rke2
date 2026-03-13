@@ -9,7 +9,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/fs"
 	"io/ioutil"
@@ -31,7 +30,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/signals"
 	"github.com/k3s-io/k3s/pkg/util"
-	pkgerrors "github.com/pkg/errors"
+	"github.com/k3s-io/k3s/pkg/util/errors"
 	"github.com/rancher/rke2/pkg/auth"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
@@ -561,7 +560,7 @@ func (s *StaticPodConfig) stopEtcd() error {
 	ctx := context.Background()
 	conn, err := cri.Connection(ctx, s.RuntimeEndpoint)
 	if err != nil {
-		return pkgerrors.WithMessage(err, "failed to connect to cri")
+		return errors.WithMessage(err, "failed to connect to cri")
 	}
 	cRuntime := runtimeapi.NewRuntimeServiceClient(conn)
 	defer conn.Close()
@@ -575,7 +574,7 @@ func (s *StaticPodConfig) stopEtcd() error {
 	}
 	resp, err := cRuntime.ListPodSandbox(ctx, &runtimeapi.ListPodSandboxRequest{Filter: filter})
 	if err != nil {
-		return pkgerrors.WithMessage(err, "failed to list pods")
+		return errors.WithMessage(err, "failed to list pods")
 	}
 
 	for _, pod := range resp.Items {
@@ -583,7 +582,7 @@ func (s *StaticPodConfig) stopEtcd() error {
 			continue
 		}
 		if _, err := cRuntime.RemovePodSandbox(ctx, &runtimeapi.RemovePodSandboxRequest{PodSandboxId: pod.Id}); err != nil {
-			return pkgerrors.WithMessage(err, "failed to terminate pod")
+			return errors.WithMessage(err, "failed to terminate pod")
 		}
 	}
 
@@ -595,7 +594,7 @@ func (s *StaticPodConfig) stopEtcd() error {
 func (s *StaticPodConfig) removeTemplate(command string) error {
 	manifestPath := filepath.Join(s.ManifestsDir, command+".yaml")
 	if err := os.Remove(manifestPath); err != nil && !errors.Is(err, os.ErrNotExist) {
-		return pkgerrors.WithMessagef(err, "failed to remove %s static pod manifest", command)
+		return errors.WithMessagef(err, "failed to remove %s static pod manifest", command)
 	}
 	logrus.Infof("Removed %s static pod manifest", command)
 	return nil
@@ -622,7 +621,7 @@ func (s *StaticPodConfig) writeTemplate(spec *podtemplate.Spec) error {
 	}
 	files, err := podtemplate.ReadFiles(spec.Args, spec.ExcludeFiles)
 	if err != nil {
-		return pkgerrors.WithMessagef(err, "failed to read files for pod %s", spec.Command)
+		return errors.WithMessagef(err, "failed to read files for pod %s", spec.Command)
 	}
 
 	// TODO Check to make sure we aren't double mounting directories and the files in those directories
@@ -630,7 +629,7 @@ func (s *StaticPodConfig) writeTemplate(spec *podtemplate.Spec) error {
 	spec.Files = append(spec.Files, files...)
 	pod, err := podtemplate.Pod(spec)
 	if err != nil {
-		return pkgerrors.WithMessagef(err, "failed to generate pod template for %s", spec.Command)
+		return errors.WithMessagef(err, "failed to generate pod template for %s", spec.Command)
 	}
 
 	manifestPath := filepath.Join(s.ManifestsDir, spec.Command+".yaml")

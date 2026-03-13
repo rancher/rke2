@@ -2,7 +2,6 @@ package staticpod
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -13,7 +12,7 @@ import (
 
 	"github.com/k3s-io/k3s/pkg/agent/cri"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
-	pkgerrors "github.com/pkg/errors"
+	"github.com/k3s-io/k3s/pkg/util/errors"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -62,7 +61,7 @@ func RemoveDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems 
 		for _, component := range terminatePods {
 			manifestName := filepath.Join(manifestDir, component+".yaml")
 			if err := os.RemoveAll(manifestName); err != nil {
-				return pkgerrors.WithMessagef(err, "unable to delete %s manifest", component)
+				return errors.WithMessagef(err, "unable to delete %s manifest", component)
 			}
 		}
 
@@ -83,7 +82,7 @@ func RemoveDisabledPods(dataDir, containerRuntimeEndpoint string, disabledItems 
 			select {
 			case err := <-containerdErr:
 				if err != nil {
-					return pkgerrors.WithMessage(err, "temporary containerd process exited unexpectedly")
+					return errors.WithMessage(err, "temporary containerd process exited unexpectedly")
 				}
 			case <-ctx.Done():
 				return errors.New("static pod cleanup timed out")
