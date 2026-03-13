@@ -2,14 +2,13 @@ package staticpod
 
 import (
 	"context"
-	"errors"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/k3s-io/k3s/pkg/agent/config"
 	"github.com/k3s-io/k3s/pkg/agent/cri"
-	pkgerrors "github.com/pkg/errors"
+	"github.com/k3s-io/k3s/pkg/util/errors"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -91,7 +90,7 @@ func reconcileStaticPods(ctx context.Context, containerRuntimeEndpoint, dataDir 
 func checkManifestDeployed(ctx context.Context, cRuntime runtimeapi.RuntimeServiceClient, manifestFile string) error {
 	f, err := os.Open(manifestFile)
 	if err != nil {
-		return pkgerrors.WithMessage(err, "failed to open manifest")
+		return errors.WithMessage(err, "failed to open manifest")
 	}
 	defer f.Close()
 
@@ -99,7 +98,7 @@ func checkManifestDeployed(ctx context.Context, cRuntime runtimeapi.RuntimeServi
 	decoder := yaml.NewYAMLToJSONDecoder(f)
 	err = decoder.Decode(pod)
 	if err != nil {
-		return pkgerrors.WithMessage(err, "failed to decode manifest")
+		return errors.WithMessage(err, "failed to decode manifest")
 	}
 
 	filter := &runtimeapi.PodSandboxFilter{
@@ -111,7 +110,7 @@ func checkManifestDeployed(ctx context.Context, cRuntime runtimeapi.RuntimeServi
 	}
 	resp, err := cRuntime.ListPodSandbox(ctx, &runtimeapi.ListPodSandboxRequest{Filter: filter})
 	if err != nil {
-		return pkgerrors.WithMessage(err, "failed to list pod sandboxes")
+		return errors.WithMessage(err, "failed to list pod sandboxes")
 	}
 
 	podStatus := &kubecontainer.PodStatus{
@@ -134,7 +133,7 @@ func checkManifestDeployed(ctx context.Context, cRuntime runtimeapi.RuntimeServi
 			continue
 		}
 		if err != nil {
-			return pkgerrors.WithMessage(err, "failed to get pod sandbox status")
+			return errors.WithMessage(err, "failed to get pod sandbox status")
 		}
 		podStatus.SandboxStatuses = append(podStatus.SandboxStatuses, statusResp.Status)
 		// only get pod IP from the latest sandbox

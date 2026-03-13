@@ -6,7 +6,6 @@ package windows
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -17,8 +16,8 @@ import (
 
 	"github.com/Microsoft/hcsshim"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
+	"github.com/k3s-io/k3s/pkg/util/errors"
 	"github.com/k3s-io/k3s/pkg/version"
-	pkgerrors "github.com/pkg/errors"
 	"github.com/rancher/rke2/pkg/logging"
 	"github.com/sirupsen/logrus"
 	authv1 "k8s.io/api/authentication/v1"
@@ -253,7 +252,7 @@ func (f *Flannel) createKubeConfigAndClient(ctx context.Context, restConfig *res
 	serviceAccounts := client.CoreV1().ServiceAccounts("kube-system")
 	token, err := serviceAccounts.CreateToken(ctx, "flannel", &req, metav1.CreateOptions{})
 	if err != nil {
-		return nil, nil, pkgerrors.WithMessagef(err, "failed to create token for service account (kube-system/flannel)")
+		return nil, nil, errors.WithMessagef(err, "failed to create token for service account (kube-system/flannel)")
 	}
 
 	flannelKubeConfig.Token = token.Status.Token
