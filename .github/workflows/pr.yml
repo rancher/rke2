@@ -30,7 +30,7 @@ jobs:
         ls -la ~/rke2-logs
     - name: Upload Logs on Failure
       if: ${{ failure() }}
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: rke2-test-logs
         path: ~/rke2-logs/
