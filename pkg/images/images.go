@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
-	pkgerrors "github.com/pkg/errors"
+	"github.com/k3s-io/k3s/pkg/util/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -87,7 +87,7 @@ func NewResolver(c ImageOverrideConfig) (*Resolver, error) {
 	}
 	for _, s := range config {
 		if err := r.ParseAndSetOverride(s.i, s.n); err != nil {
-			return nil, pkgerrors.WithMessagef(err, "failed to parse %s", s.i)
+			return nil, errors.WithMessagef(err, "failed to parse %s", s.i)
 		}
 	}
 
@@ -95,7 +95,7 @@ func NewResolver(c ImageOverrideConfig) (*Resolver, error) {
 	if c.SystemDefaultRegistry != "" {
 		err := r.ParseAndSetDefaultRegistry(c.SystemDefaultRegistry)
 		if err != nil {
-			return nil, pkgerrors.WithMessage(err, "failed to parse system-default-registry")
+			return nil, errors.WithMessage(err, "failed to parse system-default-registry")
 		}
 	}
 	return &r, nil
