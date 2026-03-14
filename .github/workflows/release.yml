@@ -437,7 +437,7 @@ jobs:
           fi
 
       - name: Log in to staging registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         if: ${{ contains(github.ref_name, '-rc') }}
         with:
           registry: ${{ env.PRIME_STAGING_REGISTRY }}
@@ -445,7 +445,7 @@ jobs:
           password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
       - name: Log in to prime registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         if: ${{ !contains(github.ref_name, '-rc') }}
         with:
           registry: ${{ env.PRIME_REGISTRY }}
