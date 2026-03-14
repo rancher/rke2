@@ -39,6 +39,10 @@ build-windows-images:                     ## Build only the Windows images and t
 build-image-runtime:                      ## Build the runtime image
 	./scripts/build-image-runtime
 
+.PHONY: build-local-test-image
+build-local-test-image:                   ## Build a local runnable rke2 test image (default: rancher/rke2-test:<version>)
+	./scripts/build-local-test-image
+
 .PHONY: publish-image-runtime
 publish-image-runtime:
 	./scripts/publish-image-runtime
