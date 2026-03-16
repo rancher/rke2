@@ -20,17 +20,29 @@ Vagrant.configure("2") do |config|
   external_env = ""
   ENV.select{|k,v| k.start_with?('RKE2_') || k.start_with?('INSTALL_RKE2_')}.each {|key,value| external_env << "#{key.to_s}=#{value.to_s}"}
 
-  config.vm.define "install-alma-10", primary: true do |test|
+  config.vm.define "install-alma-10-with-selinux-tar", primary: true do |test|
     test.vm.hostname = 'smoke'
-    test.vm.provision "add-bin-path", type: "shell", inline: "echo \"export PATH=/usr/local/bin:\$PATH\" >> ~/.bashrc"
+    test.vm.provision "enable-selinux", type: "shell", inline: "setenforce 1"
     test.vm.provision "install-depedencies", type: "shell", inline: "dnf install -y kernel-modules-extra-x86_64"
-    test.vm.provision 'linux-reload', type: 'reload', run: 'once' # reload to load the new kernel modules
+    test.vm.provision "upgrade selinux", type: "shell", inline: "dnf upgrade -y libselinux libselinux-utils policycoreutils selinux-policy selinux-policy-targeted"
     test.vm.provision 'rke2-upload-installer', type: 'file', run: 'always', source: ENV['TEST_INSTALL_SH'], destination: 'install.sh'
-    test.vm.provision"rke2-install", type: 'rke2', run: "once" do |rke2|
+    test.vm.provision "rke2-set-selinux", type: "shell", inline: "cat << EOF > /etc/yum.repos.d/rke2-selinux.repo
+[rke2-common-testing]
+name=RKE2 Common Testing
+baseurl=https://rpm-testing.rancher.io/rke2/testing/common/centos/10/noarch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://rpm-testing.rancher.io/public.key
+EOF"
+    test.vm.provision "rke2-install-selinux", type: "shell", inline: "dnf install -y rke2-selinux"
+    test.vm.provision 'linux-reload', type: 'reload', run: 'once' # reload to load the new kernel modules
+    test.vm.provision "rke2-install", type: 'rke2', run: "once" do |rke2|
       rke2.installer_url = 'file:///home/vagrant/install.sh'
-      rke2.env = %W[ #{external_env} INSTALL_RKE2_TYPE=server]
+      rke2.env = %W[ #{external_env} INSTALL_RKE2_TYPE=server INSTALL_RKE2_METHOD=tar]
       rke2.config = <<~YAML
         token: 'vagrant'
+        selinux: true
       YAML
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
     end
@@ -67,5 +79,4 @@ Vagrant.configure("2") do |config|
             ${INSTALL_PACKAGES}
     SHELL
   end
-
 end

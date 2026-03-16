@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         channel: [stable]
-        vm: [centos-9, alma-10, opensuse-leap, ubuntu-2404, windows-2022, windows-2025]
+        vm: [centos-9, alma-10, alma-10-with-selinux-tar, opensuse-leap, ubuntu-2404, windows-2022, windows-2025]
         include:
           - {channel: latest, vm: alma-10}
           - {channel: latest, vm: ubuntu-2404}
