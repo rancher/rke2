@@ -25,6 +25,7 @@ jobs:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials AWS_ACCESS_KEY_ID ;
           secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials AWS_SECRET_ACCESS_KEY ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
     - name: Build
       run: make ci
       env:
@@ -57,6 +58,7 @@ jobs:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials AWS_ACCESS_KEY_ID ;
           secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials AWS_SECRET_ACCESS_KEY ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
     - name: Build
       run: |
         make ci
