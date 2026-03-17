@@ -91,6 +91,38 @@ func isRegular(file string) bool {
 	return false
 }
 
+// cleanDataDirs remove directories from /data that do not match the current version/refdigest.
+func cleanDataDirs(dataDir string, refDigest string) error {
+	datapath := filepath.Join(dataDir, "data")
+	entries, err := os.ReadDir(datapath)
+
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		if entry.Name() == refDigest {
+			continue
+		}
+		if !releasePattern.MatchString(entry.Name()) {
+			continue
+		}
+
+		oldpath := filepath.Join(datapath, entry.Name())
+		logrus.Infof("Removing old RKE2 data directory: %s", oldpath)
+		if err := os.RemoveAll(oldpath); err != nil {
+			logrus.Warnf("Failed to removed old data directory %s: %v", oldpath, err)
+		}
+	}
+	return nil
+}
+
 // BinDir returns the bin dir for an image by hashing the image name and tag, or the image digest,
 // depending on what the runtime image reference points at.
 func BinDir(resolver *images.Resolver, cfg cmds.Agent) (string, error) {
@@ -191,6 +223,10 @@ func Stage(ctx context.Context, resolver *images.Resolver, nodeConfig *daemoncon
 	// ignore errors on symlink rewrite
 	_ = os.RemoveAll(symlinkBinDir(cfg.DataDir))
 	_ = os.Symlink(refBinDir, symlinkBinDir(cfg.DataDir))
+
+	if err := cleanDataDirs(cfg.DataDir, refDigest); err != nil {
+		logrus.Warnf("Failed to clean old data dirs: %v", err)
+	}
 
 	return nil
 }
