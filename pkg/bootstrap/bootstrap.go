@@ -91,6 +91,31 @@ func isRegular(file string) bool {
 	return false
 }
 
+// dirHasRunningProcesses returns true if any running process has its executable rooted inside dirPath.
+func dirHasRunningProcesses(dirPath string) bool {
+	entries, err := os.ReadDir("/proc")
+	if err != nil {
+		return false
+	}
+	prefix := dirPath + "/"
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		if _, err := strconv.Atoi(entry.Name()); err != nil {
+			continue
+		}
+		exe, err := os.Readlink(filepath.Join("/proc", entry.Name(), "exe"))
+		if err != nil {
+			continue
+		}
+		if strings.HasPrefix(exe, prefix) {
+			return true
+		}
+	}
+	return false
+}
+
 // cleanDataDirs remove directories from /data that do not match the current version/refdigest.
 func cleanDataDirs(dataDir string, refDigest string) error {
 	datapath := filepath.Join(dataDir, "data")
@@ -115,6 +140,10 @@ func cleanDataDirs(dataDir string, refDigest string) error {
 		}
 
 		oldpath := filepath.Join(datapath, entry.Name())
+		if dirHasRunningProcesses(oldpath) {
+			logrus.Infof("Skipping removal of old RKE2 data directory %s: processes still running from it", oldpath)
+			continue
+		}
 		logrus.Infof("Removing old RKE2 data directory: %s", oldpath)
 		if err := os.RemoveAll(oldpath); err != nil {
 			logrus.Warnf("Failed to removed old data directory %s: %v", oldpath, err)
