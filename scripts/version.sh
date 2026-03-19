@@ -34,8 +34,8 @@ PLATFORM=${GOOS}-${GOARCH}
 RELEASE=${PROG}.${PLATFORM}
 # hardcode versions unless set specifically
 ETCD_VERSION=${ETCD_VERSION:-v3.6.7-k3s1}
-KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.35.2}
-KUBERNETES_IMAGE_TAG=${KUBERNETES_IMAGE_TAG:-v1.35.2-rke2r1-build20260227}
+KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.35.3}
+KUBERNETES_IMAGE_TAG=${KUBERNETES_IMAGE_TAG:-v1.35.3-rke2r1-build20260319}
 PAUSE_VERSION=${PAUSE_VERSION:-3.6}
 CCM_VERSION=${CCM_VERSION:-v1.35.1-0.20260211145923-50fa2d70c239-build20260211}
 KLIPPERHELM_VERSION=${KLIPPERHELM_VERSION:-v0.9.14-build20260309}
@@ -70,7 +70,7 @@ if [[ "${VERSION}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)([-+][a-zA-Z0-9.]+)?[-+]((rk
     echo "VERSION=${VERSION} parsed as MAJOR=${MAJOR} MINOR=${MINOR} PATCH=${PATCH} RC=${RC} RKE2_PATCH=${RKE2_PATCH}"
 fi
 
-DEPENDENCIES_URL="https://raw.githubusercontent.com/kubernetes/kubernetes/${KUBERNETES_VERSION}/build/dependencies.yaml"
-VERSION_GOLANG="go"$(curl -sL "${DEPENDENCIES_URL}" | yq e '.dependencies[] | select(.name == "golang: upstream version").version' -)
+GO_VERSION_URL="https://raw.githubusercontent.com/kubernetes/kubernetes/${KUBERNETES_VERSION}/.go-version"
+VERSION_GOLANG="go"$(curl -sL "${GO_VERSION_URL}" | tr -d '[:space:]')
 
 DOCKERIZED_VERSION="${VERSION/+/-}" # this mimics what kubernetes builds do
