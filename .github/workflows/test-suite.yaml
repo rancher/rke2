@@ -27,7 +27,7 @@ jobs:
     runs-on: ${{ github.repository == 'rancher/rke2' && 'runs-on,runner=16cpu-linux-x64' || 'ubuntu-24.04' }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         fetch-depth: 1
     - name: Find Go Version for Build
@@ -42,7 +42,7 @@ jobs:
       with:
         go-version: ${{ steps.go-finder.outputs.VERSION_GOLANG }}
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
     - name: Install OS Packages
       run: sudo apt-get update && sudo apt-get install -y libarchive-tools g++-mingw-w64-x86-64 gcc-mingw-w64-x86-64
     # Can only upload from a single path, so we need to copy the binary to the image directory
@@ -56,7 +56,7 @@ jobs:
         cp ./dist/artifacts/rke2.*-amd64.tar.gz ./build/images/
         rm ./build/images/rke2-runtime.tar
     - name: Upload RKE2 Binary and Runtime Image
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: rke2-test-artifacts
         path: ./build/images/*
@@ -74,7 +74,7 @@ jobs:
       GOCOVERDIR: /tmp/rke2cov
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         fetch-depth: 1
     - name: Install Go
@@ -83,7 +83,7 @@ jobs:
       run: |
         mkdir -p ./bin ./build/images
     - name: Download RKE2 Binary and Runtime Image
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
       with:
         name: rke2-test-artifacts
         path: ./build/images
@@ -98,7 +98,7 @@ jobs:
     - name: Generate coverage report
       run:  go tool covdata textfmt -i $GOCOVERDIR -o ${{ matrix.itest }}.out
     - name: Upload Results To Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./${{ matrix.itest }}.out
@@ -118,12 +118,12 @@ jobs:
         dtest: [basics, profile]
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with: {fetch-depth: 1}
       - name: Install Go
         uses: ./.github/actions/setup-go
       - name: Download RKE2 Binary and Runtime Image
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: rke2-test-artifacts
           path: ./artifacts
@@ -153,14 +153,14 @@ jobs:
         dtest: [dualstack, secretsencryption, splitserver]
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with: {fetch-depth: 1}
       - name: Check Memory
         run: lsmem
       - name: Install Go
         uses: ./.github/actions/setup-go
       - name: Download RKE2 Binary and Runtime Image
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: rke2-test-artifacts
           path: ./artifacts
@@ -190,13 +190,13 @@ jobs:
       max-parallel: 3
     steps:
     - name: "Checkout"
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with: {fetch-depth: 1}
     
     - name: Set up vagrant and libvirt
       uses: ./.github/actions/vagrant-setup
     - name: "Vagrant Cache"
-      uses: actions/cache@v4
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: |
             ~/.vagrant.d/boxes
@@ -205,7 +205,7 @@ jobs:
       run: vagrant plugin install vagrant-rke2 vagrant-reload vagrant-scp
     
     - name: Install Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
       with: 
         go-version-file: 'go.mod'
         cache: false
@@ -214,7 +214,7 @@ jobs:
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
     - name: Download RKE2 Binary and Runtime Image
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
       with:
         name: rke2-test-artifacts
         path: ./artifacts
