@@ -27,7 +27,7 @@ jobs:
     runs-on: ${{ github.repository == 'rancher/rke2' && 'runs-on,runner=16cpu-linux-x64,image=ubuntu24-full-x64' || 'ubuntu-24.04' }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       with:
         fetch-depth: 1
     - name: Find Go Version for Build
@@ -42,12 +42,12 @@ jobs:
       with:
         go-version: ${{ steps.go-finder.outputs.VERSION_GOLANG }}
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
     - name: Install OS Packages
       run: sudo apt-get update && sudo apt-get install -y libarchive-tools g++-mingw-w64-x86-64 gcc-mingw-w64-x86-64
     - name: "Read secrets"
       if: github.event_name != 'pull_request' && github.repository == 'rancher/rke2'
-      uses: rancher-eio/read-vault-secrets@main
+      uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
@@ -62,7 +62,7 @@ jobs:
         cp ./dist/artifacts/rke2.*-amd64.tar.gz ./build/images/
         rm ./build/images/rke2-runtime.tar
     - name: Upload RKE2 Binary and Runtime Image
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: rke2-test-artifacts
         path: ./build/images/*
@@ -80,7 +80,7 @@ jobs:
       GOCOVERDIR: /tmp/rke2cov
     steps:
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       with:
         fetch-depth: 1
     - name: Install Go
@@ -89,7 +89,7 @@ jobs:
       run: |
         mkdir -p ./bin ./build/images
     - name: Download RKE2 Binary and Runtime Image
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
       with:
         name: rke2-test-artifacts
         path: ./build/images
@@ -104,7 +104,7 @@ jobs:
     - name: Generate coverage report
       run:  go tool covdata textfmt -i $GOCOVERDIR -o ${{ matrix.itest }}.out
     - name: Upload Results To Codecov
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@1af58845a975a7985b0beb0cbe6fbbb71a41dbad # v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./${{ matrix.itest }}.out
@@ -127,12 +127,12 @@ jobs:
         dtest: [basics, flannel, profile, traefik, ing_migration, prime]
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: {fetch-depth: 1}
       - name: Install Go
         uses: ./.github/actions/setup-go
       - name: Download RKE2 Binary and Runtime Image
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
         with:
           name: rke2-test-artifacts
           path: ./artifacts
@@ -149,7 +149,7 @@ jobs:
           sudo modprobe br_netfilter overlay
       - name: "Read secrets"
         if: github.event_name == 'push'
-        uses: rancher-eio/read-vault-secrets@main
+        uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
         with:
           secrets: |
             secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
@@ -173,14 +173,14 @@ jobs:
         dtest: [dualstack, secretsencryption, splitserver]
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: {fetch-depth: 1}
       - name: Check Memory
         run: lsmem
       - name: Install Go
         uses: ./.github/actions/setup-go
       - name: Download RKE2 Binary and Runtime Image
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
         with:
           name: rke2-test-artifacts
           path: ./artifacts
@@ -210,7 +210,7 @@ jobs:
       max-parallel: 3
     steps:
     - name: "Checkout"
-      uses: actions/checkout@v6
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       with: {fetch-depth: 1}
     - name: Remove Unnecessary Tools
       run: |
@@ -234,14 +234,14 @@ jobs:
       uses: ./.github/actions/vagrant-setup
     - name: Vagrant R/W Cache
       if: github.ref == 'refs/heads/master'
-      uses: actions/cache@v4
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: |
             ~/.vagrant.d/boxes
         key: vagrant-box-ubuntu-2404
     - name: Vagrant Read Cache
       if: github.ref != 'refs/heads/master'
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: |
             ~/.vagrant.d/boxes
@@ -257,7 +257,7 @@ jobs:
           curl --retry 3 -LO "https://dl.k8s.io/release/${STABLE_VERSION}/bin/linux/amd64/kubectl"
           sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
     - name: Download RKE2 Binary and Runtime Image
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
       with:
         name: rke2-test-artifacts
         path: ./artifacts
