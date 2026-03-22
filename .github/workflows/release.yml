@@ -21,7 +21,7 @@ jobs:
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=256
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
     - name: Install Dapper
       run: |
@@ -37,7 +37,7 @@ jobs:
         dapper -f Dockerfile --target dapper make dapper-ci
     
     - name: "Read secrets"
-      uses: rancher-eio/read-vault-secrets@main
+      uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
@@ -69,7 +69,7 @@ jobs:
         echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
 
     - name: Publish Image Runtime - Staging
-      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
       env:
         GOARCH: amd64
         GOOS: linux
@@ -85,7 +85,7 @@ jobs:
         prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
     - name: Publish Image Runtime - Prime
-      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
       if: ${{ !contains(github.ref_name, '-rc') }}
       env:
         GOARCH: amd64
@@ -102,7 +102,7 @@ jobs:
         prime-password: ${{ env.PRIME_REGISTRY_PASSWORD }}
 
     - name: Publish Image Runtime (Windows) - Staging
-      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
       env:
         GOARCH: amd64
         GOOS: linux
@@ -118,7 +118,7 @@ jobs:
         prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
     - name: Publish Image Runtime (Windows) - Prime
-      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
       if: ${{ !contains(github.ref_name, '-rc') }}
       env:
         GOARCH: amd64
@@ -155,7 +155,7 @@ jobs:
         GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make checksum
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       with:
         name: rke2-artifacts-amd64
         path: |
@@ -168,7 +168,7 @@ jobs:
     runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu22-full-arm64,hdd=256
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
     - name: Install Dapper
       run: |
@@ -184,7 +184,7 @@ jobs:
         dapper -f Dockerfile --target dapper make dapper-ci
     
     - name: "Read secrets"
-      uses: rancher-eio/read-vault-secrets@main
+      uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
@@ -208,7 +208,7 @@ jobs:
         echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
 
     - name: Publish Image Runtime - Staging
-      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
       env:
         GOARCH: arm64
         GOOS: linux
@@ -224,7 +224,7 @@ jobs:
         prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
     - name: Publish Image Runtime - Prime
-      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
       if: ${{ !contains(github.ref_name, '-rc') }}
       env:
         GOARCH: arm64
@@ -245,7 +245,7 @@ jobs:
         GITHUB_ACTION_TAG=${{ github.ref_name }} dapper -f Dockerfile --target dapper make checksum
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       with:
         name: rke2-artifacts-arm64
         path: |
@@ -258,7 +258,7 @@ jobs:
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu22-full-x64,hdd=64
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
     - name: Install Dapper
       run: |
@@ -266,7 +266,7 @@ jobs:
         chmod +x /usr/local/bin/dapper
 
     - name: "Read secrets"
-      uses: rancher-eio/read-vault-secrets@main
+      uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
@@ -281,7 +281,7 @@ jobs:
         echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
 
     - name: Manifest - Staging
-      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
       env:
         GOARCH: amd64
         GOOS: linux
@@ -298,7 +298,7 @@ jobs:
         prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
     - name: Manifest - Prime
-      uses: rancher/ecm-distro-tools/actions/publish-image@master
+      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
       if: ${{ !contains(github.ref_name, '-rc') }}
       env:
         GOARCH: amd64
@@ -324,7 +324,7 @@ jobs:
       id-token: write
     steps:
     - name: "Read Secrets"
-      uses: rancher-eio/read-vault-secrets@main
+      uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/github/app-credentials appId | APP_ID ;
@@ -332,7 +332,7 @@ jobs:
 
     - name: Generate GitHub App token
       id: generate-token
-      uses: actions/create-github-app-token@v2
+      uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
       with:
         app-id: ${{ env.APP_ID }}
         private-key: ${{ env.PRIVATE_KEY }}
@@ -372,11 +372,11 @@ jobs:
       id-token: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Install crane
         uses: ./.github/actions/install-crane
       - name: "Read secrets"
-        uses: rancher-eio/read-vault-secrets@main
+        uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
         with:
           secrets: |
             secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
@@ -386,19 +386,19 @@ jobs:
             secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials username |  PRIME_STAGING_REGISTRY_USERNAME ;
             secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials password |  PRIME_STAGING_REGISTRY_PASSWORD ;
       - name: Log in to prime registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ${{ env.PRIME_REGISTRY }}
           username: ${{ env.PRIME_REGISTRY_USERNAME }}
           password: ${{ env.PRIME_REGISTRY_PASSWORD }}
       - name: Log in to staging registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ${{ env.PRIME_STAGING_REGISTRY }}
           username: ${{ env.PRIME_STAGING_REGISTRY_USERNAME }}
           password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
       - name: Download image lists
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
           pattern: rke2-artifacts-*
           merge-multiple: true
@@ -446,7 +446,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       - name: Install Dapper
         run: |
           curl -sL https://releases.rancher.com/dapper/latest/dapper-$(uname -s)-$(uname -m) > /usr/local/bin/dapper
@@ -457,7 +457,7 @@ jobs:
         run: |
           mkdir -p dist/artifacts
       - name: Read secrets
-        uses: rancher-eio/read-vault-secrets@main
+        uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
         with:
           secrets: |
             secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
@@ -469,7 +469,7 @@ jobs:
             secret/data/github/repo/${{ github.repository }}/aws/release-team-cloudfront-cache-invalidation/credentials secretAccessKey | AWS_SECRET_ACCESS_KEY_CACHE_INVALIDATION ;
             secret/data/github/repo/${{ github.repository }}/aws/release-team-cloudfront-cache-invalidation/credentials primeArtifactsDistributionId | PRIME_ARTIFACTS_DISTRIBUTION_ID ;
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
@@ -491,7 +491,7 @@ jobs:
         run: |
           docker pull "${REGISTRY}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
       - name: Download Binaries
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
           name: rke2-artifacts-${{ matrix.arch }}
           path: ./dist/artifacts
@@ -510,7 +510,7 @@ jobs:
         run: |
           dapper -f Dockerfile --target dapper make checksum
       - name: Configure Prime Artifact Uploader AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
@@ -530,7 +530,7 @@ jobs:
           aws s3 cp index.html s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/index.html
           aws s3 cp index-prerelease.html s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/index-prerelease.html
       - name: Configure Cache Invalidation AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID_CACHE_INVALIDATION }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY_CACHE_INVALIDATION }}

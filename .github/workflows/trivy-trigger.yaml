@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Verify actor is a member of rancher organization and has write permissions
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const org = 'rancher';
@@ -46,14 +46,14 @@ jobs:
             }
       
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       
         # We don't care about the go version, as we only use it to capture ENV vars
       - name: Install Go
         uses: ./.github/actions/setup-go
       
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
       
       - name: Build RKE2 image lists
         run: |
@@ -69,7 +69,7 @@ jobs:
           mv rke2-runtime.tar pr-context/rke2-runtime.tar
 
       - name: Upload PR context artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: pr-context-for-scan
           path: pr-context/
