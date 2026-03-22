@@ -18,12 +18,12 @@ jobs:
       
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       # For some reason with workflow_run.id, download-artifact does not work.
       # Github Docs explicity provide an example of using github-script to download artifacts.
       - name: 'Download artifact'
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
@@ -67,7 +67,7 @@ jobs:
         run: curl -fsSO https://raw.githubusercontent.com/rancher/vexhub/refs/heads/main/reports/rancher.openvex.json
 
       - name: Run Trivy on filesystem
-        uses: aquasecurity/trivy-action@0.34.2
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -78,7 +78,7 @@ jobs:
           TRIVY_DISABLE_VEX_NOTICE: true
 
       - name: Upload Trivy Reports
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: trivy-report
           path: |
@@ -96,7 +96,7 @@ jobs:
     
     steps:       
       - name: Download Trivy Report artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         if: needs.trivy_scan.result == 'success'
         with:
           name: trivy-report
