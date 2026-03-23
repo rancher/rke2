@@ -489,7 +489,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: setup ecm-distro-tools
-        uses: rancher/ecm-distro-tools@9cc9d787c12b5ed1acdeb504e4ff59511ffd39c9 # v0.62.0
+        uses: rancher/ecm-distro-tools@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
       - name: Make artifacts directory
         run: |
           mkdir -p dist/artifacts
