@@ -124,7 +124,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dtest: [basics, flannel, profile, traefik, ing_migration, prime]
+        dtest: [basics, flannel, profile, ingress-nginx, ing_migration, prime]
     steps:
       - name: "Checkout"
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

@@ -53,10 +53,10 @@ type StaticPodConfig struct {
 	CloudProvider     *CloudProviderConfig
 	RuntimeEndpoint   string
 	ManifestsDir      string
-	IngressController string
 	AuditPolicyFile   string
 	PSAConfigFile     string
 	KubeletPath       string
+	IngressController []string
 	ProfileMode       ProfileMode
 	DisableETCD       bool
 	ExternalDatabase  bool
@@ -654,7 +654,7 @@ func (s *StaticPodConfig) stageData(ctx context.Context, nodeConfig *daemonconfi
 		return err
 	}
 	if s.IsServer {
-		return bootstrap.UpdateManifests(s.Resolver, s.IngressController, nodeConfig, cfg, s.Prime)
+		go bootstrap.UpdateManifests(ctx, s.Resolver, s.IngressController, nodeConfig, cfg, s.Prime)
 	}
 	return nil
 }

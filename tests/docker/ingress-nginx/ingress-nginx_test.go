@@ -18,27 +18,27 @@ var (
 	tc *docker.TestConfig
 )
 
-func Test_DockerTraefik(t *testing.T) {
+func Test_DockerIngressNginx(t *testing.T) {
 	RegisterFailHandler(Fail)
 	flag.Parse()
-	RunSpecs(t, "Traefik Docker Test Suite")
+	RunSpecs(t, "Ingress-NGINX Docker Test Suite")
 }
 
-var _ = Describe("Traefik Tests", Ordered, func() {
+var _ = Describe("Ingress-NGINX Tests", Ordered, func() {
 
 	Context("Setup Cluster", func() {
 		It("should provision servers and agents", func() {
 			var err error
 			tc, err = docker.NewTestConfig()
 			Expect(err).NotTo(HaveOccurred())
-			tc.ServerYaml = "ingress-controller: traefik"
+			tc.ServerYaml = "ingress-controller: ingress-nginx"
 			Expect(tc.ProvisionServers(*serverCount)).To(Succeed())
 			Expect(tc.ProvisionAgents(*agentCount)).To(Succeed())
 			Expect(docker.RestartCluster(append(tc.Servers, tc.Agents...))).To(Succeed())
 			Expect(tc.CopyAndModifyKubeconfig()).To(Succeed())
 			Eventually(func(g Gomega) {
 				g.Expect(tests.CheckDefaultDeployments(tc.KubeconfigFile)).To(Succeed())
-				g.Expect(tests.CheckDaemonSets([]string{"rke2-canal", "rke2-traefik"}, tc.KubeconfigFile)).To(Succeed())
+				g.Expect(tests.CheckDaemonSets([]string{"rke2-canal", "rke2-ingress-nginx-controller"}, tc.KubeconfigFile)).To(Succeed())
 			}, "240s", "5s").Should(Succeed())
 			Eventually(func() error {
 				return tests.NodesReady(tc.KubeconfigFile, tc.GetNodeNames())
@@ -83,11 +83,11 @@ var _ = Describe("Traefik Tests", Ordered, func() {
 				g.Expect(foundLB).To(BeTrue())
 			}, "30s", "5s").Should(Succeed())
 		})
-		It("should have traefik as the default ingress", func() {
+		It("should have ingress-nginx as the default ingress", func() {
 			cmd := `kubectl get ingressclass -o 'custom-columns=NAME:.metadata.name,CONTROLLER:.spec.controller,DEFAULT:.metadata.annotations.ingressclass\.kubernetes\.io/is-default-class' --kubeconfig=` + tc.KubeconfigFile
 			res, err := docker.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred(), "failed to get ingressclass:"+res)
-			Expect(res).To(MatchRegexp(`traefik\s+traefik\.io\/ingress-controller\s+true`), "traefik ingressclass not found or not marked default")
+			Expect(res).To(MatchRegexp(`nginx\s+k8s.io/ingress-nginx`), "ingress-nginx ingressclass not found")
 		})
 	})
 })

@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-app-flannel-server
+  name: httpd-app-flannel-server
 spec:
   selector:
     matchLabels:
-      k8s-app: nginx-app-flannel
+      k8s-app: httpd-app-flannel
       node-role: server
   replicas: 2
   template:
     metadata:
       labels:
-        k8s-app: nginx-app-flannel
+        k8s-app: httpd-app-flannel
         node-role: server
     spec:
       containers:
-      - name: nginx
+      - name: httpd
         image: rancher/mirrored-library-busybox:1.36.1
-        args: ['sh', '-c', 'echo Welcome to nginx! > index.html; hostname > name.html; httpd -vvf']
+        args: ['sh', '-c', 'echo Welcome to httpd! > index.html; hostname > name.html; httpd -vvf']
         ports:
         - containerPort: 80
       nodeSelector:
@@ -27,23 +27,23 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-app-flannel-agent
+  name: httpd-app-flannel-agent
 spec:
   selector:
     matchLabels:
-      k8s-app: nginx-app-flannel
+      k8s-app: httpd-app-flannel
       node-role: agent
   replicas: 2
   template:
     metadata:
       labels:
-        k8s-app: nginx-app-flannel
+        k8s-app: httpd-app-flannel
         node-role: agent
     spec:
       containers:
-      - name: nginx
+      - name: httpd
         image: rancher/mirrored-library-busybox:1.36.1
-        args: ['sh', '-c', 'echo Welcome to nginx! > index.html; hostname > name.html; httpd -vvf']
+        args: ['sh', '-c', 'echo Welcome to httpd! > index.html; hostname > name.html; httpd -vvf']
         ports:
         - containerPort: 80
       nodeSelector:
@@ -52,10 +52,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-flannel-nodeport-service
+  name: httpd-flannel-nodeport-service
 spec:
   selector:
-    k8s-app: nginx-app-flannel
+    k8s-app: httpd-app-flannel
     node-role: server 
   ports:
     - protocol: TCP

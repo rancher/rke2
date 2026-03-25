@@ -162,11 +162,6 @@ func initStaticPodExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) 
 		containerRuntimeEndpoint = staticpod.ContainerdSock
 	}
 
-	var ingressControllerName string
-	if len(cfg.IngressController.Value()) > 0 {
-		ingressControllerName = cfg.IngressController.Value()[0]
-	}
-
 	disabledItems := map[string]bool{
 		"cloud-controller-manager": !isServer || forceRestart || clx.Bool("disable-cloud-controller"),
 		"etcd":                     !isServer || forceRestart || clx.Bool("disable-etcd") || clx.IsSet("datastore-endpoint"),
@@ -192,7 +187,7 @@ func initStaticPodExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) 
 		ExternalDatabase:  externalDatabase,
 		IsServer:          isServer,
 		Prime:             clx.Bool("prime"),
-		IngressController: ingressControllerName,
+		IngressController: cfg.IngressController.Value(),
 	}, nil
 }
 
