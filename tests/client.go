@@ -51,7 +51,7 @@ func CheckDeployments(deployments []string, kubeconfigFile string) error {
 
 // CheckDefaultDaemonSets checks if the standard array of RKE2 DaemonSets are ready, otherwise returns an error
 func CheckDefaultDaemonSets(kubeconfigFile string) error {
-	return CheckDaemonSets([]string{"rke2-canal", "rke2-ingress-nginx-controller"}, kubeconfigFile)
+	return CheckDaemonSets([]string{"rke2-canal", "rke2-traefik"}, kubeconfigFile)
 }
 
 // CheckDaemonSets checks if the provided list of DaemonSets are ready, otherwise returns an error

@@ -33,7 +33,6 @@ var (
 		// In v1.37, add fatal error if RKE_INGRESS_CONTROLLER is used
 		// In v1.38, remove RKE_INGRESS_CONTROLLER entirely
 		EnvVars:     []string{"RKE2_INGRESS_CONTROLLER", "RKE_INGRESS_CONTROLLER"},
-		Value:       cli.NewStringSlice("ingress-nginx"),
 		Destination: &config.IngressController,
 	}
 	ServiceLBFlag = &cli.BoolFlag{
@@ -202,7 +201,6 @@ func ServerRun(clx *cli.Context) error {
 	validateCloudProviderName(clx, Server)
 	validateProfile(clx, Server)
 	validateCNI(clx)
-	validateIngress(clx)
 	return rke2.Server(clx, config)
 }
 
@@ -227,13 +225,6 @@ func validateCNI(clx *cli.Context) {
 		default:
 			return nil, errors.New("must specify 1 or 2 values")
 		}
-		return values, nil
-	})
-}
-
-// validateCNI validates the ingress controller selection, and disables any un-selected ingress controller charts
-func validateIngress(clx *cli.Context) {
-	disableExceptSelected(clx, rke2cli.IngressItems, IngressControllerFlag, func(values []string) ([]string, error) {
 		return values, nil
 	})
 }

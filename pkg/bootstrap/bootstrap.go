@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -21,9 +20,12 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/daemons/agent"
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
+	"github.com/k3s-io/k3s/pkg/signals"
 	"github.com/k3s-io/k3s/pkg/util"
 	"github.com/k3s-io/k3s/pkg/util/errors"
 	"github.com/k3s-io/k3s/pkg/version"
+	"github.com/otiai10/copy"
+	"github.com/rancher/rke2/pkg/cli"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/wharfie/pkg/credentialprovider/plugin"
 	"github.com/rancher/wharfie/pkg/extract"
@@ -33,6 +35,8 @@ import (
 	"github.com/rancher/wrangler/v3/pkg/yaml"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 var (
@@ -40,7 +44,7 @@ var (
 	helmChartGVK        = helmv1.SchemeGroupVersion.WithKind("HelmChart")
 	injectAnnotationKey = version.Program + ".cattle.io/inject-cluster-config"
 	injectEnvKey        = version.ProgramUpper + "_INJECT_CLUSTER_CONFIG"
-	injectDefault       = true
+	injectDefault       = false
 )
 
 // binDirForDigest returns the path to dataDir/data/refDigest/bin.
@@ -262,7 +266,15 @@ func Stage(ctx context.Context, resolver *images.Resolver, nodeConfig *daemoncon
 
 // UpdateManifests copies the staged manifests into the server's manifests dir, and applies
 // cluster configuration values to any HelmChart manifests found in the manifests directory.
-func UpdateManifests(resolver *images.Resolver, ingressController string, nodeConfig *daemonconfig.Node, cfg cmds.Agent, prime bool) error {
+// This function is intended to be run in a goroutine, and will block until the apiserver is up to list HelmCharts.
+// TODO: Move this function back out of a goroutine once we no longer support detecting legacy installations of ingress-nginx
+func UpdateManifests(ctx context.Context, resolver *images.Resolver, ingressController []string, nodeConfig *daemonconfig.Node, cfg cmds.Agent, prime bool) {
+	if err := updateManifests(ctx, resolver, ingressController, nodeConfig, cfg, prime); err != nil {
+		signals.RequestShutdown(errors.WithMessage(err, "failed to update manifests"))
+	}
+}
+
+func updateManifests(ctx context.Context, resolver *images.Resolver, ingressController []string, nodeConfig *daemonconfig.Node, cfg cmds.Agent, prime bool) error {
 	ref, err := resolver.GetReference(images.Runtime)
 	if err != nil {
 		return err
@@ -275,23 +287,61 @@ func UpdateManifests(resolver *images.Resolver, ingressController string, nodeCo
 
 	refChartsDir := chartsDirForDigest(cfg.DataDir, refDigest)
 	manifestsDir := manifestsDir(cfg.DataDir)
+	os.MkdirAll(manifestsDir, 0700)
 
-	// TODO - instead of copying over then rewriting the manifests, we should template them as we
-	// copy, only overwriting if they're different - and then make a second pass and rewrite any
-	// user-provided manifests that weren't just copied over. This will work better with the deploy
-	// controller's mtime-based change detection.
+	// TODO: Remove this once we no longer support detecting legacy installations of ingress-nginx
 
-	// Copy all charts into the manifests directory, since the K3s
-	// deploy controller will delete them if they are disabled.
-	if err := copyDir(manifestsDir, refChartsDir); err != nil {
+	// if ingress-controller is not set in config, determine what the default should be.
+	// ingress-nginx is the default if its HelmChart is present in the cluster, otherwise traefik
+	if len(ingressController) == 0 {
+		logrus.Infof("Reading deployed HelmCharts to determine default ingress-controller...")
+		defaultIngress, err := getDefaultIngressClassFromCharts(ctx, nodeConfig)
+		if err != nil {
+			return errors.WithMessage(err, "failed to determine default ingress-controller from deployed charts")
+		}
+		ingressController = []string{defaultIngress}
+	}
+	logrus.Infof("Using ingress-controller: %v", ingressController)
+
+	tempChartsDir := refChartsDir + ".tmp"
+	os.RemoveAll(tempChartsDir)
+
+	// Copy bundled charts into a temp dir for rewriting before they are copied into place
+	if err := copyDir(tempChartsDir, refChartsDir); err != nil {
+		return errors.WithMessage(err, "failed to copy temporary charts")
+	}
+	defer os.RemoveAll(tempChartsDir)
+
+	// Create empty base and crd AddOn for unselected ingress controllers
+	// We can't disable it this late in startup, so we have to manually truncate them instead
+	controllers := sets.New[string](ingressController...)
+	for _, name := range cli.IngressItems {
+		if !controllers.Has(name) {
+			for _, f := range []string{"rke2-" + name + ".yaml", "rke2-" + name + "-crd.yaml"} {
+				if f, err := os.OpenFile(filepath.Join(tempChartsDir, f), os.O_WRONLY|os.O_TRUNC, 0600); err == nil {
+					f.Write([]byte("# disabled by configuration\n"))
+					f.Close()
+				}
+			}
+		}
+	}
+
+	// Fix up bundled charts in temp dir
+	if err := setChartValues(tempChartsDir, ingressController[0], nodeConfig, cfg, prime); err != nil {
+		return errors.WithMessage(err, "failed to rewrite bundled HelmChart manifests to pass through CLI values")
+	}
+
+	// Copy modified charts into the manifests directory, since the K3s
+	// deploy controller will delete ones that are disabled
+	if err := copyDir(manifestsDir, tempChartsDir); err != nil {
 		return errors.WithMessage(err, "failed to copy runtime charts")
 	}
 
-	// Fix up HelmCharts to pass through configured values.
-	// This needs to be done every time in order to sync values from the CLI
-	if err := setChartValues(manifestsDir, ingressController, nodeConfig, cfg, prime); err != nil {
-		return errors.WithMessage(err, "failed to rewrite HelmChart manifests to pass through CLI values")
+	// Fix up user HelmCharts to pass through configured values
+	if err := setChartValues(manifestsDir, ingressController[0], nodeConfig, cfg, prime); err != nil {
+		logrus.Errorf("Failed to rewrite user HelmChart manifests to pass through CLI values: %v", err)
 	}
+
 	return nil
 }
 
@@ -348,67 +398,14 @@ func preloadBootstrapFromRuntime(imagesDir string, resolver *images.Resolver) (v
 	return nil, nil
 }
 
-// copyDir recursively copies files from source to destination. If the target
-// file already exists, the current permissions, ownership, and xattrs will be
-// retained, but the contents will be overwritten.
+// copyDir recursively copies files from source to destination.
 func copyDir(target, source string) error {
-	entries, err := os.ReadDir(source)
-	if err != nil {
-		return fmt.Errorf("failed to read %s: %w", source, err)
-	}
-
-	if err := os.MkdirAll(target, 0755); err != nil && !os.IsExist(err) {
-		return err
-	}
-
-	for _, entry := range entries {
-		src := filepath.Join(source, entry.Name())
-		tgt := filepath.Join(target, entry.Name())
-
-		fileInfo, err := entry.Info()
-		if err != nil {
-			return fmt.Errorf("failed to get file info for %s: %w", entry.Name(), err)
-		}
-
-		switch {
-		case entry.IsDir():
-			if err := copyDir(tgt, src); err != nil {
-				return err
-			}
-		case (fileInfo.Mode() & os.ModeType) == 0:
-			if err := copyFile(tgt, src); err != nil {
-				return err
-			}
-		default:
-			logrus.Warnf("Skipping file with unsupported mode: %s: %s", src, fileInfo.Mode())
-		}
-	}
-	return nil
-}
-
-// copyFile copies the the source file to the target, creating or truncating it as necessary.
-func copyFile(target, source string) error {
-	src, err := os.Open(source)
-	if err != nil {
-		return fmt.Errorf("failed to open source %s: %w", source, err)
-	}
-	defer src.Close()
-
-	tgt, err := os.OpenFile(target, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
-	if err != nil {
-		return fmt.Errorf("failed to open target %s: %w", target, err)
-	}
-	defer tgt.Close()
-
-	_, err = io.Copy(tgt, src)
-	return err
+	return copy.Copy(source, target, copy.Options{NumOfWorkers: 0})
 }
 
 // setChartValues scans the directory at manifestDir. It attempts to load all manifests
 // in that directory as HelmCharts. Any manifests that contain a HelmChart are modified to
 // pass through settings to both the Helm job and the chart values.
-// NOTE: This will probably fail if any manifest contains multiple documents. This should
-// not matter for any of our packaged components, but may prevent this from working on user manifests.
 func setChartValues(manifestsDir, ingressController string, nodeConfig *daemonconfig.Node, cfg cmds.Agent, prime bool) error {
 	chartValues := map[string]string{
 		"global.clusterCIDR":                  util.JoinIPNets(nodeConfig.AgentConfig.ClusterCIDRs),
@@ -513,7 +510,7 @@ OBJECTS:
 	}
 
 	if !changed {
-		logrus.Infof("No cluster configuration value changes necessary for manifest %s", fileName)
+		logrus.Debugf("No cluster configuration value changes necessary for manifest %s", fileName)
 		return nil
 	}
 
@@ -556,4 +553,22 @@ func getInjectDefault() bool {
 		return b
 	}
 	return injectDefault
+}
+
+// getDefaultIngressClassFromCharts gets the current default ingress class from installed chart values.
+// If there are no charts present in the cluster, it returns the default.
+func getDefaultIngressClassFromCharts(ctx context.Context, nodeConfig *daemonconfig.Node) (string, error) {
+	hl, err := ListHelmCharts(ctx, nodeConfig.AgentConfig.KubeConfigK3sController)
+	if err != nil {
+		return "", err
+	}
+	for _, h := range hl.Items {
+		switch h.Name {
+		case "rke2-ingress-nginx", "rke2-traefik":
+			if v, ok := h.Spec.Set["global.systemDefaultIngressClass"]; ok && v.Type == intstr.String {
+				return v.StrVal, nil
+			}
+		}
+	}
+	return cli.IngressItems[0], nil
 }

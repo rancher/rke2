@@ -88,11 +88,6 @@ func initExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) (executor
 		cfg.KubeletPath = "kubelet"
 	}
 
-	var ingressControllerName string
-	if len(cfg.IngressController.Value()) > 0 {
-		ingressControllerName = cfg.IngressController.Value()[0]
-	}
-
 	return &pebinary.PEBinaryConfig{
 		Resolver:          resolver,
 		ImagesDir:         agentImagesDir,
@@ -105,7 +100,7 @@ func initExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) (executor
 		DisableETCD:       clx.Bool("disable-etcd"),
 		IsServer:          isServer,
 		Prime:             clx.Bool("prime"),
-		IngressController: ingressControllerName,
+		IngressController: cfg.IngressController.Value(),
 		CNIName:           "",
 	}, nil
 }

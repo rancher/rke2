@@ -17,7 +17,6 @@ import (
 	"time"
 
 	"github.com/Microsoft/hcsshim/hcn"
-	"github.com/k3s-io/helm-controller/pkg/generated/controllers/helm.cattle.io"
 	"github.com/k3s-io/k3s/pkg/agent/containerd"
 	"github.com/k3s-io/k3s/pkg/agent/cri"
 	"github.com/k3s-io/k3s/pkg/agent/cridockerd"
@@ -32,9 +31,7 @@ import (
 	win "github.com/rancher/rke2/pkg/windows"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -59,7 +56,7 @@ type PEBinaryConfig struct {
 	CNIName             string
 	ImagesDir           string
 	KubeConfigKubeProxy string
-	IngressController   string
+	IngressController   []string
 	CISMode             bool
 	DisableETCD         bool
 	IsServer            bool
@@ -134,15 +131,13 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 		}
 	}()
 
-	restConfig, err := clientcmd.BuildConfigFromFlags("", nodeConfig.AgentConfig.KubeConfigK3sController)
+	// required to initialize KubeProxy
+	p.KubeConfigKubeProxy = nodeConfig.AgentConfig.KubeConfigKubeProxy
 
-	p.CNIName, err = getCNIPluginName(restConfig)
+	p.CNIName, err = getCNIPluginName(ctx, nodeConfig.AgentConfig.KubeConfigK3sController)
 	if err != nil {
 		return err
 	}
-
-	// required to initialize KubeProxy
-	p.KubeConfigKubeProxy = nodeConfig.AgentConfig.KubeConfigKubeProxy
 
 	switch p.CNIName {
 	case "", CNICalico:
@@ -153,6 +148,11 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 		p.CNIPlugin = &win.None{}
 	default:
 		return fmt.Errorf("unsupported CNI %s", p.CNIName)
+	}
+
+	restConfig, err := clientcmd.BuildConfigFromFlags("", nodeConfig.AgentConfig.KubeConfigK3sController)
+	if err != nil {
+		return err
 	}
 
 	logrus.Infof("Setting up %s CNI", p.CNIName)
@@ -448,7 +448,7 @@ func (p *PEBinaryConfig) stageData(ctx context.Context, nodeConfig *config.Node,
 		return err
 	}
 	if p.IsServer {
-		return bootstrap.UpdateManifests(p.Resolver, p.IngressController, nodeConfig, cfg, p.Prime)
+		go bootstrap.UpdateManifests(ctx, p.Resolver, p.IngressController, nodeConfig, cfg, p.Prime)
 	}
 	return nil
 }
@@ -480,12 +480,8 @@ func getArgs(argsMap map[string]string) []string {
 	return args
 }
 
-func getCNIPluginName(restConfig *rest.Config) (string, error) {
-	hc, err := helm.NewFactoryFromConfig(restConfig)
-	if err != nil {
-		return "", err
-	}
-	hl, err := hc.Helm().V1().HelmChart().List(metav1.NamespaceSystem, metav1.ListOptions{})
+func getCNIPluginName(ctx context.Context, kubeConfig string) (string, error) {
+	hl, err := bootstrap.ListHelmCharts(ctx, kubeConfig)
 	if err != nil {
 		return "", err
 	}

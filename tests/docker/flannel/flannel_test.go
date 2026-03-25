@@ -53,7 +53,7 @@ node-label:
 			Expect(tc.CopyAndModifyKubeconfig()).To(Succeed())
 			Eventually(func(g Gomega) {
 				g.Expect(tests.CheckDefaultDeployments(tc.KubeconfigFile)).To(Succeed())
-				g.Expect(tests.CheckDaemonSets([]string{"kube-flannel-ds", "rke2-ingress-nginx-controller"}, tc.KubeconfigFile)).To(Succeed())
+				g.Expect(tests.CheckDaemonSets([]string{"kube-flannel-ds", "rke2-traefik"}, tc.KubeconfigFile)).To(Succeed())
 			}, "240s", "5s").Should(Succeed())
 			Eventually(func() error {
 				return tests.NodesReady(tc.KubeconfigFile, tc.GetNodeNames())
@@ -64,18 +64,18 @@ node-label:
 			_, err := tc.DeployWorkload("flannel.yaml")
 			Expect(err).NotTo(HaveOccurred(), "Workloads not deployed")
 			Eventually(func(g Gomega) {
-				getServerPodsCmd := "kubectl get pods -o custom-columns=NAME:.metadata.name -l node-role=server,k8s-app=nginx-app-flannel --field-selector=status.phase=Running --no-headers --kubeconfig=" + tc.KubeconfigFile
-				getAgentPodsCmd := "kubectl get pods -o custom-columns=NAME:.metadata.name -l node-role=agent,k8s-app=nginx-app-flannel --field-selector=status.phase=Running --no-headers --kubeconfig=" + tc.KubeconfigFile
+				getServerPodsCmd := "kubectl get pods -o custom-columns=NAME:.metadata.name -l node-role=server,k8s-app=httpd-app-flannel --field-selector=status.phase=Running --no-headers --kubeconfig=" + tc.KubeconfigFile
+				getAgentPodsCmd := "kubectl get pods -o custom-columns=NAME:.metadata.name -l node-role=agent,k8s-app=httpd-app-flannel --field-selector=status.phase=Running --no-headers --kubeconfig=" + tc.KubeconfigFile
 
 				serverCmdResponse, err := docker.RunCommand(getServerPodsCmd)
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(serverCmdResponse).Should(ContainSubstring("nginx-app-flannel-server"), "flannel-test pod was not created")
+				g.Expect(serverCmdResponse).Should(ContainSubstring("httpd-app-flannel-server"), "flannel-test pod was not created")
 				err = mapPods(serverCmdResponse, "server")
 				g.Expect(err).NotTo(HaveOccurred())
 
 				agentCmdResponse, err := docker.RunCommand(getAgentPodsCmd)
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(agentCmdResponse).Should(ContainSubstring("nginx-app-flannel-agent"), "flannel-test pod was not created")
+				g.Expect(agentCmdResponse).Should(ContainSubstring("httpd-app-flannel-agent"), "flannel-test pod was not created")
 				err = mapPods(agentCmdResponse, "agent")
 				g.Expect(err).NotTo(HaveOccurred())
 			}, "60s", "5s").Should(Succeed())
@@ -87,24 +87,24 @@ node-label:
 			cmd := "kubectl exec -it " + pods["server-1"].name + " --kubeconfig=" + tc.KubeconfigFile + " -- wget -O - http://" + pods["server-2"].ip + ":80"
 			res, err := docker.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(res).Should(ContainSubstring("Welcome to nginx"))
+			Expect(res).Should(ContainSubstring("Welcome to httpd"))
 
 			cmd = "kubectl exec -it " + pods["server-2"].name + " --kubeconfig=" + tc.KubeconfigFile + " -- wget -O - http://" + pods["server-1"].ip + ":80"
 			res, err = docker.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(res).Should(ContainSubstring("Welcome to nginx"))
+			Expect(res).Should(ContainSubstring("Welcome to httpd"))
 		})
 
 		It("should allow inter node pod communication", func() {
 			cmd := "kubectl exec -it " + pods["server-1"].name + " --kubeconfig=" + tc.KubeconfigFile + " -- wget -O - http://" + pods["agent-1"].ip + ":80"
 			res, err := docker.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(res).Should(ContainSubstring("Welcome to nginx"))
+			Expect(res).Should(ContainSubstring("Welcome to httpd"))
 
 			cmd = "kubectl exec -it " + pods["agent-2"].name + " --kubeconfig=" + tc.KubeconfigFile + " -- wget -O - http://" + pods["server-2"].ip + ":80"
 			res, err = docker.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(res).Should(ContainSubstring("Welcome to nginx"))
+			Expect(res).Should(ContainSubstring("Welcome to httpd"))
 		})
 
 		It("should grant pods external access", func() {
@@ -112,7 +112,7 @@ node-label:
 				cmd := "wget -O - http://" + tc.Servers[0].IP + ":30080"
 				res, err := docker.RunCommand(cmd)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(res).Should(ContainSubstring("Welcome to nginx"))
+				Expect(res).Should(ContainSubstring("Welcome to httpd"))
 			}, "10s", "5s").Should(Succeed())
 		})
 	})
