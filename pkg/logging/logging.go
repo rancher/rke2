@@ -26,6 +26,11 @@ func init() {
 	packageFlags.SetNormalizeFunc(cliflag.WordSepNormalizeFunc)
 	fs := flag.NewFlagSet("logging", flag.ContinueOnError)
 	klog.InitFlags(fs)
+
+	// Opt into fixed stderrthreshold behavior (kubernetes/klog#212).
+	_ = fs.Set("legacy_stderr_threshold_behavior", "false")
+	_ = fs.Set("stderrthreshold", "INFO")
+
 	fs.VisitAll(func(f *flag.Flag) {
 		if !strings.HasPrefix(f.Name, "v") {
 			pf := pflag.PFlagFromGoFlag(f)
