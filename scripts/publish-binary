@@ -7,4 +7,4 @@ source ./scripts/version.sh
 
 mkdir -p dist/artifacts
 
-gh release upload ${VERSION} dist/artifacts/*
+gh release create -R "${GITHUB_REPOSITORY}" --draft --generate-notes "${VERSION}" "dist/artifacts/*"
