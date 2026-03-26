@@ -55,7 +55,7 @@ jobs:
       run: |
         make in-docker-scan-images
     - name: Upload Scan Results
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       with:
         name: release-trivy-scan
         path: trivy_scan_report.txt
@@ -178,16 +178,11 @@ jobs:
       run: |
         GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-checksum
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
-      with:
-        name: rke2-artifacts-amd64
-        path: |
-          dist/artifacts/*.txt
-          dist/artifacts/rke2.*
-          dist/artifacts/*.exe
-        if-no-files-found: error
-
+    - name: Publish Artifacts
+      run: |
+        make in-docker-publish-binary
+      env:
+        GH_TOKEN: ${{ github.token }}
   release-arm64:
     runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu24-full-arm64,hdd=256
     steps:
@@ -281,35 +276,11 @@ jobs:
       run: |
         GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-checksum
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
-      with:
-        name: rke2-artifacts-arm64
-        path: |
-          dist/artifacts/*.txt
-          dist/artifacts/rke2.*
-        if-no-files-found: error
-
-  create-draft-release:
-    name: "Create draft release"
-    needs: [release-amd64, release-arm64]
-    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-    - name: Download image lists
-      uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
-      with:
-        pattern: rke2-artifacts-*
-        merge-multiple: true
-        path: dist/artifacts
     - name: Publish Artifacts
       run: |
-        make publish-binary
+        make in-docker-publish-binary
       env:
         GH_TOKEN: ${{ github.token }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-
   manifest:
     needs: [release-amd64, release-arm64]
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
@@ -402,7 +373,7 @@ jobs:
 
     - name: Generate GitHub App token
       id: generate-token
-      uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3
+      uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
       with:
         app-id: ${{ env.APP_ID }}
         private-key: ${{ env.PRIVATE_KEY }}
@@ -468,7 +439,7 @@ jobs:
           fi
 
       - name: Log in to staging registry
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         if: ${{ contains(github.ref_name, '-rc') }}
         with:
           registry: ${{ env.PRIME_STAGING_REGISTRY }}
@@ -476,7 +447,7 @@ jobs:
           password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
       - name: Log in to prime registry
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         if: ${{ !contains(github.ref_name, '-rc') }}
         with:
           registry: ${{ env.PRIME_REGISTRY }}
@@ -520,7 +491,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: setup ecm-distro-tools
-        uses: rancher/ecm-distro-tools@9cc9d787c12b5ed1acdeb504e4ff59511ffd39c9 # v0.62.0
+        uses: rancher/ecm-distro-tools@df74c04bbc0176c3a2a04ebd8f6620c5a23229f6 # v0.61.0
       - name: Make artifacts directory
         run: |
           mkdir -p dist/artifacts
@@ -538,7 +509,7 @@ jobs:
             secret/data/github/repo/${{ github.repository }}/aws/release-team-cloudfront-cache-invalidation/credentials primeArtifactsDistributionId | PRIME_ARTIFACTS_DISTRIBUTION_ID ;
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
@@ -582,7 +553,7 @@ jobs:
           make in-docker-checksum
 
       - name: Configure Prime Artifact Uploader AWS Credentials
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
@@ -606,7 +577,7 @@ jobs:
           aws s3 cp index-prerelease.html s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/index-prerelease.html
 
       - name: Configure Cache Invalidation AWS Credentials
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID_CACHE_INVALIDATION }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY_CACHE_INVALIDATION }}
