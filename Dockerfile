@@ -67,7 +67,7 @@ RUN STABLE_VERSION=$(yq '.channels[] | select(.name == "stable") | .latest | sub
     curl --retry 3 -sL https://dl.k8s.io/release/${STABLE_VERSION}/bin/linux/${ARCH}/kubectl.sha256 -o kubectl.sha256 && \
     echo "$(cat kubectl.sha256)  kubectl" | sha256sum -c - && \
     install -m 0755 kubectl /usr/local/bin/kubectl && \
-    rm -f /tmp/kubectl /tmp/kubectl.sha256
+    rm -f /tmp/kubectl /tmp/kubectl.sha256 /tmp/channels.yaml
 
 RUN GOLANGCI_VERSION=v1.55.2 && \
     case "${ARCH}" in \
