@@ -25,7 +25,7 @@ jobs:
 
     - name: Validate Release
       run: |
-        make in-docker-validate-release
+        make validate-release
     
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89 # v3
@@ -194,7 +194,7 @@ jobs:
 
     - name: Validate Release
       run: |
-       make in-docker-validate-release
+       make validate-release
 
     - name: Build
       run: |
