@@ -25,7 +25,7 @@ jobs:
 
     - name: Validate Release
       run: |
-        make in-docker-validate-release
+        make validate-release
     
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
@@ -52,8 +52,9 @@ jobs:
       continue-on-error: true
       run: |
         make in-docker-scan-images
+
     - name: Upload Scan Results
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
       with:
         name: release-trivy-scan
         path: trivy_scan_report.txt
@@ -69,105 +70,7 @@ jobs:
     - name: Set environment variables
       run: |
         echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
-
-    - name: Publish Image Runtime - Docker
-      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
-      env:
-        GOARCH: amd64
-        GOOS: linux
-      with:
-        image: "rke2-runtime"
-        tag: ${{ env.GIT_TAG }}
-        make-target: publish-image-runtime
-
-        public-repo: rancher
-        public-username: ${{ env.DOCKER_USERNAME }}
-        public-password: ${{ env.DOCKER_PASSWORD }}
-
-        push-to-prime: false
-
-    - name: Publish Image Runtime - Staging
-      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
-      env:
-        GOARCH: amd64
-        GOOS: linux
-      with:
-        image: "rke2-runtime"
-        tag: ${{ env.GIT_TAG }}
-        make-target: publish-image-runtime
-        push-to-public: false
-
-        prime-repo: rancher
-        prime-registry: ${{ env.PRIME_STAGING_REGISTRY }}
-        prime-username: ${{ env.PRIME_STAGING_REGISTRY_USERNAME }}
-        prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
-
-    - name: Publish Image Runtime - Prime
-      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
-      if: ${{ !contains(github.ref_name, '-rc') }}
-      env:
-        GOARCH: amd64
-        GOOS: linux
-      with:
-        image: "rke2-runtime"
-        tag: ${{ env.GIT_TAG }}
-        make-target: publish-image-runtime
-        push-to-public: false
-
-        prime-repo: rancher
-        prime-registry: ${{ env.PRIME_REGISTRY }}
-        prime-username: ${{ env.PRIME_REGISTRY_USERNAME }}
-        prime-password: ${{ env.PRIME_REGISTRY_PASSWORD }}
-
-    - name: Publish Image Runtime (Windows) - Docker
-      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
-      env:
-        GOARCH: amd64
-        GOOS: linux
-      with:
-        image: "rke2-runtime"
-        tag: ${{ env.GIT_TAG }}
-        make-target: publish-image-runtime-windows
-
-        public-repo: rancher
-        public-username: ${{ env.DOCKER_USERNAME }}
-        public-password: ${{ env.DOCKER_PASSWORD }}
-
-        push-to-prime: false
-
-    - name: Publish Image Runtime (Windows) - Staging
-      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
-      env:
-        GOARCH: amd64
-        GOOS: linux
-      with:
-        image: "rke2-runtime"
-        tag: ${{ env.GIT_TAG }}
-        make-target: publish-image-runtime-windows
-        push-to-public: false
-
-        prime-repo: rancher
-        prime-registry: ${{ env.PRIME_STAGING_REGISTRY }}
-        prime-username: ${{ env.PRIME_STAGING_REGISTRY_USERNAME }}
-        prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
-
-    - name: Publish Image Runtime (Windows) - Prime
-      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
-      if: ${{ !contains(github.ref_name, '-rc') }}
-      env:
-        GOARCH: amd64
-        GOOS: linux
-      with:
-        image: "rke2-runtime"
-        tag: ${{ env.GIT_TAG }}
-        make-target: publish-image-runtime-windows
-        push-to-public: false
-
-        prime-repo: rancher
-        prime-registry: ${{ env.PRIME_REGISTRY }}
-        prime-username: ${{ env.PRIME_REGISTRY_USERNAME }}
-        prime-password: ${{ env.PRIME_REGISTRY_PASSWORD }}
-  
+ 
     - name: Package windows images
       run: |
         GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-package-windows-images
@@ -176,11 +79,14 @@ jobs:
       run: |
         GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-checksum
 
-    - name: Publish Artifacts
-      run: |
-        make in-docker-publish-binary
-      env:
-        GH_TOKEN: ${{ github.token }}
+    - name: Upload artifacts
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      with:
+        name: rke2-artifacts-amd64
+        path: |
+          dist/artifacts/*amd64*
+        if-no-files-found: error
+
   release-arm64:
     runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu24-full-arm64,hdd=256
     steps:
@@ -189,24 +95,11 @@ jobs:
 
     - name: Validate Release
       run: |
-       make in-docker-validate-release
+       make validate-release
 
     - name: Build
       run: |
         make ci
-    
-    - name: "Read secrets"
-      uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
-      with:
-        secrets: |
-          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials username | DOCKER_USERNAME ;
-          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials password | DOCKER_PASSWORD ;
-          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
-          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
-          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD ;
-          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials registry |  PRIME_STAGING_REGISTRY ;
-          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials username |  PRIME_STAGING_REGISTRY_USERNAME ;
-          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials password |  PRIME_STAGING_REGISTRY_PASSWORD ;
 
     - name: Package Images
       run: |
@@ -221,31 +114,89 @@ jobs:
       run: |
         echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
 
-    - name: Publish Image Runtime - Docker
+    - name: Checksum
+      run: |
+        GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-checksum
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      with:
+        name: rke2-artifacts-arm64
+        path: |
+          dist/artifacts/*arm64*
+        if-no-files-found: error
+
+  publish-images:
+    name: "Publish ${{ matrix.arch }} ${{ matrix.make-target }} - ${{ matrix.destination }}"
+    needs: [release-amd64, release-arm64]
+    runs-on: runs-on,runner=8cpu-linux-${{ matrix.runner-arch }},run-id=${{ github.run_id }},image=ubuntu24-full-${{ matrix.runner-arch }},hdd=64
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # amd64 – Linux runtime
+          - { arch: amd64, runner-arch: x64,   make-target: publish-image-runtime,         destination: docker   }
+          - { arch: amd64, runner-arch: x64,   make-target: publish-image-runtime,         destination: staging  }
+          - { arch: amd64, runner-arch: x64,   make-target: publish-image-runtime,         destination: prime    }
+          # amd64 – Windows runtime
+          - { arch: amd64, runner-arch: x64,   make-target: publish-image-runtime-windows, destination: docker   }
+          - { arch: amd64, runner-arch: x64,   make-target: publish-image-runtime-windows, destination: staging  }
+          - { arch: amd64, runner-arch: x64,   make-target: publish-image-runtime-windows, destination: prime    }
+          # arm64 – Linux runtime (no Windows runtime image for arm64)
+          - { arch: arm64, runner-arch: arm64, make-target: publish-image-runtime,         destination: docker   }
+          - { arch: arm64, runner-arch: arm64, make-target: publish-image-runtime,         destination: staging  }
+          - { arch: arm64, runner-arch: arm64, make-target: publish-image-runtime,         destination: prime    }
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+    - name: "Read secrets"
+      uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
+      with:
+        secrets: |
+          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials username | DOCKER_USERNAME ;
+          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials password | DOCKER_PASSWORD ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials registry |  PRIME_STAGING_REGISTRY ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials username |  PRIME_STAGING_REGISTRY_USERNAME ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials password |  PRIME_STAGING_REGISTRY_PASSWORD ;
+
+    - name: Set environment variables
+      run: |
+        echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
+
+    - name: Publish Image - Docker Hub
+      if: ${{ matrix.destination == 'docker' }}
       uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
       env:
-        GOARCH: arm64
+        GOARCH: ${{ matrix.arch }}
         GOOS: linux
       with:
         image: "rke2-runtime"
         tag: ${{ env.GIT_TAG }}
-        make-target: publish-image-runtime
+        make-target: ${{ matrix.make-target }}
 
         public-repo: rancher
         public-username: ${{ env.DOCKER_USERNAME }}
         public-password: ${{ env.DOCKER_PASSWORD }}
-
         push-to-prime: false
 
-    - name: Publish Image Runtime - Staging
+    - name: Publish Image - Staging
+      if: ${{ matrix.destination == 'staging' }}
       uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
       env:
-        GOARCH: arm64
+        GOARCH: ${{ matrix.arch }}
         GOOS: linux
       with:
         image: "rke2-runtime"
         tag: ${{ env.GIT_TAG }}
-        make-target: publish-image-runtime
+        make-target: ${{ matrix.make-target }}
+
         push-to-public: false
 
         prime-repo: rancher
@@ -253,16 +204,17 @@ jobs:
         prime-username: ${{ env.PRIME_STAGING_REGISTRY_USERNAME }}
         prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
-    - name: Publish Image Runtime - Prime
+    - name: Publish Image  Prime
+      if: ${{ !contains(github.ref_name, '-rc') && matrix.destination == 'prime' }}
       uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
-      if: ${{ !contains(github.ref_name, '-rc') }}
       env:
-        GOARCH: arm64
+        GOARCH: ${{ matrix.arch }}
         GOOS: linux
       with:
         image: "rke2-runtime"
         tag: ${{ env.GIT_TAG }}
-        make-target: publish-image-runtime
+        make-target: ${{ matrix.make-target }}
+
         push-to-public: false
 
         prime-repo: rancher
@@ -270,18 +222,21 @@ jobs:
         prime-username: ${{ env.PRIME_REGISTRY_USERNAME }}
         prime-password: ${{ env.PRIME_REGISTRY_PASSWORD }}
 
-    - name: Checksum
-      run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-checksum
-
-    - name: Publish Artifacts
-      run: |
-        make in-docker-publish-binary
-      env:
-        GH_TOKEN: ${{ github.token }}
   manifest:
-    needs: [release-amd64, release-arm64]
+    name: "Manifest - ${{ matrix.destination }}"
+    needs: [publish-images]
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # amd64 – Linux runtime
+          - { destination: docker   }
+          - { destination: staging  }
+          - { destination: prime    }
     steps:
     - name: Checkout code
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -304,6 +259,7 @@ jobs:
         echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
 
     - name: Manifest - Docker
+      if: ${{ matrix.destination == 'docker' }}
       uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
       env:
         GOARCH: amd64
@@ -320,6 +276,7 @@ jobs:
         push-to-prime: false
 
     - name: Manifest - Staging
+      if: ${{ matrix.destination == 'staging' }}
       uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
       env:
         GOARCH: amd64
@@ -338,7 +295,7 @@ jobs:
 
     - name: Manifest - Prime
       uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
-      if: ${{ !contains(github.ref_name, '-rc') }}
+      if: ${{ !contains(github.ref_name, '-rc') && matrix.destination == 'prime' }}
       env:
         GOARCH: amd64
         GOOS: linux
@@ -354,9 +311,29 @@ jobs:
         prime-username: ${{ env.PRIME_REGISTRY_USERNAME }}
         prime-password: ${{ env.PRIME_REGISTRY_PASSWORD }}
 
+  create-draft-release:
+    name: "Create draft release `${{ github.ref_name }}`"
+    needs: [manifest]
+    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+    - name: Download image lists
+      uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+      with:
+        pattern: rke2-artifacts-*
+        merge-multiple: true
+        path: dist/artifacts
+    - name: Publish Artifacts
+      run: |
+        make publish-binary
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+
   release-downstream-components:
     name: "Release downstream components"
-    needs: [release-amd64, release-arm64, sync-prime-ribs]
+    needs: [manifest]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -371,7 +348,7 @@ jobs:
 
     - name: Generate GitHub App token
       id: generate-token
-      uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+      uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3
       with:
         app-id: ${{ env.APP_ID }}
         private-key: ${{ env.PRIVATE_KEY }}
@@ -402,7 +379,7 @@ jobs:
 
   sync-prime-images:
     name: "Sync Prime images"
-    needs: [release-amd64, release-arm64, manifest]
+    needs: [manifest]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -437,7 +414,7 @@ jobs:
           fi
 
       - name: Log in to staging registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
         if: ${{ contains(github.ref_name, '-rc') }}
         with:
           registry: ${{ env.PRIME_STAGING_REGISTRY }}
@@ -445,7 +422,7 @@ jobs:
           password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
       - name: Log in to prime registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
         if: ${{ !contains(github.ref_name, '-rc') }}
         with:
           registry: ${{ env.PRIME_REGISTRY }}
@@ -453,14 +430,17 @@ jobs:
           password: ${{ env.PRIME_REGISTRY_PASSWORD }}
 
       - name: Download image lists
-        run: |
-          gh release download ${{ env.GITHUB_ACTION_TAG }} --repo ${{ github.repository }} --pattern '*.txt'
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+        with:
+          pattern: rke2-artifacts-*
+          merge-multiple: true
+          path: dist/artifacts
 
       - name: Sync images
         run: |
-          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i rke2-images-all.linux-amd64.txt
-          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i rke2-images-all.linux-arm64.txt
-          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i rke2-images.windows-amd64.txt
+          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i dist/artifacts/rke2-images-all.linux-amd64.txt
+          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i dist/artifacts/rke2-images-all.linux-arm64.txt
+          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i dist/artifacts/rke2-images.windows-amd64.txt
 
   sync-prime-ribs:
     name: "Sync Prime ribs"
@@ -488,11 +468,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
       - name: setup ecm-distro-tools
-        uses: rancher/ecm-distro-tools@df74c04bbc0176c3a2a04ebd8f6620c5a23229f6 # v0.61.0
+        uses: rancher/ecm-distro-tools@9cc9d787c12b5ed1acdeb504e4ff59511ffd39c9 # v0.62.0
+
       - name: Make artifacts directory
         run: |
           mkdir -p dist/artifacts
+
       - name: Read secrets
         uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
         with:
@@ -507,7 +490,7 @@ jobs:
             secret/data/github/repo/${{ github.repository }}/aws/release-team-cloudfront-cache-invalidation/credentials primeArtifactsDistributionId | PRIME_ARTIFACTS_DISTRIBUTION_ID ;
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
@@ -530,8 +513,11 @@ jobs:
           docker pull "${{ env.REGISTRY }}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
 
       - name: Download Binaries
-        run: |
-          gh release download "$TAG" --repo "${{ github.repository }}" --dir ./dist/artifacts -p "rke2.*" -p "*.exe"
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+        with:
+          pattern: rke2-artifacts-*
+          merge-multiple: true
+          path: dist/artifacts
 
       - name: Package Images
         env:
@@ -551,7 +537,7 @@ jobs:
           make in-docker-checksum
 
       - name: Configure Prime Artifact Uploader AWS Credentials
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
@@ -575,7 +561,7 @@ jobs:
           aws s3 cp index-prerelease.html s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/index-prerelease.html
 
       - name: Configure Cache Invalidation AWS Credentials
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID_CACHE_INVALIDATION }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY_CACHE_INVALIDATION }}
