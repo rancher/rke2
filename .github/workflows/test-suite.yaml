@@ -247,15 +247,38 @@ jobs:
             ~/.vagrant.d/boxes
         key: vagrant-box-ubuntu-2404
     - name: "Vagrant Plugin(s)"
-      run: vagrant plugin install vagrant-rke2 vagrant-reload vagrant-scp
+      env:
+        VAGRANT_RKE2_VERSION: "0.2.0"
+        VAGRANT_RKE2_CHECKSUM: "b91dbeee2e7f35d4849ff149ce3d4bdb35f1e594b5a889c48b28a2fce346277d"
+        VAGRANT_RELOAD_VERSION: "0.0.1"
+        VAGRANT_RELOAD_CHECKSUM: "aa03d5e52737586bd5dab740c8bc61690e63c75c0d96383d9bea7520fa05be6a"
+        VAGRANT_SCP_VERSION: "0.5.9"
+        VAGRANT_SCP_CHECKSUM: "e3adda6c6a059f10e9edfa90a8f08892493010f176a18360a5d92d92847cf329"
+      run: |
+        for plugin in "vagrant-rke2:${VAGRANT_RKE2_VERSION}:${VAGRANT_RKE2_CHECKSUM}" \
+                      "vagrant-reload:${VAGRANT_RELOAD_VERSION}:${VAGRANT_RELOAD_CHECKSUM}" \
+                      "vagrant-scp:${VAGRANT_SCP_VERSION}:${VAGRANT_SCP_CHECKSUM}"; do
+          name="${plugin%%:*}"
+          rest="${plugin#*:}"
+          version="${rest%%:*}"
+          checksum="${rest##*:}"
+          curl -fsSL "https://rubygems.org/gems/${name}-${version}.gem" -o "${name}.gem"
+          echo "${checksum}  ${name}.gem" | sha256sum -c
+          vagrant plugin install "${name}.gem"
+          rm -f "${name}.gem"
+        done
     
     - name: Install Go
       uses: ./.github/actions/setup-go
     - name: Install Kubectl
+      env:
+        KUBECTL_VERSION: "v1.34.6"
+        KUBECTL_CHECKSUM: "3166155b17198c0af34ff5a360bd4d9d58db98bafadc6f3c2a57ae560563cd6b"
       run: |
-          STABLE_VERSION=$(yq '.channels[] | select(.name == "stable") | .latest | sub("\+.*", "")' channels.yaml)
-          curl --retry 3 -LO "https://dl.k8s.io/release/${STABLE_VERSION}/bin/linux/amd64/kubectl"
+          curl --retry 3 -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" -o kubectl
+          echo "${KUBECTL_CHECKSUM}  kubectl" | sha256sum -c
           sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          rm -f kubectl
     - name: Download RKE2 Binary and Runtime Image
       uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
       with:
