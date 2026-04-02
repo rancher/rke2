@@ -85,12 +85,20 @@ jobs:
       run: |
         echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
 
-    - name: Upload artifacts
+    - name: Upload Artifacts `linux/amd64`
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       with:
         name: rke2-artifacts-amd64
         path: |
           dist/artifacts/*amd64*
+        if-no-files-found: error
+
+    - name: Upload Image List
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      with:
+        name: rke2-image-lists
+        path: |
+          dist/artifacts/rke2-images-all.linux-amd64.txt
         if-no-files-found: error
 
   release-arm64:
@@ -124,12 +132,20 @@ jobs:
       run: |
         GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-checksum
 
-    - name: Upload artifacts
+    - name: Upload Artifacts `linux/arm64`
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       with:
         name: rke2-artifacts-arm64
         path: |
           dist/artifacts/*arm64*
+        if-no-files-found: error
+
+    - name: Upload Image List
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      with:
+        name: rke2-image-lists
+        path: |
+          dist/artifacts/rke2-images-all.linux-arm64.txt
         if-no-files-found: error
 
   publish-images:
@@ -324,7 +340,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-    - name: Download image lists
+
+    - name: Download Artifacts
       uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
       with:
         pattern: rke2-artifacts-*
@@ -339,6 +356,14 @@ jobs:
       run: |
         GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-checksum
 
+    - name: Upload Image List - Windows
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      with:
+        name: rke2-image-lists
+        path: |
+          dist/artifacts/rke2-images.windows-amd64.txt
+        if-no-files-found: error
+
     - name: Publish Artifacts
       run: |
         make publish-binary
@@ -346,9 +371,19 @@ jobs:
         GH_TOKEN: ${{ github.token }}
         GITHUB_REPOSITORY: ${{ github.repository }}
 
+  publish-pre-release:
+    needs: [create-draft-release]
+    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
+    steps:
+      - name: Publish the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release edit -R "${GITHUB_REPOSITORY}" "${GITHUB_REF_NAME}" --draft=false --prerelease
+
   release-downstream-components:
     name: "Release downstream components"
-    needs: [manifest]
+    needs: [publish-pre-release]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -447,7 +482,7 @@ jobs:
       - name: Download image lists
         uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
-          pattern: rke2-artifacts-*
+          pattern: rke2-image-lists
           merge-multiple: true
           path: dist/artifacts
 
@@ -459,7 +494,7 @@ jobs:
 
   sync-prime-ribs:
     name: "Sync Prime ribs"
-    needs: [manifest]
+    needs: [sync-prime-images, publish-pre-release]
     runs-on: runs-on,runner=${{ matrix.runner }},run-id=${{ github.run_id }},image=${{ matrix.image }},hdd=256
     permissions:
       contents: read
@@ -528,11 +563,8 @@ jobs:
           docker pull "${{ env.REGISTRY }}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
 
       - name: Download Binaries
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
-        with:
-          pattern: rke2-artifacts-*
-          merge-multiple: true
-          path: dist/artifacts
+        run: |
+          gh release download "$TAG" --repo "${{ github.repository }}" --dir ./dist/artifacts -p "rke2.*" -p "*.exe"
 
       - name: Package Images
         env:
