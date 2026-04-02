@@ -27,4 +27,11 @@ runs:
         sudo chmod a+rw /var/run/libvirt/libvirt-sock
     - name: Install vagrant-libvirt plugin
       shell: bash
-      run: vagrant plugin install vagrant-libvirt
+      env:
+        VAGRANT_LIBVIRT_VERSION: "0.12.2"
+        VAGRANT_LIBVIRT_CHECKSUM: "34c8918eb550a36522f67389c290e6349524fbde60b13f39a7014c222c376f04"
+      run: |
+        curl -fsSL "https://rubygems.org/gems/vagrant-libvirt-${VAGRANT_LIBVIRT_VERSION}.gem" -o vagrant-libvirt.gem
+        echo "${VAGRANT_LIBVIRT_CHECKSUM}  vagrant-libvirt.gem" | sha256sum -c
+        vagrant plugin install vagrant-libvirt.gem
+        rm -f vagrant-libvirt.gem
