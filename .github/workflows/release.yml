@@ -25,7 +25,7 @@ jobs:
 
     - name: Validate Release
       run: |
-        make validate-release
+        make in-docker-validate-release
     
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
@@ -70,14 +70,6 @@ jobs:
     - name: Set environment variables
       run: |
         echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
- 
-    - name: Package windows images
-      run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-package-windows-images
-
-    - name: Checksum Artifacts
-      run: |
-        GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-checksum
 
     - name: Upload artifacts
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
@@ -95,7 +87,7 @@ jobs:
 
     - name: Validate Release
       run: |
-       make validate-release
+        make in-docker-validate-release
 
     - name: Build
       run: |
@@ -324,6 +316,15 @@ jobs:
         pattern: rke2-artifacts-*
         merge-multiple: true
         path: dist/artifacts
+ 
+    - name: Package windows images
+      run: |
+        GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-package-windows-images
+
+    - name: Checksum Artifacts
+      run: |
+        GITHUB_ACTION_TAG=${{ github.ref_name }} make in-docker-checksum
+
     - name: Publish Artifacts
       run: |
         make publish-binary
