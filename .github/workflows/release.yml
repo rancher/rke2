@@ -17,6 +17,24 @@ permissions:
     contents: write
     id-token: write
 jobs:
+  test:
+    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=256
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+    - name: Build
+      run: |
+        make ci
+
+    - name: Load kernel modules
+      run: |
+       sudo modprobe br_netfilter overlay
+        
+    - name: Test
+      run: |
+        make in-docker-test
+
   release-amd64:
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=256
     steps:
@@ -62,10 +80,6 @@ jobs:
     - name: Load kernel modules
       run: |
        sudo modprobe br_netfilter overlay
-        
-    - name: Test
-      run: |
-        make in-docker-test
 
     - name: Set environment variables
       run: |
@@ -120,7 +134,7 @@ jobs:
 
   publish-images:
     name: "Publish ${{ matrix.arch }} ${{ matrix.make-target }} - ${{ matrix.destination }}"
-    needs: [release-amd64, release-arm64]
+    needs: [test, release-amd64, release-arm64]
     runs-on: runs-on,runner=8cpu-linux-${{ matrix.runner-arch }},run-id=${{ github.run_id }},image=ubuntu24-full-${{ matrix.runner-arch }},hdd=64
     permissions:
       contents: read
