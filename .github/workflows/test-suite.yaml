@@ -25,6 +25,9 @@ jobs:
   build:
     name: Build RKE2 Images and Binary
     runs-on: ${{ github.repository == 'rancher/rke2' && 'runs-on,runner=16cpu-linux-x64,image=ubuntu24-full-x64' || 'ubuntu-24.04' }}
+    permissions:
+      contents: read
+      id-token: write
     steps:
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
