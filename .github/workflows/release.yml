@@ -35,6 +35,13 @@ jobs:
       run: |
         make in-docker-test
 
+    - name: Upload Test results
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      with:
+        name: rke2-artifacts-test-results
+        path: |
+          dist/artifacts/*.log
+
   release-amd64:
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=256
     steps:
@@ -429,7 +436,7 @@ jobs:
 
   sync-prime-images:
     name: "Sync Prime images"
-    needs: [manifest]
+    needs: [create-draft-release]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -534,7 +541,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: setup ecm-distro-tools
-        uses: rancher/ecm-distro-tools@9cc9d787c12b5ed1acdeb504e4ff59511ffd39c9 # v0.62.0
+        uses: rancher/ecm-distro-tools@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
 
       - name: Make artifacts directory
         run: |
