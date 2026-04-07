@@ -20,9 +20,16 @@ PULL_CMD="${PULL_CMD:-echo}"
 # When packaging images.txt, we use docker as rke2-runtime only exists locally
 PULL_CMD_CORE="${PULL_CMD_CORE:-docker image pull --quiet}"
 
-INGRESS_NGINX_TAG=v1.14.5-hardened1
+INGRESS_NGINX_HARDENED_TAG=v1.14.5-hardened1
+INGRESS_NGINX_PRIME_TAG=v1.14.5-prime1
+INGRESS_IMAGES="
+    ${REGISTRY}/rancher/kube-webhook-certgen:${INGRESS_NGINX_HARDENED_TAG}
+    ${REGISTRY}/rancher/nginx-ingress-controller:${INGRESS_NGINX_HARDENED_TAG}"
+
 if [ "${REGISTRY}" != "docker.io" ]; then
-    INGRESS_NGINX_TAG=v1.14.5-prime1
+    INGRESS_IMAGES="${INGRESS_IMAGES}
+    ${REGISTRY}/rancher/kube-webhook-certgen:${INGRESS_NGINX_PRIME_TAG}
+    ${REGISTRY}/rancher/nginx-ingress-controller:${INGRESS_NGINX_PRIME_TAG}"
 fi
 
 xargs -n1 -t $PULL_CMD_CORE << EOF >> $BUILD_DIR/images-core.txt
@@ -36,8 +43,7 @@ xargs -n1 -t $PULL_CMD_CORE << EOF >> $BUILD_DIR/images-core.txt
     ${REGISTRY}/rancher/klipper-helm:${KLIPPERHELM_VERSION}
     ${REGISTRY}/rancher/klipper-lb:v0.4.15
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
-    ${REGISTRY}/rancher/kube-webhook-certgen:${INGRESS_NGINX_TAG}
-    ${REGISTRY}/rancher/nginx-ingress-controller:${INGRESS_NGINX_TAG}
+    ${INGRESS_IMAGES}
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
     ${REGISTRY}/rancher/hardened-snapshot-controller:v8.4.0-build20260205
 EOF
