@@ -77,7 +77,7 @@ RUN curl -fsSLO https://github.com/kubernetes-sigs/cri-tools/releases/download/$
     echo "a5329ebc16378ae1d2935414077695579d76617aaf936a9d8c8ed086951313f3  crictl-${CRICTL_VERSION}-windows-amd64.tar.gz" | sha256sum -c -
 
 RUN curl -fsSLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz && \
-    echo "f259fdb20edd4332cbb212c579dae3d3883f27292d5c800394d981423a034b4a  cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz" | sha256sum -c -
+    echo "c09a62523d76b32b883b6a9ee824c997b5c3cc8b3caebc8612c2f64fbbe97334  cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz" | sha256sum -c -
 
 RUN case "${KUBERNETES_VERSION}" in \
         v1.35.3) \
@@ -100,7 +100,7 @@ RUN case "${KUBERNETES_VERSION}" in \
 RUN curl -fsSLO https://github.com/projectcalico/calico/releases/download/${CALICO_VERSION}/calico-windows-${CALICO_VERSION}.zip && \
     echo "e525f35333080b6c8600269041d1a6066a76553ad8594f8d012db7d43804fddc  calico-windows-${CALICO_VERSION}.zip" | sha256sum -c -
 RUN curl -fsSL https://github.com/flannel-io/flannel/releases/download/${FLANNEL_VERSION}/flanneld.exe -o flanneld.exe && \
-    echo "a0104b877b43d299c8c2c20db5cd878de390a7e55fec5058c92da09e5f9ace8d  flanneld.exe" | sha256sum -c - && \
+    echo "b24531dbf76f6871e0b6b85838a3bb18ac7881410f7198b84a1d6dc76474c7c2  flanneld.exe" | sha256sum -c - && \
     mv flanneld.exe rancher/flanneld.exe
 RUN curl -fsSL https://github.com/flannel-io/cni-plugin/releases/download/${CNI_FLANNEL_VERSION}/flannel-amd64.exe -o flannel.exe && \
     echo "7ea82588e08c13c7eeda314890973f71eb91dfeda31b385f81f08d71ede94c44  flannel.exe" | sha256sum -c - && \
