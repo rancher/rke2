@@ -24,11 +24,31 @@ RUN set -x && \
     file \
     bash \
     py-pip
-RUN curl -sL https://dl.k8s.io/release/$( \
-    curl -sL https://dl.k8s.io/release/stable.txt \
-    )/bin/linux/${ARCH}/kubectl -o /usr/local/bin/kubectl && \
-    chmod a+x /usr/local/bin/kubectl
-RUN curl -sL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.55.2
+RUN KUBECTL_VERSION=v1.35.3 && \
+    case "${ARCH}" in \
+        amd64) KUBECTL_SHA256="fd31c7d7129260e608f6faf92d5984c3267ad0b5ead3bced2fe125686e286ad6" ;; \
+        arm64) KUBECTL_SHA256="6f0cd088a82dde5d5807122056069e2fac4ed447cc518efc055547ae46525f14" ;; \
+        *) echo "Unsupported architecture for kubectl: ${ARCH}" && exit 1 ;; \
+    esac && \
+    cd /tmp && \
+    curl -fsSL https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl -o kubectl && \
+    echo "${KUBECTL_SHA256}  kubectl" | sha256sum -c - && \
+    install -m 0755 kubectl /usr/local/bin/kubectl && \
+    rm -f /tmp/kubectl
+RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
+        GOLANGCI_VERSION=v1.55.2 && \
+        case "${ARCH}" in \
+            amd64) GOLANGCI_SHA256="ca21c961a33be3bc15e4292dc40c98c8dcc5463a7b6768a3afc123761630c09c" ;; \
+            arm64) GOLANGCI_SHA256="8eb0cee9b1dbf0eaa49871798c7f8a5b35f2960c52d776a5f31eb7d886b92746" ;; \
+            *) echo "Unsupported architecture for golangci-lint: ${ARCH}" && exit 1 ;; \
+        esac && \
+        cd /tmp && \
+        curl -fsSL "https://github.com/golangci/golangci-lint/releases/download/${GOLANGCI_VERSION}/golangci-lint-${GOLANGCI_VERSION#v}-linux-${ARCH}.tar.gz" -o golangci-lint.tar.gz && \
+        echo "${GOLANGCI_SHA256}  golangci-lint.tar.gz" | sha256sum -c - && \
+        tar --strip-components=1 -xzf golangci-lint.tar.gz "golangci-lint-${GOLANGCI_VERSION#v}-linux-${ARCH}/golangci-lint" && \
+        install -m 0755 golangci-lint /usr/local/bin/golangci-lint && \
+        rm -f /tmp/golangci-lint /tmp/golangci-lint.tar.gz; \
+    fi
 WORKDIR /source
 
 FROM --platform=$BUILDPLATFORM rancher/hardened-containerd:v2.2.2-k3s1-build20260312-amd64-windows AS containerd
@@ -50,41 +70,44 @@ RUN mkdir -p charts
 # We use the containerd-shim-runhcs-v1.exe binary from upstream, as it apparently can't be cross-built on Linux
 COPY Dockerfile ./
 RUN CONTAINERD_VERSION=$(grep "rancher/hardened-containerd" Dockerfile | grep ':v' | cut -d '=' -f 2- | grep -oE "([0-9]+)\.([0-9]+)\.([0-9]+)") \
- && curl -sLO https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz \
- && curl -sLO https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz.sha256sum \
- && sha256sum -c containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz.sha256sum
+ && curl -fsSLO https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz \
+ && echo "d582136ef4d7ad748c70b0c6a0f6ecf176298e2da348874c730b39592bd0c7ee  containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz" | sha256sum -c -
 
-RUN curl -sLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-windows-amd64.tar.gz
-# cri-tools artifact sha256sums are currently broken
-#RUN curl -SLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-windows-amd64.tar.gz.sha256
-#RUN sha256sum -c ./crictl-${CRICTL_VERSION}-windows-amd64.tar.gz.sha256
+RUN curl -fsSLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-windows-amd64.tar.gz && \
+    echo "a5329ebc16378ae1d2935414077695579d76617aaf936a9d8c8ed086951313f3  crictl-${CRICTL_VERSION}-windows-amd64.tar.gz" | sha256sum -c -
 
-RUN curl -sLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz
-RUN curl -sLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz.sha256
-RUN sha256sum -c cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz.sha256
+RUN curl -fsSLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz && \
+    echo "f259fdb20edd4332cbb212c579dae3d3883f27292d5c800394d981423a034b4a  cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz" | sha256sum -c -
 
-RUN curl -sLO https://dl.k8s.io/release/${KUBERNETES_VERSION}/bin/windows/amd64/kubectl.exe
-RUN curl -sLO https://dl.k8s.io/${KUBERNETES_VERSION}/bin/windows/amd64/kubectl.exe.sha256
-RUN echo "  kubectl.exe" >> kubectl.exe.sha256
-RUN sha256sum -c kubectl.exe.sha256
-RUN mv kubectl.exe rancher/
+RUN case "${KUBERNETES_VERSION}" in \
+        v1.35.3) \
+            KUBECTL_SHA256="6c367f9c34be9a13a94eb523dd62006973e1d051adea7d6bcf800dde3f6e84df" && \
+            KUBELET_SHA256="9baf7d817616027109942aa466c9f908e6aa4d032ea6b9b31ac08fbcae3e80e1" && \
+            KUBE_PROXY_SHA256="0243029bad441164e838f868feaaa3568ed211ffdf588e6794a56f7118d914a5"; \
+            ;; \
+        *) echo "Unsupported KUBERNETES_VERSION for pinned Windows binaries: ${KUBERNETES_VERSION}" && exit 1 ;; \
+    esac && \
+    curl -fsSLO https://dl.k8s.io/release/${KUBERNETES_VERSION}/bin/windows/amd64/kubectl.exe && \
+    echo "${KUBECTL_SHA256}  kubectl.exe" | sha256sum -c - && \
+    mv kubectl.exe rancher/ && \
+    curl -fsSLO https://dl.k8s.io/release/${KUBERNETES_VERSION}/bin/windows/amd64/kubelet.exe && \
+    echo "${KUBELET_SHA256}  kubelet.exe" | sha256sum -c - && \
+    mv kubelet.exe rancher/ && \
+    curl -fsSLO https://dl.k8s.io/release/${KUBERNETES_VERSION}/bin/windows/amd64/kube-proxy.exe && \
+    echo "${KUBE_PROXY_SHA256}  kube-proxy.exe" | sha256sum -c - && \
+    mv kube-proxy.exe rancher/
 
-RUN curl -sLO https://dl.k8s.io/release/${KUBERNETES_VERSION}/bin/windows/amd64/kubelet.exe
-RUN curl -sLO https://dl.k8s.io/${KUBERNETES_VERSION}/bin/windows/amd64/kubelet.exe.sha256
-RUN echo "  kubelet.exe" >> kubelet.exe.sha256
-RUN sha256sum -c kubelet.exe.sha256
-RUN mv kubelet.exe rancher/
-
-RUN curl -sLO https://dl.k8s.io/release/${KUBERNETES_VERSION}/bin/windows/amd64/kube-proxy.exe
-RUN curl -sLO https://dl.k8s.io/${KUBERNETES_VERSION}/bin/windows/amd64/kube-proxy.exe.sha256
-RUN echo "  kube-proxy.exe" >> kube-proxy.exe.sha256
-RUN sha256sum -c kube-proxy.exe.sha256
-RUN mv kube-proxy.exe rancher/
-
-RUN curl -sLO https://github.com/projectcalico/calico/releases/download/${CALICO_VERSION}/calico-windows-${CALICO_VERSION}.zip
-RUN curl -sL https://github.com/flannel-io/flannel/releases/download/${FLANNEL_VERSION}/flanneld.exe -o rancher/flanneld.exe
-RUN curl -sL https://github.com/flannel-io/cni-plugin/releases/download/${CNI_FLANNEL_VERSION}/flannel-amd64.exe -o rancher/flannel.exe
-RUN curl -sL https://github.com/Microsoft/SDN/raw/master/Kubernetes/windows/hns.psm1 -o rancher/hns.psm1
+RUN curl -fsSLO https://github.com/projectcalico/calico/releases/download/${CALICO_VERSION}/calico-windows-${CALICO_VERSION}.zip && \
+    echo "e525f35333080b6c8600269041d1a6066a76553ad8594f8d012db7d43804fddc  calico-windows-${CALICO_VERSION}.zip" | sha256sum -c -
+RUN curl -fsSL https://github.com/flannel-io/flannel/releases/download/${FLANNEL_VERSION}/flanneld.exe -o flanneld.exe && \
+    echo "a0104b877b43d299c8c2c20db5cd878de390a7e55fec5058c92da09e5f9ace8d  flanneld.exe" | sha256sum -c - && \
+    mv flanneld.exe rancher/flanneld.exe
+RUN curl -fsSL https://github.com/flannel-io/cni-plugin/releases/download/${CNI_FLANNEL_VERSION}/flannel-amd64.exe -o flannel.exe && \
+    echo "7ea82588e08c13c7eeda314890973f71eb91dfeda31b385f81f08d71ede94c44  flannel.exe" | sha256sum -c - && \
+    mv flannel.exe rancher/flannel.exe
+RUN curl -fsSL https://github.com/Microsoft/SDN/raw/master/Kubernetes/windows/hns.psm1 -o hns.psm1 && \
+    echo "a8a53ed4fac2e27c7e4268db069d4cf3129a56d466ef3bf9465fb52dcd76a29c  hns.psm1" | sha256sum -c - && \
+    mv hns.psm1 rancher/hns.psm1
 
 RUN CONTAINERD_VERSION=$(grep "rancher/hardened-containerd" Dockerfile | grep ':v' | cut -d '=' -f 2- | grep -oE "([0-9]+)\.([0-9]+)\.([0-9]+)") \
  && tar xvzf containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz -C rancher/ bin/containerd-shim-runhcs-v1.exe
