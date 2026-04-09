@@ -127,7 +127,7 @@ EOF
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-flannel.txt
     ${REGISTRY}/rancher/hardened-flannel:v0.28.2-build20260327
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.1-build20260318
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.1-build20260408
 EOF
 fi
 # Continue to provide a legacy airgap archive set with the default CNI images
