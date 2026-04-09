@@ -46,7 +46,7 @@ jobs:
     - name: Install OS Packages
       run: sudo apt-get update && sudo apt-get install -y libarchive-tools g++-mingw-w64-x86-64 gcc-mingw-w64-x86-64
     - name: "Read secrets"
-      if: github.event_name != 'pull_request' && github.repository == 'rancher/rke2'
+      # if: github.event_name != 'pull_request' && github.repository == 'rancher/rke2'
       uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89 # v3
       with:
         secrets: |
