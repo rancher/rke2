@@ -45,7 +45,7 @@ xargs -n1 -t $PULL_CMD_CORE << EOF >> $BUILD_DIR/images-core.txt
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
     ${INGRESS_IMAGES}
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
-    ${REGISTRY}/rancher/hardened-snapshot-controller:v8.4.0-build20260205
+    ${REGISTRY}/rancher/hardened-snapshot-controller:v8.5.0-build20260410
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-traefik.txt
@@ -101,7 +101,7 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.15.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.9.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v4.0.1
-    ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.4.0-build20260205
+    ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.5.0-build20260410
 EOF
 fi
 
