@@ -20,8 +20,8 @@ PULL_CMD="${PULL_CMD:-echo}"
 # When packaging images.txt, we use docker as rke2-runtime only exists locally
 PULL_CMD_CORE="${PULL_CMD_CORE:-docker image pull --quiet}"
 
-INGRESS_NGINX_HARDENED_TAG=v1.14.5-hardened1
-INGRESS_NGINX_PRIME_TAG=v1.14.5-prime1
+INGRESS_NGINX_HARDENED_TAG=v1.14.5-hardened2
+INGRESS_NGINX_PRIME_TAG=v1.14.5-prime3
 INGRESS_IMAGES="
     ${REGISTRY}/rancher/kube-webhook-certgen:${INGRESS_NGINX_HARDENED_TAG}
     ${REGISTRY}/rancher/nginx-ingress-controller:${INGRESS_NGINX_HARDENED_TAG}"
