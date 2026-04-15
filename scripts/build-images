@@ -53,8 +53,8 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-traefik.txt
 EOF
 
 xargs -n1 -t $PULL_CMD_CORE << EOF > $BUILD_DIR/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.31.4-build20260414
-    ${REGISTRY}/rancher/hardened-flannel:v0.28.4-build20260414
+    ${REGISTRY}/rancher/hardened-calico:v3.31.5-build20260415
+    ${REGISTRY}/rancher/hardened-flannel:v0.28.4-build20260415
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
