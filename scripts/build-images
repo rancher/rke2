@@ -54,7 +54,7 @@ EOF
 
 xargs -n1 -t $PULL_CMD_CORE << EOF > $BUILD_DIR/images-canal.txt
     ${REGISTRY}/rancher/hardened-calico:v3.31.4-build20260414
-    ${REGISTRY}/rancher/hardened-flannel:v0.28.2-build20260414
+    ${REGISTRY}/rancher/hardened-flannel:v0.28.3-build20260415
 EOF
 
 if [ "${GOARCH}" != "s390x" ]; then
@@ -126,8 +126,8 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-harvester.txt
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-flannel.txt
-    ${REGISTRY}/rancher/hardened-flannel:v0.28.2-build20260414
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.1-build20260408
+    ${REGISTRY}/rancher/hardened-flannel:v0.28.3-build20260415
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.1-build20260415
 EOF
 fi
 # Continue to provide a legacy airgap archive set with the default CNI images
