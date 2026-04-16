@@ -29,41 +29,41 @@ replace (
 	golang.org/x/sys => golang.org/x/sys v0.31.0
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20241209162323-e6fa225c2576
 	google.golang.org/grpc => google.golang.org/grpc v1.72.1
-	k8s.io/api => github.com/k3s-io/kubernetes/staging/src/k8s.io/api v1.34.6-k3s1
-	k8s.io/apiextensions-apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/apiextensions-apiserver v1.34.6-k3s1
-	k8s.io/apimachinery => github.com/k3s-io/kubernetes/staging/src/k8s.io/apimachinery v1.34.6-k3s1
-	k8s.io/apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/apiserver v1.34.6-k3s1
-	k8s.io/cli-runtime => github.com/k3s-io/kubernetes/staging/src/k8s.io/cli-runtime v1.34.6-k3s1
-	k8s.io/client-go => github.com/k3s-io/kubernetes/staging/src/k8s.io/client-go v1.34.6-k3s1
-	k8s.io/cloud-provider => github.com/k3s-io/kubernetes/staging/src/k8s.io/cloud-provider v1.34.6-k3s1
-	k8s.io/cluster-bootstrap => github.com/k3s-io/kubernetes/staging/src/k8s.io/cluster-bootstrap v1.34.6-k3s1
-	k8s.io/code-generator => github.com/k3s-io/kubernetes/staging/src/k8s.io/code-generator v1.34.6-k3s1
-	k8s.io/component-base => github.com/k3s-io/kubernetes/staging/src/k8s.io/component-base v1.34.6-k3s1
-	k8s.io/component-helpers => github.com/k3s-io/kubernetes/staging/src/k8s.io/component-helpers v1.34.6-k3s1
-	k8s.io/controller-manager => github.com/k3s-io/kubernetes/staging/src/k8s.io/controller-manager v1.34.6-k3s1
-	k8s.io/cri-api => github.com/k3s-io/kubernetes/staging/src/k8s.io/cri-api v1.34.6-k3s1
-	k8s.io/csi-translation-lib => github.com/k3s-io/kubernetes/staging/src/k8s.io/csi-translation-lib v1.34.6-k3s1
-	k8s.io/dynamic-resource-allocation => github.com/k3s-io/kubernetes/staging/src/k8s.io/dynamic-resource-allocation v1.34.6-k3s1
-	k8s.io/endpointslice => github.com/k3s-io/kubernetes/staging/src/k8s.io/endpointslice v1.34.6-k3s1
-	k8s.io/externaljwt => github.com/k3s-io/kubernetes/staging/src/k8s.io/externaljwt v1.34.6-k3s1
+	k8s.io/api => github.com/k3s-io/kubernetes/staging/src/k8s.io/api v1.34.7-k3s1
+	k8s.io/apiextensions-apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/apiextensions-apiserver v1.34.7-k3s1
+	k8s.io/apimachinery => github.com/k3s-io/kubernetes/staging/src/k8s.io/apimachinery v1.34.7-k3s1
+	k8s.io/apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/apiserver v1.34.7-k3s1
+	k8s.io/cli-runtime => github.com/k3s-io/kubernetes/staging/src/k8s.io/cli-runtime v1.34.7-k3s1
+	k8s.io/client-go => github.com/k3s-io/kubernetes/staging/src/k8s.io/client-go v1.34.7-k3s1
+	k8s.io/cloud-provider => github.com/k3s-io/kubernetes/staging/src/k8s.io/cloud-provider v1.34.7-k3s1
+	k8s.io/cluster-bootstrap => github.com/k3s-io/kubernetes/staging/src/k8s.io/cluster-bootstrap v1.34.7-k3s1
+	k8s.io/code-generator => github.com/k3s-io/kubernetes/staging/src/k8s.io/code-generator v1.34.7-k3s1
+	k8s.io/component-base => github.com/k3s-io/kubernetes/staging/src/k8s.io/component-base v1.34.7-k3s1
+	k8s.io/component-helpers => github.com/k3s-io/kubernetes/staging/src/k8s.io/component-helpers v1.34.7-k3s1
+	k8s.io/controller-manager => github.com/k3s-io/kubernetes/staging/src/k8s.io/controller-manager v1.34.7-k3s1
+	k8s.io/cri-api => github.com/k3s-io/kubernetes/staging/src/k8s.io/cri-api v1.34.7-k3s1
+	k8s.io/csi-translation-lib => github.com/k3s-io/kubernetes/staging/src/k8s.io/csi-translation-lib v1.34.7-k3s1
+	k8s.io/dynamic-resource-allocation => github.com/k3s-io/kubernetes/staging/src/k8s.io/dynamic-resource-allocation v1.34.7-k3s1
+	k8s.io/endpointslice => github.com/k3s-io/kubernetes/staging/src/k8s.io/endpointslice v1.34.7-k3s1
+	k8s.io/externaljwt => github.com/k3s-io/kubernetes/staging/src/k8s.io/externaljwt v1.34.7-k3s1
 	k8s.io/klog => github.com/k3s-io/klog v1.0.0-k3s2 // k3s-release-1.x
 	k8s.io/klog/v2 => github.com/k3s-io/klog/v2 v2.140.0-k3s1 // k3s-main
-	k8s.io/kms => github.com/k3s-io/kubernetes/staging/src/k8s.io/kms v1.34.6-k3s1
-	k8s.io/kube-aggregator => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-aggregator v1.34.6-k3s1
-	k8s.io/kube-controller-manager => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-controller-manager v1.34.6-k3s1
+	k8s.io/kms => github.com/k3s-io/kubernetes/staging/src/k8s.io/kms v1.34.7-k3s1
+	k8s.io/kube-aggregator => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-aggregator v1.34.7-k3s1
+	k8s.io/kube-controller-manager => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-controller-manager v1.34.7-k3s1
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20250710124328-f3f2b991d03b
-	k8s.io/kube-proxy => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-proxy v1.34.6-k3s1
-	k8s.io/kube-scheduler => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-scheduler v1.34.6-k3s1
-	k8s.io/kubectl => github.com/k3s-io/kubernetes/staging/src/k8s.io/kubectl v1.34.6-k3s1
-	k8s.io/kubelet => github.com/k3s-io/kubernetes/staging/src/k8s.io/kubelet v1.34.6-k3s1
-	k8s.io/kubernetes => github.com/k3s-io/kubernetes v1.34.6-k3s1
-	k8s.io/metrics => github.com/k3s-io/kubernetes/staging/src/k8s.io/metrics v1.34.6-k3s1
-	k8s.io/mount-utils => github.com/k3s-io/kubernetes/staging/src/k8s.io/mount-utils v1.34.6-k3s1
-	k8s.io/node-api => github.com/k3s-io/kubernetes/staging/src/k8s.io/node-api v1.34.6-k3s1
-	k8s.io/pod-security-admission => github.com/k3s-io/kubernetes/staging/src/k8s.io/pod-security-admission v1.34.6-k3s1
-	k8s.io/sample-apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-apiserver v1.34.6-k3s1
-	k8s.io/sample-cli-plugin => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-cli-plugin v1.34.6-k3s1
-	k8s.io/sample-controller => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-controller v1.34.6-k3s1
+	k8s.io/kube-proxy => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-proxy v1.34.7-k3s1
+	k8s.io/kube-scheduler => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-scheduler v1.34.7-k3s1
+	k8s.io/kubectl => github.com/k3s-io/kubernetes/staging/src/k8s.io/kubectl v1.34.7-k3s1
+	k8s.io/kubelet => github.com/k3s-io/kubernetes/staging/src/k8s.io/kubelet v1.34.7-k3s1
+	k8s.io/kubernetes => github.com/k3s-io/kubernetes v1.34.7-k3s1
+	k8s.io/metrics => github.com/k3s-io/kubernetes/staging/src/k8s.io/metrics v1.34.7-k3s1
+	k8s.io/mount-utils => github.com/k3s-io/kubernetes/staging/src/k8s.io/mount-utils v1.34.7-k3s1
+	k8s.io/node-api => github.com/k3s-io/kubernetes/staging/src/k8s.io/node-api v1.34.7-k3s1
+	k8s.io/pod-security-admission => github.com/k3s-io/kubernetes/staging/src/k8s.io/pod-security-admission v1.34.7-k3s1
+	k8s.io/sample-apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-apiserver v1.34.7-k3s1
+	k8s.io/sample-cli-plugin => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-cli-plugin v1.34.7-k3s1
+	k8s.io/sample-controller => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-controller v1.34.7-k3s1
 	sigs.k8s.io/cri-tools => github.com/k3s-io/cri-tools v1.34.0-k3s2
 )
 
@@ -401,12 +401,12 @@ require (
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.60.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.63.0 // indirect
-	go.opentelemetry.io/otel v1.40.0 // indirect
+	go.opentelemetry.io/otel v1.41.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.38.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.38.0 // indirect
-	go.opentelemetry.io/otel/metric v1.40.0 // indirect
+	go.opentelemetry.io/otel/metric v1.41.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.40.0 // indirect
-	go.opentelemetry.io/otel/trace v1.40.0 // indirect
+	go.opentelemetry.io/otel/trace v1.41.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.7.1 // indirect
 	go.uber.org/dig v1.19.0 // indirect
 	go.uber.org/fx v1.24.0 // indirect
@@ -454,7 +454,7 @@ require (
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.33.0 // indirect
 	sigs.k8s.io/controller-runtime v0.19.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
-	sigs.k8s.io/knftables v0.0.18 // indirect
+	sigs.k8s.io/knftables v0.0.21 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 )
