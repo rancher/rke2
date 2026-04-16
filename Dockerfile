@@ -1,7 +1,7 @@
 ARG KUBERNETES_VERSION=dev
 
 # Base image for common build tools
-FROM rancher/hardened-build-base:v1.24.13b1 AS base
+FROM rancher/hardened-build-base:v1.25.9b1 AS base
 ARG BUILDARCH
 ENV ARCH $BUILDARCH
 RUN set -x && \
@@ -148,7 +148,7 @@ RUN rm -vf /charts/*.sh /charts/*.md /charts/chart_versions.yaml
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
 FROM rancher/hardened-kubernetes:v1.33.10-rke2r3-build20260407 AS kubernetes
-FROM rancher/hardened-containerd:v2.2.2-k3s1-build20260410 AS containerd
+FROM rancher/hardened-containerd:v2.2.3-k3s1-build20260415 AS containerd
 FROM rancher/hardened-crictl:v1.33.0-build20260410 AS crictl
 FROM rancher/hardened-runc:v1.4.2-build20260410 AS runc
 
