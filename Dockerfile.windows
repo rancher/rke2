@@ -5,7 +5,7 @@ RUN apk --no-cache add \
     unzip
 
 # Build environment
-FROM rancher/hardened-build-base:v1.25.7b1 AS build-env
+FROM rancher/hardened-build-base:v1.25.9b1 AS build-env
 ARG BUILDARCH
 ENV ARCH $BUILDARCH
 RUN apk update
@@ -80,10 +80,10 @@ RUN curl -fsSLO https://github.com/containernetworking/plugins/releases/download
     echo "c09a62523d76b32b883b6a9ee824c997b5c3cc8b3caebc8612c2f64fbbe97334  cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz" | sha256sum -c -
 
 RUN case "${KUBERNETES_VERSION}" in \
-        v1.35.3) \
-            KUBECTL_SHA256="6c367f9c34be9a13a94eb523dd62006973e1d051adea7d6bcf800dde3f6e84df" && \
-            KUBELET_SHA256="9baf7d817616027109942aa466c9f908e6aa4d032ea6b9b31ac08fbcae3e80e1" && \
-            KUBE_PROXY_SHA256="0243029bad441164e838f868feaaa3568ed211ffdf588e6794a56f7118d914a5"; \
+        v1.35.4) \
+            KUBECTL_SHA256="d77d03309bd80de56dafe8ca59ff6f2076e2ed4ee61c6a94657a4b6e945210e6" && \
+            KUBELET_SHA256="5ca4dcce04f32b6e78cc44a9e6498b98d2909dd7cb9e2e6c2c424ad27ef33c37" && \
+            KUBE_PROXY_SHA256="feb642528b0a36ab8894c8641c78aab1b4d2059faf3adadeaac48b0162940553"; \
             ;; \
         *) echo "Unsupported KUBERNETES_VERSION for pinned Windows binaries: ${KUBERNETES_VERSION}" && exit 1 ;; \
     esac && \
