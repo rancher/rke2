@@ -311,6 +311,25 @@ jobs:
         pattern: rke2-artifacts-*
         merge-multiple: true
         path: dist/artifacts
+
+    - name: "Read secrets"
+      uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
+      with:
+        secrets: |
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials registry |  PRIME_STAGING_REGISTRY ;
+
+    - name: Set Registry variable
+      env:
+        IS_RC: ${{ contains(github.ref_name, '-rc') }}
+        STAGING_REG: ${{ env.PRIME_STAGING_REGISTRY }}
+        PROD_REG: ${{ env.PRIME_REGISTRY }}
+      run: |
+        if [ "$IS_RC" = "true" ]; then
+          echo "REGISTRY=$STAGING_REG" >> "$GITHUB_ENV"
+        else
+          echo "REGISTRY=$PROD_REG" >> "$GITHUB_ENV"
+        fi
  
     - name: Package windows images
       run: |
