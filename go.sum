@@ -976,8 +976,8 @@ github.com/k3s-io/etcd/server/v3 v3.6.7-k3s1 h1:ZBV6n9XhjGex9MIOaEAefbhNriH5Gxo4
 github.com/k3s-io/etcd/server/v3 v3.6.7-k3s1/go.mod h1:LEM328bPA2uVMhN0+Ht/vAsADW127QS1oM7EuHrOTy0=
 github.com/k3s-io/helm-controller v0.17.1 h1:LjZelVfddI5CWFAI5zlkRVhxobpSLRnNA/R9qU706k0=
 github.com/k3s-io/helm-controller v0.17.1/go.mod h1:5cuEedP5BgBkWpUO1C3BY05hnaBLycsm/2PsW3DY6WE=
-github.com/k3s-io/k3s v1.35.4-0.20260415195656-e51c0636351d h1:VZE73n4+sz5XiwBZOuqYt/xQZRcju4jQZPI6JNIBgWg=
-github.com/k3s-io/k3s v1.35.4-0.20260415195656-e51c0636351d/go.mod h1:9WQL86zmLM16WXtdmJipWP9p1HwkGfH9atEGXbBIk0U=
+github.com/k3s-io/k3s v1.35.4-rc2.0.20260422204245-dcc3bd83f8ad h1:lFhjpubzcQ4dGd9+1GIZXa166DfsrRPn78bfNAclNtE=
+github.com/k3s-io/k3s v1.35.4-rc2.0.20260422204245-dcc3bd83f8ad/go.mod h1:iPLnSV5yTvglu+CdpyvJI0mlBy8tOrNYRKU6oytds8o=
 github.com/k3s-io/kine v0.14.16 h1:K3FKg5L0TaPtFC9ROXP5kSva9wji5dGZiwCD7s2oO88=
 github.com/k3s-io/kine v0.14.16/go.mod h1:jYDQa2H67JKS6fb3PmtgY6eixzCHm0QbFu0eCyxw6Pg=
 github.com/k3s-io/klog/v2 v2.140.0-k3s1 h1:Z6S9oqaxcKtLaTcQNgWsaZNE5a+qJmCrTI+Lahor4X8=
@@ -2281,8 +2281,8 @@ honnef.co/go/tools v0.0.1-2019.2.3/go.mod h1:a3bituU0lyd329TUQxRnasdCoJDkEUEAqEt
 honnef.co/go/tools v0.0.1-2020.1.3/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9vFzvIQ3k=
 honnef.co/go/tools v0.0.1-2020.1.4/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9vFzvIQ3k=
 honnef.co/go/tools v0.1.3/go.mod h1:NgwopIslSNH47DimFoV78dnkksY2EFtX0ajyb3K/las=
-k8s.io/cri-client v0.35.2 h1:5o6hLfZ67awrtuDmu+eGWZbTXnmRfynS6LaidzG/Z7I=
-k8s.io/cri-client v0.35.2/go.mod h1:IwYAAJJVi7/mgvxAWFYCZlcfTJm90sdfpo7pB2NSVeo=
+k8s.io/cri-client v0.35.4 h1:9tJjRUpnmifbLthjlaoNZtXyjpmiypreBFXrqizQN1Q=
+k8s.io/cri-client v0.35.4/go.mod h1:EUUM0mrGR65wydB6nySuBDyQcs0Mcg/2+FRD0ulM3mM=
 k8s.io/gengo/v2 v2.0.0-20250604051438-85fd79dbfd9f/go.mod h1:EJykeLsmFC60UQbYJezXkEsG2FLrt0GPNkU5iK5GWxU=
 k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 h1:Y3gxNAuB0OBLImH611+UDZcmKS3g6CthxToOb37KgwE=
 k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912/go.mod h1:kdmbQkyfwUagLfXIad1y2TdrjPFWp2Q89B3qkRwf/pQ=
