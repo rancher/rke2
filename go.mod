@@ -75,7 +75,7 @@ require (
 	github.com/google/go-containerregistry v0.20.3
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.17.1
-	github.com/k3s-io/k3s v1.35.4-0.20260415195656-e51c0636351d // release-1.35
+	github.com/k3s-io/k3s v1.35.4-rc2.0.20260422204245-dcc3bd83f8ad // release-1.35
 	github.com/k3s-io/kine v0.14.16
 	github.com/libp2p/go-netroute v0.3.0
 	github.com/onsi/ginkgo/v2 v2.27.2
@@ -93,14 +93,14 @@ require (
 	golang.org/x/sys v0.43.0
 	google.golang.org/grpc v1.80.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
-	k8s.io/api v0.35.2
-	k8s.io/apimachinery v0.35.2
+	k8s.io/api v0.35.4
+	k8s.io/apimachinery v0.35.4
 	k8s.io/apiserver v0.35.2
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/component-base v0.35.2
-	k8s.io/cri-api v0.35.2
+	k8s.io/component-base v0.35.4
+	k8s.io/cri-api v0.35.4
 	k8s.io/klog/v2 v2.140.0
-	k8s.io/kubernetes v1.35.2
+	k8s.io/kubernetes v1.35.4
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4
 	sigs.k8s.io/yaml v1.6.0
 )
@@ -439,7 +439,7 @@ require (
 	k8s.io/cluster-bootstrap v0.35.2 // indirect
 	k8s.io/component-helpers v0.35.2 // indirect
 	k8s.io/controller-manager v0.35.2 // indirect
-	k8s.io/cri-client v0.35.2 // indirect
+	k8s.io/cri-client v0.35.4 // indirect
 	k8s.io/csi-translation-lib v0.0.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
 	k8s.io/externaljwt v1.32.0 // indirect
