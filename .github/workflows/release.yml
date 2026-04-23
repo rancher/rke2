@@ -112,15 +112,38 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
+    - name: "Read secrets"
+      uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
+      with:
+        secrets: |
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials registry |  PRIME_STAGING_REGISTRY ;
+
     - name: Validate Release
       run: |
         make in-docker-validate-release
 
+    - name: Set Registry variable
+      env:
+        IS_RC: ${{ contains(github.ref_name, '-rc') }}
+        STAGING_REG: ${{ env.PRIME_STAGING_REGISTRY }}
+        PROD_REG: ${{ env.PRIME_REGISTRY }}
+      run: |
+        if [ "$IS_RC" = "true" ]; then
+          echo "REGISTRY=$STAGING_REG" >> "$GITHUB_ENV"
+        else
+          echo "REGISTRY=$PROD_REG" >> "$GITHUB_ENV"
+        fi
+
     - name: Build
+      env:
+        REGISTRY: ${{ env.REGISTRY }}
       run: |
         make ci
 
     - name: Package Images
+      env:
+        REGISTRY: ${{ env.REGISTRY }}
       run: |
         make in-docker-package-images
     
