@@ -5,7 +5,7 @@ RUN apk --no-cache add \
     unzip
 
 # Build environment
-FROM rancher/hardened-build-base:v1.25.9b1 AS build-env
+FROM rancher/hardened-build-base:v1.26.2b1 AS build-env
 ARG BUILDARCH
 ENV ARCH $BUILDARCH
 RUN apk update
@@ -24,14 +24,10 @@ RUN set -x && \
     file \
     bash \
     py-pip
-RUN KUBECTL_VERSION=v1.35.3 && \
-    case "${ARCH}" in \
-        amd64) KUBECTL_SHA256="fd31c7d7129260e608f6faf92d5984c3267ad0b5ead3bced2fe125686e286ad6" ;; \
-        arm64) KUBECTL_SHA256="6f0cd088a82dde5d5807122056069e2fac4ed447cc518efc055547ae46525f14" ;; \
-        *) echo "Unsupported architecture for kubectl: ${ARCH}" && exit 1 ;; \
-    esac && \
+RUN KUBECTL_VERSION=v1.36.0 && \
+    KUBECTL_SHA256="123d8c8844f46b1244c547fffb3c17180c0c26dac9890589fe7e67763298748e" ;; \
     cd /tmp && \
-    curl -fsSL https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${ARCH}/kubectl -o kubectl && \
+    curl -fsSL https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl -o kubectl && \
     echo "${KUBECTL_SHA256}  kubectl" | sha256sum -c - && \
     install -m 0755 kubectl /usr/local/bin/kubectl && \
     rm -f /tmp/kubectl
@@ -56,7 +52,7 @@ FROM base AS windows-runtime-collect
 ARG KUBERNETES_VERSION=dev
 
 # windows runtime image
-ENV CRICTL_VERSION="v1.35.0"
+ENV CRICTL_VERSION="v1.36.0"
 ENV CALICO_VERSION="v3.31.5"
 ENV CNI_PLUGIN_VERSION="v1.9.1"
 ENV FLANNEL_VERSION="v0.28.4"
@@ -74,26 +70,29 @@ RUN CONTAINERD_VERSION=$(grep "rancher/hardened-containerd" Dockerfile | grep ':
  && echo "81314dd5e3baad958acae0e4d1ff21eb27b7c8f8809232ab06c9f397cd221e02  containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz" | sha256sum -c -
 
 RUN curl -fsSLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-windows-amd64.tar.gz && \
-    echo "a5329ebc16378ae1d2935414077695579d76617aaf936a9d8c8ed086951313f3  crictl-${CRICTL_VERSION}-windows-amd64.tar.gz" | sha256sum -c -
+    echo "73ef455b8a5a1e43f19372eba0ec40455e4abde3b9441a21db32c2a3172fb7ea  crictl-${CRICTL_VERSION}-windows-amd64.tar.gz" | sha256sum -c -
 
 RUN curl -fsSLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz && \
     echo "c09a62523d76b32b883b6a9ee824c997b5c3cc8b3caebc8612c2f64fbbe97334  cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz" | sha256sum -c -
 
 RUN case "${KUBERNETES_VERSION}" in \
-        v1.35.4) \
-            KUBECTL_SHA256="d77d03309bd80de56dafe8ca59ff6f2076e2ed4ee61c6a94657a4b6e945210e6" && \
-            KUBELET_SHA256="5ca4dcce04f32b6e78cc44a9e6498b98d2909dd7cb9e2e6c2c424ad27ef33c37" && \
-            KUBE_PROXY_SHA256="feb642528b0a36ab8894c8641c78aab1b4d2059faf3adadeaac48b0162940553"; \
+        v1.36.0) \
+            KUBECTL_SHA256="9abf2164fe79d9d80185ff5085f6154eda9d21793ee18fa8dff34dfffffed36d" && \
+            KUBELET_SHA256="bd6e500084d8fd0f595cd015486ad471418ca390d9c358446a77bc088b358845" && \
+            KUBE_PROXY_SHA256="47e8d2eee10d23f35e969f44309c9e70337624441bfba0c0f99d98b91388d542"; \
             ;; \
         *) echo "Unsupported KUBERNETES_VERSION for pinned Windows binaries: ${KUBERNETES_VERSION}" && exit 1 ;; \
     esac && \
     curl -fsSLO https://dl.k8s.io/release/${KUBERNETES_VERSION}/bin/windows/amd64/kubectl.exe && \
+    sha256sum kubectl.exe && \
     echo "${KUBECTL_SHA256}  kubectl.exe" | sha256sum -c - && \
     mv kubectl.exe rancher/ && \
     curl -fsSLO https://dl.k8s.io/release/${KUBERNETES_VERSION}/bin/windows/amd64/kubelet.exe && \
+    sha256sum kubelet.exe && \
     echo "${KUBELET_SHA256}  kubelet.exe" | sha256sum -c - && \
     mv kubelet.exe rancher/ && \
     curl -fsSLO https://dl.k8s.io/release/${KUBERNETES_VERSION}/bin/windows/amd64/kube-proxy.exe && \
+    sha256sum kube-proxy.exe && \
     echo "${KUBE_PROXY_SHA256}  kube-proxy.exe" | sha256sum -c - && \
     mv kube-proxy.exe rancher/
 
