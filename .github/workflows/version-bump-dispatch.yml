@@ -1,30 +1,44 @@
 name: "Version Bump Backport Dispatcher"
 
 on:
-  pull_request:
+  push:
     branches:
       - master
-    types:
-      - closed
 
 permissions:
   actions: write
 
 concurrency:
-  group: "version-bump-dispatch-${{ github.event.pull_request.number }}"
+  group: "version-bump-dispatch-${{ github.sha }}"
   cancel-in-progress: true
 
 jobs:
   dispatch:
     name: Dispatch backport workflows
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-slim
-    strategy:
-      matrix:
-        branch: [release-1.33, release-1.34, release-1.35]
-      fail-fast: false
     steps:
-      - name: Dispatch backport for ${{ matrix.branch }}
+      - name: Get merged PR number
+        id: get-pr
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            const pulls = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+            });
+            const merged = pulls.data.find(p => p.merged_at && p.base.ref === 'master');
+            if (!merged) {
+              core.info('No merged PR found for this commit, skipping.');
+              core.setOutput('found', 'false');
+              return;
+            }
+            core.setOutput('found', 'true');
+            core.setOutput('pr_number', String(merged.number));
+            core.info(`Found merged PR #${merged.number}`);
+
+      - name: Dispatch backport for release-1.33
+        if: steps.get-pr.outputs.found == 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -35,8 +49,44 @@ jobs:
               workflow_id: 'version-bump-backport.lock.yml',
               ref: 'master',
               inputs: {
-                target_branch: '${{ matrix.branch }}',
-                pr_number: String(context.payload.pull_request.number),
+                target_branch: 'release-1.33',
+                pr_number: '${{ steps.get-pr.outputs.pr_number }}',
               },
             });
-            core.info('Dispatched backport workflow for ${{ matrix.branch }} (PR #${{ github.event.pull_request.number }})');
+            core.info('Dispatched backport workflow for release-1.33 (PR #${{ steps.get-pr.outputs.pr_number }})');
+
+      - name: Dispatch backport for release-1.34
+        if: steps.get-pr.outputs.found == 'true'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'version-bump-backport.lock.yml',
+              ref: 'master',
+              inputs: {
+                target_branch: 'release-1.34',
+                pr_number: '${{ steps.get-pr.outputs.pr_number }}',
+              },
+            });
+            core.info('Dispatched backport workflow for release-1.34 (PR #${{ steps.get-pr.outputs.pr_number }})');
+
+      - name: Dispatch backport for release-1.35
+        if: steps.get-pr.outputs.found == 'true'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'version-bump-backport.lock.yml',
+              ref: 'master',
+              inputs: {
+                target_branch: 'release-1.35',
+                pr_number: '${{ steps.get-pr.outputs.pr_number }}',
+              },
+            });
+            core.info('Dispatched backport workflow for release-1.35 (PR #${{ steps.get-pr.outputs.pr_number }})');
