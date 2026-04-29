@@ -57,7 +57,6 @@ xargs -n1 -t $PULL_CMD_CORE << EOF > $BUILD_DIR/images-canal.txt
     ${REGISTRY}/rancher/hardened-flannel:v0.28.4-build20260415
 EOF
 
-if [ "${GOARCH}" != "s390x" ]; then
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.4.1
     ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.19.3
@@ -129,6 +128,6 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-flannel.txt
     ${REGISTRY}/rancher/hardened-flannel:v0.28.4-build20260415
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.1-build20260415
 EOF
-fi
+
 # Continue to provide a legacy airgap archive set with the default CNI images
 cat $BUILD_DIR/images-core.txt $BUILD_DIR/images-canal.txt > $BUILD_DIR/images.txt

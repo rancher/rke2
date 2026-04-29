@@ -3,6 +3,10 @@ set -e
 source ./scripts/version.sh
 set +x
 
+if [ "${GOARCH}" != "amd64" ]; then
+  exit 0
+fi
+
 info() {
     echo '[INFO] ' "$@" >&2
 }
