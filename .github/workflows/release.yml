@@ -201,7 +201,7 @@ jobs:
 
     - name: Publish Image - Docker Hub
       if: ${{ matrix.destination == 'docker' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
+      uses: rancher/ecm-distro-tools/actions/publish-image@dcb7716af5a318567115a231643164e1d8446021 # v0.67.2
       env:
         GOARCH: ${{ matrix.arch }}
         GOOS: linux
@@ -217,7 +217,7 @@ jobs:
 
     - name: Publish Image - Staging
       if: ${{ matrix.destination == 'staging' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
+      uses: rancher/ecm-distro-tools/actions/publish-image@dcb7716af5a318567115a231643164e1d8446021 # v0.67.2
       env:
         GOARCH: ${{ matrix.arch }}
         GOOS: linux
@@ -235,7 +235,7 @@ jobs:
 
     - name: Publish Image Prime
       if: ${{ !contains(github.ref_name, '-rc') && matrix.destination == 'prime' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
+      uses: rancher/ecm-distro-tools/actions/publish-image@dcb7716af5a318567115a231643164e1d8446021 # v0.67.2
       env:
         GOARCH: ${{ matrix.arch }}
         GOOS: linux
@@ -289,7 +289,7 @@ jobs:
 
     - name: Manifest - Docker
       if: ${{ matrix.destination == 'docker' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
+      uses: rancher/ecm-distro-tools/actions/publish-image@dcb7716af5a318567115a231643164e1d8446021 # v0.67.2
       env:
         GOARCH: amd64
         GOOS: linux
@@ -306,7 +306,7 @@ jobs:
 
     - name: Manifest - Staging
       if: ${{ matrix.destination == 'staging' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
+      uses: rancher/ecm-distro-tools/actions/publish-image@dcb7716af5a318567115a231643164e1d8446021 # v0.67.2
       env:
         GOARCH: amd64
         GOOS: linux
@@ -323,7 +323,7 @@ jobs:
         prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
     - name: Manifest - Prime
-      uses: rancher/ecm-distro-tools/actions/publish-image@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
+      uses: rancher/ecm-distro-tools/actions/publish-image@dcb7716af5a318567115a231643164e1d8446021 # v0.67.2
       if: ${{ !contains(github.ref_name, '-rc') && matrix.destination == 'prime' }}
       env:
         GOARCH: amd64
@@ -541,7 +541,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: setup ecm-distro-tools
-        uses: rancher/ecm-distro-tools@575bb831c67edd950bfedb59d41dd127bd0005d6 # v0.65.2
+        uses: rancher/ecm-distro-tools@dcb7716af5a318567115a231643164e1d8446021 # v0.67.2
 
       - name: Make artifacts directory
         run: |
