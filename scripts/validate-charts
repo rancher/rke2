@@ -120,7 +120,7 @@ check_airgap() {
     image_list_dir=$4
 
     yaml_tmp=$(mktemp --suffix .yaml)
-    values="vCenter.clusterId=test-id,global.clusterDNS=10.43.0.10\,2001:cafe:43::a,rke2-whereabouts.enabled=true"
+    values="vCenter.clusterId=test-id,global.clusterDNS=10.43.0.10\,2001:cafe:43::a,rke2-whereabouts.enabled=true,csiController.csiResizer.enabled=true"
     helm template test-chart --kube-version ${KUBERNETES_VERSION} --set $values $chart_tmp > $yaml_tmp;
 
     chart_folder=$(mktemp -d)
@@ -157,7 +157,7 @@ declare -A NOT_FOUND
 
 # Produce image lists
 IMAGE_LIST_DIR=$(mktemp -d)
-BUILD_DIR=$IMAGE_LIST_DIR PULL_CMD_CORE="echo" SKIP_BUILD_IMAGE_RUNTIME=1 scripts/build-images
+BUILD_DIR=$IMAGE_LIST_DIR PULL_CMD_CORE=echo REGISTRY=registry.example.com SKIP_BUILD_IMAGE_RUNTIME=1 scripts/build-images
 
 while read version filename bootstrap; do    
     if [ "$version" == "0.0.0" ]; then
