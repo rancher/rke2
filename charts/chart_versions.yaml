@@ -44,6 +44,9 @@ charts:
   - version: 0.1.2800
     filename: /charts/harvester-csi-driver.yaml
     bootstrap: true
+  - version: 4.15.000
+    filename: /charts/rke2-ovirt-csi-driver.yaml
+    bootstrap: true
   - version: 4.2.003
     filename: /charts/rke2-snapshot-controller.yaml
     bootstrap: false

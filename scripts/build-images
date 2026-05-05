@@ -30,6 +30,15 @@ if [ "${REGISTRY}" != "docker.io" ]; then
     INGRESS_NGINX_IMAGES="${INGRESS_NGINX_IMAGES}
     ${REGISTRY}/rancher/kube-webhook-certgen:${INGRESS_NGINX_PRIME_TAG}
     ${REGISTRY}/rancher/nginx-ingress-controller:${INGRESS_NGINX_PRIME_TAG}"
+
+    xargs -n1 -t $PULL_CMD_CORE << EOF >> $BUILD_DIR/images-ovirt.txt
+    ${REGISTRY}/rancher/mirrored-ovirt-csi-driver:4.15.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.10.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-node-driver-registrar:v2.15.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v6.0.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-csi-resizer:v1.14.0
+    ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.17.0
+EOF
 fi
 
 xargs -n1 -t $PULL_CMD_CORE << EOF >> $BUILD_DIR/images-core.txt
