@@ -47,6 +47,9 @@ targets:
     sourceid: flannel
     spec:
       command: bash ./updatecli/scripts/update_chart_and_images_cni.sh rke2-flannel
+      environments:
+        - name: GH_TOKEN
+          value: '{{ requiredEnv .github.token }}'
 
 actions:
   github:
