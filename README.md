@@ -62,6 +62,11 @@ It is also possible to use both a configuration file and cli arguments.  In thes
 
 Finally, the location of the config file can be changed either through the cli argument `--config FILE, -c FILE`, or the environment variable `$RKE2_CONFIG_FILE`.
 
+## Release cadence
+RKE2 maintains pace with upstream Kubernetes releases. Our goal is to release patch releases within one week, and new minors within 30 days.
+
+Our release versioning reflects the version of upstream Kubernetes that is being released. For example, the RKE2 release v1.36.1+rke2r1 maps to the v1.36.1 Kubernetes release. We add a postfix in the form of +rke2r<number> to allow us to make additional releases using the same version of upstream Kubernetes while remaining semver compliant. For example, if we discovered a high severity bug in v1.36.1+rke2r1 and needed to release an immediate fix for it, we would release v1.36.1+rke2r2.
+
 ## FAQ
 
 - [How is this different from RKE1 or K3s?](https://docs.rke2.io/#how-is-this-different-from-rke-or-k3s)
