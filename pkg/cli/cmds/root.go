@@ -1,6 +1,7 @@
 package cmds
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -241,8 +242,15 @@ var cloudProviders = []bundledCloudProvider{
 	},
 }
 
-func validateCloudProviderName(clx *cli.Context, role CLIRole) {
+func validateCloudProvider(clx *cli.Context, role CLIRole) error {
 	cloudProvider := clx.String("cloud-provider-name")
+
+	if clx.IsSet("cloud-provider-name") || clx.IsSet("cloud-provider-config") {
+		if clx.IsSet("node-external-ip") {
+			return errors.New("can't set node-external-ip while using cloud provider")
+		}
+	}
+
 	for _, provider := range cloudProviders {
 		if provider.name == cloudProvider {
 			clx.Set("cloud-provider-name", "external")
@@ -260,6 +268,8 @@ func validateCloudProviderName(clx *cli.Context, role CLIRole) {
 			}
 		}
 	}
+
+	return nil
 }
 
 func NewApp() *cli.App {
