@@ -198,7 +198,9 @@ func NewServerCommand() *cli.Command {
 }
 
 func ServerRun(clx *cli.Context) error {
-	validateCloudProviderName(clx, Server)
+	if err := validateCloudProvider(clx, Server); err != nil {
+		return err
+	}
 	validateProfile(clx, Server)
 	validateCNI(clx)
 	return rke2.Server(clx, config)

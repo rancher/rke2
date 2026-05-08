@@ -5,13 +5,11 @@ package rke2
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"path/filepath"
 	"unsafe"
 
 	"github.com/k3s-io/k3s/pkg/agent/config"
-	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/cluster/managed"
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/etcd"
@@ -47,12 +45,6 @@ func initExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) (executor
 
 	managed.RegisterDriver(&etcd.ETCD{})
 
-	if clx.IsSet("cloud-provider-config") || clx.IsSet("cloud-provider-name") {
-		if clx.IsSet("node-external-ip") {
-			return nil, errors.New("can't set node-external-ip while using cloud provider")
-		}
-		cmds.ServerConfig.DisableCCM = true
-	}
 	var cpConfig *pebinary.CloudProviderConfig
 	if cfg.CloudProviderConfig != "" && cfg.CloudProviderName == "" {
 		return nil, fmt.Errorf("--cloud-provider-config requires --cloud-provider-name to be provided")
