@@ -60,9 +60,8 @@ Fetch details about PR **#${{ inputs.pr_number }}**, including:
 - The PR only modifies version-related files and the changes are version string updates. Version-related files include:
   - `scripts/version.sh` — contains variables like `KUBERNETES_VERSION`, `KUBERNETES_IMAGE_TAG`, `ETCD_VERSION`, `CCM_VERSION`, `KLIPPERHELM_VERSION`, etc.
   - `Dockerfile` or `Dockerfile.windows` — contains `ARG` or `FROM` lines with image tags/versions
-  - `go.mod` — contains module version references
   - Chart YAML files under `charts/` — contain `version:` fields
-  - Any file whose diff consists solely of version string changes (patterns like `vX.Y.Z`, `vX.Y.Z-suffix`, build tags, image digests)
+  - Any non-protected file whose diff consists solely of version string changes (patterns like `vX.Y.Z`, `vX.Y.Z-suffix`, build tags, image digests)
 
 If the PR does not qualify as a version bump, output a `noop` and stop.
 
