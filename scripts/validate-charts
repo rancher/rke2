@@ -37,8 +37,13 @@ download_chart() {
     chart_version=$1
     chart_name=$2
     bootstrap=$3
+    package=$4
 
-    chart_package=${chart_name%%-crd}
+    if [ -n "$package" ]; then
+        chart_package="$package"
+    else
+        chart_package="${chart_name%%-crd}"
+    fi
 
     chart_url=${CHART_REPO:="https://rke2-charts.rancher.io"}/assets/${chart_package}/${chart_name}-${chart_version:="0.0.0"}.tgz
 
@@ -159,13 +164,13 @@ declare -A NOT_FOUND
 IMAGE_LIST_DIR=$(mktemp -d)
 BUILD_DIR=$IMAGE_LIST_DIR PULL_CMD_CORE=echo REGISTRY=registry.example.com SKIP_BUILD_IMAGE_RUNTIME=1 scripts/build-images
 
-while read version filename bootstrap; do    
+while IFS='|' read version filename bootstrap package; do
     if [ "$version" == "0.0.0" ]; then
       continue
     fi
 
     chart_name=$(basename "${filename%%.yaml}")
-    chart_tmp=$(download_chart $version $chart_name $bootstrap)
+    chart_tmp=$(download_chart $version $chart_name $bootstrap $package)
 
     info "Validating chart $chart_name, version $version..."
 
@@ -178,7 +183,7 @@ while read version filename bootstrap; do
     if ! [ -z "$not_found" ]; then 
         NOT_FOUND[$chart_name]=$not_found
     fi
-done <<< $(yq e '.charts[] | [.version, .filename, .bootstrap] | join(" ")' charts/chart_versions.yaml)
+  done <<< $(yq e '.charts[] | [(.version // ""), (.filename // ""), (.bootstrap // ""), (.package // "")] | join("|")' charts/chart_versions.yaml)
 
 failed=0
 
