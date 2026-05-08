@@ -1,41 +1,41 @@
 charts:
-  - version: 1.19.300
+  - version: 1.19.302
     filename: /charts/rke2-cilium.yaml
     bootstrap: true
-  - version: v3.31.5-build2026041500
+  - version: v3.32.0-build2026050700
     filename: /charts/rke2-canal.yaml
     bootstrap: true
-  - version: v3.31.500
+  - version: v3.32.000
     filename: /charts/rke2-calico.yaml
     bootstrap: true
-  - version: v3.31.500
+  - version: v3.32.000
     filename: /charts/rke2-calico-crd.yaml
     bootstrap: true
-  - version: 1.45.209
+  - version: 1.45.211
     filename: /charts/rke2-coredns.yaml
     bootstrap: true
-  - version: 4.14.504
+  - version: 4.14.506
     filename: /charts/rke2-ingress-nginx.yaml
     bootstrap: false
-  - version: 39.0.701
+  - version: 39.0.702
     filename: /charts/rke2-traefik.yaml
     bootstrap: false
-  - version: 39.0.701
+  - version: 39.0.702
     filename: /charts/rke2-traefik-crd.yaml
     bootstrap: false
   - version: 3.13.008
     filename: /charts/rke2-metrics-server.yaml
     bootstrap: false
-  - version: v4.2.410
+  - version: v4.2.411
     filename: /charts/rke2-multus.yaml
     bootstrap: true
-  - version: v0.28.400
+  - version: v0.28.401
     filename: /charts/rke2-flannel.yaml
     bootstrap: true
-  - version: 1.13.000
+  - version: 1.14.000
     filename: /charts/rancher-vsphere-cpi.yaml
     bootstrap: true
-  - version: 3.6.0-rancher100
+  - version: 3.7.0-rancher100
     filename: /charts/rancher-vsphere-csi.yaml
     bootstrap: true
   - version: 0.2.1100
@@ -43,6 +43,9 @@ charts:
     bootstrap: true
   - version: 0.1.2800
     filename: /charts/harvester-csi-driver.yaml
+    bootstrap: true
+  - version: 4.15.000
+    filename: /charts/rke2-ovirt-csi-driver.yaml
     bootstrap: true
   - version: 4.2.003
     filename: /charts/rke2-snapshot-controller.yaml

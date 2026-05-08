@@ -214,23 +214,48 @@ func init() {
 	}
 }
 
+// bundled cloud-providers (as supported by setting cloud-provider-name)
+// usually include both a CPI and CSI chart, but this is not required.
+// If the cloud-provider is CSI only, we leave the RKE2 embedded cloud provider
+// enabled.
+type bundledCloudProvider struct {
+	name string
+	csi  string
+	cpi  string
+}
+
+var cloudProviders = []bundledCloudProvider{
+	{
+		name: "rancher-vsphere",
+		csi:  "rancher-vsphere-csi",
+		cpi:  "rancher-vsphere-cpi",
+	},
+	{
+		name: "harvester",
+		csi:  "harvester-csi-driver",
+		cpi:  "harvester-cloud-provider",
+	},
+	{
+		name: "ovirt",
+		csi:  "rke2-ovirt-csi-driver",
+	},
+}
+
 func validateCloudProviderName(clx *cli.Context, role CLIRole) {
 	cloudProvider := clx.String("cloud-provider-name")
-	cloudProviderDisables := map[string][]string{
-		"rancher-vsphere": {"rancher-vsphere-cpi", "rancher-vsphere-csi"},
-		"harvester":       {"harvester-cloud-provider", "harvester-csi-driver"},
-	}
-
-	for providerName, disables := range cloudProviderDisables {
-		if providerName == cloudProvider {
+	for _, provider := range cloudProviders {
+		if provider.name == cloudProvider {
 			clx.Set("cloud-provider-name", "external")
-			if role == Server {
+			if role == Server && provider.cpi != "" {
 				clx.Set("disable-cloud-controller", "true")
 			}
 		} else {
 			if role == Server {
-				for _, disable := range disables {
-					clx.Set("disable", disable)
+				if provider.csi != "" {
+					clx.Set("disable", provider.csi)
+				}
+				if provider.cpi != "" {
+					clx.Set("disable", provider.cpi)
 				}
 			}
 		}
