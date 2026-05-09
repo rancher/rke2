@@ -68,6 +68,9 @@ jobs:
           path: |
             ~/.vagrant.d/gems
             ~/.vagrant.d/plugins.json
+          # Key includes vagrant-libvirt version because vagrant-setup installs it
+          # into ~/.vagrant.d/gems alongside the plugins below, so any libvirt
+          # version bump must also bust this cache.
           key: vagrant-plugins-rke2-0.2.0-reload-0.0.1-libvirt-0.12.2
       - name: "Vagrant Plugin(s)"
         if: ${{ contains(matrix.vm, 'windows') || steps.vagrant-plugin-cache.outputs.cache-hit != 'true' }}
