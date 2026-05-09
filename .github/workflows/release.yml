@@ -17,31 +17,6 @@ permissions:
     contents: write
     id-token: write
 jobs:
-  test:
-    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=256
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-    - name: Build
-      run: |
-        make ci
-
-    - name: Load kernel modules
-      run: |
-       sudo modprobe br_netfilter overlay
-        
-    - name: Test
-      run: |
-        make in-docker-test
-
-    - name: Upload Test results
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
-      with:
-        name: rke2-artifacts-test-results
-        path: |
-          dist/artifacts/*.log
-
   release-amd64:
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=256
     steps:
@@ -51,7 +26,7 @@ jobs:
     - name: Validate Release
       run: |
         make in-docker-validate-release
-    
+
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89 # v3
       with:
@@ -68,6 +43,24 @@ jobs:
     - name: Build
       run: |
         make ci
+      env:
+        AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+
+    - name: Load kernel modules
+      run: |
+       sudo modprobe br_netfilter overlay
+
+    - name: Test
+      run: |
+        make in-docker-test
+
+    - name: Upload Test results
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      with:
+        name: rke2-artifacts-test-results
+        path: |
+          dist/artifacts/*.log
 
     - name: Package Images
       run: |
@@ -83,10 +76,6 @@ jobs:
       with:
         name: release-trivy-scan
         path: trivy_scan_report.txt
-
-    - name: Load kernel modules
-      run: |
-       sudo modprobe br_netfilter overlay
 
     - name: Set environment variables
       run: |
@@ -157,7 +146,7 @@ jobs:
 
   publish-images:
     name: "Publish ${{ matrix.arch }} ${{ matrix.make-target }} - ${{ matrix.destination }}"
-    needs: [test, release-amd64, release-arm64]
+    needs: [release-amd64, release-arm64]
     runs-on: runs-on,runner=8cpu-linux-${{ matrix.runner-arch }},run-id=${{ github.run_id }},image=ubuntu24-full-${{ matrix.runner-arch }},hdd=64
     permissions:
       contents: read
@@ -486,24 +475,10 @@ jobs:
           username: ${{ env.PRIME_REGISTRY_USERNAME }}
           password: ${{ env.PRIME_REGISTRY_PASSWORD }}
 
-      - name: Download Linux amd64 image lists
+      - name: Download image lists
         uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
-          pattern: rke2-image-list-linux-amd64
-          merge-multiple: true
-          path: dist/artifacts
-
-      - name: Download Linux arm64 image lists
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
-        with:
-          pattern: rke2-image-list-linux-arm64
-          merge-multiple: true
-          path: dist/artifacts
-
-      - name: Download Windows image lists
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
-        with:
-          pattern: rke2-image-list-windows-amd64
+          pattern: rke2-image-list-*
           merge-multiple: true
           path: dist/artifacts
 

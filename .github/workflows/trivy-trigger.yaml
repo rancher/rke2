@@ -48,14 +48,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       
-        # We don't care about the go version, as we only use it to capture ENV vars
-      - name: Install Go
-        uses: ./.github/actions/setup-go
-      
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
       
       - name: Build RKE2 image lists
+        # Set GOOS/GOARCH explicitly so scripts/version.sh does not need to call `go env`
+        env:
+          GOOS: linux
+          GOARCH: amd64
         run: |
           SKIP_WINDOWS=true PULL_CMD=echo make build-images
           TAG=$(docker images --format "{{.Repository}}:{{.Tag}} {{.CreatedAt}}" | grep "rancher/rke2-runtime" | sort -k2 -r | head -n1 | awk '{print $1}')

@@ -152,9 +152,18 @@ checksum:
 	./scripts/checksum
 
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD | sed 's/\//-/g')
+
+# Enable Docker BuildKit GHA layer cache when running in GitHub Actions.
+# ACTIONS_CACHE_URL is set automatically in all GitHub Actions environments.
+ifdef ACTIONS_CACHE_URL
+DOCKER_BUILD_CACHE ?= --cache-from type=gha --cache-to type=gha,mode=max
+else
+DOCKER_BUILD_CACHE ?=
+endif
+
 in-docker-%: ## Advanced: wraps any target in Docker environment, for example: in-docker-build-debug
 	mkdir -p ./bin/ ./dist ./build
-	docker buildx build -t rke2:$(BRANCH) --target build-env -f Dockerfile .
+	docker buildx build -t rke2:$(BRANCH) --target build-env -f Dockerfile . $(DOCKER_BUILD_CACHE)
 	docker run --privileged --rm --network host \
 		-v $${PWD}:/source -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy \
 		-e GODEBUG -e CI -e GOCOVER -e REPO -e TAG -e GITHUB_ACTION_TAG -e KUBERNETES_VERSION -e IMAGE_NAME -e AWS_SECRET_ACCESS_KEY -e AWS_ACCESS_KEY_ID \

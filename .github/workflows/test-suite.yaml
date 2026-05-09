@@ -140,13 +140,7 @@ jobs:
           name: rke2-test-artifacts
           path: ./artifacts
       - name: Place the artifacts back and compute sha256sum
-        run: |
-          mkdir -p ./dist/artifacts
-          mkdir -p ./build/images
-          mkdir -p ./bin
-          mv ./artifacts/rke2-* ./build/images/
-          mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
-          sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+        uses: ./.github/actions/place-artifacts
       - name: Load kernel modules
         run: |
           sudo modprobe br_netfilter overlay
@@ -188,13 +182,7 @@ jobs:
           name: rke2-test-artifacts
           path: ./artifacts
       - name: Place the artifacts back and compute sha256sum
-        run: |
-          mkdir -p ./dist/artifacts
-          mkdir -p ./build/images
-          mkdir -p ./bin
-          mv ./artifacts/rke2-* ./build/images/
-          mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
-          sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+        uses: ./.github/actions/place-artifacts
       - name: Load kernel modules
         run: |
           sudo modprobe br_netfilter overlay
@@ -249,7 +237,16 @@ jobs:
         path: |
             ~/.vagrant.d/boxes
         key: vagrant-box-ubuntu-2404
+    - name: "Vagrant Plugin Cache"
+      id: vagrant-plugin-cache
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: |
+          ~/.vagrant.d/gems
+          ~/.vagrant.d/plugins.json
+        key: vagrant-plugins-rke2-0.2.0-reload-0.0.1-scp-0.5.9-libvirt-0.12.2
     - name: "Vagrant Plugin(s)"
+      if: steps.vagrant-plugin-cache.outputs.cache-hit != 'true'
       env:
         VAGRANT_RKE2_VERSION: "0.2.0"
         VAGRANT_RKE2_CHECKSUM: "b91dbeee2e7f35d4849ff149ce3d4bdb35f1e594b5a889c48b28a2fce346277d"
@@ -288,13 +285,7 @@ jobs:
         name: rke2-test-artifacts
         path: ./artifacts
     - name: Place the artifacts back and compute sha256sum
-      run: |
-        mkdir -p ./dist/artifacts
-        mkdir -p ./build/images
-        mkdir -p ./bin
-        mv ./artifacts/rke2-* ./build/images/
-        mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
-        sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+      uses: ./.github/actions/place-artifacts
     - name: Run ${{ matrix.etest }} Test
       run: | 
         cd tests/e2e/${{ matrix.etest }}

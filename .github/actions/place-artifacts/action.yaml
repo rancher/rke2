@@ -1,0 +1,17 @@
+name: 'Place Test Artifacts'
+description: >
+  Moves downloaded RKE2 test artifacts (from ./artifacts) into the expected
+  directory structure and computes a sha256 checksum for the amd64 bundle.
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Place the artifacts back and compute sha256sum
+      shell: bash
+      run: |
+        mkdir -p ./dist/artifacts
+        mkdir -p ./build/images
+        mkdir -p ./bin
+        mv ./artifacts/rke2-* ./build/images/
+        mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
+        sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt

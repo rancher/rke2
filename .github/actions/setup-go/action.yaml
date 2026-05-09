@@ -1,5 +1,5 @@
-name: 'Setup golang with master only caching'
-description: 'A composite action that installs golang, but with a caching strategy that only updates the cache on master branch.'
+name: 'Setup golang with cache write for release branches'
+description: 'A composite action that installs golang, but with a caching strategy that only updates the cache on master and release branches.'
 inputs:
   go-version:
     description: 'Override the version of Go to install.'
@@ -20,16 +20,16 @@ runs:
       if: inputs.go-version == ''
       with:
         go-version-file: 'go.mod'  # Just use whatever version is in the go.mod file
-        cache: ${{ github.ref == 'refs/heads/master' }}
+        cache: ${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release-') }}
     
     - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6
       if: inputs.go-version != ''
       with:
         go-version: ${{ inputs.go-version }}
-        cache: ${{ github.ref == 'refs/heads/master' }}
+        cache: ${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release-') }}
 
     - name: Prepare for go cache
-      if: ${{ github.ref != 'refs/heads/master' }}
+      if: ${{ github.ref != 'refs/heads/master' && !startsWith(github.ref, 'refs/heads/release-') }}
       shell: bash
       run: |
         echo "GO_CACHE=$(go env GOCACHE)" | tee -a "$GITHUB_ENV"
@@ -48,7 +48,7 @@ runs:
       run: echo "ARCH_OPT=$('${{ runner.arch }}'.ToLower())" | Out-File -FilePath $env:GITHUB_ENV -Append
 
     - name: Setup read-only cache
-      if: ${{ github.ref != 'refs/heads/master' }}
+      if: ${{ github.ref != 'refs/heads/master' && !startsWith(github.ref, 'refs/heads/release-') }}
       uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: |

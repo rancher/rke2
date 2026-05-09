@@ -1,6 +1,13 @@
 name: Codespell
 on:
   push:
+    paths-ignore:
+      - "go.sum"
+      - "go.mod"
+      - "vendor/**"
+      - "**.png"
+      - "**.jpg"
+      - "**.gif"
   pull_request:
     branches:
       - master
