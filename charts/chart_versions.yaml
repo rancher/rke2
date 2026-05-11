@@ -12,7 +12,7 @@ charts:
     filename: /charts/rke2-calico-crd.yaml
     bootstrap: true
     package: rke2-calico-crd
-  - version: 1.45.211
+  - version: 1.45.212
     filename: /charts/rke2-coredns.yaml
     bootstrap: true
   - version: 4.14.506
