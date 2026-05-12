@@ -80,10 +80,10 @@ RUN curl -fsSLO https://github.com/containernetworking/plugins/releases/download
     echo "c09a62523d76b32b883b6a9ee824c997b5c3cc8b3caebc8612c2f64fbbe97334  cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz" | sha256sum -c -
 
 RUN case "${KUBERNETES_VERSION}" in \
-        v1.33.11) \
-            KUBECTL_SHA256="310d6ff79bd679b9ecb06124ff2448d66668adedf352c462c11bc39a83c9128a" && \
-            KUBELET_SHA256="4bd8e1c6da2057248f08b02916dc72a048407408a863731c8dd6243e019f1462" && \
-            KUBE_PROXY_SHA256="47239230a52f2ef9dfdd75d4cab7071367707fb494b7ceea5167a37d15f4cc9c"; \
+        v1.33.12) \
+            KUBECTL_SHA256="e7a5680bbb8fc318e9514ff1571266227f39c1e42b2e9c399acac7a1f846d1a7" && \
+            KUBELET_SHA256="a58e64c7fe2f26a765f6381e94859677eedc3bd82d3d335a8e26931071dcdd1c" && \
+            KUBE_PROXY_SHA256="d1011f4a642516f8a5853ff4f2c87edaa20b93f91736bd4d0b01fbf1137c9ab1"; \
             ;; \
         *) echo "Unsupported KUBERNETES_VERSION for pinned Windows binaries: ${KUBERNETES_VERSION}" && exit 1 ;; \
     esac && \
