@@ -48,7 +48,7 @@ charts:
   - version: 4.15.000
     filename: /charts/rke2-ovirt-csi-driver.yaml
     bootstrap: true
-  - version: 4.2.004
+  - version: 4.2.005
     filename: /charts/rke2-snapshot-controller.yaml
     bootstrap: false
   - version: 4.2.003
