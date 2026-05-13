@@ -21,7 +21,7 @@ PULL_CMD="${PULL_CMD:-echo}"
 PULL_CMD_CORE="${PULL_CMD_CORE:-docker image pull --quiet}"
 
 INGRESS_NGINX_HARDENED_TAG=v1.14.5-hardened2
-INGRESS_NGINX_PRIME_TAG=v1.14.5-prime4
+INGRESS_NGINX_PRIME_TAG=v1.14.5-prime5
 INGRESS_IMAGES="
     ${REGISTRY}/rancher/kube-webhook-certgen:${INGRESS_NGINX_HARDENED_TAG}
     ${REGISTRY}/rancher/nginx-ingress-controller:${INGRESS_NGINX_HARDENED_TAG}"
@@ -37,19 +37,19 @@ xargs -n1 -t $PULL_CMD_CORE << EOF >> $BUILD_DIR/images-core.txt
     ${REGISTRY}/rancher/hardened-coredns:v1.14.3-build20260511
     ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.10.3-build20260511
     ${REGISTRY}/rancher/hardened-dns-node-cache:1.26.8-build20260511
-    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20260415
+    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20260512
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.8.1-build20260511
     ${REGISTRY}/rancher/hardened-addon-resizer:1.8.23-build20260511
     ${REGISTRY}/rancher/klipper-helm:${KLIPPERHELM_VERSION}
-    ${REGISTRY}/rancher/klipper-lb:v0.4.16
+    ${REGISTRY}/rancher/klipper-lb:${KLIPPERLB_VERSION}
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
     ${INGRESS_IMAGES}
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
-    ${REGISTRY}/rancher/hardened-snapshot-controller:v8.5.0-build20260410
+    ${REGISTRY}/rancher/hardened-snapshot-controller:v8.5.0-build20260512
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-traefik.txt
-    ${REGISTRY}/rancher/hardened-traefik:v3.6.16-build20260506
+    ${REGISTRY}/rancher/hardened-traefik:v3.6.16-build20260512
 EOF
 
 xargs -n1 -t $PULL_CMD_CORE << EOF > $BUILD_DIR/images-canal.txt
@@ -101,7 +101,7 @@ xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.15.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.8.1
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v4.0.1
-    ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.5.0-build20260410
+    ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.5.0-build20260512
 EOF
 fi
 
