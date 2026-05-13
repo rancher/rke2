@@ -65,7 +65,7 @@ jobs:
         run: |
           mkdir -p pr-context
           echo "${{ github.event.pull_request.number }}" > pr-context/pr_number
-          mv build/images-core.txt build/images-canal.txt build/images-flannel.txt build/images-traefik.txt pr-context
+          mv build/images-core.txt build/images-canal.txt build/images-flannel.txt build/images-ingress-nginx.txt pr-context
           mv rke2-runtime.tar pr-context/rke2-runtime.tar
 
       - name: Upload PR context artifact
