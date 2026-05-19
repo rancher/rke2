@@ -34,6 +34,8 @@ func initExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) (executor
 	// resolver's default registry will get updated later when bootstrapping
 	if !clx.IsSet("system-default-registry") && clx.Bool("prime") {
 		cfg.Images.SystemDefaultRegistry = images.PrimeRegistry
+		// By setting system-default-registry, we ensure that K3s sets the klipper-helm registry correctly
+		clx.Set("system-default-registry", images.PrimeRegistry)
 	} else {
 		cfg.Images.SystemDefaultRegistry = clx.String("system-default-registry")
 	}
