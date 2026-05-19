@@ -32,7 +32,7 @@ var _ = Describe("Prime Tests", Ordered, func() {
 			var err error
 			tc, err = docker.NewTestConfig()
 			Expect(err).NotTo(HaveOccurred())
-			tc.ServerYaml = "prime: true\n"
+			tc.ServerYaml = "prime: true\ningress-controller: ingress-nginx"
 			Expect(tc.ProvisionServers(*serverCount)).To(Succeed())
 			Expect(tc.ProvisionAgents(*agentCount)).To(Succeed())
 			Expect(docker.RestartCluster(append(tc.Servers, tc.Agents...))).To(Succeed())
@@ -55,10 +55,6 @@ var _ = Describe("Prime Tests", Ordered, func() {
 			Expect(err).NotTo(HaveOccurred(), "failed to get images from kube-system pods")
 			images := strings.Split(res, " ")
 			for _, image := range images {
-				// The test binary we use still embeds the DockerHub klipper-lb image
-				if strings.Contains(image, "klipper-helm") || strings.Contains(image, "rancher/hardened-kubernetes") {
-					continue
-				}
 				Expect(image).To(ContainSubstring(*registry))
 			}
 		})
