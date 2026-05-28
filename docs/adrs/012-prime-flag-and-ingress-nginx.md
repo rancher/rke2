@@ -34,11 +34,13 @@ We will introduce a new boolean configuration flag, prime, within the RKE2 confi
 
 The Github Project where ingress-nginx is built for RKE2 will have two types of tags:
 * v1.14.5-hardenedN => for community, it will never be updated *
-* v1.14.5-primeN => for customers. N is a natural number and it will be incremented when new patches are added.
+* v1.15.1-primeN => for customers. N is a natural number and it will be incremented when new patches are added.
+
+Note that ingress-nginx v1.14.5 and v1.15.1 have the same code and hence are exactly a mirror.
 
 The ingress-nginx helm chart includes two fields for the image tag:
 * [tag](https://github.com/rancher/rke2-charts/blob/main/charts/rke2-ingress-nginx/rke2-ingress-nginx/4.14.504/values.yaml#L859) is for community and hence will always be v1.14.5-hardenedN
-* [primeTag](https://github.com/rancher/rke2-charts/blob/main/charts/rke2-ingress-nginx/rke2-ingress-nginx/4.14.504/values.yaml#L860) is for customers and hence will be v1.14.5-primeN
+* [primeTag](https://github.com/rancher/rke2-charts/blob/main/charts/rke2-ingress-nginx/rke2-ingress-nginx/4.14.504/values.yaml#L860) is for customers and hence will be v1.15.1-primeN
 
 When enabling the "prime" flag, primeTag will be set following this [logic](https://github.com/rancher/rke2-charts/blob/main/charts/rke2-ingress-nginx/rke2-ingress-nginx/4.14.504/templates/_helpers.tpl#L273-L275)
 
