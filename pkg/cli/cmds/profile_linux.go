@@ -5,7 +5,7 @@ package cmds
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"os/user"
 	"strconv"
 	"strings"
@@ -33,7 +33,7 @@ var kernelRuntimeParameters = map[string]int{
 // sysctl retrieves the value of the given sysctl.
 func sysctl(s string) (int, error) {
 	s = strings.ReplaceAll(s, ".", "/")
-	v, err := ioutil.ReadFile("/proc/sys/" + s)
+	v, err := os.ReadFile("/proc/sys/" + s)
 	if err != nil {
 		return 0, err
 	}

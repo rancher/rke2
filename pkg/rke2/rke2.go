@@ -2,7 +2,7 @@ package rke2
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -157,7 +157,7 @@ func hostnameFromMetadataEndpoint(ctx context.Context) string {
 			if resp.StatusCode != http.StatusOK {
 				logrus.Debugf("Token endpoint returned unacceptable status code %d", resp.StatusCode)
 			} else {
-				if b, err := ioutil.ReadAll(resp.Body); err != nil {
+				if b, err := io.ReadAll(resp.Body); err != nil {
 					logrus.Debugf("Failed to read response body from token endpoint: %v", err)
 				} else {
 					token = string(b)
@@ -182,7 +182,7 @@ func hostnameFromMetadataEndpoint(ctx context.Context) string {
 			if resp.StatusCode != http.StatusOK {
 				logrus.Debugf("Metadata endpoint returned unacceptable status code %d", resp.StatusCode)
 			} else {
-				if b, err := ioutil.ReadAll(resp.Body); err != nil {
+				if b, err := io.ReadAll(resp.Body); err != nil {
 					logrus.Debugf("Failed to read response body from metadata endpoint: %v", err)
 				} else {
 					return strings.TrimSpace(string(b))
