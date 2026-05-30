@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -98,7 +97,7 @@ func initStaticPodExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) 
 		if err := os.MkdirAll(dataDir, 0755); err != nil {
 			return nil, err
 		}
-		if err := ioutil.WriteFile(forceRestartFile, []byte(""), 0600); err != nil {
+		if err := os.WriteFile(forceRestartFile, []byte(""), 0600); err != nil {
 			return nil, err
 		}
 	}

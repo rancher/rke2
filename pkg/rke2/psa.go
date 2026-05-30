@@ -1,7 +1,6 @@
 package rke2
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -24,13 +23,13 @@ func setPSAs(cisMode bool) error {
 	}
 	if !cisMode { // non-CIS mode
 		psaConfig := unrestrictedPSAConfig()
-		if err := ioutil.WriteFile(defaultPSAConfigFile, []byte(psaConfig), 0600); err != nil {
+		if err := os.WriteFile(defaultPSAConfigFile, []byte(psaConfig), 0600); err != nil {
 			return errors.WithMessagef(err, "psa: failed to write psa unrestricted config")
 		}
 
 	} else { // CIS mode
 		psaConfig := restrictedPSAConfig()
-		if err := ioutil.WriteFile(defaultPSAConfigFile, []byte(psaConfig), 0600); err != nil {
+		if err := os.WriteFile(defaultPSAConfigFile, []byte(psaConfig), 0600); err != nil {
 			return errors.WithMessagef(err, "psa: failed to write psa restricted config")
 		}
 	}

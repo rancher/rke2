@@ -11,7 +11,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -363,7 +362,7 @@ func (s *StaticPodConfig) CloudControllerManager(_ context.Context, ccmRBACReady
 // CurrentETCDOptions retrieves the etcd configuration from the static pod definition at etcd.yaml
 // in the manifests directory, if it exists.
 func (s *StaticPodConfig) CurrentETCDOptions() (opts executor.InitialOptions, err error) {
-	bytes, err := ioutil.ReadFile(filepath.Join(s.ManifestsDir, "etcd.yaml"))
+	bytes, err := os.ReadFile(filepath.Join(s.ManifestsDir, "etcd.yaml"))
 	if os.IsNotExist(err) {
 		return opts, nil
 	}
@@ -666,7 +665,7 @@ func writeFile(dest string, content []byte, perm fs.FileMode) error {
 		return err
 	}
 
-	existing, err := ioutil.ReadFile(dest)
+	existing, err := os.ReadFile(dest)
 	if err == nil && bytes.Equal(existing, content) {
 		return nil
 	}
