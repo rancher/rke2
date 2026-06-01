@@ -42,8 +42,18 @@ jobs:
         path: |
           dist/artifacts/*.log
 
-  release-amd64:
-    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=256
+  release:
+    name: "Release ${{ matrix.arch }}"
+    runs-on: runs-on,runner=8cpu-linux-${{ matrix.runner-arch }},run-id=${{ github.run_id }},image=ubuntu24-full-${{ matrix.runner-arch }},hdd=256
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: amd64, runner-arch: x64 }
+          - { arch: arm64, runner-arch: arm64 }
     steps:
     - name: Checkout code
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -92,72 +102,25 @@ jobs:
       run: |
         echo "GIT_TAG=$(echo "${GITHUB_REF_NAME}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
 
-    - name: Upload Artifacts `linux/amd64`
+    - name: Upload Artifacts `linux/${{ matrix.arch }}`
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       with:
-        name: rke2-artifacts-amd64
+        name: rke2-artifacts-${{ matrix.arch }}
         path: |
-          dist/artifacts/*amd64*
+          dist/artifacts/*${{ matrix.arch }}*
         if-no-files-found: error
 
     - name: Upload Image List
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       with:
-        name: rke2-image-list-linux-amd64
+        name: rke2-image-list-linux-${{ matrix.arch }}
         path: |
-          dist/artifacts/rke2-images-all.linux-amd64.txt
-        if-no-files-found: error
-
-  release-arm64:
-    runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu24-full-arm64,hdd=256
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-    - name: Validate Release
-      run: |
-        make in-docker-validate-release
-
-    - name: Build
-      run: |
-        make ci
-
-    - name: Package Images
-      run: |
-        make in-docker-package-images
-    
-    - name: Scan Images
-      continue-on-error: true
-      run: |
-        make in-docker-scan-images
-
-    - name: Set environment variables
-      run: |
-        echo "GIT_TAG=$(echo "${GITHUB_REF_NAME}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
-
-    - name: Checksum
-      run: |
-        GITHUB_ACTION_TAG="${GITHUB_REF_NAME}" make in-docker-checksum
-
-    - name: Upload Artifacts `linux/arm64`
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
-      with:
-        name: rke2-artifacts-arm64
-        path: |
-          dist/artifacts/*arm64*
-        if-no-files-found: error
-
-    - name: Upload Image List
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
-      with:
-        name: rke2-image-list-linux-arm64
-        path: |
-          dist/artifacts/rke2-images-all.linux-arm64.txt
+          dist/artifacts/rke2-images-all.linux-${{ matrix.arch }}.txt
         if-no-files-found: error
 
   publish-images:
     name: "Publish ${{ matrix.arch }} ${{ matrix.make-target }} - ${{ matrix.destination }}"
-    needs: [test, release-amd64, release-arm64]
+    needs: [test, release]
     runs-on: runs-on,runner=8cpu-linux-${{ matrix.runner-arch }},run-id=${{ github.run_id }},image=ubuntu24-full-${{ matrix.runner-arch }},hdd=64
     permissions:
       contents: read
@@ -516,23 +479,16 @@ jobs:
   sync-prime-ribs:
     name: "Sync Prime ribs"
     needs: [sync-prime-images, publish-pre-release]
-    runs-on: runs-on,runner=${{ matrix.runner }},run-id=${{ github.run_id }},image=${{ matrix.image }},hdd=256
+    runs-on: runs-on,runner=8cpu-linux-${{ matrix.runner-arch }},run-id=${{ github.run_id }},image=ubuntu24-full-${{ matrix.runner-arch }},hdd=256
     permissions:
       contents: read
       id-token: write
     strategy:
       fail-fast: false
       matrix:
-        arch:
-          - arm64
-          - amd64
         include:
-          - arch: arm64
-            runner: 8cpu-linux-arm64
-            image: ubuntu24-full-arm64
-          - arch: amd64
-            runner: 8cpu-linux-x64
-            image: ubuntu24-full-x64
+          - { arch: amd64, runner-arch: x64 }
+          - { arch: arm64, runner-arch: arm64 }
     env:
       TAG: ${{ github.ref_name }}
       GH_TOKEN: ${{ github.token }}
