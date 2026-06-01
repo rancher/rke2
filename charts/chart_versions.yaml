@@ -29,7 +29,7 @@ charts:
     bootstrap: false
   - version: v4.2.413
     filename: /charts/rke2-multus.yaml
-    bootstrap: true
+    bootstrap: false
   - version: v0.28.402
     filename: /charts/rke2-flannel.yaml
     bootstrap: true
