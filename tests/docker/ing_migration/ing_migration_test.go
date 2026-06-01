@@ -110,7 +110,7 @@ var _ = Describe("Traefik Tests", Ordered, func() {
 			}, "30s", "5s").Should(Equal("200"), "failed to curl auth.example.com with credentials")
 		})
 		It("should rewrite paths correctly", func() {
-			cmd := "curl -s -o /dev/null --max-time 10 -w '%{http_code}' -H 'Host: nonworking.rewrite.example.com' http://" + tc.Servers[0].IP + "/app/test"
+			cmd := "curl -s -o /dev/null --max-time 10 -w '%{http_code}' -H 'Host: nowworking.rewrite.example.com' http://" + tc.Servers[0].IP + "/app/test"
 			Eventually(func() (string, error) {
 				return docker.RunCommand(cmd)
 			}, "30s", "5s").Should(Equal("200"), "failed to curl rewrite endpoin")
@@ -141,7 +141,7 @@ var _ = Describe("Traefik Tests", Ordered, func() {
 			}, "30s", "5s").Should(Equal("308"), "failed to curl ssl.redirect.example.com")
 		})
 		It("should handle upstream vhost annotations", func() {
-			cmd := "curl -s -H 'Host: nonworking.upstreamvhost.example.com' http://" + tc.Servers[0].IP + "/"
+			cmd := "curl -s -H 'Host: nowworking.upstreamvhost.example.com' http://" + tc.Servers[0].IP + "/"
 			Expect(docker.RunCommand(cmd)).To(ContainSubstring("Host: isitworking"))
 		})
 	})
@@ -178,7 +178,7 @@ spec:
       websecure:
         hostPort: 8443
     providers:
-      kubernetesIngressNginx:
+      kubernetesIngressNGINX:
         enabled: true
         ingressClass: "rke2-ingress-nginx-migration"
         controllerClass: 'rke2.cattle.io/ingress-nginx-migration'
@@ -203,7 +203,7 @@ spec:
 	Context("Test sample ingress workload via Traefik ports", func() {
 		It("should duplicate the ingresses for migration", func() {
 
-			ingresses := []string{"simple", "auth", "cookie", "nonworking-rewrite", "ssl-redirect", "upstream-vhost"}
+			ingresses := []string{"simple", "auth", "cookie", "nowworking-rewrite", "ssl-redirect", "upstream-vhost"}
 
 			for _, ingressName := range ingresses {
 				cmd := "kubectl get ingress " + ingressName + " -n test-migration --kubeconfig=" + tc.KubeconfigFile + " -o json | jq 'del(.metadata.resourceVersion, .metadata.uid, .metadata.creationTimestamp, .metadata.generation, .status)' > ingress-" + ingressName + ".json"
@@ -233,11 +233,11 @@ spec:
 				return docker.RunCommand(cmd)
 			}, "30s", "5s").Should(Equal("200"), "failed to curl auth.example.com with credentials")
 		})
-		It("should not rewrite paths correctly", func() {
-			cmd := "curl -s -o /dev/null --max-time 10 -w '%{http_code}' -H 'Host: nonworking.rewrite.example.com' http://" + tc.Servers[0].IP + ":8000/app/test"
+		It("should rewrite paths correctly", func() {
+			cmd := "curl -s -o /dev/null --max-time 10 -w '%{http_code}' -H 'Host: nowworking.rewrite.example.com' http://" + tc.Servers[0].IP + ":8000/app/test"
 			Eventually(func() (string, error) {
 				return docker.RunCommand(cmd)
-			}, "30s", "5s").Should(Equal("404"), "curl rewrite endpoint sucedded when it should not have")
+			}, "30s", "5s").Should(Equal("200"), "curl rewrite endpoint failed")
 		})
 		It("should maintain session affinity with cookies", func() {
 			By("getting initial response and extracting hostname")
@@ -264,12 +264,11 @@ spec:
 				return docker.RunCommand(cmd)
 			}, "30s", "5s").Should(Equal("308"), "failed to curl ssl.redirect.example.com")
 		})
-		It("should not handle upstream vhost annotations", func() {
-			cmd := "curl -s -H 'Host: nonworking.upstreamvhost.example.com' http://" + tc.Servers[0].IP + ":8000/"
+		It("should handle upstream vhost annotations", func() {
+			cmd := "curl -s -H 'Host: nowworking.upstreamvhost.example.com' http://" + tc.Servers[0].IP + ":8000/"
 			res, err := docker.RunCommand(cmd)
 			Expect(err).NotTo(HaveOccurred(), "failed to curl upstreamvhost endpoint:"+res)
-			Expect(res).NotTo(ContainSubstring("Host: isitworking"))
-			Expect(res).To(ContainSubstring("Host: nonworking.upstreamvhost"))
+			Expect(res).To(ContainSubstring("Host: isitworking"))
 		})
 	})
 	Context("Switch to traefik as the default ingress controller", func() {
@@ -287,7 +286,7 @@ metadata:
 spec:
   valuesContent: |-
     providers:
-      kubernetesIngressNginx:
+      kubernetesIngressNGINX:
         enabled: true
         ingressClass: "nginx"
         controllerClass: 'rke2.cattle.io/ingress-nginx-migration'
@@ -330,7 +329,7 @@ spec:
 	})
 	Context("Cleanup migration ingress resources", func() {
 		It("should remove all XXXX-traefik objects", func() {
-			ingresses := []string{"simple", "auth", "cookie", "nonworking-rewrite", "ssl-redirect", "upstream-vhost"}
+			ingresses := []string{"simple", "auth", "cookie", "nowworking-rewrite", "ssl-redirect", "upstream-vhost"}
 			for _, ing := range ingresses {
 				cmd := "kubectl delete ingress " + ing + "-traefik -n test-migration --kubeconfig=" + tc.KubeconfigFile
 				_, err := docker.RunCommand(cmd)
