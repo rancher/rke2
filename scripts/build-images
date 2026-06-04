@@ -69,17 +69,17 @@ xargs -n1 -t $PULL_CMD_CORE << EOF > $BUILD_DIR/images-canal.txt
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-cilium.txt
-    ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.4.1
-    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.19.3
-    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.36.6-1776000132-2437d2edeaf4d9b56ef279bd0d71127440c067aa
-    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.19.3
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.19.3
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.13.3
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui-backend:v0.13.3
-    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.19.3
-    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.19.3
-    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.19.3
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.1-build20260511
+    ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.4.3
+    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.19.4
+    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.36.6-1778235340-b87d1e32f522b33bd51701c6476d199326f01496
+    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.19.4
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.19.4
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.13.5
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui-backend:v0.13.5
+    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.19.4
+    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.19.4
+    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.19.4
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.1-build20260604
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-calico.txt
