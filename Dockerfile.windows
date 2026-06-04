@@ -59,7 +59,7 @@ ARG KUBERNETES_VERSION=dev
 ENV CRICTL_VERSION="v1.34.0"
 ENV CALICO_VERSION="v3.32.0"
 ENV CNI_PLUGIN_VERSION="v1.9.1"
-ENV FLANNEL_VERSION="v0.28.4"
+ENV FLANNEL_VERSION="v0.28.5"
 ENV CNI_FLANNEL_VERSION="v1.9.1-flannel1"
 
 RUN mkdir -p rancher
@@ -100,7 +100,7 @@ RUN case "${KUBERNETES_VERSION}" in \
 RUN curl -fsSLO https://github.com/projectcalico/calico/releases/download/${CALICO_VERSION}/calico-windows-${CALICO_VERSION}.zip && \
     echo "a3edde9031aa788bcfd1a89fa7f9fae9c829cc19f09930f189ed77ec322226e3  calico-windows-${CALICO_VERSION}.zip" | sha256sum -c -
 RUN curl -fsSL https://github.com/flannel-io/flannel/releases/download/${FLANNEL_VERSION}/flanneld.exe -o flanneld.exe && \
-    echo "d5dd439bdd9e1adb04b715d3d4c15ddc1e59e7cd1bd7ab2a3d77a4aeca23429b  flanneld.exe" | sha256sum -c - && \
+    echo "ed0d18c6f0a73bbc634d2cf15ff8d239b273c6d2b9aa3b91ecef4b4be0468e1d  flanneld.exe" | sha256sum -c - && \
     mv flanneld.exe rancher/flanneld.exe
 RUN curl -fsSL https://github.com/flannel-io/cni-plugin/releases/download/${CNI_FLANNEL_VERSION}/flannel-amd64.exe -o flannel.exe && \
     echo "a603a464eb25ede190e56fed697726eb75f9c1b201f804d11e4ed0b530b5302f  flannel.exe" | sha256sum -c - && \
