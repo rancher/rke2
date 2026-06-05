@@ -1,5 +1,7 @@
 /.dapper
 /.cache
+/.local/
+/.config/
 /bin
 /dist
 *.swp
