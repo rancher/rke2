@@ -11,12 +11,14 @@ permissions:
     contents: read
 jobs:
   build-amd64:
-    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
+    runs-on: runs-on,runner=16cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
     steps:
     - name: Checkout code
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
     - name: Build
       run: make ci
+      env:
+        BUILD_PARALLEL: true
     - name: Load kernel modules
       run: |
         sudo modprobe br_netfilter overlay

@@ -1,16 +1,38 @@
 #!/usr/bin/env bash
 set -ex
 
-cd $(dirname $0)/..
+cd "$(dirname "$0")/.."
 
 source ./scripts/version.sh
 mkdir -p build/images
 
-./scripts/build-binary
-./scripts/build-windows-binary
-./scripts/build-images
+if [[ "${BUILD_PARALLEL}" == "true" ]]; then
+    pids=()
+    ./scripts/build-binary &
+    pids+=($!)
+    ./scripts/build-windows-binary &
+    pids+=($!)
+    ./scripts/build-images &
+    pids+=($!)
+       ./scripts/build-windows-images &
+    pids+=($!)
+    status=0
+    for pid in "${pids[@]}"; do
+        if ! wait "$pid"; then
+            status=1
+        fi
+    done
+    if [[ "$status" -ne 0 ]]; then
+    	exit "$status"
+    fi
+else
+    ./scripts/build-binary
+    ./scripts/build-windows-binary
+    ./scripts/build-images
+    ./scripts/build-windows-images
+fi
+
 ./scripts/check-images
-./scripts/build-windows-images
 ./scripts/package-bundle
 ./scripts/package-windows-bundle
 ./scripts/dev-runtime-image
