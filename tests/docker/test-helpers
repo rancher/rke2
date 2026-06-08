@@ -522,15 +522,37 @@ e2e-test() {
 # ---
 
 run-e2e-tests() {
-    label=PARALLEL \
-        logName=e2e-STATUS-${ARCH}-parallel.log \
-        e2e-test ${sonobuoyParallelArgs[@]}
-    echo "Exit code $? for parallel start"
+    local suite=${SONOBUOY_SUITE:-both}
 
-    label=SERIAL \
-        logName=e2e-STATUS-${ARCH}-serial.log \
-        e2e-test ${sonobuoySerialArgs[@]}
-    echo "Exit code $? for serial start"
+    case "$suite" in
+        both)
+            label=PARALLEL \
+                logName=e2e-STATUS-${ARCH}-parallel.log \
+                e2e-test ${sonobuoyParallelArgs[@]}
+            echo "Exit code $? for parallel start"
+
+            label=SERIAL \
+                logName=e2e-STATUS-${ARCH}-serial.log \
+                e2e-test ${sonobuoySerialArgs[@]}
+            echo "Exit code $? for serial start"
+            ;;
+        parallel)
+            label=PARALLEL \
+                logName=e2e-STATUS-${ARCH}-parallel.log \
+                e2e-test ${sonobuoyParallelArgs[@]}
+            echo "Exit code $? for parallel start"
+            ;;
+        serial)
+            label=SERIAL \
+                logName=e2e-STATUS-${ARCH}-serial.log \
+                e2e-test ${sonobuoySerialArgs[@]}
+            echo "Exit code $? for serial start"
+            ;;
+        *)
+            echo "Unsupported SONOBUOY_SUITE: $suite (expected both|parallel|serial)" >&2
+            return 1
+            ;;
+    esac
 }
 export -f run-e2e-tests
 
