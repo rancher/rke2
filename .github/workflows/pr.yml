@@ -19,22 +19,54 @@ jobs:
       run: make ci
       env:
         BUILD_PARALLEL: true
+    - name: Change permissions on build artifacts
+      run: |
+        sudo chown -R $USER:$USER build/
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      with:
+        name: rke2-build-artifacts
+        path: |
+          build/images/rke2-images.linux-amd64.tar.zst
+          build/images/rke2-runtime.tar
+          build/images/rke2-test-*.tar
+  test-conformance:
+    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
+    needs: build-amd64
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [parallel, serial]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+      with:
+        name: rke2-build-artifacts
+        path: build/images
+    - name: Load Build Artifacts Into Docker
+      run: |
+        docker load -i build/images/rke2-runtime.tar
+        zstd -dc build/images/rke2-images.linux-amd64.tar.zst | docker load
+        docker load -i build/images/rke2-test-*.tar
     - name: Load kernel modules
       run: |
-        sudo modprobe br_netfilter overlay
-    - name: Test
-      run: make in-docker-test
+       sudo modprobe br_netfilter overlay
+    - name: Test Conformance
+      env:
+        SONOBUOY_SUITE: ${{ matrix.suite }}
+      run: make in-docker-test-conformance
     - name: Prepare Test Logs on Failure
       if: ${{ failure() }}
       run: |
         sudo cp -r /tmp/rke2-logs ~/rke2-logs
         sudo chown -R $USER:$USER ~/rke2-logs
-        ls -la ~/rke2-logs
-    - name: Upload Logs on Failure
+    - name: Upload Test Logs on Failure
       if: ${{ failure() }}
       uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
       with:
-        name: rke2-test-logs
+        name: rke2-test-logs-${{ matrix.suite }}
         path: ~/rke2-logs/
   build-arm64:
     runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu24-full-arm64,hdd=64
