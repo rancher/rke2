@@ -2,7 +2,7 @@ charts:
   - version: 1.19.402
     filename: /charts/rke2-cilium.yaml
     bootstrap: true
-  - version: v3.32.0-build2026060400
+  - version: v3.32.0-build2026060401
     filename: /charts/rke2-canal.yaml
     bootstrap: true
   - version: v3.32.003
