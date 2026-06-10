@@ -71,7 +71,4 @@ if [[ "${VERSION}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)([-+][a-zA-Z0-9.]+)?[-+]((rk
     echo "VERSION=${VERSION} parsed as MAJOR=${VERSION_MAJOR} MINOR=${VERSION_MINOR} PATCH=${PATCH} RC=${RC} RKE2_PATCH=${RKE2_PATCH}"
 fi
 
-GO_VERSION_URL="https://raw.githubusercontent.com/kubernetes/kubernetes/release-${VERSION_MAJOR}.${VERSION_MINOR}/.go-version"
-VERSION_GOLANG="go"$(curl -sL "${GO_VERSION_URL}" | tr -d '[:space:]')
-
 DOCKERIZED_VERSION="${VERSION/+/-}" # this mimics what kubernetes builds do
