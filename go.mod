@@ -23,7 +23,7 @@ replace (
 	go.etcd.io/etcd/server/v3 => github.com/k3s-io/etcd/server/v3 v3.6.12-k3s1
 	go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful => go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful v0.65.0
 	golang.org/x/crypto => golang.org/x/crypto v0.47.0
-	golang.org/x/net => golang.org/x/net v0.49.0
+	golang.org/x/net => golang.org/x/net v0.55.0
 	golang.org/x/sys => golang.org/x/sys v0.40.0
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20241209162323-e6fa225c2576
 	google.golang.org/grpc => google.golang.org/grpc v1.79.3
@@ -74,7 +74,7 @@ require (
 	github.com/google/go-containerregistry v0.20.3
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.17.1
-	github.com/k3s-io/k3s v1.35.1-0.20260603163341-9269a8f5c33e // main
+	github.com/k3s-io/k3s v1.35.1-0.20260610223519-64bf0e83b325 // main
 	github.com/k3s-io/kine v0.16.1
 	github.com/libp2p/go-netroute v0.4.0
 	github.com/onsi/ginkgo/v2 v2.28.1
@@ -88,9 +88,9 @@ require (
 	github.com/spf13/pflag v1.0.10
 	github.com/tigera/operator v1.36.13
 	github.com/urfave/cli/v2 v2.27.7
-	golang.org/x/crypto v0.50.0
+	golang.org/x/crypto v0.51.0
 	golang.org/x/sync v0.20.0
-	golang.org/x/sys v0.43.0
+	golang.org/x/sys v0.45.0
 	google.golang.org/grpc v1.81.1
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	k8s.io/api v0.36.1
@@ -429,11 +429,11 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
 	golang.org/x/mod v0.35.0 // indirect
-	golang.org/x/net v0.53.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/telemetry v0.0.0-20260409153401-be6f6cb8b1fa // indirect
-	golang.org/x/term v0.42.0 // indirect
-	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/term v0.43.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	golang.org/x/tools v0.44.0 // indirect
 	gonum.org/v1/gonum v0.17.0 // indirect
