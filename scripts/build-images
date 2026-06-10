@@ -45,7 +45,7 @@ fi
 
 xargs -n1 -t $PULL_CMD_CORE << EOF >> $BUILD_DIR/images-core.txt
     ${REGISTRY}/rancher/hardened-kubernetes:${KUBERNETES_IMAGE_TAG}
-    ${REGISTRY}/rancher/hardened-coredns:v1.14.3-build20260608
+    ${REGISTRY}/rancher/hardened-coredns:v1.14.4-build20260610
     ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.10.3-build20260604
     ${REGISTRY}/rancher/hardened-dns-node-cache:1.26.8-build20260608
     ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20260603
