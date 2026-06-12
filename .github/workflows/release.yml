@@ -36,7 +36,7 @@ jobs:
         make in-docker-test
 
     - name: Upload Test results
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: rke2-artifacts-test-results
         path: |
@@ -89,7 +89,7 @@ jobs:
         make in-docker-scan-images
 
     - name: Upload Scan Results
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       with:
         name: release-trivy-scan
         path: trivy_scan_report.txt
@@ -103,7 +103,7 @@ jobs:
         echo "GIT_TAG=$(echo "${GITHUB_REF_NAME}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
 
     - name: Upload Artifacts `linux/${{ matrix.arch }}`
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: rke2-artifacts-${{ matrix.arch }}
         path: |
@@ -111,7 +111,7 @@ jobs:
         if-no-files-found: error
 
     - name: Upload Image List
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: rke2-image-list-linux-${{ matrix.arch }}
         path: |
@@ -164,7 +164,7 @@ jobs:
 
     - name: Publish Image - Docker Hub
       if: ${{ matrix.destination == 'docker' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@03cb52c4bd23670a192d47ef7b49d566928738d6 # v0.72.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@c7c07fc1b7ca15c3a8fca06899a6a5657d34ac35 # v0.74.0
       env:
         GOARCH: ${{ matrix.arch }}
         GOOS: linux
@@ -180,7 +180,7 @@ jobs:
 
     - name: Publish Image - Staging
       if: ${{ matrix.destination == 'staging' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@03cb52c4bd23670a192d47ef7b49d566928738d6 # v0.72.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@c7c07fc1b7ca15c3a8fca06899a6a5657d34ac35 # v0.74.0
       env:
         GOARCH: ${{ matrix.arch }}
         GOOS: linux
@@ -198,7 +198,7 @@ jobs:
 
     - name: Publish Image Prime
       if: ${{ !contains(github.ref_name, '-rc') && matrix.destination == 'prime' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@03cb52c4bd23670a192d47ef7b49d566928738d6 # v0.72.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@c7c07fc1b7ca15c3a8fca06899a6a5657d34ac35 # v0.74.0
       env:
         GOARCH: ${{ matrix.arch }}
         GOOS: linux
@@ -252,7 +252,7 @@ jobs:
 
     - name: Manifest - Docker
       if: ${{ matrix.destination == 'docker' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@03cb52c4bd23670a192d47ef7b49d566928738d6 # v0.72.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@c7c07fc1b7ca15c3a8fca06899a6a5657d34ac35 # v0.74.0
       env:
         GOARCH: amd64
         GOOS: linux
@@ -269,7 +269,7 @@ jobs:
 
     - name: Manifest - Staging
       if: ${{ matrix.destination == 'staging' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@03cb52c4bd23670a192d47ef7b49d566928738d6 # v0.72.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@c7c07fc1b7ca15c3a8fca06899a6a5657d34ac35 # v0.74.0
       env:
         GOARCH: amd64
         GOOS: linux
@@ -286,7 +286,7 @@ jobs:
         prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
     - name: Manifest - Prime
-      uses: rancher/ecm-distro-tools/actions/publish-image@03cb52c4bd23670a192d47ef7b49d566928738d6 # v0.72.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@c7c07fc1b7ca15c3a8fca06899a6a5657d34ac35 # v0.74.0
       if: ${{ !contains(github.ref_name, '-rc') && matrix.destination == 'prime' }}
       env:
         GOARCH: amd64
@@ -312,7 +312,7 @@ jobs:
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
     - name: Download Artifacts
-      uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
         pattern: rke2-artifacts-*
         merge-multiple: true
@@ -327,7 +327,7 @@ jobs:
         GITHUB_ACTION_TAG="${GITHUB_REF_NAME}" make in-docker-checksum
 
     - name: Upload Image List
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: rke2-image-list-windows-amd64
         path: |
@@ -368,7 +368,7 @@ jobs:
 
     - name: Generate GitHub App token
       id: generate-token
-      uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3
+      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
       with:
         app-id: ${{ env.APP_ID }}
         private-key: ${{ env.PRIVATE_KEY }}
@@ -434,7 +434,7 @@ jobs:
           fi
 
       - name: Log in to staging registry
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
         if: ${{ contains(github.ref_name, '-rc') }}
         with:
           registry: ${{ env.PRIME_STAGING_REGISTRY }}
@@ -442,7 +442,7 @@ jobs:
           password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
       - name: Log in to prime registry
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
         if: ${{ !contains(github.ref_name, '-rc') }}
         with:
           registry: ${{ env.PRIME_REGISTRY }}
@@ -450,21 +450,21 @@ jobs:
           password: ${{ env.PRIME_REGISTRY_PASSWORD }}
 
       - name: Download Linux amd64 image lists
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: rke2-image-list-linux-amd64
           merge-multiple: true
           path: dist/artifacts
 
       - name: Download Linux arm64 image lists
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: rke2-image-list-linux-arm64
           merge-multiple: true
           path: dist/artifacts
 
       - name: Download Windows image lists
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: rke2-image-list-windows-amd64
           merge-multiple: true
@@ -497,7 +497,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: setup ecm-distro-tools
-        uses: rancher/ecm-distro-tools@03cb52c4bd23670a192d47ef7b49d566928738d6 # v0.72.0
+        uses: rancher/ecm-distro-tools@c7c07fc1b7ca15c3a8fca06899a6a5657d34ac35 # v0.74.0
 
       - name: Make artifacts directory
         run: |
@@ -517,7 +517,7 @@ jobs:
             secret/data/github/repo/${{ github.repository }}/aws/release-team-cloudfront-cache-invalidation/credentials primeArtifactsDistributionId | PRIME_ARTIFACTS_DISTRIBUTION_ID ;
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
@@ -561,7 +561,7 @@ jobs:
           make in-docker-checksum
 
       - name: Configure Prime Artifact Uploader AWS Credentials
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
@@ -585,7 +585,7 @@ jobs:
           aws s3 cp index-prerelease.html s3://${{ env.PRIME_ARTIFACTS_BUCKET_NAME }}/index-prerelease.html
 
       - name: Configure Cache Invalidation AWS Credentials
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID_CACHE_INVALIDATION }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY_CACHE_INVALIDATION }}
