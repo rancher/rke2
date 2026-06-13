@@ -1,0 +1,94 @@
+---
+name: "Update hardened-kubernetes and build base"
+
+scms:
+  rke2:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      username: "{{ requiredEnv .github.username }}"
+      token: '{{ requiredEnv .github.token }}'
+      owner: rancher
+      repository: rke2
+      branch: master
+
+sources:
+  kubernetes-minor:
+    name: "Get tracked Kubernetes minor version"
+    kind: "shell"
+    spec:
+      command: sed -nE 's/^KUBERNETES_VERSION=\$\{KUBERNETES_VERSION:-v([0-9]+\.[0-9]+)\.[0-9]+\}$/\1/p' ./scripts/version.sh
+
+  hardened-kubernetes:
+    name: "Get latest hardened-kubernetes release for the tracked minor"
+    kind: "githubrelease"
+    dependson:
+      - "kubernetes-minor"
+    spec:
+      owner: rancher
+      repository: image-build-kubernetes
+      token: '{{ requiredEnv .github.token }}'
+      typefilter:
+        release: true
+        draft: false
+        prerelease: false
+      versionfilter:
+        kind: regex
+        pattern: 'v{{ source "kubernetes-minor" }}\.\S+'
+
+  hardened-build-base:
+    name: "Get latest hardened-build-base release"
+    kind: "githubrelease"
+    spec:
+      owner: rancher
+      repository: image-build-base
+      token: '{{ requiredEnv .github.token }}'
+      typefilter:
+        release: true
+        draft: false
+        prerelease: false
+      versionfilter:
+        kind: latest
+
+conditions:
+  hardenedKubernetesImageAvailable:
+    name: "Check hardened-kubernetes image availability"
+    kind: "dockerimage"
+    sourceid: "hardened-kubernetes"
+    spec:
+      image: "rancher/hardened-kubernetes"
+
+  hardenedBuildBaseImageAvailable:
+    name: "Check hardened-build-base image availability"
+    kind: "dockerimage"
+    sourceid: "hardened-build-base"
+    spec:
+      image: "rancher/hardened-build-base"
+
+  hardenedKubernetesShouldBeUpdated:
+    name: "Check if hardened-kubernetes should be updated"
+    kind: "shell"
+    disablesourceinput: true
+    spec:
+      command: bash ./updatecli/scripts/validate_hardened_kubernetes_bump.sh {{ source "hardened-kubernetes" }}
+
+targets:
+  updateHardenedKubernetes:
+    name: "Update hardened-kubernetes and build base references"
+    kind: "shell"
+    scmid: "rke2"
+    disablesourceinput: true
+    spec:
+      command: bash ./updatecli/scripts/update_hardened_kubernetes.sh {{ source "hardened-kubernetes" }} {{ source "hardened-build-base" }}
+
+actions:
+  github:
+    kind: "github/pullrequest"
+    scmid: "rke2"
+    spec:
+      automerge: false
+      draft: false
+      mergemethod: squash
+      parent: false
+      title: 'Update hardened-kubernetes to {{ source "hardened-kubernetes" }}'
