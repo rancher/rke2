@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e -x
-cd $(dirname $0)/..
+cd "$(dirname "$0")/.."
 
 docker ps
 
@@ -9,6 +9,7 @@ docker ps
 
 artifacts=$(pwd)/dist/artifacts
 mkdir -p $artifacts
+suite=${SONOBUOY_SUITE:-both}
 
 # ---
 
@@ -16,8 +17,8 @@ if [ "$ARCH" != 'amd64' ]; then
     early-exit "Skipping remaining tests, images not available for $ARCH."
 fi
 
-E2E_OUTPUT=$artifacts test-run-sonobuoy
-echo "Did test-run-sonobuoy $?"
+E2E_OUTPUT=$artifacts SONOBUOY_SUITE=$suite test-run-sonobuoy
+echo "Did test-run-sonobuoy $? (suite=$suite)"
 # ---
 
 #test-run-sonobuoy mysql

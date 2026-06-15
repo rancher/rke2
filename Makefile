@@ -147,6 +147,18 @@ unit-test:
 test-docker:
 	./scripts/test
 
+.PHONY: test-conformance
+test-conformance:
+	./scripts/test
+
+.PHONY: test-parallel
+test-parallel:
+	SONOBUOY_SUITE=parallel ./scripts/test
+
+.PHONY: test-serial
+test-serial:
+	SONOBUOY_SUITE=serial ./scripts/test
+
 .PHONY: checksum
 checksum:
 	./scripts/checksum
@@ -158,7 +170,7 @@ in-docker-%: ## Advanced: wraps any target in Docker environment, for example: i
 	docker run --privileged --rm --network host \
 		-v $${PWD}:/source -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy \
 		-e GODEBUG -e CI -e GOCOVER -e REPO -e TAG -e GITHUB_ACTION_TAG -e KUBERNETES_VERSION -e IMAGE_NAME -e AWS_SECRET_ACCESS_KEY -e AWS_ACCESS_KEY_ID \
-		-e DOCKER_PASSWORD -e DOCKER_USERNAME -e GH_TOKEN -e SKIP_VALIDATE -e PACKAGE_SKIP_TARBALL -e REGISTRY -e PRIME_REGISTRY \
+		-e DOCKER_PASSWORD -e BUILD_PARALLEL -e SONOBUOY_SUITE -e DOCKER_USERNAME -e GH_TOKEN -e SKIP_VALIDATE -e PACKAGE_SKIP_TARBALL -e REGISTRY -e PRIME_REGISTRY \
 		rke2:$(BRANCH) make $*
 
 .PHONY: help
