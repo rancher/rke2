@@ -1,0 +1,62 @@
+---
+name: "Bump Kubernetes patch on release-1.36"
+# Monthly Kubernetes patch bump for the release-1.36 branch.
+# The PR is opened with release-1.36 as its base branch.
+scms:
+  rke2:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      username: "{{ requiredEnv .github.username }}"
+      token: '{{ requiredEnv .github.token }}'
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repo }}"
+      branch: release-1.36
+
+sources:
+  hardenedKubernetes:
+    name: "Latest hardened-kubernetes build for v1.36"
+    kind: "githubrelease"
+    spec:
+      owner: "rancher"
+      repository: "image-build-kubernetes"
+      token: '{{ requiredEnv .github.token }}'
+      versionfilter:
+        kind: "regex"
+        pattern: '^v1\.36\.\d+-rke2r\d+-build\d+$'
+
+targets:
+  bumpKubernetes:
+    name: "Update Kubernetes references on release-1.36"
+    kind: "shell"
+    scmid: "rke2"
+    sourceid: hardenedKubernetes
+    spec:
+      # Updatecli appends the resolved source value (the build tag) as the last arg.
+      command: bash ./updatecli/scripts/update_k8s_version.sh release-1.36
+      environments:
+        - name: PATH
+        - name: HOME
+        - name: GH_TOKEN
+          value: '{{ requiredEnv .github.token }}'
+
+actions:
+  github:
+    kind: "github/pullrequest"
+    scmid: "rke2"
+    spec:
+      automerge: false
+      draft: false
+      mergemethod: squash
+      parent: false
+      title: 'Update Kubernetes to {{ source "hardenedKubernetes" }} on release-1.36'
+      description: |
+        Automated PR to bump the embedded Kubernetes patch on `release-1.36`.
+
+        Updated references:
+        - `Dockerfile` hardened-kubernetes image
+        - `scripts/version.sh` (KUBERNETES_VERSION / KUBERNETES_IMAGE_TAG)
+        - `go.mod` Kubernetes references
+
+        Please verify `go.mod`/`go.sum` and the k3s pseudo-version before merging.
