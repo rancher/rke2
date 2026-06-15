@@ -38,6 +38,13 @@ This will take a few minutes for [CI](https://drone-pr.rancher.io/rancher/image-
 
 ## Update RKE2
 
+> **Automation:** The Updatecli `kubernetes-1.3X.yml` policies (in `updatecli/updatecli.d/`)
+> watch [image-build-kubernetes](https://github.com/rancher/image-build-kubernetes) for new
+> hardened-kubernetes builds and open a bump PR against each active release branch
+> automatically (one policy per active release branch). The manual steps below remain the
+> source of truth and are still required for the kube-proxy / k3s `go.mod` edge cases the
+> automation does not yet cover.
+
 The following files have references that will need to be updated in the respective locations. Replace the found version with the desired version. There are also references in documentation that should be updated and kept in sync. 
 
 * Dockerfile: `FROM rancher/hardened-kubernetes:v1.23.5-rke2r1-build20220217 AS kubernetes`
