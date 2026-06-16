@@ -102,6 +102,10 @@ jobs:
       run: |
         echo "GIT_TAG=$(echo "${GITHUB_REF_NAME}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
 
+    - name: Checksum
+      run: |
+        GITHUB_ACTION_TAG="${GITHUB_REF_NAME}" make in-docker-checksum
+
     - name: Upload Artifacts `linux/${{ matrix.arch }}`
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       with:
@@ -321,10 +325,6 @@ jobs:
     - name: Package windows images
       run: |
         GITHUB_ACTION_TAG="${GITHUB_REF_NAME}" make in-docker-package-windows-images
-
-    - name: Checksum Artifacts
-      run: |
-        GITHUB_ACTION_TAG="${GITHUB_REF_NAME}" make in-docker-checksum
 
     - name: Upload Image List
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
