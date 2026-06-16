@@ -6,7 +6,7 @@ replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.14.0-rc.1
 	github.com/Mirantis/cri-dockerd => github.com/k3s-io/cri-dockerd v0.3.19-k3s5
 	github.com/cloudnativelabs/kube-router/v2 => github.com/k3s-io/kube-router/v2 v2.6.3-k3s1
-	github.com/containerd/containerd/v2 => github.com/k3s-io/containerd/v2 v2.3.1-k3s1
+	github.com/containerd/containerd/v2 => github.com/k3s-io/containerd/v2 v2.3.1-k3s2
 	github.com/docker/distribution => github.com/docker/distribution v2.8.3+incompatible
 	github.com/docker/docker => github.com/docker/docker v25.0.15-0.20260325154711-d2dbc0547253+incompatible
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.4
@@ -93,12 +93,12 @@ require (
 	golang.org/x/sys v0.45.0
 	google.golang.org/grpc v1.81.1
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
-	k8s.io/api v0.36.1
-	k8s.io/apimachinery v0.36.1
+	k8s.io/api v0.36.2
+	k8s.io/apimachinery v0.36.2
 	k8s.io/apiserver v0.36.1
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/component-base v0.36.1
-	k8s.io/cri-api v0.36.1
+	k8s.io/component-base v0.36.2
+	k8s.io/cri-api v0.36.2
 	k8s.io/klog/v2 v2.140.0
 	k8s.io/kubernetes v1.36.1
 	k8s.io/utils v0.0.0-20260319190234-28399d86e0b5
@@ -451,8 +451,8 @@ require (
 	k8s.io/cluster-bootstrap v0.35.2 // indirect
 	k8s.io/component-helpers v0.36.1 // indirect
 	k8s.io/controller-manager v0.35.0 // indirect
-	k8s.io/cri-client v0.36.1 // indirect
-	k8s.io/cri-streaming v0.36.0 // indirect
+	k8s.io/cri-client v0.36.2 // indirect
+	k8s.io/cri-streaming v0.36.2 // indirect
 	k8s.io/csi-translation-lib v0.0.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
 	k8s.io/externaljwt v1.32.0 // indirect
@@ -463,7 +463,7 @@ require (
 	k8s.io/kubelet v0.36.1 // indirect
 	k8s.io/mount-utils v0.35.0 // indirect
 	k8s.io/pod-security-admission v0.0.0 // indirect
-	k8s.io/streaming v0.36.0 // indirect
+	k8s.io/streaming v0.36.2 // indirect
 	lukechampine.com/blake3 v1.4.1 // indirect
 	modernc.org/libc v1.72.3 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
