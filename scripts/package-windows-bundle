@@ -25,5 +25,9 @@ mkdir -p dist/artifacts
 
 ### (make the tarball)
 if [ -z "${PACKAGE_SKIP_TARBALL}" ]; then
-    tar -czf dist/artifacts/${PROG}.windows-${ARCH}.tar.gz -C dist/bundle --exclude bin/${PROG} --exclude 'bin/*.sh' --exclude lib --exclude share/${PROG}/${PROG}-cis-sysctl.conf $(find dist/bundle -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
+    tar -czf dist/artifacts/${PROG}.windows-${ARCH}.tar.gz -C dist/bundle \
+        bin/${PROG}.exe \
+        bin/rke2-uninstall.ps1 \
+        share/${PROG}/LICENSE.txt \
+        share/${PROG}-windows
 fi
