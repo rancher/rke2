@@ -1,7 +1,7 @@
 package defaults
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -40,7 +40,7 @@ func Set(_ *cli.Context, dataDir string) error {
 		"log-file=" + filepath.Join(logsDir, "kubelet.log"),
 	})
 	if !cmds.Debug {
-		l := grpclog.NewLoggerV2(ioutil.Discard, ioutil.Discard, os.Stderr)
+		l := grpclog.NewLoggerV2(io.Discard, io.Discard, os.Stderr)
 		grpclog.SetLoggerV2(l)
 	}
 

@@ -2,7 +2,6 @@ package images
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -278,7 +277,7 @@ func Pull(dir, name string, image name.Reference) error {
 	}
 
 	dest := filepath.Join(dir, name+".txt")
-	return ioutil.WriteFile(dest, []byte(image.Name()+"\n"), 0644)
+	return os.WriteFile(dest, []byte(image.Name()+"\n"), 0644)
 }
 
 // checkPreloadedImages returns true if there are any files in dir that do not
@@ -293,7 +292,7 @@ func checkPreloadedImages(dir string) (bool, error) {
 		return false, err
 	}
 
-	fileInfos, err := ioutil.ReadDir(dir)
+	fileInfos, err := os.ReadDir(dir)
 	if err != nil {
 		logrus.Errorf("unable to list images in %s: %v", dir, err)
 		return false, nil

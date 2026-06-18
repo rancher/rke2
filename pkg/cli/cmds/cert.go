@@ -1,7 +1,7 @@
 package cmds
 
 import (
-	"io/ioutil"
+	"os"
 
 	"github.com/k3s-io/k3s/pkg/cli/cert"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
@@ -68,7 +68,7 @@ func Rotate(clx *cli.Context) error {
 	if dataDir == "" {
 		dataDir = rke2Path
 	}
-	if err := ioutil.WriteFile(rke2.ForceRestartFile(dataDir), []byte{}, 0600); err != nil {
+	if err := os.WriteFile(rke2.ForceRestartFile(dataDir), []byte{}, 0600); err != nil {
 		return err
 	}
 	return cert.Rotate(clx)
