@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Install Go
-        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
           go-version: 'stable'
           cache: false
@@ -35,14 +35,14 @@ jobs:
             secret/data/github/repo/${{ github.repository }}/github/app-credentials privateKey | PRIVATE_KEY
 
       - name: Generate App Token
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
         id: app-token
         with:
           app-id: ${{ env.APP_ID }}
           private-key: ${{ env.PRIVATE_KEY }}
 
       - name: Install Updatecli
-        uses: updatecli/updatecli-action@4b17f4ea784de29f71f85f9bc4955402ba1ae53c # v2.100.0
+        uses: updatecli/updatecli-action@5bda7da77bf4d181bce5f807d73d832b62062acf # v3.3.0
 
       - name: Delete leftover UpdateCLI branches
         run: |
