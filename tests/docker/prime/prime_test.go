@@ -39,7 +39,7 @@ var _ = Describe("Prime Tests", Ordered, func() {
 			Expect(tc.CopyAndModifyKubeconfig()).To(Succeed())
 			Eventually(func(g Gomega) {
 				g.Expect(tests.CheckDefaultDeployments(tc.KubeconfigFile)).To(Succeed())
-				g.Expect(tests.CheckDefaultDaemonSets(tc.KubeconfigFile)).To(Succeed())
+				g.Expect(tests.CheckDaemonSets([]string{"rke2-canal", "rke2-ingress-nginx-controller"}, tc.KubeconfigFile)).To(Succeed())
 			}, "240s", "5s").Should(Succeed())
 			Eventually(func() error {
 				return tests.NodesReady(tc.KubeconfigFile, tc.GetNodeNames())
