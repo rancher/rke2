@@ -36,6 +36,7 @@ import (
 )
 
 var (
+	taskDir             = "/run/k3s/containerd/io.containerd.runtime.v2.task/k8s.io"
 	releasePattern      = regexp.MustCompile("^v[0-9]")
 	helmChartGVK        = helmv1.SchemeGroupVersion.WithKind("HelmChart")
 	injectAnnotationKey = version.Program + ".cattle.io/inject-cluster-config"
@@ -91,25 +92,21 @@ func isRegular(file string) bool {
 	return false
 }
 
-// dirHasRunningProcesses returns true if any running process has its executable rooted inside dirPath.
-func dirHasRunningProcesses(dirPath string) bool {
-	entries, err := os.ReadDir("/proc")
+// dirHasShims returns true if any container references a containerd shim inside dirPath.
+func dirHasShims(dirPath string) bool {
+	entries, err := os.ReadDir(taskDir)
 	if err != nil {
-		return false
+		return true
 	}
-	prefix := dirPath + "/"
 	for _, entry := range entries {
 		if !entry.IsDir() {
 			continue
 		}
-		if _, err := strconv.Atoi(entry.Name()); err != nil {
-			continue
-		}
-		exe, err := os.Readlink(filepath.Join("/proc", entry.Name(), "exe"))
+		shimPath, err := os.ReadFile(filepath.Join(taskDir, entry.Name(), "shim-binary-path"))
 		if err != nil {
 			continue
 		}
-		if strings.HasPrefix(exe, prefix) {
+		if strings.HasPrefix(string(shimPath), dirPath) {
 			return true
 		}
 	}
@@ -140,8 +137,8 @@ func cleanDataDirs(dataDir string, refDigest string) error {
 		}
 
 		oldpath := filepath.Join(datapath, entry.Name())
-		if dirHasRunningProcesses(oldpath) {
-			logrus.Infof("Skipping removal of old RKE2 data directory %s: processes still running from it", oldpath)
+		if dirHasShims(oldpath) {
+			logrus.Infof("Skipping removal of old RKE2 data directory %s: still referenced by containers", oldpath)
 			continue
 		}
 		logrus.Infof("Removing old RKE2 data directory: %s", oldpath)
