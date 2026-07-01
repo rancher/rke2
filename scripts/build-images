@@ -92,7 +92,7 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-calico.txt
 EOF
 
 if [ "${GOARCH}" != "arm64" ]; then
-xargs -n1 -t docker image pull --quiet << EOF > build/images-vsphere.txt
+xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere:v1.33.0
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.5.0
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v3.5.0
