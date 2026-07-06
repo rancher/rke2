@@ -1,0 +1,58 @@
+---
+name: "Update ingress-nginx prime image tag"
+# Bumps INGRESS_NGINX_PRIME_TAG in scripts/build-images whenever a newer
+# -primeN ingress-nginx image (CVE rebuild) is tagged in rancher/ingress-nginx
+# for the nginx base version currently pinned in this repo.
+#
+# To test locally:
+#   have "UPDATECLI_GITHUB_ACTOR" env set to your github username
+#   have "UPDATECLI_GITHUB_TOKEN" env set to your github token
+#   updatecli diff --values updatecli/values.yaml --config updatecli/updatecli.d/ingress-nginx-prime.yml
+scms:
+  rke2:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      username: "{{ requiredEnv .github.username }}"
+      token: '{{ requiredEnv .github.token }}'
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repo }}"
+      branch: master
+
+sources:
+  prime:
+    name: "Get latest ingress-nginx prime tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/get-ingress-nginx-prime.sh
+      environments:
+        - name: PATH
+
+targets:
+  buildImages:
+    name: "Update INGRESS_NGINX_PRIME_TAG in scripts/build-images"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: prime
+    spec:
+      file: scripts/build-images
+      matchpattern: 'INGRESS_NGINX_PRIME_TAG=.*'
+      replacepattern: 'INGRESS_NGINX_PRIME_TAG={{ source "prime" }}'
+
+actions:
+  github:
+    kind: "github/pullrequest"
+    scmid: "rke2"
+    spec:
+      automerge: false
+      draft: false
+      mergemethod: squash
+      parent: false
+      title: 'Update ingress-nginx prime image to {{ source "prime" }}'
+      description: |
+        This is an automated PR to bump the ingress-nginx prime image tag.
+
+        `INGRESS_NGINX_PRIME_TAG` in `scripts/build-images` is updated to
+        `{{ source "prime" }}` (rancher/nginx-ingress-controller and
+        rancher/kube-webhook-certgen).
