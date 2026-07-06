@@ -1,8 +1,15 @@
 ---
-name: "Update ingress-nginx prime image tag"
-# Bumps INGRESS_NGINX_PRIME_TAG in scripts/build-images whenever a newer
-# -primeN ingress-nginx image (CVE rebuild) is tagged in rancher/ingress-nginx
-# for the nginx base version currently pinned in this repo.
+name: "Update ingress-nginx chart and prime image"
+# Keeps the rke2-ingress-nginx chart version (charts/chart_versions.yaml) and the
+# ingress-nginx prime image tag (scripts/build-images) in sync with upstream:
+#
+#   * chart version  <- latest rke2-ingress-nginx chart published to rke2-charts
+#   * prime image    <- latest -primeN release (CVE rebuild) of the pinned nginx
+#                       hardened line in rancher/ingress-nginx
+#
+# Both version patterns are pinned to the current nginx line on purpose, so a
+# nginx minor/patch bump stays a deliberate human change. When that line is
+# bumped, update the two versionfilter patterns below.
 #
 # To test locally:
 #   have "UPDATECLI_GITHUB_ACTOR" env set to your github username
@@ -21,15 +28,56 @@ scms:
       branch: master
 
 sources:
-  prime:
-    name: "Get latest ingress-nginx prime tag"
-    kind: "shell"
+  chart:
+    name: "Get rke2-ingress-nginx chart version"
+    kind: "helmchart"
     spec:
-      command: bash ./updatecli/scripts/get-ingress-nginx-prime.sh
-      environments:
-        - name: PATH
+      url: https://rancher.github.io/rke2-charts
+      name: rke2-ingress-nginx
+      versionfilter:
+        kind: "regex"
+        # rke2-ingress-nginx chart on the nginx v1.15 (upstream chart 4.15) line
+        pattern: '^4\.15\.\d+$'
+  prime:
+    name: "Get latest ingress-nginx prime image tag"
+    kind: "githubrelease"
+    spec:
+      owner: rancher
+      repository: ingress-nginx
+      token: '{{ requiredEnv .github.token }}'
+      username: '{{ requiredEnv .github.username }}'
+      # Only consider published releases - never drafts or pre-releases.
+      typefilter:
+        release: true
+        draft: false
+        prerelease: false
+      versionfilter:
+        kind: "regex"
+        # -primeN CVE rebuilds of the pinned nginx v1.15.1 hardened line
+        pattern: 'v1\.15\.1-prime[0-9]+'
+
+conditions:
+  ingressNginxEntry:
+    name: "Verify chart_versions.yaml entry position"
+    kind: "yaml"
+    disablesourceinput: true
+    spec:
+      file: charts/chart_versions.yaml
+      # Guard the positional key below: if the entry ever moves, the condition
+      # fails and the chart-version target is safely skipped instead of editing
+      # the wrong chart.
+      key: '$.charts[5].filename'
+      value: /charts/rke2-ingress-nginx.yaml
 
 targets:
+  chartVersion:
+    name: "Update rke2-ingress-nginx version in charts/chart_versions.yaml"
+    kind: "yaml"
+    scmid: "rke2"
+    sourceid: chart
+    spec:
+      file: charts/chart_versions.yaml
+      key: '$.charts[5].version'
   buildImages:
     name: "Update INGRESS_NGINX_PRIME_TAG in scripts/build-images"
     kind: "file"
@@ -49,10 +97,10 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: 'Update ingress-nginx prime image to {{ source "prime" }}'
+      title: 'Update ingress-nginx to chart {{ source "chart" }} / image {{ source "prime" }}'
       description: |
-        This is an automated PR to bump the ingress-nginx prime image tag.
+        This is an automated PR to keep ingress-nginx in sync with upstream.
 
-        `INGRESS_NGINX_PRIME_TAG` in `scripts/build-images` is updated to
-        `{{ source "prime" }}` (rancher/nginx-ingress-controller and
-        rancher/kube-webhook-certgen).
+        - `rke2-ingress-nginx` chart -> `{{ source "chart" }}` (charts/chart_versions.yaml)
+        - prime image tag -> `{{ source "prime" }}` (scripts/build-images:
+          rancher/nginx-ingress-controller and rancher/kube-webhook-certgen)
