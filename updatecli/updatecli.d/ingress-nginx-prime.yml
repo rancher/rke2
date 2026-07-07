@@ -68,7 +68,18 @@ conditions:
       # the wrong chart.
       key: '$.charts[5].filename'
       value: /charts/rke2-ingress-nginx.yaml
-
+verifyPrimeInChartValues:
+    name: "Verify prime image is contained in the source chart's values.yaml"
+    kind: "helmchart"
+    disablesourceinput: true
+    spec:
+      url: "https://rancher.github.io/rke2-charts"
+      name: "rke2-ingress-nginx"
+      version: '{{ source "chart" }}'
+      file: "values.yaml"
+      key: "primeTag"
+      value: '{{ source "prime" }}'
+      
 targets:
   chartVersion:
     name: "Update rke2-ingress-nginx version in charts/chart_versions.yaml"
