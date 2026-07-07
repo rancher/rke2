@@ -33,10 +33,10 @@ charts:
   - version: v0.28.502
     filename: /charts/rke2-flannel.yaml
     bootstrap: true
-  - version: 1.14.000
+  - version: 1.15.000
     filename: /charts/rancher-vsphere-cpi.yaml
     bootstrap: true
-  - version: 3.7.0-rancher100
+  - version: 3.7.2-rancher200
     filename: /charts/rancher-vsphere-csi.yaml
     bootstrap: true
   - version: 0.2.1200
