@@ -140,6 +140,7 @@ func (config *TestConfig) ProvisionRegistries() error {
 				"-e", fmt.Sprintf("REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/var/lib/registry/%s", registryName),
 				image,
 			}, " ")
+			config.TB.Logf("Starting registry container: %s", runCmd)
 			if out, err := RunCommand(runCmd); err != nil {
 				return fmt.Errorf("failed to start registry container %s: %s: %w", name, out, err)
 			}
@@ -231,7 +232,7 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 			joinServer,
 			dualStackConfig,
 			"-e", "RKE2_DEBUG=true",
-			"-e", "GOCOVERDIR=/tmp/rke2-cov",
+			"-e", "GOCOVERDIR=/src/rke2-cov",
 			"-e", "PATH=$PATH:/var/lib/rancher/rke2/bin",
 			"-v", "/sys/fs/bpf:/sys/fs/bpf",
 			"-v", "/lib/modules:/lib/modules",
@@ -239,16 +240,18 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 			"-v", "/var/run/docker.sock:/var/run/docker.sock",
 			"-v", "/var/lib/docker:/var/lib/docker",
 			registryConfig,
-			"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/rke2.linux-amd64.tar.gz,target=/tmp/rke2-artifacts/rke2.linux-amd64.tar.gz",
-			"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/sha256sum-amd64.txt,target=/tmp/rke2-artifacts/sha256sum-amd64.txt",
+			"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/rke2.linux-amd64.tar.gz,target=/src/rke2-artifacts/rke2.linux-amd64.tar.gz",
+			"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/sha256sum-amd64.txt,target=/src/rke2-artifacts/sha256sum-amd64.txt",
 			"--mount", "type=bind,source=$(pwd)/../../../build/images/rke2-images.linux-amd64.tar.zst,target=/var/lib/rancher/rke2/agent/images/rke2-images.linux-amd64.tar.zst",
 			"rancher/systemd-node:v0.0.8",
 			"/usr/lib/systemd/systemd --unit=noop.target --show-status=true"}, " ")
+
+		config.TB.Logf("Starting systemd container: %s", dRun)
 		if out, err := RunCommand(dRun); err != nil {
-			return fmt.Errorf("failed to start systemd container: %s: %w", out, err)
+			return fmt.Errorf("failed to start systemd server container: %s: %w", out, err)
 		}
 		time.Sleep(5 * time.Second)
-		cmd := "mkdir -p /tmp/rke2-cov"
+		cmd := "mkdir -p /src/rke2-cov"
 		if out, err := newServer.RunCmdOnNode(cmd); err != nil {
 			return fmt.Errorf("failed to create coverage directory: %s: %w", out, err)
 		}
@@ -266,13 +269,13 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 			}
 		}
 
-		if out, err := newServer.RunCmdOnNode("ls -la /tmp/rke2-artifacts"); err != nil {
+		if out, err := newServer.RunCmdOnNode("ls -la /src/rke2-artifacts"); err != nil {
 			return fmt.Errorf("failed to list artifacts dir: %w", err)
 		} else {
 			config.TB.Logf("Node has artifacts: \n%s", out)
 		}
 
-		if _, err := newServer.RunCmdOnNode("curl -sfL https://get.rke2.io | INSTALL_RKE2_ARTIFACT_PATH=/tmp/rke2-artifacts sh -"); err != nil {
+		if _, err := newServer.RunCmdOnNode("curl -sfL https://get.rke2.io | INSTALL_RKE2_ARTIFACT_PATH=/src/rke2-artifacts sh -"); err != nil {
 			return fmt.Errorf("failed to install server: %w", err)
 		}
 
@@ -344,20 +347,22 @@ func (config *TestConfig) ProvisionAgents(numOfAgents int) error {
 				"-e", fmt.Sprintf("RKE2_URL=%s", config.Servers[0].URL),
 				dualStackConfig,
 				"-e", "RKE2_DEBUG=true",
-				"-e", "GOCOVERDIR=/tmp/rke2-cov",
+				"-e", "GOCOVERDIR=/src/rke2-cov",
 				"-v", "/sys/fs/bpf:/sys/fs/bpf",
 				"-v", "/lib/modules:/lib/modules",
 				"-v", "/sys/fs/cgroup:/run/cilium/cgroupv2",
 				"-v", "/var/run/docker.sock:/var/run/docker.sock",
 				"-v", "/var/lib/docker:/var/lib/docker",
 				registryConfig,
-				"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/rke2.linux-amd64.tar.gz,target=/tmp/rke2-artifacts/rke2.linux-amd64.tar.gz",
-				"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/sha256sum-amd64.txt,target=/tmp/rke2-artifacts/sha256sum-amd64.txt",
+				"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/rke2.linux-amd64.tar.gz,target=/src/rke2-artifacts/rke2.linux-amd64.tar.gz",
+				"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/sha256sum-amd64.txt,target=/src/rke2-artifacts/sha256sum-amd64.txt",
 				"--mount", "type=bind,source=$(pwd)/../../../build/images/rke2-images.linux-amd64.tar.zst,target=/var/lib/rancher/rke2/agent/images/rke2-images.linux-amd64.tar.zst",
 				"rancher/systemd-node:v0.0.8",
 				"/usr/lib/systemd/systemd --unit=noop.target --show-status=true"}, " ")
+
+			config.TB.Logf("Starting systemd container: %s", dRun)
 			if out, err := RunCommand(dRun); err != nil {
-				return fmt.Errorf("failed to start systemd container: %s: %w", out, err)
+				return fmt.Errorf("failed to start systemd agent container: %s: %w", out, err)
 			}
 			time.Sleep(5 * time.Second)
 
@@ -374,7 +379,7 @@ func (config *TestConfig) ProvisionAgents(numOfAgents int) error {
 				}
 			}
 
-			if _, err := newAgent.RunCmdOnNode("curl -sfL https://get.rke2.io | INSTALL_RKE_TYPE='agent' INSTALL_RKE2_ARTIFACT_PATH=/tmp/rke2-artifacts sh -"); err != nil {
+			if _, err := newAgent.RunCmdOnNode("curl -sfL https://get.rke2.io | INSTALL_RKE_TYPE='agent' INSTALL_RKE2_ARTIFACT_PATH=/src/rke2-artifacts sh -"); err != nil {
 				return fmt.Errorf("failed to install agent: %w", err)
 			}
 
