@@ -616,7 +616,7 @@ func (v VagrantNode) runCmdOnLinuxNode(cmd string) (string, error) {
 	// these are added to the command output and need to be removed
 	out = strings.ReplaceAll(out, "[fog][WARNING] Unrecognized arguments: libvirt_ip_command\n", "")
 	if err != nil {
-		return out, fmt.Errorf("failed to run command: %s on node %s: %s, %v", cmd, v.Name, out, err)
+		return out, fmt.Errorf("failed to run command %q on node %s: %s, %v", cmd, v.Name, out, err)
 	}
 	return out, nil
 }
@@ -626,7 +626,7 @@ func (v VagrantNode) runCmdOnWindowsNode(cmd string) (string, error) {
 	runcmd := "vagrant ssh -c 'powershell.exe -Command \"" + cmd + "\"' " + v.Name
 	out, err := RunCommand(runcmd)
 	if err != nil {
-		return out, fmt.Errorf("failed to run windows command: %s : out : %v", runcmd, err)
+		return out, fmt.Errorf("failed to run windows command %q on node %s: %s, %v", cmd, v.Name, out, err)
 	}
 	return out, nil
 }
