@@ -92,10 +92,24 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-calico.txt
 EOF
 
 if [ "${GOARCH}" != "arm64" ]; then
-xargs -n1 -t $PULL_CMD << EOF > build/images-vsphere.txt
+
+    if [ "${REGISTRY}" != "docker.io" ]; then
+xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-vsphere.txt
+    ${REGISTRY}/rancher/hardened-cloud-provider-vsphere:v1.34.0-build20260710
+    ${REGISTRY}/rancher/hardened-vsphere-csi-driver:v3.7.2-build20260710
+    ${REGISTRY}/rancher/hardened-vsphere-csi-syncer:v3.7.2-build20260710
+    ${REGISTRY}/rancher/hardened-csi-node-driver-registrar:v2.17.0-build20260710
+    ${REGISTRY}/rancher/hardened-csi-resizer:v2.2.1-build20260710
+    ${REGISTRY}/rancher/hardened-livenessprobe:v2.19.0-build20260710
+    ${REGISTRY}/rancher/hardened-csi-attacher:v4.12.0-build20260710
+    ${REGISTRY}/rancher/hardened-csi-provisioner:v6.3.0-build20260710
+    ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.6.0-build20260708
+EOF
+    else
+xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere:v1.34.0
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.5.0
-    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v3.5.0
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:v3.7.2
+    ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:v3.7.2
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-node-driver-registrar:v2.13.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-resizer:v1.12.0
     ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.15.0
@@ -103,6 +117,8 @@ xargs -n1 -t $PULL_CMD << EOF > build/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v4.0.1
     ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.6.0-build20260708
 EOF
+    fi
+
 fi
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-multus.txt
