@@ -146,7 +146,7 @@ var _ = Describe("DualStack Tests", Ordered, func() {
 		})
 
 		It("Verifies nodecache is working", func() {
-			cmd := "dig +retries=0 @169.254.20.10 www.kubernetes.io"
+			cmd := "zypper --non-interactive install -y bind-utils; dig +retries=0 @169.254.20.10 www.kubernetes.io"
 			for _, server := range tc.Servers {
 				Expect(server.RunCmdOnNode(cmd)).Should(ContainSubstring("status: NOERROR"), "failed cmd: "+cmd)
 			}
