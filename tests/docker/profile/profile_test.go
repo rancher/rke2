@@ -28,7 +28,7 @@ var _ = Describe("Profile Tests", Ordered, func() {
 	Context("Setup Cluster with profile: etcd", func() {
 		It("should provision servers and agents", func() {
 			var err error
-			tc, err = docker.NewTestConfig()
+			tc, err = docker.NewTestConfig(GinkgoTB())
 			Expect(err).NotTo(HaveOccurred())
 			tc.ServerYaml = "profile: etcd"
 			Expect(tc.ProvisionServers(*serverCount)).To(Succeed())
