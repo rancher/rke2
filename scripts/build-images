@@ -105,14 +105,14 @@ if [ "${GOARCH}" != "arm64" ]; then
 
     if [ "${REGISTRY}" != "docker.io" ]; then
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-vsphere.txt
-    ${REGISTRY}/rancher/hardened-cloud-provider-vsphere:v1.36.0-build20260702
-    ${REGISTRY}/rancher/hardened-vsphere-csi-driver:v3.7.2-build20260702
-    ${REGISTRY}/rancher/hardened-vsphere-csi-syncer:v3.7.2-build20260702
-    ${REGISTRY}/rancher/hardened-csi-node-driver-registrar:v2.17.0-build20260702
-    ${REGISTRY}/rancher/hardened-csi-resizer:v2.2.1-build20260702
-    ${REGISTRY}/rancher/hardened-livenessprobe:v2.19.0-build20260706
-    ${REGISTRY}/rancher/hardened-csi-attacher:v4.12.0-build20260702
-    ${REGISTRY}/rancher/hardened-csi-provisioner:v6.3.0-build20260702
+    ${REGISTRY}/rancher/hardened-cloud-provider-vsphere:v1.36.0-build20260710
+    ${REGISTRY}/rancher/hardened-vsphere-csi-driver:v3.7.2-build20260710
+    ${REGISTRY}/rancher/hardened-vsphere-csi-syncer:v3.7.2-build20260710
+    ${REGISTRY}/rancher/hardened-csi-node-driver-registrar:v2.17.0-build20260710
+    ${REGISTRY}/rancher/hardened-csi-resizer:v2.2.1-build20260710
+    ${REGISTRY}/rancher/hardened-livenessprobe:v2.19.0-build20260710
+    ${REGISTRY}/rancher/hardened-csi-attacher:v4.12.0-build20260710
+    ${REGISTRY}/rancher/hardened-csi-provisioner:v6.3.0-build20260710
     ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.6.0-build20260708
 EOF
     else

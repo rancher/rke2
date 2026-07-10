@@ -26,15 +26,63 @@ sources:
     kind: "shell"
     spec:
       command: bash ./updatecli/scripts/retrieve_chart_version.sh rancher-vsphere-csi
-  
-conditions:
-  vsphereCSIVersionShouldBeUpdated:
-    name: "Check if vsphere-csi chart should be updated or not"
-    kind: shell
-    sourceid: vsphere-csi
+  vsphere-csi-public-driver-tag:
+    name: "Get vsphere-csi public driver tag"
+    kind: "shell"
     spec:
-      command: bash ./updatecli/scripts/validate_version.sh rancher-vsphere-csi
-
+      command: |
+        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
+          | tar xzO rancher-vsphere-csi/values.yaml \
+          | yq -r '.versionOverrides[0].values.csiController.image.tag'
+  vsphere-csi-public-syncer-tag:
+    name: "Get vsphere-csi public syncer tag"
+    kind: "shell"
+    spec:
+      command: |
+        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
+          | tar xzO rancher-vsphere-csi/values.yaml \
+          | yq -r '.versionOverrides[0].values.csiController.image.vsphereSyncer.tag'
+  vsphere-csi-public-registrar-tag:
+    name: "Get vsphere-csi public node driver registrar tag"
+    kind: "shell"
+    spec:
+      command: |
+        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
+          | tar xzO rancher-vsphere-csi/values.yaml \
+          | yq -r '.versionOverrides[0].values.csiNode.image.nodeDriverRegistrar.tag'
+  vsphere-csi-public-resizer-tag:
+    name: "Get vsphere-csi public resizer tag"
+    kind: "shell"
+    spec:
+      command: |
+        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
+          | tar xzO rancher-vsphere-csi/values.yaml \
+          | yq -r '.versionOverrides[0].values.csiController.image.csiResizer.tag'
+  vsphere-csi-public-liveness-tag:
+    name: "Get vsphere-csi public livenessprobe tag"
+    kind: "shell"
+    spec:
+      command: |
+        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
+          | tar xzO rancher-vsphere-csi/values.yaml \
+          | yq -r '.versionOverrides[0].values.csiController.image.livenessProbe.tag'
+  vsphere-csi-public-attacher-tag:
+    name: "Get vsphere-csi public attacher tag"
+    kind: "shell"
+    spec:
+      command: |
+        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
+          | tar xzO rancher-vsphere-csi/values.yaml \
+          | yq -r '.versionOverrides[0].values.csiController.image.csiAttacher.tag'
+  vsphere-csi-public-provisioner-tag:
+    name: "Get vsphere-csi public provisioner tag"
+    kind: "shell"
+    spec:
+      command: |
+        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
+          | tar xzO rancher-vsphere-csi/values.yaml \
+          | yq -r '.versionOverrides[0].values.csiController.image.csiProvisioner.tag'
+  
 targets:
   updateVsphereCSI:
     name: "Update the vsphere-csi airgap images"
@@ -42,7 +90,27 @@ targets:
     scmid: "rke2"
     sourceid: vsphere-csi
     spec:
-      command: bash ./updatecli/scripts/update_chart_and_images.sh rancher-vsphere-csi
+      command: bash ./updatecli/scripts/update_chart_and_images_prime.sh rancher-vsphere-csi {{ source "vsphere-csi" }}
+  updateVsphereCSIPublicImages:
+    name: "Update public vsphere-csi tags in scripts/build-images docker.io images-vsphere block"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: vsphere-csi-public-driver-tag
+    spec:
+      file: scripts/build-images
+      matchpattern: '(?ms)xargs -n1 -t \$PULL_CMD << EOF > \$BUILD_DIR/images-vsphere\.txt\n\s*\$\{REGISTRY\}/rancher/mirrored-cloud-provider-vsphere:.*?\nEOF'
+      replacepattern: |
+        xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-vsphere.txt
+            ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere:v1.36.0
+            ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:{{ source "vsphere-csi-public-driver-tag" }}
+            ${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:{{ source "vsphere-csi-public-syncer-tag" }}
+            ${REGISTRY}/rancher/mirrored-sig-storage-csi-node-driver-registrar:{{ source "vsphere-csi-public-registrar-tag" }}
+            ${REGISTRY}/rancher/mirrored-sig-storage-csi-resizer:{{ source "vsphere-csi-public-resizer-tag" }}
+            ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:{{ source "vsphere-csi-public-liveness-tag" }}
+            ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:{{ source "vsphere-csi-public-attacher-tag" }}
+            ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:{{ source "vsphere-csi-public-provisioner-tag" }}
+            ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.6.0-build20260708
+        EOF
 
 actions:
   github:
