@@ -17,7 +17,7 @@ replace (
 	github.com/opencontainers/selinux => github.com/opencontainers/selinux v1.13.1
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/common => github.com/prometheus/common v0.66.1
-	github.com/spegel-org/spegel => github.com/k3s-io/spegel v0.7.1-k3s1
+	github.com/spegel-org/spegel => github.com/k3s-io/spegel v0.7.2-k3s1
 	go.etcd.io/etcd/api/v3 => github.com/k3s-io/etcd/api/v3 v3.6.12-k3s1
 	go.etcd.io/etcd/client/pkg/v3 => github.com/k3s-io/etcd/client/pkg/v3 v3.6.12-k3s1
 	go.etcd.io/etcd/client/v3 => github.com/k3s-io/etcd/client/v3 v3.6.12-k3s1
@@ -76,9 +76,9 @@ require (
 	github.com/containernetworking/plugins v1.9.1
 	github.com/google/go-containerregistry v0.20.3
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
-	github.com/k3s-io/helm-controller v0.17.1
-	github.com/k3s-io/k3s v1.33.13-0.20260610231102-b1a9339db253 // release-1.33
-	github.com/k3s-io/kine v0.16.1
+	github.com/k3s-io/helm-controller v0.16.22
+	github.com/k3s-io/k3s v1.33.14-0.20260710214216-eb991b23eb08 // release-1.33
+	github.com/k3s-io/kine v0.16.3
 	github.com/libp2p/go-netroute v0.4.0
 	github.com/onsi/ginkgo/v2 v2.27.2
 	github.com/onsi/gomega v1.38.2
@@ -102,7 +102,7 @@ require (
 	k8s.io/component-base v0.35.4
 	k8s.io/cri-api v0.35.4
 	k8s.io/klog/v2 v2.140.0
-	k8s.io/kubernetes v1.34.5
+	k8s.io/kubernetes v1.35.1
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4
 	sigs.k8s.io/yaml v1.6.0
 )
@@ -257,7 +257,7 @@ require (
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.9.2 // indirect
+	github.com/jackc/pgx/v5 v5.10.0 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/jbenet/go-temp-err-catcher v0.1.0 // indirect
@@ -291,7 +291,7 @@ require (
 	github.com/marten-seemann/tcp v0.0.0-20210406111302-dfbc87cc63fd // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
-	github.com/mattn/go-sqlite3 v1.14.44 // indirect
+	github.com/mattn/go-sqlite3 v1.14.47 // indirect
 	github.com/mikioh/tcpinfo v0.0.0-20190314235526-30a79bb1804b // indirect
 	github.com/mikioh/tcpopt v0.0.0-20190314235656-172688c1accc // indirect
 	github.com/minio/crc64nvme v1.1.1 // indirect
@@ -373,7 +373,7 @@ require (
 	github.com/prometheus/common v0.67.5 // indirect
 	github.com/prometheus/procfs v0.20.1 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
-	github.com/quic-go/quic-go v0.59.0 // indirect
+	github.com/quic-go/quic-go v0.60.0 // indirect
 	github.com/quic-go/webtransport-go v0.10.0 // indirect
 	github.com/rancher/dynamiclistener v0.7.5 // indirect
 	github.com/rancher/lasso v0.2.6 // indirect
@@ -455,23 +455,23 @@ require (
 	k8s.io/cloud-provider v0.35.2 // indirect
 	k8s.io/cluster-bootstrap v0.35.2 // indirect
 	k8s.io/component-helpers v0.35.2 // indirect
-	k8s.io/controller-manager v0.34.5 // indirect
+	k8s.io/controller-manager v0.35.1 // indirect
 	k8s.io/cri-client v0.35.4 // indirect
-	k8s.io/csi-translation-lib v0.33.12 // indirect
-	k8s.io/dynamic-resource-allocation v0.33.12 // indirect
+	k8s.io/csi-translation-lib v0.33.13 // indirect
+	k8s.io/dynamic-resource-allocation v0.33.13 // indirect
 	k8s.io/externaljwt v1.33.9 // indirect
 	k8s.io/kms v0.34.5 // indirect
 	k8s.io/kube-aggregator v0.34.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
-	k8s.io/kube-proxy v0.33.12 // indirect
-	k8s.io/kubelet v0.34.5 // indirect
-	k8s.io/mount-utils v0.33.12 // indirect
-	k8s.io/pod-security-admission v0.33.12 // indirect
+	k8s.io/kube-proxy v0.33.13 // indirect
+	k8s.io/kubelet v0.35.1 // indirect
+	k8s.io/mount-utils v0.33.13 // indirect
+	k8s.io/pod-security-admission v0.33.13 // indirect
 	lukechampine.com/blake3 v1.4.1 // indirect
-	modernc.org/libc v1.72.3 // indirect
+	modernc.org/libc v1.73.4 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.51.0 // indirect
+	modernc.org/sqlite v1.53.0 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.33.0 // indirect
 	sigs.k8s.io/controller-runtime v0.19.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
