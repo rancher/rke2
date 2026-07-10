@@ -28,7 +28,7 @@ var _ = Describe("Verify Secrets Encryption Rotation", Ordered, func() {
 	Context("Setup Cluster", func() {
 		It("should provision servers", func() {
 			var err error
-			tc, err = docker.NewTestConfig()
+			tc, err = docker.NewTestConfig(GinkgoTB())
 			Expect(err).NotTo(HaveOccurred())
 			Expect(tc.ProvisionServers(*serverCount)).To(Succeed())
 			Expect(docker.RestartCluster(tc.Servers)).To(Succeed())
