@@ -30,7 +30,7 @@ var _ = Describe("Basic Tests", Ordered, func() {
 	Context("Setup Cluster", func() {
 		It("should provision servers and agents", func() {
 			var err error
-			tc, err = docker.NewTestConfig()
+			tc, err = docker.NewTestConfig(GinkgoTB())
 			Expect(err).NotTo(HaveOccurred())
 			Expect(tc.ProvisionServers(*serverCount)).To(Succeed())
 			Expect(tc.ProvisionAgents(*agentCount)).To(Succeed())
