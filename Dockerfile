@@ -177,7 +177,7 @@ LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-runtim
 LABEL org.opencontainers.image.source="https://github.com/rancher/rke2"
 COPY --from=runtime-collect / /
 
-FROM ubuntu:24.04 AS test
+FROM opensuse/leap:16.0 AS test
 ARG TARGETARCH
 VOLUME /var/lib/rancher/rke2
 VOLUME /var/lib/kubelet
@@ -203,14 +203,9 @@ RUN mkdir -p /etc && \
 # for conformance testing
 RUN chmod 1777 /tmp
 RUN set -x && \
-    export DEBIAN_FRONTEND=noninteractive && \
-    apt-get -y update && \
-    apt-get -y upgrade && \
-    apt-get -y install \
-    bash \
+    zypper --non-interactive update -y && \
+    zypper --non-interactive install -y \
     bash-completion \
-    ca-certificates \
-    conntrack \
     ebtables \
     ethtool \
     iptables \

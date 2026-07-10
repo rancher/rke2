@@ -237,7 +237,7 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 			"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/rke2.linux-amd64.tar.gz,target=/tmp/rke2-artifacts/rke2.linux-amd64.tar.gz",
 			"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/sha256sum-amd64.txt,target=/tmp/rke2-artifacts/sha256sum-amd64.txt",
 			"--mount", "type=bind,source=$(pwd)/../../../build/images/rke2-images.linux-amd64.tar.zst,target=/var/lib/rancher/rke2/agent/images/rke2-images.linux-amd64.tar.zst",
-			"rancher/systemd-node:v0.0.5",
+			"rancher/systemd-node:v0.0.8",
 			"/usr/lib/systemd/systemd --unit=noop.target --show-status=true"}, " ")
 		if out, err := RunCommand(dRun); err != nil {
 			return fmt.Errorf("failed to start systemd container: %s: %v", out, err)
@@ -343,7 +343,7 @@ func (config *TestConfig) ProvisionAgents(numOfAgents int) error {
 				"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/rke2.linux-amd64.tar.gz,target=/tmp/rke2-artifacts/rke2.linux-amd64.tar.gz",
 				"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/sha256sum-amd64.txt,target=/tmp/rke2-artifacts/sha256sum-amd64.txt",
 				"--mount", "type=bind,source=$(pwd)/../../../build/images/rke2-images.linux-amd64.tar.zst,target=/var/lib/rancher/rke2/agent/images/rke2-images.linux-amd64.tar.zst",
-				"rancher/systemd-node:v0.0.5",
+				"rancher/systemd-node:v0.0.8",
 				"/usr/lib/systemd/systemd --unit=noop.target --show-status=true"}, " ")
 			if out, err := RunCommand(dRun); err != nil {
 				return fmt.Errorf("failed to start systemd container: %s: %v", out, err)
