@@ -185,6 +185,7 @@ var (
 		"etcd-s3-retention":                 copyFlag,
 		"disable-helm-controller":           dropFlag,
 		"helm-job-image":                    copyFlag,
+		"helm-controller-arg":               copyFlag,
 		"enable-pprof":                      copyFlag,
 		"servicelb-namespace":               copyFlag,
 	})
