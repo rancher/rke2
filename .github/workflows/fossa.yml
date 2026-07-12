@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
 
     - name: Read FOSSA token
       uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89 # v3
@@ -23,7 +23,7 @@ jobs:
           secret/data/github/org/rancher/fossa/push token | FOSSA_API_KEY_PUSH_ONLY
 
     - name: FOSSA scan
-      uses: fossas/fossa-action@ff70fe9fe17cbd2040648f1c45e8ec4e4884dcf3 # v1.9.0
+      uses: fossas/fossa-action@29693cc50323968e039056be419b32989fc5880c # v2.0.0
       with:
         api-key: ${{ env.FOSSA_API_KEY_PUSH_ONLY }}
         run-tests: false

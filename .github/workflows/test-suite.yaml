@@ -30,7 +30,7 @@ jobs:
       id-token: write
     steps:
     - name: Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
       with:
         fetch-depth: 1
     - name: Find Go Version for Build
@@ -45,7 +45,7 @@ jobs:
       with:
         go-version: ${{ steps.go-finder.outputs.VERSION_GOLANG }}
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+      uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
     - name: Install OS Packages
       run: sudo apt-get update && sudo apt-get install -y libarchive-tools g++-mingw-w64-x86-64 gcc-mingw-w64-x86-64
     - name: "Read secrets"
@@ -83,7 +83,7 @@ jobs:
       GOCOVERDIR: /tmp/rke2cov
     steps:
     - name: Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
       with:
         fetch-depth: 1
     - name: Install Go
@@ -130,7 +130,7 @@ jobs:
         dtest: [basics, flannel, profile, ingress-nginx, ing_migration, prime]
     steps:
       - name: "Checkout"
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
         with: {fetch-depth: 1}
       - name: Install Go
         uses: ./.github/actions/setup-go
@@ -176,7 +176,7 @@ jobs:
         dtest: [dualstack, secretsencryption, splitserver]
     steps:
       - name: "Checkout"
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
         with: {fetch-depth: 1}
       - name: Check Memory
         run: lsmem
@@ -213,7 +213,7 @@ jobs:
       max-parallel: 3
     steps:
     - name: "Checkout"
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
       with: {fetch-depth: 1}
     - name: Remove Unnecessary Tools
       run: |
@@ -237,14 +237,14 @@ jobs:
       uses: ./.github/actions/vagrant-setup
     - name: Vagrant R/W Cache
       if: github.ref == 'refs/heads/master'
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v5
       with:
         path: |
             ~/.vagrant.d/boxes
         key: vagrant-box-ubuntu-2404
     - name: Vagrant Read Cache
       if: github.ref != 'refs/heads/master'
-      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v5
       with:
         path: |
             ~/.vagrant.d/boxes

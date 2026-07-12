@@ -21,7 +21,7 @@ jobs:
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=256
     steps:
     - name: Checkout code
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
 
     - name: Build
       run: |
@@ -56,7 +56,7 @@ jobs:
           - { arch: arm64, runner-arch: arm64 }
     steps:
     - name: Checkout code
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
 
     - name: Validate Release
       run: |
@@ -147,7 +147,7 @@ jobs:
           - { arch: arm64, runner-arch: arm64, make-target: publish-image-runtime,         destination: prime    }
     steps:
     - name: Checkout code
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
 
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89 # v3
@@ -168,7 +168,7 @@ jobs:
 
     - name: Publish Image - Docker Hub
       if: ${{ matrix.destination == 'docker' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@c7c07fc1b7ca15c3a8fca06899a6a5657d34ac35 # v0.74.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@e9b6789032dbe9e289ccc6f7532da8fd349922b3 # v0.75.0
       env:
         GOARCH: ${{ matrix.arch }}
         GOOS: linux
@@ -184,7 +184,7 @@ jobs:
 
     - name: Publish Image - Staging
       if: ${{ matrix.destination == 'staging' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@c7c07fc1b7ca15c3a8fca06899a6a5657d34ac35 # v0.74.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@e9b6789032dbe9e289ccc6f7532da8fd349922b3 # v0.75.0
       env:
         GOARCH: ${{ matrix.arch }}
         GOOS: linux
@@ -202,7 +202,7 @@ jobs:
 
     - name: Publish Image Prime
       if: ${{ !contains(github.ref_name, '-rc') && matrix.destination == 'prime' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@c7c07fc1b7ca15c3a8fca06899a6a5657d34ac35 # v0.74.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@e9b6789032dbe9e289ccc6f7532da8fd349922b3 # v0.75.0
       env:
         GOARCH: ${{ matrix.arch }}
         GOOS: linux
@@ -235,7 +235,7 @@ jobs:
           - { destination: prime    }
     steps:
     - name: Checkout code
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
 
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
@@ -256,7 +256,7 @@ jobs:
 
     - name: Manifest - Docker
       if: ${{ matrix.destination == 'docker' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@c7c07fc1b7ca15c3a8fca06899a6a5657d34ac35 # v0.74.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@e9b6789032dbe9e289ccc6f7532da8fd349922b3 # v0.75.0
       env:
         GOARCH: amd64
         GOOS: linux
@@ -273,7 +273,7 @@ jobs:
 
     - name: Manifest - Staging
       if: ${{ matrix.destination == 'staging' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@c7c07fc1b7ca15c3a8fca06899a6a5657d34ac35 # v0.74.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@e9b6789032dbe9e289ccc6f7532da8fd349922b3 # v0.75.0
       env:
         GOARCH: amd64
         GOOS: linux
@@ -290,7 +290,7 @@ jobs:
         prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
     - name: Manifest - Prime
-      uses: rancher/ecm-distro-tools/actions/publish-image@c7c07fc1b7ca15c3a8fca06899a6a5657d34ac35 # v0.74.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@e9b6789032dbe9e289ccc6f7532da8fd349922b3 # v0.75.0
       if: ${{ !contains(github.ref_name, '-rc') && matrix.destination == 'prime' }}
       env:
         GOARCH: amd64
@@ -313,7 +313,7 @@ jobs:
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
     steps:
     - name: Checkout code
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
 
     - name: Download Artifacts
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -406,7 +406,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
       - name: Install crane
         uses: ./.github/actions/install-crane
 
@@ -434,7 +434,7 @@ jobs:
           fi
 
       - name: Log in to staging registry
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
         if: ${{ contains(github.ref_name, '-rc') }}
         with:
           registry: ${{ env.PRIME_STAGING_REGISTRY }}
@@ -442,7 +442,7 @@ jobs:
           password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
       - name: Log in to prime registry
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
         if: ${{ !contains(github.ref_name, '-rc') }}
         with:
           registry: ${{ env.PRIME_REGISTRY }}
@@ -494,10 +494,10 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
 
       - name: setup ecm-distro-tools
-        uses: rancher/ecm-distro-tools@c7c07fc1b7ca15c3a8fca06899a6a5657d34ac35 # v0.74.0
+        uses: rancher/ecm-distro-tools@e9b6789032dbe9e289ccc6f7532da8fd349922b3 # v0.75.0
 
       - name: Make artifacts directory
         run: |
