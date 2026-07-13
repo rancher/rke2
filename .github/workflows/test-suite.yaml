@@ -30,7 +30,7 @@ jobs:
       id-token: write
     steps:
     - name: Checkout
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         fetch-depth: 1
     - name: Find Go Version for Build
@@ -83,7 +83,7 @@ jobs:
       GOCOVERDIR: /tmp/rke2cov
     steps:
     - name: Checkout
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         fetch-depth: 1
     - name: Install Go
@@ -130,7 +130,7 @@ jobs:
         dtest: [basics, flannel, profile, ingress-nginx, ing_migration, prime]
     steps:
       - name: "Checkout"
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with: {fetch-depth: 1}
       - name: Install Go
         uses: ./.github/actions/setup-go
@@ -176,7 +176,7 @@ jobs:
         dtest: [dualstack, secretsencryption, splitserver]
     steps:
       - name: "Checkout"
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with: {fetch-depth: 1}
       - name: Check Memory
         run: lsmem
@@ -213,7 +213,7 @@ jobs:
       max-parallel: 3
     steps:
     - name: "Checkout"
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with: {fetch-depth: 1}
     - name: Remove Unnecessary Tools
       run: |
