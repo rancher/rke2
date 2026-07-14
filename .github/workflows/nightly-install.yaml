@@ -28,7 +28,7 @@ jobs:
       INSTALL_RKE2_CHANNEL: ${{ matrix.channel }}
     steps:
       - name: "Checkout"
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with: {fetch-depth: 1}
       - name: Remove Unnecessary Tools
         run: |
@@ -51,7 +51,7 @@ jobs:
       # Don't cache Windows VMs, they are 5-7GB each, which would eat our entire 10GB cache
       - name: "Vagrant Cache"
         if: ${{ !contains(matrix.vm, 'windows') }}
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v5
         with:
           path: |
              ~/.vagrant.d/boxes
