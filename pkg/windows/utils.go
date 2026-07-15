@@ -100,6 +100,7 @@ func createHnsNetwork(backend string, networkAdapter string) (string, error) {
 		if err == nil {
 			return network.ManagementIP, nil
 		}
+		time.Sleep(time.Second)
 	}
 
 	return "", fmt.Errorf("failed to create %s network", CalicoHnsNetworkName)
