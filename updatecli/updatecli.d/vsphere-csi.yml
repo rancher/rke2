@@ -99,7 +99,7 @@ targets:
     spec:
       file: scripts/build-images
       matchpattern: '(?ms)xargs -n1 -t \$PULL_CMD << EOF > \$BUILD_DIR/images-vsphere\.txt\n\s*\$\{REGISTRY\}/rancher/mirrored-cloud-provider-vsphere:.*?\nEOF'
-      replacepattern: |
+      replacepattern: |-
         xargs -n1 -t $$PULL_CMD << EOF > $$BUILD_DIR/images-vsphere.txt
             $${REGISTRY}/rancher/mirrored-cloud-provider-vsphere:v1.36.0
             $${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:{{ source "vsphere-csi-public-driver-tag" }}
