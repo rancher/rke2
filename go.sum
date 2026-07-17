@@ -1005,6 +1005,8 @@ github.com/google/pprof v0.0.0-20240727154555-813a5fbdbec8/go.mod h1:K1liHPHnj73
 github.com/google/pprof v0.0.0-20260115054156-294ebfa9ad83 h1:z2ogiKUYzX5Is6zr/vP9vJGqPwcdqsWjOt+V8J7+bTc=
 github.com/google/pprof v0.0.0-20260115054156-294ebfa9ad83/go.mod h1:MxpfABSjhmINe3F1It9d+8exIHFvUqtLIRCdOGNXqiI=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
+github.com/google/renameio/v2 v2.0.2 h1:qKZs+tfn+arruZZhQ7TKC/ergJunuJicWS6gLDt/dGw=
+github.com/google/renameio/v2 v2.0.2/go.mod h1:OX+G6WHHpHq3NVj7cAOleLOwJfcQ1s3uUJQCrr78SWo=
 github.com/google/s2a-go v0.1.0/go.mod h1:OJpEgntRZo8ugHpF9hkoLJbS5dSI20XZeXJ9JVywLlM=
 github.com/google/s2a-go v0.1.3/go.mod h1:Ej+mSEMGRnqRzjc7VtF+jdBwYG5fuJfiZ8ELkjEwM0A=
 github.com/google/s2a-go v0.1.4/go.mod h1:Ej+mSEMGRnqRzjc7VtF+jdBwYG5fuJfiZ8ELkjEwM0A=
@@ -1216,10 +1218,10 @@ github.com/k3s-io/etcd/pkg/v3 v3.6.12-k3s1 h1:nsxkj7ZfkN6Lwgcc2hgzgtonlzACGid7tL
 github.com/k3s-io/etcd/pkg/v3 v3.6.12-k3s1/go.mod h1:qDFIetmpC8TTZfkZkDzpNrXtVqVsyYumRWNPFXFhcpQ=
 github.com/k3s-io/etcd/server/v3 v3.6.12-k3s1 h1:Vbyuel/bZd/RgDQkfCxuYZmdUNcwgp8RuER5w+GrsYU=
 github.com/k3s-io/etcd/server/v3 v3.6.12-k3s1/go.mod h1:iiREo2DGRVjtiAjQeA3LQyYCk6YDFo3uS30/vImHdtk=
-github.com/k3s-io/helm-controller v0.17.3 h1:+qwe2PfNCqe/hk8lxBJNYWvPW3cbWmWXSu4p6QaumWA=
-github.com/k3s-io/helm-controller v0.17.3/go.mod h1:Xd5xH1WJMYiSgixpZ0ot1axTKWS/shKz1Kz4tJAhhE4=
-github.com/k3s-io/k3s v1.36.3-0.20260710213051-f222653ff792 h1:otUl5Fn8L7i6aa+AWJymdiYJPbAACSp5sNSFvrxxpjE=
-github.com/k3s-io/k3s v1.36.3-0.20260710213051-f222653ff792/go.mod h1:QWJ2dpbdTYX5R+0GU1K3HZHPvMTL14+YBYXvNheFr+A=
+github.com/k3s-io/helm-controller v0.17.5 h1:T1iV9MEj3a3NtKCh+YqK4NEmXu/iTdtFDzcgl1kqVLM=
+github.com/k3s-io/helm-controller v0.17.5/go.mod h1:pLlCfQ0hLtuA5Ga9fcIWWdB20id67pUgYCGHYVIn9e4=
+github.com/k3s-io/k3s v1.36.3-0.20260720191027-4ca29faac89e h1:Qz8xY5IoKzMrtoWFi5Q10qS/Gb3OdMzxXsPhdhm+q8c=
+github.com/k3s-io/k3s v1.36.3-0.20260720191027-4ca29faac89e/go.mod h1:9MN8eTbspomz6LIYjyFwhYWLJ/e5wRSNLHtE3CrU1GY=
 github.com/k3s-io/kine v0.16.3 h1:NstMQZ7AIRA9dC+uu+ZpK5eITwsANrSDX4Fe6yTSmpU=
 github.com/k3s-io/kine v0.16.3/go.mod h1:8cpZsCKacjwrka3BjQDY7sCQ2qI9iGtcCs2I/I5euec=
 github.com/k3s-io/klog/v2 v2.140.0-k3s1 h1:Z6S9oqaxcKtLaTcQNgWsaZNE5a+qJmCrTI+Lahor4X8=
@@ -1687,8 +1689,8 @@ github.com/quic-go/quic-go v0.60.0 h1:xcQioE8OM66UQLeUMHltK1CCcOu3JbVB4JAQdDQSB+
 github.com/quic-go/quic-go v0.60.0/go.mod h1:wpKpjmPpftl30sL6pFh7REVpjbcCVy4zt2vDyK1TuJk=
 github.com/quic-go/webtransport-go v0.10.0 h1:LqXXPOXuETY5Xe8ITdGisBzTYmUOy5eSj+9n4hLTjHI=
 github.com/quic-go/webtransport-go v0.10.0/go.mod h1:LeGIXr5BQKE3UsynwVBeQrU1TPrbh73MGoC6jd+V7ow=
-github.com/rancher/dynamiclistener v0.9.0-rc.2 h1:TZHW8KvNMOe/LGxkBn/ZPF1pI7WLAUlTzd5Sa6Q+JaU=
-github.com/rancher/dynamiclistener v0.9.0-rc.2/go.mod h1:NvYAfFxT9+8Xwc0jBiTMu2sgXK749xOHrk+g6WWzSLs=
+github.com/rancher/dynamiclistener v0.9.1-0.20260710234258-e4a1908ede0d h1:8Xm41QfMb8KZ7GEmwytio5MCyPzlbGiDgpcZKjr2o/U=
+github.com/rancher/dynamiclistener v0.9.1-0.20260710234258-e4a1908ede0d/go.mod h1:bQ4AJIuI/ghhuo8NuO2nUAEmqEXCJLWqPymOUbipzWM=
 github.com/rancher/lasso v0.2.9 h1:5Xk9Qid+YDOLpa6s5xalcSR0cA5BMbgWcaOZ8kdNU7k=
 github.com/rancher/lasso v0.2.9/go.mod h1:PMtxoVahRQvhEAi1HVOfyLDe1CrtGwTqOtkPVjSSkns=
 github.com/rancher/permissions v0.0.0-20240523180510-4001d3d637f7 h1:0Kg2SGoMeU1ll4xPi4DE0+qNHLFO/U5MwtK0WrIdK+o=
@@ -1699,8 +1701,8 @@ github.com/rancher/wharfie v0.7.1 h1:/4MPrr71I7aXESB0C5DVf7an4H1TYOYv1yx6vA6eKko
 github.com/rancher/wharfie v0.7.1/go.mod h1:x/X8GGrrjBAdKHJuSF4ANqcljVQAhu3jBHoutVKeCE8=
 github.com/rancher/wins v0.4.17 h1:Rh/3bVWNsXU4JOrn5/LpTdgQzCd3L8pYhW8a2sg6K60=
 github.com/rancher/wins v0.4.17/go.mod h1:31SyQWwDHjoYzU+jZRMmME90YzPKLJ2eCfsLVOwNoek=
-github.com/rancher/wrangler/v3 v3.7.0-rc.1 h1:qgOSzhUK2s7vMppoeZop9yTou8r+HxaXm399YwdpGw4=
-github.com/rancher/wrangler/v3 v3.7.0-rc.1/go.mod h1:+XYUarLGlHehE127p8DFrukWDuJrq4eGVkMEgydS3rs=
+github.com/rancher/wrangler/v3 v3.7.0 h1:rB6GJpnc4Kz8lWuAH3wZwQPgJqPGOu43Aih6147uZB8=
+github.com/rancher/wrangler/v3 v3.7.0/go.mod h1:kqldrBWdHR5zIipX/nr8yuZBFqFrL7GfVP1uwVJSWPQ=
 github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=
 github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0/go.mod h1:qqbHyh8v60DhA7CoWK5oRCqLrMHRGoxYCSS9EjAz6Eo=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec h1:W09IVJc94icq4NjY3clb7Lk8O1qJ8BdBEF8z0ibU0rE=
