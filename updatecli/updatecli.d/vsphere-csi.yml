@@ -3,7 +3,7 @@
 #   have "UPDATECLI_GITHUB_ACTOR" env set to your github username
 #   have "UPDATECLI_GITHUB_TOKEN" env set to your github token
 #   have the latest version of updatecli installed
-#   'updatecli diff -v updatecli/values.yaml -c updatecli/updatecli.d/vsphere-csi.yml'
+#   'updatecli pipeline diff -v updatecli/values.yaml -c updatecli/updatecli.d/vsphere-csi.yml'
 # In the future, more useful files should be added to this directory.
 ---
 name: "Update vsphere csi/cpi charts and images"
@@ -16,8 +16,8 @@ scms:
       email: "{{ .github.email }}"
       username: "{{ requiredEnv .github.username }}"
       token: '{{ requiredEnv .github.token }}'
-      owner: rancher
-      repository: rke2
+      owner: '{{ .github.owner }}'
+      repository: "{{ .github.repo }}"
       branch: master
 
 sources:
@@ -98,10 +98,8 @@ targets:
     sourceid: vsphere-csi-public-driver-tag
     spec:
       file: scripts/build-images
-      matchpattern: '(?ms)xargs -n1 -t \$PULL_CMD << EOF > \$BUILD_DIR/images-vsphere\.txt\n\s*\$\{REGISTRY\}/rancher/mirrored-cloud-provider-vsphere:.*?\nEOF'
-      replacepattern: |-
-        xargs -n1 -t $$PULL_CMD << EOF > $$BUILD_DIR/images-vsphere.txt
-            $${REGISTRY}/rancher/mirrored-cloud-provider-vsphere:v1.36.0
+      matchpattern: '(?ms)[ \t]*\$\{REGISTRY\}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:.*?\nEOF'
+      replacepattern: |2-
             $${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:{{ source "vsphere-csi-public-driver-tag" }}
             $${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:{{ source "vsphere-csi-public-syncer-tag" }}
             $${REGISTRY}/rancher/mirrored-sig-storage-csi-node-driver-registrar:{{ source "vsphere-csi-public-registrar-tag" }}
@@ -117,6 +115,8 @@ actions:
     kind: "github/pullrequest"
     scmid: "rke2"
     spec:
+      merge:
+        strategy: auto
       automerge: false
       draft: false
       mergemethod: squash
