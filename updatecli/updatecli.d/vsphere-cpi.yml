@@ -16,8 +16,8 @@ scms:
       email: "{{ .github.email }}"
       username: "{{ requiredEnv .github.username }}"
       token: '{{ requiredEnv .github.token }}'
-      owner: rancher
-      repository: rke2
+      owner: '{{ .github.owner }}'
+      repository: "{{ .github.repo }}"
       branch: master
 
 sources:
