@@ -37,7 +37,7 @@ resolve_chart_version() {
 update_chart_version() {
     info "updating chart ${1} in ${CHART_VERSIONS_FILE}"
     export CHART_TARGET="/charts/${1}.yaml"
-    CURRENT_VERSION=$(yq -r '.charts[] | select(.filename == env(CHART_TARGET)) | .version' "${CHART_VERSIONS_FILE}")
+    CURRENT_VERSION=$(yq -r '.charts[] | select(.filename == env.CHART_TARGET) | .version' "${CHART_VERSIONS_FILE}")
     NEW_VERSION=${2}
     if [ "${CURRENT_VERSION}" != "${NEW_VERSION}" ]; then
         info "found version ${CURRENT_VERSION}, updating to ${NEW_VERSION}"
