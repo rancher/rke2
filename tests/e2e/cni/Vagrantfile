@@ -1,0 +1,125 @@
+ENV['TEST_INSTALL_SH'] ||= '../../../install.sh'
+ENV['VAGRANT_NO_PARALLEL'] = ENV['E2E_STANDUP_PARALLEL'] ? nil : 'no'
+NODE_ROLES = (ENV['E2E_NODE_ROLES'] || ["server-0", "agent-0" ])
+NODE_BOXES = (ENV['E2E_NODE_BOXES'] || ['bento/ubuntu-24.04', 'bento/ubuntu-24.04'])
+GITHUB_BRANCH = (ENV['E2E_GITHUB_BRANCH'] || "master")
+RELEASE_VERSION = (ENV['E2E_RELEASE_VERSION'] || "")
+NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
+NODE_MEMORY = (ENV['E2E_NODE_MEMORY'] || 3072).to_i
+NETWORK4_PREFIX = "10.10.10"
+NETWORK6_PREFIX = "fd11:decf:c0ff:ee"
+CNI = (ENV['E2E_CNI'] || "calico")
+FILTER = (ENV['E2E_FILTER'] || "iptables")
+
+def defaultOSConfigure(vm)
+  box = vm.box.to_s
+  if box.include?("ubuntu")
+    vm.provision "netplan dns", type: "shell", inline: "netplan set ethernets.eth0.nameservers.addresses=[8.8.8.8,1.1.1.1]; netplan apply", run: 'once'
+    vm.provision "Install jq", type: "shell", inline: "apt-get install -y jq", run: 'once'
+    if FILTER == "nftables"
+      vm.provision "Install nftables", type: "shell", inline: "apt-get install -y nftables", run: 'once'
+      # calico delegates to portmap for hostPort, which requires iptables and is used in the ingress test case.
+      if CNI != "calico"
+        vm.provision "Uninstall iptables", type: "shell", inline: "apt-get remove -y iptables", run: 'once'
+        vm.provision "Blacklist ip_tables", type: "shell", inline: "echo 'blacklist ip_tables' | tee /etc/modprobe.d/blacklist-ip_tables.conf", run: 'once'
+      end
+    elsif FILTER == "iptables"
+      vm.provision "Install iptables", type: "shell", inline: "apt-get install -y iptables", run: 'once'
+      vm.provision "Uninstall nftables", type: "shell", inline: "apt-get remove -y nftables", run: 'once'
+      vm.provision "Blacklist nf_tables", type: "shell", inline: "echo 'blacklist nf_tables' | tee /etc/modprobe.d/blacklist-nf_tables.conf", run: 'once'
+    end
+    vm.provision :reload, run: 'once'
+  elsif box.include?("Leap") || box.include?("Tumbleweed")
+    vm.provision "Install jq", type: "shell", inline: "zypper install -y jq", run: 'once'
+  elsif box.match?(/Windows.*2019/) || box.match?(/Windows.*2022/)
+    vm.communicator = "winssh"
+  end
+end
+
+def provision(vm, roles, role_num, node_num)
+  vm.box = NODE_BOXES[node_num]
+  vm.hostname = "#{roles[0]}-#{role_num}"
+  cni = "#{CNI}"
+  filter = "#{FILTER}"
+  node_ip4 = "#{NETWORK4_PREFIX}.#{100+node_num}"
+  node_ip6 = "#{NETWORK6_PREFIX}::#{10+node_num}"
+  node_ip6_gw = "#{NETWORK6_PREFIX}::1"
+  # Only works with libvirt, which allows IPv4 + IPv6 on a single network/interface
+  vm.network "private_network", 
+    :ip => node_ip4,
+    :netmask => "255.255.255.0",
+    :libvirt__dhcp_enabled => false,
+    :libvirt__forward_mode => "none",
+    :libvirt__guest_ipv6 => "yes",
+    :libvirt__ipv6_address => "#{NETWORK6_PREFIX}::1",
+    :libvirt__ipv6_prefix => "64"
+      
+  defaultOSConfigure(vm)
+  
+  external_env = ""
+  ENV.select{|k,v| k.start_with?('RKE2_') || k.start_with?('INSTALL_RKE2_')}.each {|key,value| external_env << "#{key.to_s}=#{value.to_s}"}
+
+  scripts_location = Dir.exist?("./scripts") ? "./scripts" : "../scripts" 
+  vm.provision "Configure second interface", type: "shell", path: scripts_location + "/configure_second_interface.sh", args: [ node_ip4, node_ip6, node_ip6_gw, vm.box ]
+  vm.provision "Create CNI Manifest", type: "shell", path: scripts_location + "/create_cni_manifest.sh", args: [ cni, filter ]
+  vm.provision 'rke2-upload-installer', type: 'file', run: 'always', source: ENV['TEST_INSTALL_SH'], destination: 'install.sh' 
+  
+  proxy_mode = filter == "nftables" ? "nftables" : "iptables"
+
+  if roles.include?("server") && role_num == 0
+    vm.provision :rke2, run: 'once' do |rke2|
+      rke2.installer_url = 'file:///home/vagrant/install.sh'
+      rke2.env = %W[ #{external_env} INSTALL_RKE2_TYPE=server]
+      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
+      rke2.config = <<~YAML
+        write-kubeconfig-mode: '0644'
+        node-external-ip: #{node_ip4},#{node_ip6}
+        node-ip: #{node_ip4},#{node_ip6}
+        token: vagrant-rke2
+        kube-proxy-arg:
+          - proxy-mode=#{proxy_mode}
+        cluster-cidr: 10.42.0.0/16,2001:cafe:42:0::/56
+        service-cidr: 10.43.0.0/16,2001:cafe:43:0::/112
+        cni: #{cni}
+      YAML
+    end
+  end
+  if roles.include?("agent")
+    vm.provision :rke2, run: 'once' do |rke2|
+      rke2.installer_url = 'file:///home/vagrant/install.sh'
+      rke2.env = %W[ #{external_env} INSTALL_RKE2_TYPE=agent]
+      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
+      rke2.install_path = false
+      rke2.config = <<~YAML
+        write-kubeconfig-mode: '0644'
+        server: https://#{NETWORK4_PREFIX}.100:9345
+        node-ip: #{node_ip4},#{node_ip6}
+        node-external-ip: #{node_ip4},#{node_ip6}
+        token: vagrant-rke2
+      YAML
+    end
+  end
+end
+
+Vagrant.configure("2") do |config|
+  config.vagrant.plugins = ["vagrant-rke2", "vagrant-reload", "vagrant-libvirt"]
+  config.vm.provider "libvirt" do |v|
+    v.cpus = NODE_CPUS
+    v.memory = NODE_MEMORY
+  end
+  
+  if NODE_ROLES.kind_of?(String)
+    NODE_ROLES = NODE_ROLES.split(" ", -1)
+  end
+  if NODE_BOXES.kind_of?(String)
+    NODE_BOXES = NODE_BOXES.split(" ", -1)
+  end
+
+  NODE_ROLES.each_with_index do |name, i|
+    config.vm.define name do |node|
+      roles = name.split("-", -1)
+      role_num = roles.pop.to_i
+      provision(node.vm, roles, role_num, i)
+    end
+  end
+end
