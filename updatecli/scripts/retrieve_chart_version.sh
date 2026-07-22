@@ -7,7 +7,12 @@ fatal() {
     exit 1
 }
 
-CHART_INDEX_FILE_URL="https://rke2-charts.rancher.io/index.yaml"
+# Use the rke2-charts main branch index (the source of truth for the chart
+# tarballs and images this automation consumes from
+# github.com/rancher/rke2-charts/raw/main/assets). The served Helm repo at
+# rke2-charts.rancher.io can lag behind main, which would cause this automation
+# to miss newly published chart versions.
+CHART_INDEX_FILE_URL="https://github.com/rancher/rke2-charts/raw/main/index.yaml"
 export CHART_NAME="${1}"
 # Versions are unordered inside the charts file, so we must sort by version in
 # reverse order and get the highest.
