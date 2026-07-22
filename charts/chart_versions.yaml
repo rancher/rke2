@@ -2,7 +2,7 @@ charts:
   - version: 1.19.601
     filename: /charts/rke2-cilium.yaml
     bootstrap: true
-  - version: v3.32.1-build2026071701
+  - version: v3.32.1-build2026072200
     filename: /charts/rke2-canal.yaml
     bootstrap: true
   - version: v3.32.100
@@ -12,7 +12,7 @@ charts:
     filename: /charts/rke2-calico-crd.yaml
     bootstrap: true
     package: rke2-calico-crd
-  - version: 1.46.102
+  - version: 1.46.201
     filename: /charts/rke2-coredns.yaml
     bootstrap: true
   - version: 4.15.106
@@ -30,7 +30,7 @@ charts:
   - version: v4.3.007
     filename: /charts/rke2-multus.yaml
     bootstrap: false
-  - version: v0.28.705
+  - version: v0.28.800
     filename: /charts/rke2-flannel.yaml
     bootstrap: true
   - version: 1.15.200
