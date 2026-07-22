@@ -31,7 +31,7 @@ var _ = Describe("DualStack Tests", Ordered, func() {
 	Context("Setup Cluster", func() {
 		It("should provision servers and agents with ipv4 + ipv6", func() {
 			var err error
-			tc, err = docker.NewTestConfig()
+			tc, err = docker.NewTestConfig(GinkgoTB())
 			Expect(err).NotTo(HaveOccurred())
 			tc.DualStack = true
 			tc.ServerYaml = "cluster-cidr: 10.42.0.0/16,2001:cafe:42:0::/56\nservice-cidr: 10.43.0.0/16,2001:cafe:43:0::/112"
@@ -146,7 +146,7 @@ var _ = Describe("DualStack Tests", Ordered, func() {
 		})
 
 		It("Verifies nodecache is working", func() {
-			cmd := "dig +retries=0 @169.254.20.10 www.kubernetes.io"
+			cmd := "zypper --non-interactive install -y bind-utils; dig +retries=0 @169.254.20.10 www.kubernetes.io"
 			for _, server := range tc.Servers {
 				Expect(server.RunCmdOnNode(cmd)).Should(ContainSubstring("status: NOERROR"), "failed cmd: "+cmd)
 			}

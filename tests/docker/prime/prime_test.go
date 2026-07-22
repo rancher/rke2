@@ -30,7 +30,7 @@ var _ = Describe("Prime Tests", Ordered, func() {
 	Context("Setup Cluster", func() {
 		It("should provision servers and agents", func() {
 			var err error
-			tc, err = docker.NewTestConfig()
+			tc, err = docker.NewTestConfig(GinkgoTB())
 			Expect(err).NotTo(HaveOccurred())
 			tc.ServerYaml = "prime: true\ningress-controller: ingress-nginx"
 			Expect(tc.ProvisionServers(*serverCount)).To(Succeed())

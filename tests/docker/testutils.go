@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"net"
@@ -9,12 +10,15 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"testing"
 	"time"
 
 	"golang.org/x/sync/errgroup"
 )
 
 type TestConfig struct {
+	testing.TB
+
 	TestDir        string
 	KubeconfigFile string
 	Token          string
@@ -35,10 +39,11 @@ type DockerNode struct {
 
 // NewTestConfig initializes the test environment and returns the test config
 // A random token is generated for the cluster
-func NewTestConfig() (*TestConfig, error) {
-	config := &TestConfig{}
+func NewTestConfig(tb testing.TB) (*TestConfig, error) {
+	config := &TestConfig{TB: tb}
 
 	// Create temporary directory
+	// do not use tb.TempDir() as we want more control over when it gets cleaned up
 	tempDir, err := os.MkdirTemp("", "rke2-test-")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp directory: %v", err)
@@ -47,7 +52,7 @@ func NewTestConfig() (*TestConfig, error) {
 
 	// Create required directories
 	if err := os.MkdirAll(filepath.Join(config.TestDir, "logs"), 0755); err != nil {
-		return nil, fmt.Errorf("failed to create logs directory: %v", err)
+		return nil, fmt.Errorf("failed to create logs directory: %w", err)
 	}
 
 	// Generate random secret
@@ -135,8 +140,9 @@ func (config *TestConfig) ProvisionRegistries() error {
 				"-e", fmt.Sprintf("REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/var/lib/registry/%s", registryName),
 				image,
 			}, " ")
+			config.TB.Logf("Starting registry container: %s", runCmd)
 			if out, err := RunCommand(runCmd); err != nil {
-				return fmt.Errorf("failed to start registry container %s: %s: %v", name, out, err)
+				return fmt.Errorf("failed to start registry container %s: %s: %w", name, out, err)
 			}
 		} else if existingHostPort != "" {
 			if parsedPort, err := strconv.Atoi(existingHostPort); err == nil {
@@ -154,7 +160,7 @@ func (config *TestConfig) ProvisionRegistries() error {
 	}
 
 	if err := os.WriteFile(registriesPath, []byte(registriesYaml.String()), 0644); err != nil {
-		return fmt.Errorf("failed to write registries yaml: %v", err)
+		return fmt.Errorf("failed to write registries yaml: %w", err)
 	}
 
 	return nil
@@ -193,10 +199,10 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 		// Generate sha256sum file if it doesn't exist
 		if _, err := os.Stat("../../../dist/artifacts/sha256sum-amd64.txt"); os.IsNotExist(err) {
 			if _, err := RunCommand("sha256sum ../../../dist/artifacts/rke2.linux-amd64.tar.gz > ../../../dist/artifacts/sha256sum-amd64.txt"); err != nil {
-				return fmt.Errorf("failed to generate sha256sum file: %v", err)
+				return fmt.Errorf("failed to generate sha256sum file: %w", err)
 			}
 		} else if err != nil {
-			return fmt.Errorf("failed to check sha256sum file: %v", err)
+			return fmt.Errorf("failed to check sha256sum file: %w", err)
 		}
 
 		dualStackConfig := ""
@@ -206,7 +212,7 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 			if _, err := RunCommand(fmt.Sprintf("docker network inspect %s", networkName)); err != nil {
 				cmd := fmt.Sprintf("docker network create --ipv6 --subnet=fd11:decf:c0ff:ee::/64 %s", networkName)
 				if _, err := RunCommand(cmd); err != nil {
-					return fmt.Errorf("failed to create dual-stack network: %v", err)
+					return fmt.Errorf("failed to create dual-stack network: %w", err)
 				}
 			}
 			dualStackConfig = "--network rke2-test-dualstack"
@@ -226,7 +232,7 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 			joinServer,
 			dualStackConfig,
 			"-e", "RKE2_DEBUG=true",
-			"-e", "GOCOVERDIR=/tmp/rke2-cov",
+			"-e", "GOCOVERDIR=/src/rke2-cov",
 			"-e", "PATH=$PATH:/var/lib/rancher/rke2/bin",
 			"-v", "/sys/fs/bpf:/sys/fs/bpf",
 			"-v", "/lib/modules:/lib/modules",
@@ -234,50 +240,58 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 			"-v", "/var/run/docker.sock:/var/run/docker.sock",
 			"-v", "/var/lib/docker:/var/lib/docker",
 			registryConfig,
-			"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/rke2.linux-amd64.tar.gz,target=/tmp/rke2-artifacts/rke2.linux-amd64.tar.gz",
-			"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/sha256sum-amd64.txt,target=/tmp/rke2-artifacts/sha256sum-amd64.txt",
+			"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/rke2.linux-amd64.tar.gz,target=/src/rke2-artifacts/rke2.linux-amd64.tar.gz",
+			"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/sha256sum-amd64.txt,target=/src/rke2-artifacts/sha256sum-amd64.txt",
 			"--mount", "type=bind,source=$(pwd)/../../../build/images/rke2-images.linux-amd64.tar.zst,target=/var/lib/rancher/rke2/agent/images/rke2-images.linux-amd64.tar.zst",
-			"rancher/systemd-node:v0.0.5",
+			"rancher/systemd-node:v0.0.8",
 			"/usr/lib/systemd/systemd --unit=noop.target --show-status=true"}, " ")
+
+		config.TB.Logf("Starting systemd container: %s", dRun)
 		if out, err := RunCommand(dRun); err != nil {
-			return fmt.Errorf("failed to start systemd container: %s: %v", out, err)
+			return fmt.Errorf("failed to start systemd server container: %s: %w", out, err)
 		}
 		time.Sleep(5 * time.Second)
-		cmd := "mkdir -p /tmp/rke2-cov"
+		cmd := "mkdir -p /src/rke2-cov"
 		if out, err := newServer.RunCmdOnNode(cmd); err != nil {
-			return fmt.Errorf("failed to create coverage directory: %s: %v", out, err)
+			return fmt.Errorf("failed to create coverage directory: %s: %w", out, err)
 		}
 
 		// Create empty config.yaml for later use
 		cmd = "mkdir -p /etc/rancher/rke2; touch /etc/rancher/rke2/config.yaml"
 		if out, err := newServer.RunCmdOnNode(cmd); err != nil {
-			return fmt.Errorf("failed to create empty config.yaml: %s: %v", out, err)
+			return fmt.Errorf("failed to create empty config.yaml: %s: %w", out, err)
 		}
 		// Write the raw YAML directly to the config.yaml on the systemd-node container
 		if config.ServerYaml != "" {
 			cmd = fmt.Sprintf("echo '%s' > /etc/rancher/rke2/config.yaml", config.ServerYaml)
 			if out, err := newServer.RunCmdOnNode(cmd); err != nil {
-				return fmt.Errorf("failed to write server yaml: %s: %v", out, err)
+				return fmt.Errorf("failed to write server yaml: %s: %w", out, err)
 			}
 		}
 
-		if _, err := newServer.RunCmdOnNode("curl -sfL https://get.rke2.io | INSTALL_RKE2_ARTIFACT_PATH=/tmp/rke2-artifacts sh -"); err != nil {
-			return fmt.Errorf("failed to install server: %v", err)
+		if out, err := newServer.RunCmdOnNode("ls -la /src/rke2-artifacts"); err != nil {
+			return fmt.Errorf("failed to list artifacts dir: %w", err)
+		} else {
+			config.TB.Logf("Node has artifacts: \n%s", out)
+		}
+
+		if _, err := newServer.RunCmdOnNode("curl -sfL https://get.rke2.io | INSTALL_RKE2_ARTIFACT_PATH=/src/rke2-artifacts sh -"); err != nil {
+			return fmt.Errorf("failed to install server: %w", err)
 		}
 
 		if _, err := newServer.RunCmdOnNode("systemctl enable rke2-server"); err != nil {
-			return fmt.Errorf("failed to enable server: %v", err)
+			return fmt.Errorf("failed to enable server: %w", err)
 		}
 
 		// Fill RKE2_* environment variables.
 		envVars, err := newServer.RunCmdOnNode("env | grep ^RKE2_")
 		if err != nil {
-			return fmt.Errorf("failed to get RKE2_* environment variables: %v", err)
+			return fmt.Errorf("failed to get RKE2_* environment variables: %w", err)
 		}
 		envFile := strings.ReplaceAll(envVars, "\n", "\\n")
 		writeCmd := fmt.Sprintf("printf '%s' > /usr/local/lib/systemd/system/rke2-server.env", envFile)
 		if _, err := newServer.RunCmdOnNode(writeCmd); err != nil {
-			return fmt.Errorf("failed to write env vars to /usr/local/lib/systemd/system/rke2-server.env: %v", err)
+			return fmt.Errorf("failed to write env vars to /usr/local/lib/systemd/system/rke2-server.env: %w", err)
 		}
 
 		cmd = "docker inspect --format '{{range $k,$v := .NetworkSettings.Networks}}{{printf \"%s\" $v.IPAddress}}{{end}}' " + name
@@ -333,53 +347,55 @@ func (config *TestConfig) ProvisionAgents(numOfAgents int) error {
 				"-e", fmt.Sprintf("RKE2_URL=%s", config.Servers[0].URL),
 				dualStackConfig,
 				"-e", "RKE2_DEBUG=true",
-				"-e", "GOCOVERDIR=/tmp/rke2-cov",
+				"-e", "GOCOVERDIR=/src/rke2-cov",
 				"-v", "/sys/fs/bpf:/sys/fs/bpf",
 				"-v", "/lib/modules:/lib/modules",
 				"-v", "/sys/fs/cgroup:/run/cilium/cgroupv2",
 				"-v", "/var/run/docker.sock:/var/run/docker.sock",
 				"-v", "/var/lib/docker:/var/lib/docker",
 				registryConfig,
-				"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/rke2.linux-amd64.tar.gz,target=/tmp/rke2-artifacts/rke2.linux-amd64.tar.gz",
-				"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/sha256sum-amd64.txt,target=/tmp/rke2-artifacts/sha256sum-amd64.txt",
+				"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/rke2.linux-amd64.tar.gz,target=/src/rke2-artifacts/rke2.linux-amd64.tar.gz",
+				"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/sha256sum-amd64.txt,target=/src/rke2-artifacts/sha256sum-amd64.txt",
 				"--mount", "type=bind,source=$(pwd)/../../../build/images/rke2-images.linux-amd64.tar.zst,target=/var/lib/rancher/rke2/agent/images/rke2-images.linux-amd64.tar.zst",
-				"rancher/systemd-node:v0.0.5",
+				"rancher/systemd-node:v0.0.8",
 				"/usr/lib/systemd/systemd --unit=noop.target --show-status=true"}, " ")
+
+			config.TB.Logf("Starting systemd container: %s", dRun)
 			if out, err := RunCommand(dRun); err != nil {
-				return fmt.Errorf("failed to start systemd container: %s: %v", out, err)
+				return fmt.Errorf("failed to start systemd agent container: %s: %w", out, err)
 			}
 			time.Sleep(5 * time.Second)
 
 			// Create empty config.yaml for later use
 			cmd := "mkdir -p /etc/rancher/rke2; touch /etc/rancher/rke2/config.yaml"
 			if out, err := newAgent.RunCmdOnNode(cmd); err != nil {
-				return fmt.Errorf("failed to create empty config.yaml: %s: %v", out, err)
+				return fmt.Errorf("failed to create empty config.yaml: %s: %w", out, err)
 			}
 			// Write the raw YAML directly to the config.yaml on the systemd-node container
 			if config.AgentYaml != "" {
 				cmd = fmt.Sprintf("echo '%s' > /etc/rancher/rke2/config.yaml", config.AgentYaml)
 				if out, err := newAgent.RunCmdOnNode(cmd); err != nil {
-					return fmt.Errorf("failed to write server yaml: %s: %v", out, err)
+					return fmt.Errorf("failed to write server yaml: %s: %w", out, err)
 				}
 			}
 
-			if _, err := newAgent.RunCmdOnNode("curl -sfL https://get.rke2.io | INSTALL_RKE_TYPE='agent' INSTALL_RKE2_ARTIFACT_PATH=/tmp/rke2-artifacts sh -"); err != nil {
-				return fmt.Errorf("failed to install agent: %v", err)
+			if _, err := newAgent.RunCmdOnNode("curl -sfL https://get.rke2.io | INSTALL_RKE_TYPE='agent' INSTALL_RKE2_ARTIFACT_PATH=/src/rke2-artifacts sh -"); err != nil {
+				return fmt.Errorf("failed to install agent: %w", err)
 			}
 
 			// Fill RKE2_* environment variables.
 			envVars, err := newAgent.RunCmdOnNode("env | grep ^RKE2_")
 			if err != nil {
-				return fmt.Errorf("failed to get RKE2_* environment variables: %v", err)
+				return fmt.Errorf("failed to get RKE2_* environment variables: %w", err)
 			}
 			envFile := strings.ReplaceAll(envVars, "\n", "\\n")
 			writeCmd := fmt.Sprintf("printf '%s' > /usr/local/lib/systemd/system/rke2-agent.env", envFile)
 			if _, err := newAgent.RunCmdOnNode(writeCmd); err != nil {
-				return fmt.Errorf("failed to write env vars to /usr/local/lib/systemd/system/rke2-agent.env: %v", err)
+				return fmt.Errorf("failed to write env vars to /usr/local/lib/systemd/system/rke2-agent.env: %w", err)
 			}
 
 			if _, err := newAgent.RunCmdOnNode("systemctl enable rke2-agent"); err != nil {
-				return fmt.Errorf("failed to enable agent: %v", err)
+				return fmt.Errorf("failed to enable agent: %w", err)
 			}
 
 			// Get the IP address of the container
@@ -407,11 +423,11 @@ func (config *TestConfig) ProvisionAgents(numOfAgents int) error {
 func (config *TestConfig) RemoveNode(nodeName string) error {
 	cmd := fmt.Sprintf("docker stop %s", nodeName)
 	if _, err := RunCommand(cmd); err != nil {
-		return fmt.Errorf("failed to stop node %s: %v", nodeName, err)
+		return fmt.Errorf("failed to stop node %s: %w", nodeName, err)
 	}
 	cmd = fmt.Sprintf("docker rm %s", nodeName)
 	if _, err := RunCommand(cmd); err != nil {
-		return fmt.Errorf("failed to remove node %s: %v", nodeName, err)
+		return fmt.Errorf("failed to remove node %s: %w", nodeName, err)
 	}
 	return nil
 }
@@ -475,19 +491,19 @@ func (config *TestConfig) Cleanup() error {
 	// Remove volumes created by the agent/server containers
 	cmd := fmt.Sprintf("docker volume ls -q | grep -F %s | xargs -r docker volume rm", strings.ToLower(filepath.Base(config.TestDir)))
 	if _, err := RunCommand(cmd); err != nil {
-		errs = append(errs, fmt.Errorf("failed to remove volumes: %v", err))
+		errs = append(errs, fmt.Errorf("failed to remove volumes: %w", err))
 	}
 
 	// Remove dual-stack network if it exists
 	if config.DualStack {
 		if _, err := RunCommand("docker network rm rke2-test-dualstack"); err != nil {
-			errs = append(errs, fmt.Errorf("failed to remove dual-stack network: %v", err))
+			errs = append(errs, fmt.Errorf("failed to remove dual-stack network: %w", err))
 		}
 	}
 
 	// Error out if we hit any issues
 	if len(errs) > 0 {
-		return fmt.Errorf("cleanup failed: %v", errs)
+		return fmt.Errorf("cleanup failed: %w", errors.Join(errs...))
 	}
 
 	if config.TestDir != "" {
@@ -508,7 +524,7 @@ func (config *TestConfig) CopyAndModifyKubeconfig() error {
 	for i, node := range config.Servers {
 		out, err := node.RunCmdOnNode("cat /etc/rancher/rke2/config.yaml")
 		if err != nil {
-			return fmt.Errorf("failed to get config.yaml: %v", err)
+			return fmt.Errorf("failed to get config.yaml: %w", err)
 		}
 		if !strings.Contains(out, "disable-apiserver: true") {
 			serverID = i
@@ -518,12 +534,12 @@ func (config *TestConfig) CopyAndModifyKubeconfig() error {
 
 	cmd := fmt.Sprintf("docker cp %s:/etc/rancher/rke2/rke2.yaml %s/kubeconfig.yaml", config.Servers[serverID].Name, config.TestDir)
 	if _, err := RunCommand(cmd); err != nil {
-		return fmt.Errorf("failed to copy kubeconfig: %v", err)
+		return fmt.Errorf("failed to copy kubeconfig: %w", err)
 	}
 
 	cmd = fmt.Sprintf("sed -i -e \"s/:6443/:%d/g\" %s/kubeconfig.yaml", config.Servers[serverID].Port, config.TestDir)
 	if _, err := RunCommand(cmd); err != nil {
-		return fmt.Errorf("failed to update kubeconfig: %v", err)
+		return fmt.Errorf("failed to update kubeconfig: %w", err)
 	}
 	config.KubeconfigFile = filepath.Join(config.TestDir, "kubeconfig.yaml")
 	fmt.Println("Kubeconfig file: ", config.KubeconfigFile)
@@ -535,7 +551,7 @@ func (node DockerNode) RunCmdOnNode(cmd string) (string, error) {
 	dCmd := fmt.Sprintf("docker exec %s /bin/sh -c \"%s\"", node.Name, cmd)
 	out, err := RunCommand(dCmd)
 	if err != nil {
-		return out, fmt.Errorf("%v: on node %s: %s", err, node.Name, out)
+		return out, fmt.Errorf("failed to run command %q on node %s: %s, %w", cmd, node.Name, out, err)
 	}
 	return out, nil
 }
@@ -545,7 +561,7 @@ func RunCommand(cmd string) (string, error) {
 	c := exec.Command("bash", "-c", cmd)
 	out, err := c.CombinedOutput()
 	if err != nil {
-		return string(out), fmt.Errorf("failed to run command: %s, %v", cmd, err)
+		return string(out), fmt.Errorf("failed to run command %q: %s, %w", cmd, out, err)
 	}
 	return string(out), err
 }
@@ -554,16 +570,16 @@ func RunCommand(cmd string) (string, error) {
 func StageManifest(manifest string, nodes []DockerNode) (string, error) {
 	tempFile, err := os.CreateTemp("", "manifest-*.yaml")
 	if err != nil {
-		return "", fmt.Errorf("failed to create temp file for manifest: %v", err)
+		return "", fmt.Errorf("failed to create temp file for manifest: %w", err)
 	}
 	defer os.Remove(tempFile.Name())
 	if err := os.WriteFile(tempFile.Name(), []byte(manifest), 0644); err != nil {
-		return "", fmt.Errorf("failed to write manifest to temp file: %v", err)
+		return "", fmt.Errorf("failed to write manifest to temp file: %w", err)
 	}
 	for _, node := range nodes {
 		cmd := fmt.Sprintf("docker cp %s %s:/var/lib/rancher/rke2/server/manifests/", tempFile.Name(), node.Name)
 		if _, err := RunCommand(cmd); err != nil {
-			return "", fmt.Errorf("failed to copy manifest to node: %v", err)
+			return "", fmt.Errorf("failed to copy manifest to node: %w", err)
 		}
 	}
 	return tempFile.Name(), nil
@@ -573,7 +589,7 @@ func RemoveManifest(manifestFile string, nodes []DockerNode) error {
 	cmd := fmt.Sprintf("rm -f /var/lib/rancher/rke2/server/manifests/%s", filepath.Base(manifestFile))
 	for _, node := range nodes {
 		if _, err := node.RunCmdOnNode(cmd); err != nil {
-			return fmt.Errorf("failed to remove manifest from node: %v", err)
+			return fmt.Errorf("failed to remove manifest from node: %w", err)
 		}
 	}
 	return nil
@@ -651,7 +667,7 @@ func (config TestConfig) DeployWorkload(workload string) (string, error) {
 	resourceDir := "../resources"
 	files, err := os.ReadDir(resourceDir)
 	if err != nil {
-		err = fmt.Errorf("%s : Unable to read resource manifest file for %s", err, workload)
+		err = fmt.Errorf("failed to deploy workload: unable to read resource manifest file for %s: %w", workload, err)
 		return "", err
 	}
 	if _, err = os.Stat(filepath.Join(resourceDir, workload)); err != nil {
@@ -684,7 +700,7 @@ func RestartCluster(nodes []DockerNode) error {
 		}
 		if _, err := node.RunCmdOnNode(cmd); err != nil {
 			logs, _ := node.DumpServiceLogs(10)
-			return fmt.Errorf("journal logs: %s: %v", logs, err)
+			return fmt.Errorf("journal logs: %s: %w", logs, err)
 		}
 	}
 	return nil
