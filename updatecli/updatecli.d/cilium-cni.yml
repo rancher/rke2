@@ -47,6 +47,11 @@ targets:
     sourceid: cilium
     spec:
       command: bash ./updatecli/scripts/update_chart_and_images_cni.sh rke2-cilium
+      changedif:
+        kind: file/checksum
+        spec:
+          files:
+            - charts/chart_versions.yaml
 
 actions:
   github:
