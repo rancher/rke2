@@ -56,7 +56,7 @@ targets:
     sourceid: vsphere-cpi-public-tag
     spec:
       file: scripts/build-images
-      matchpattern: '^\s*\$\{REGISTRY\}/rancher/mirrored-cloud-provider-vsphere:.*$'
+      matchpattern: '(?m)^[ \t]*\$\{REGISTRY\}/rancher/mirrored-cloud-provider-vsphere:.*$'
       replacepattern: '    $${REGISTRY}/rancher/mirrored-cloud-provider-vsphere:{{ source "vsphere-cpi-public-tag" }}'
 
 actions:
