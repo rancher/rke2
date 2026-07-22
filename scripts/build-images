@@ -64,8 +64,8 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-ingress-nginx.txt
 EOF
 
 xargs -n1 -t $PULL_CMD_CORE << EOF > $BUILD_DIR/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.32.1-build20260722
-    ${REGISTRY}/rancher/hardened-flannel:v0.28.7-build20260722
+    ${REGISTRY}/rancher/hardened-calico:v3.32.1-build20260717
+    ${REGISTRY}/rancher/hardened-flannel:v0.28.7-build20260717
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-cilium.txt
@@ -152,7 +152,7 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-harvester.txt
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-flannel.txt
-    ${REGISTRY}/rancher/hardened-flannel:v0.28.7-build20260722
+    ${REGISTRY}/rancher/hardened-flannel:v0.28.7-build20260717
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.1-build20260717
 EOF
 
