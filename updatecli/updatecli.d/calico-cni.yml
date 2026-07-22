@@ -51,6 +51,11 @@ targets:
       environments:
         - name: GH_TOKEN
           value: '{{ requiredEnv .github.token }}'
+      changedif:
+        kind: file/checksum
+        spec:
+          files:
+            - charts/chart_versions.yaml
 
 actions:
   github:
