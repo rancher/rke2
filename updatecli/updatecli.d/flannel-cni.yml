@@ -61,7 +61,8 @@ actions:
     kind: "github/pullrequest"
     scmid: "rke2"
     spec:
-      automerge: false
+      merge:
+        strategy: auto
       draft: false
       mergemethod: squash
       parent: false
