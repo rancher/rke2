@@ -122,7 +122,6 @@ actions:
     spec:
       merge:
         strategy: auto
-      automerge: false
       draft: false
       mergemethod: squash
       parent: false
