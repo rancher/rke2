@@ -82,7 +82,15 @@ sources:
         curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
           | tar xzO rancher-vsphere-csi/values.yaml \
           | yq -r '.versionOverrides[0].values.csiController.image.csiProvisioner.tag'
-  
+
+conditions:
+  vsphereCSIVersionShouldBeUpdated:
+    name: "Check if vsphere-csi chart should be updated or not"
+    kind: shell
+    sourceid: vsphere-csi
+    spec:
+      command: bash ./updatecli/scripts/validate_version.sh rancher-vsphere-csi
+
 targets:
   updateVsphereCSI:
     name: "Update the vsphere-csi airgap images"

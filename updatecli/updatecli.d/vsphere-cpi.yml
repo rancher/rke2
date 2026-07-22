@@ -34,7 +34,15 @@ sources:
         curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-cpi/rancher-vsphere-cpi-{{ source "vsphere-cpi" }}.tgz" \
           | tar xzO rancher-vsphere-cpi/values.yaml \
           | yq -r '.versionOverrides[0].values.cloudControllerManager.tag'
-  
+
+conditions:
+  vsphereCPIVersionShouldBeUpdated:
+    name: "Check if vsphere-cpi chart should be updated or not"
+    kind: shell
+    sourceid: vsphere-cpi
+    spec:
+      command: bash ./updatecli/scripts/validate_version.sh rancher-vsphere-cpi
+
 targets:
   updateVsphereCPI:
     name: "Update the vsphere-cpi airgap images"
