@@ -121,7 +121,7 @@ actions:
     scmid: "rke2"
     spec:
       merge:
-        strategy: auto
+        strategy: manual
       draft: false
       mergemethod: squash
       parent: false
