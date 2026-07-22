@@ -548,7 +548,8 @@ func (s *StaticPodConfig) IsSelfHosted() bool {
 
 // stopEtcd searches the container runtime endpoint for the etcd static pod, and terminates it.
 func (s *StaticPodConfig) stopEtcd() error {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	conn, err := cri.Connection(ctx, s.RuntimeEndpoint)
 	if err != nil {
 		return errors.WithMessage(err, "failed to connect to cri")

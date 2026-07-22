@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/k3s-io/k3s/pkg/agent/config"
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
@@ -121,7 +122,9 @@ func initStaticPodExecutor(clx *cli.Context, cfg rke2cli.Config, isServer bool) 
 	}
 
 	if cfg.CloudProviderMetadataHostname {
-		fqdn := hostnameFromMetadataEndpoint(context.Background())
+		metadataCtx, metadataCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer metadataCancel()
+		fqdn := hostnameFromMetadataEndpoint(metadataCtx)
 		if fqdn == "" {
 			hostFQDN, err := hostnameFQDN()
 			if err != nil {
