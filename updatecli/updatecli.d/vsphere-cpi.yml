@@ -43,6 +43,12 @@ targets:
     sourceid: vsphere-cpi
     spec:
       command: bash ./updatecli/scripts/update_chart_and_images_prime.sh rancher-vsphere-cpi {{ source "vsphere-cpi" }}
+      changedif:
+        kind: file/checksum
+        spec:
+          files:
+            - charts/chart_versions.yaml
+
   updateVsphereCPIPublicImage:
     name: "Update mirrored cloud-provider-vsphere tag in scripts/build-images"
     kind: "file"

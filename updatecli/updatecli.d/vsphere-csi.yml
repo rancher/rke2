@@ -91,6 +91,11 @@ targets:
     sourceid: vsphere-csi
     spec:
       command: bash ./updatecli/scripts/update_chart_and_images_prime.sh rancher-vsphere-csi {{ source "vsphere-csi" }}
+      changedif:
+        kind: file/checksum
+        spec:
+          files:
+            - charts/chart_versions.yaml
   updateVsphereCSIPublicImages:
     name: "Update public vsphere-csi tags in scripts/build-images docker.io images-vsphere block"
     kind: "file"

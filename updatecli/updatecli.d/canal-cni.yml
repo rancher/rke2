@@ -47,6 +47,11 @@ targets:
     sourceid: canal
     spec:
       command: bash ./updatecli/scripts/update_chart_and_images_cni.sh rke2-canal
+      changedif:
+        kind: file/checksum
+        spec:
+          files:
+            - charts/chart_versions.yaml
 
 actions:
   github:
