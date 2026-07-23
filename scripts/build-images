@@ -48,7 +48,7 @@ xargs -n1 -t $PULL_CMD_CORE << EOF >> $BUILD_DIR/images-core.txt
     ${REGISTRY}/rancher/hardened-coredns:v1.14.6-build20260722
     ${REGISTRY}/rancher/hardened-cluster-autoscaler:v1.10.3-build20260717
     ${REGISTRY}/rancher/hardened-dns-node-cache:1.26.8-build20260722
-    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20260722
+    ${REGISTRY}/rancher/hardened-etcd:${ETCD_VERSION}-build20260723
     ${REGISTRY}/rancher/hardened-k8s-metrics-server:v0.9.0-build20260722
     ${REGISTRY}/rancher/hardened-addon-resizer:1.8.23-build20260717
     ${REGISTRY}/rancher/klipper-helm:${KLIPPERHELM_VERSION}
