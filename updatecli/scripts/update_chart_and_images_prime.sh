@@ -63,7 +63,7 @@ update_chart_prime_images() {
             continue
         fi
 
-        image_regex=$(printf '%s' "${image}" | sed 's/[][(){}.^$*+?|\\/]/\\&/g')
+        image_regex=$(printf '%s' "${image}" | sed 's/[][(){}.^$*+?|\\]/\\&/g')
         target_image=$(grep -E "^[[:space:]]*\\$\\{REGISTRY\\}/${image_regex}:" "${CHART_AIRGAP_IMAGES_FILE}" | head -n 1 || true)
         if [ -z "${target_image}" ]; then
             warn "prime image ${image} not found in the airgap scripts, skipping"
@@ -83,14 +83,13 @@ update_chart_prime_images() {
         fi
     done < <(
         yq -r '
-        .
+            (. * (.versionOverrides[0].values // {}))
+            | del(.versionOverrides)
             | ..
-            | objects
-            | if has("primeRepository") and has("primeTag") then
-                    [.primeRepository, .primeTag]
-              else
-                    empty
-              end
+            | select(tag == "!!map")
+            | select(has("primeRepository") and has("primeTag"))
+            | select(.primeTag != "latest")
+            | [.primeRepository, .primeTag]
             | @tsv
         ' "${1}/values.yaml" | sort -u
     )
