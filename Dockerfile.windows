@@ -24,10 +24,10 @@ RUN set -x && \
     file \
     bash \
     py-pip
-RUN KUBECTL_VERSION=v1.35.6 && \
+RUN KUBECTL_VERSION=v1.33.13 && \
     case "${ARCH}" in \
-        amd64) KUBECTL_SHA256="5d11e2ba01ea68ffd053f56e27738e2b4330013ee67f7e46c6da6c585d3c9926" ;; \
-        arm64) KUBECTL_SHA256="5d11e2ba01ea68ffd053f56e27738e2b4330013ee67f7e46c6da6c585d3c9926" ;; \
+        amd64) KUBECTL_SHA256="316d712726d857c20744c57cb36aa47cfc79bc0af7e82cebf3780244b654c073" ;; \
+        arm64) KUBECTL_SHA256="316d712726d857c20744c57cb36aa47cfc79bc0af7e82cebf3780244b654c073" ;; \
         *) echo "Unsupported architecture for kubectl: ${ARCH}" && exit 1 ;; \
     esac && \
     cd /tmp && \
