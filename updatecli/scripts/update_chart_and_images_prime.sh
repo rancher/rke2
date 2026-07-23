@@ -63,7 +63,7 @@ update_chart_prime_images() {
             continue
         fi
 
-        image_regex=$(printf '%s' "${image}" | sed 's/[][(){}.^$*+?|\\/]/\\&/g')
+        image_regex=$(printf '%s' "${image}" | sed 's/[][(){}.^$*+?|\\]/\\&/g')
         target_image=$(grep -E "^[[:space:]]*\\$\\{REGISTRY\\}/${image_regex}:" "${CHART_AIRGAP_IMAGES_FILE}" | head -n 1 || true)
         if [ -z "${target_image}" ]; then
             warn "prime image ${image} not found in the airgap scripts, skipping"
