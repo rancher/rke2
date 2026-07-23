@@ -83,14 +83,13 @@ update_chart_prime_images() {
         fi
     done < <(
         yq -r '
-        .
+            (. * (.versionOverrides[0].values // {}))
+            | del(.versionOverrides)
             | ..
-            | objects
-            | if has("primeRepository") and has("primeTag") then
-                    [.primeRepository, .primeTag]
-              else
-                    empty
-              end
+            | select(tag == "!!map")
+            | select(has("primeRepository") and has("primeTag"))
+            | select(.primeTag != "latest")
+            | [.primeRepository, .primeTag]
             | @tsv
         ' "${1}/values.yaml" | sort -u
     )
