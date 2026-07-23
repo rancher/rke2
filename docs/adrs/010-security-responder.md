@@ -42,6 +42,13 @@ Implement a `security-responder` client at `github.com/rancher/rke2-security-res
 - **Configuration**: ConfigMap-based with environment variable override
 - **Default State**: Enabled by default (opt-out well documented)
 
+#### rke2-security-responder 
+
+There is a "responder" server being deployed that consumes the [upgrade-responder-response-config.yaml](https://github.com/rancher/upgrade-responders/blob/main/configs/rke2-security/upgrade-responder-response-config.yaml) file. We need to keep updating that file so that it has updated information (releases and CVEs). I'm currently using this [SKILL file](https://github.com/manuelbuil/PoCs/blob/main/2026/agenticTesting/security-responder.md) for the updates.
+
+The "responder" server provides that response to the client running as a `CronJob`, as explained above.
+
+
 ### Data Collection
 
 The collected data will include the following information:
