@@ -70,6 +70,24 @@ check_system_registry() {
     rm -f $yaml_tmp
 }
 
+# Compares two dotted versions as semver (major.minor.patch, ignoring any
+# leading 'v' and any '-prerelease' suffix) and returns success when $1 <= $2.
+# Components are compared lexicographically (major, then minor, then patch)
+# rather than independently, so e.g. 1.36.2 <= 1.37.0 is true.
+version_le() {
+    local a="${1#[vV]}" b="${2#[vV]}"
+    a="${a%%-*}"; b="${b%%-*}"
+    local IFS=.
+    local -a av=($a) bv=($b)
+    local i ai bi
+    for i in 0 1 2; do
+        ai=${av[i]:-0}; bi=${bv[i]:-0}
+        if [ "$ai" -lt "$bi" ]; then return 0; fi
+        if [ "$ai" -gt "$bi" ]; then return 1; fi
+    done
+    return 0
+}
+
 is_supported() {
     kube_version="$1"
     lower_bound="${2:-0.0.0-0}"
@@ -77,37 +95,7 @@ is_supported() {
 
     info "Checking if Kubernetes '$kube_version' is between '$lower_bound' and '$upper_bound'"
 
-    kube_version="${kube_version#[vV]}"
-    kube_version_major="${kube_version%%\.*}"
-    kube_version_minor="${kube_version#*.}"
-    kube_version_minor="${kube_version_minor%.*}"
-    kube_version_patch="${kube_version##*.}"
-    kube_version_dash="${kube_version_patch##*-}"
-    kube_version_patch="${kube_version_patch%-*}"
-
-    lower_bound="${lower_bound#[vV]}"
-    lower_bound_major="${lower_bound%%\.*}"
-    lower_bound_minor="${lower_bound#*.}"
-    lower_bound_minor="${lower_bound_minor%.*}"
-    lower_bound_patch="${lower_bound##*.}"
-    lower_bound_dash="${lower_bound_patch##*-}"
-    lower_bound_patch="${lower_bound_patch%-*}"
-
-
-    upper_bound="${upper_bound#[vV]}"
-    upper_bound_major="${upper_bound%%\.*}"
-    upper_bound_minor="${upper_bound#*.}"
-    upper_bound_minor="${upper_bound_minor%.*}"
-    upper_bound_patch="${upper_bound##*.}"
-    upper_bound_dash="${upper_bound_patch##*-}"
-    upper_bound_patch="${upper_bound_patch%-*}"
-
-    if [ "$lower_bound_major" -le "$kube_version_major"  ] && \
-        [ "$kube_version_major" -le "$upper_bound_major" ] && \
-        [ "$lower_bound_minor" -le "$kube_version_minor"  ] && \
-        [ "$kube_version_minor" -le "$upper_bound_minor" ] && \
-        [ "$lower_bound_patch" -le "$kube_version_patch"  ] && \
-        [ "$kube_version_patch" -le "$upper_bound_patch" ]; then
+    if version_le "$lower_bound" "$kube_version" && version_le "$kube_version" "$upper_bound"; then
         echo 0
     else
         echo 1
@@ -121,7 +109,12 @@ check_airgap() {
     image_list_dir=$4
 
     yaml_tmp=$(mktemp --suffix .yaml)
-    values="vCenter.clusterId=test-id,global.clusterDNS=10.43.0.10\,2001:cafe:43::a,rke2-whereabouts.enabled=true"
+    # Render with prime (hardened) images enabled so airgap-shipped images are
+    # validated. global.prime.enabled and blockVolumeSnapshot.enabled are no-ops
+    # for charts that don't reference them; for the vsphere charts they select
+    # the hardened images (and the CSI snapshotter sidecar) that build-images
+    # lists for airgap.
+    values="vCenter.clusterId=test-id,global.clusterDNS=10.43.0.10\,2001:cafe:43::a,rke2-whereabouts.enabled=true,global.prime.enabled=true,blockVolumeSnapshot.enabled=true"
     helm template test-chart --kube-version ${KUBERNETES_VERSION} --set $values $chart_tmp > $yaml_tmp;
 
     chart_folder=$(mktemp -d)
