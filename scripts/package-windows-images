@@ -7,23 +7,47 @@ source ./scripts/version.sh
 
 mkdir -p dist/artifacts
 
+RUNTIME_IMAGE="${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64"
+PAUSE_REPO="${REGISTRY}/${REPO}/mirrored-pause"
+PAUSE_IMAGE="${PAUSE_REPO}:${PAUSE_VERSION}"
+
+# $1 - windows build-number, e.g "10.0.17763"
+resolve_pause_osver() {
+  crane manifest "${PAUSE_IMAGE}" | jq -r --arg p "$1" \
+    '.manifests[] | select(.platform.os=="windows" and (.platform["os.version"]//"" | startswith($p))) | .platform["os.version"]' \
+    | head -n1
+}
+
+# $1 - windows build-number, e.g "10.0.17763"
+# $2 - output tar file name
+pull_windows_images() {
+  local prefix=$1 outfile=$2
+  local osver pause_digest
+  osver=$(resolve_pause_osver "$prefix")
+  pause_digest=$(crane digest --platform "windows/amd64:${osver}" "${PAUSE_IMAGE}")
+  crane pull --platform windows/amd64 \
+    "${RUNTIME_IMAGE}" \
+    "${PAUSE_REPO}@${pause_digest}" \
+    "${outfile}"
+}
+
+# for future reference:
+# To get the list of supported Windows versions by a specific pause image, you can run:
+# >  crane manifest docker.io/rancher/mirrored-pause:${PAUSE_VERSION} \
+# >   | jq '.manifests[] | select(.platform.os=="windows") | .platform'
+#
+# And some Windows links related to this:
+# https://learn.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/version-compatibility
+# https://mcr.microsoft.com/en-us/artifact/mar/windows/nanoserver/tags
+
 # Windows 10 Version 1809 (October 2018 Update) or Windows Server 2019
-crane pull --platform windows/amd64:10.0.17763.7919 \
-  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
-  ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
-  rke2-windows-1809-amd64-images.tar
+pull_windows_images "10.0.17763" rke2-windows-1809-amd64-images.tar
 
 # Windows Server 2022 Version 21H2
-crane pull --platform windows/amd64:10.0.20348.4294 \
-  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
-  ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
-  rke2-windows-ltsc2022-amd64-images.tar
+pull_windows_images "10.0.20348" rke2-windows-ltsc2022-amd64-images.tar
 
 # Windows 11 Version 24H2 (2024 Update) or Windows Server 2025
-crane pull --platform windows/amd64:10.0.26100.6899 \
-  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
-  ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
-  rke2-windows-2025-amd64-images.tar
+pull_windows_images "10.0.26100" rke2-windows-2025-amd64-images.tar
 
 WINDOWS_TARFILES=(rke2-windows-1809-amd64-images.tar rke2-windows-ltsc2022-amd64-images.tar rke2-windows-2025-amd64-images.tar)
 for TARFILE in "${WINDOWS_TARFILES[@]}"; do
