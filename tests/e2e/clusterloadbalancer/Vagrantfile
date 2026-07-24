@@ -67,7 +67,7 @@ def provision(vm, roles, role_num, node_num, all_roles)
   # Server nodes need the CNI HelmChartConfig manifest.
   if roles.include?("server")
     if DATAPLANE == "ebpf"
-      vm.provision "Create Calico eBPF Manifest", type: "shell", path: scripts_location + "/calico_ebpf_manifest.sh", args: [ VIP ]
+      vm.provision "Create Calico eBPF Manifest", type: "shell", path: scripts_location + "/calico_ebpf_manifest.sh", args: [ VIP, "6443" ]
     else
       vm.provision "Create CNI Manifest", type: "shell", path: scripts_location + "/create_cni_manifest.sh", args: [ CNI, "iptables" ]
     end

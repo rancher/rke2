@@ -213,6 +213,7 @@ var _ = Describe("Verify external load balancer cluster", Ordered, func() {
 		res, err := serverNodes[0].RunCmdOnNode("cat /var/lib/rancher/rke2/server/manifests/rke2-calico-config.yaml")
 		Expect(err).NotTo(HaveOccurred(), res)
 		Expect(res).Should(ContainSubstring("host: " + vip))
+		Expect(res).Should(ContainSubstring("port: 6443"))
 
 		// With kube-proxy disabled, no KUBE-SVC iptables rules should exist.
 		for _, server := range serverNodes {
