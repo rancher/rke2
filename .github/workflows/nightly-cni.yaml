@@ -9,6 +9,7 @@ on:
       - 'tests/e2e/cni/**'
       - 'tests/e2e/clusterloadbalancer/**'
       - 'tests/e2e/scripts/loadbalancer_setup.sh'
+      - 'tests/e2e/scripts/calico_ebpf_manifest.sh'
 
 jobs:
   e2e:
@@ -201,4 +202,3 @@ jobs:
       run: |
         E2E_CNI=${{ matrix.cni }} E2E_DATAPLANE=${{ matrix.dataplane }} \
         go test -timeout=75m ./clusterloadbalancer_test.go -ci -cni=${{ matrix.cni }} -dataplane=${{ matrix.dataplane }} -ginkgo.v -test.v
-

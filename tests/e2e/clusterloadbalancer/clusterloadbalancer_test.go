@@ -173,6 +173,21 @@ var _ = Describe("Verify external load balancer cluster", Ordered, func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
+	It("Reaches the API server through the load balancer VIP", func() {
+		vipKubeConfig, err := genVIPKubeConfigFile(serverNodes[0])
+		Expect(err).NotTo(HaveOccurred())
+		defer os.Remove(vipKubeConfig)
+
+		Eventually(func(g Gomega) {
+			nodes, err := e2e.ParseNodes(vipKubeConfig, false)
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(nodes).Should(HaveLen(*serverCount + *agentCount))
+			for _, node := range nodes {
+				g.Expect(node.Status).Should(Equal("Ready"), node.Name)
+			}
+		}, "120s", "5s").Should(Succeed())
+	})
+
 	It("Checks Pod Status", func() {
 		Eventually(func(g Gomega) {
 			pods, err := e2e.ParsePods(tc.KubeconfigFile, false)
@@ -187,21 +202,6 @@ var _ = Describe("Verify external load balancer cluster", Ordered, func() {
 		}, "620s", "10s").Should(Succeed())
 		_, err := e2e.ParsePods(tc.KubeconfigFile, true)
 		Expect(err).NotTo(HaveOccurred())
-	})
-
-	It("Reaches the API server through the load balancer VIP", func() {
-		vipKubeConfig, err := genVIPKubeConfigFile(serverNodes[0])
-		Expect(err).NotTo(HaveOccurred())
-		defer os.Remove(vipKubeConfig)
-
-		Eventually(func(g Gomega) {
-			nodes, err := e2e.ParseNodes(vipKubeConfig, false)
-			g.Expect(err).NotTo(HaveOccurred())
-			g.Expect(nodes).Should(HaveLen(*serverCount + *agentCount))
-			for _, node := range nodes {
-				g.Expect(node.Status).Should(Equal("Ready"), node.Name)
-			}
-		}, "120s", "5s").Should(Succeed())
 	})
 
 	It("Verifies the eBPF dataplane disables kube-proxy", func() {

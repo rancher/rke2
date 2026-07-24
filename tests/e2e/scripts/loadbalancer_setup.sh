@@ -47,12 +47,12 @@ defaults
     timeout server  30s
 
 frontend rke2-frontend
-    bind ${VIP}:9345
+    bind *:9345
     mode tcp
     default_backend rke2-backend
 
 frontend k8s-api-frontend
-    bind ${VIP}:6443
+    bind *:6443
     mode tcp
     default_backend k8s-api-backend
 
@@ -72,10 +72,14 @@ $(printf "%b" "$k8s_backend")
 EOF
 
 cat > /etc/keepalived/keepalived.conf <<EOF
+global_defs {
+    enable_script_security
+    script_user root
+}
+
 vrrp_script chk_haproxy {
     script 'killall -0 haproxy'
     interval 2
-    weight 2
 }
 
 vrrp_instance haproxy-vip {
@@ -85,7 +89,7 @@ vrrp_instance haproxy-vip {
     virtual_router_id 51
 
     virtual_ipaddress {
-        ${VIP}
+        ${VIP}/24
     }
 
     track_script {

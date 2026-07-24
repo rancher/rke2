@@ -121,7 +121,6 @@ def provision(vm, roles, role_num, node_num, all_roles)
         node-ip: #{node_ip}
         node-external-ip: #{node_ip}
         token: vagrant-rke2
-        #{DATAPLANE == "ebpf" ? "disable-kube-proxy: true" : ""}
       YAML
     end
   end
