@@ -3,6 +3,8 @@
 # Set Calico parameters to use the eBPF dataplane instead of iptables
 mkdir -p /var/lib/rancher/rke2/server/manifests
 
+NODE_IP=${1}
+
 echo "Creating calico chart"
 echo "apiVersion: helm.cattle.io/v1
 kind: HelmChartConfig
@@ -20,4 +22,4 @@ spec:
         kubeProxyManagement: Enabled
         linuxDataplane: BPF
     kubernetesServiceEndpoint:
-      host: localhost" > /var/lib/rancher/rke2/server/manifests/rke2-calico-config.yaml
+      host: ${NODE_IP}" > /var/lib/rancher/rke2/server/manifests/rke2-calico-config.yaml
