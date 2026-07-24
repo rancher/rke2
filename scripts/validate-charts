@@ -151,7 +151,7 @@ declare -A NOT_FOUND
 
 # Produce image lists
 IMAGE_LIST_DIR=$(mktemp -d)
-BUILD_DIR=$IMAGE_LIST_DIR PULL_CMD_CORE="echo" SKIP_BUILD_IMAGE_RUNTIME=1 scripts/build-images
+BUILD_DIR=$IMAGE_LIST_DIR PULL_CMD_CORE=echo REGISTRY=registry.example.com SKIP_BUILD_IMAGE_RUNTIME=1 scripts/build-images
 
 while IFS='|' read version filename bootstrap package; do
     if [ "$version" == "0.0.0" ]; then
