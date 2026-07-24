@@ -1,6 +1,13 @@
 #!/bin/bash
 
-# Set Calico parameters to use the eBPF dataplane instead of iptables
+# Set Calico parameters to use the eBPF dataplane instead of iptables.
+# Optional first arg overrides kubernetesServiceEndpoint.host (defaults to localhost);
+# optional second arg overrides kubernetesServiceEndpoint.port (defaults to 6443).
+# When kube-proxy is disabled behind an external load balancer, these must point at the
+# load balancer VIP/API port so pods can reach the API server. See
+# https://docs.rke2.io/networking/cluster-loadbalancer
+SERVICE_ENDPOINT_HOST=${1:-localhost}
+SERVICE_ENDPOINT_PORT=${2:-6443}
 mkdir -p /var/lib/rancher/rke2/server/manifests
 
 echo "Creating calico chart"
@@ -20,4 +27,5 @@ spec:
         kubeProxyManagement: Enabled
         linuxDataplane: BPF
     kubernetesServiceEndpoint:
-      host: localhost" > /var/lib/rancher/rke2/server/manifests/rke2-calico-config.yaml
+      host: \"${SERVICE_ENDPOINT_HOST}\"
+      port: \"${SERVICE_ENDPOINT_PORT}\"" > /var/lib/rancher/rke2/server/manifests/rke2-calico-config.yaml
