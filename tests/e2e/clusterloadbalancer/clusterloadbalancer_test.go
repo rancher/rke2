@@ -109,6 +109,45 @@ var (
 
 var _ = ReportAfterEach(e2e.GenReport)
 
+func dumpCommand(title, cmd string) {
+	GinkgoWriter.Println("=== " + title + " ===")
+	out, err := e2e.RunCommand(cmd)
+	if err != nil {
+		GinkgoWriter.Println("error:", err)
+	}
+	GinkgoWriter.Println(out)
+}
+
+func dumpClusterDiagnostics() {
+	if tc == nil || tc.KubeconfigFile == "" {
+		return
+	}
+
+	kubeconfig := " --kubeconfig=" + tc.KubeconfigFile
+	dumpCommand("kubectl describe nodes", "kubectl describe nodes"+kubeconfig)
+	dumpCommand("kubectl get pods -A -o wide", "kubectl get pods -A -o wide"+kubeconfig)
+	dumpCommand("kubectl describe non-running pods",
+		"kubectl get pods -A --no-headers"+kubeconfig+" | awk '$4 != \"Running\" && $4 != \"Completed\" {print $1, $2}' | while read -r ns pod; do echo \"--- ${ns}/${pod}\"; kubectl -n \"$ns\" describe pod \"$pod\""+kubeconfig+"; done")
+	dumpCommand("kubectl get events", "kubectl get events -A --sort-by='.lastTimestamp'"+kubeconfig)
+	dumpCommand("calico-kube-controllers logs",
+		"kubectl get pods -A --no-headers"+kubeconfig+" | awk '$2 ~ /calico-kube-controllers/ {print $1, $2}' | while read -r ns pod; do echo \"--- ${ns}/${pod}\"; kubectl -n \"$ns\" logs \"$pod\" --all-containers --tail=100"+kubeconfig+"; done")
+	dumpCommand("calico-node logs",
+		"kubectl get pods -A --no-headers"+kubeconfig+" | awk '$2 ~ /calico-node/ {print $1, $2}' | while read -r ns pod; do echo \"--- ${ns}/${pod}\"; kubectl -n \"$ns\" logs \"$pod\" --all-containers --tail=100"+kubeconfig+"; done")
+}
+
+func dumpLoadBalancerDiagnostics() {
+	if lbNode.Name == "" {
+		return
+	}
+
+	GinkgoWriter.Println("=== load balancer diagnostics ===")
+	out, err := lbNode.RunCmdOnNode("systemctl status haproxy keepalived --no-pager; echo '--- addresses'; ip addr show eth1; echo '--- listeners'; ss -ltnp | grep -E ':(6443|9345)'; echo '--- haproxy journal'; journalctl -u haproxy --no-pager -n 100")
+	if err != nil {
+		GinkgoWriter.Println("error:", err)
+	}
+	GinkgoWriter.Println(out)
+}
+
 var _ = Describe("Verify external load balancer cluster", Ordered, func() {
 	It("Starts up with no issues", func() {
 		var err error
@@ -245,6 +284,10 @@ var _ = Describe("Verify external load balancer cluster", Ordered, func() {
 var failed bool
 var _ = AfterEach(func() {
 	failed = failed || CurrentSpecReport().Failed()
+	if CurrentSpecReport().Failed() {
+		dumpClusterDiagnostics()
+		dumpLoadBalancerDiagnostics()
+	}
 })
 
 var _ = AfterSuite(func() {
