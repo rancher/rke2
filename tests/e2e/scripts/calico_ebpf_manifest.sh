@@ -38,6 +38,6 @@ cat >> /var/lib/rancher/rke2/server/manifests/rke2-calico-config.yaml <<EOF
         kubeProxyManagement: Enabled
         linuxDataplane: BPF
     kubernetesServiceEndpoint:
-      host: \"${SERVICE_ENDPOINT_HOST}\"
-      port: \"${SERVICE_ENDPOINT_PORT}\"
+      host: "${SERVICE_ENDPOINT_HOST}"
+      port: "${SERVICE_ENDPOINT_PORT}"
 EOF
