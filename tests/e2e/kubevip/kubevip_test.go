@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -74,6 +75,9 @@ func createKubeVIPCluster(nodeOS string, serverCount, agentCount int) ([]e2e.Vag
 	if _, err := e2e.RunCommand(cmd); err != nil {
 		return serverNodes, agentNodes, fmt.Errorf("failed to bring up %s: %w", serverNodes[0].Name, err)
 	}
+	if err := waitForVIP(serverNodes[0], 180*time.Second); err != nil {
+		return serverNodes, agentNodes, err
+	}
 
 	// Bring up the remaining servers and agents, which register through the VIP.
 	for _, node := range append(serverNodes[1:], agentNodes...) {
@@ -85,6 +89,26 @@ func createKubeVIPCluster(nodeOS string, serverCount, agentCount int) ([]e2e.Vag
 	}
 
 	return serverNodes, agentNodes, nil
+}
+
+func waitForVIP(server e2e.VagrantNode, timeout time.Duration) error {
+	cmd := "ip addr show " + vipInterface + " | grep -F " + vip + " || true"
+	deadline := time.Now().Add(timeout)
+	var lastOutput string
+
+	for time.Now().Before(deadline) {
+		out, err := server.RunCmdOnNode(cmd)
+		if err == nil && strings.Contains(out, vip) {
+			return nil
+		}
+		lastOutput = strings.TrimSpace(out)
+		time.Sleep(5 * time.Second)
+	}
+
+	if lastOutput == "" {
+		lastOutput = "VIP not present"
+	}
+	return fmt.Errorf("timed out waiting for kube-vip to claim VIP %s on %s: %s", vip, server.Name, lastOutput)
 }
 
 // genVIPKubeConfigFile writes a kubeconfig whose server address is the kube-vip VIP on the API
@@ -312,6 +336,8 @@ var _ = AfterSuite(func() {
 		fmt.Println("FAILED!")
 	} else {
 		Expect(e2e.DestroyCluster()).To(Succeed())
-		Expect(os.Remove(tc.KubeconfigFile)).To(Succeed())
+		if tc != nil && tc.KubeconfigFile != "" {
+			Expect(os.Remove(tc.KubeconfigFile)).To(Succeed())
+		}
 	}
 })
