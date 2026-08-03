@@ -287,13 +287,21 @@ var _ = Describe("Verify kube-vip load balancer cluster", Ordered, func() {
 		if *dataplane != "ebpf" {
 			Skip("not an eBPF dataplane run")
 		}
-		// The calico HelmChartConfig must point at the VIP so pods reach the API server
-		// with kube-proxy disabled.
+		// server-0 must bootstrap Calico against its local API server because kube-vip has not
+		// claimed the VIP yet when the cluster-init node first starts. Joiners start only after the
+		// VIP exists, so their Calico config must use the VIP.
 		res, err := serverNodes[0].RunCmdOnNode("cat /var/lib/rancher/rke2/server/manifests/rke2-calico-config.yaml")
 		Expect(err).NotTo(HaveOccurred(), res)
-		Expect(res).Should(ContainSubstring("host: \"" + vip + "\""))
+		Expect(res).Should(ContainSubstring("host: \"localhost\""))
 		Expect(res).Should(ContainSubstring("port: \"6443\""))
 		Expect(res).ShouldNot(ContainSubstring("nodeAddressAutodetectionV6"))
+		for _, server := range serverNodes[1:] {
+			res, err := server.RunCmdOnNode("cat /var/lib/rancher/rke2/server/manifests/rke2-calico-config.yaml")
+			Expect(err).NotTo(HaveOccurred(), res)
+			Expect(res).Should(ContainSubstring("host: \""+vip+"\""), server.Name)
+			Expect(res).Should(ContainSubstring("port: \"6443\""), server.Name)
+			Expect(res).ShouldNot(ContainSubstring("nodeAddressAutodetectionV6"), server.Name)
+		}
 
 		// With kube-proxy disabled, no KUBE-SVC iptables rules should exist.
 		for _, server := range serverNodes {

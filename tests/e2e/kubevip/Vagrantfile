@@ -56,7 +56,10 @@ def provision(vm, roles, role_num, node_num, all_roles)
   # and then floats the VIP onto a control-plane node.
   if roles.include?("server")
     if DATAPLANE == "ebpf"
-      vm.provision "Create Calico eBPF Manifest", type: "shell", path: scripts_location + "/calico_ebpf_manifest.sh", args: [ VIP, "6443", "false" ]
+      # The bootstrap server cannot point Calico at the VIP yet: kube-vip only advertises the VIP
+      # after server-0 has brought the cluster up. Once the VIP exists, the joining servers use it.
+      calico_api_host = role_num == 0 ? "localhost" : VIP
+      vm.provision "Create Calico eBPF Manifest", type: "shell", path: scripts_location + "/calico_ebpf_manifest.sh", args: [ calico_api_host, "6443", "false" ]
     else
       vm.provision "Create CNI Manifest", type: "shell", path: scripts_location + "/create_cni_manifest.sh", args: [ CNI, "iptables" ]
     end
