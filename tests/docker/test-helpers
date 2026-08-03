@@ -292,8 +292,8 @@ export -f test-cleanup
 test-setup() {
     # If running in Github Actions, use a known directory, so we can upload logs external to this script
     if [ "$CI" = 'true' ]; then
-        mkdir -p /tmp/rke2-logs
-        export TEST_DIR=$(mktemp -d '/tmp/rke2-logs/XXXXXX')
+        mkdir -p /src/rke2-logs
+        export TEST_DIR=$(mktemp -d '/src/rke2-logs/XXXXXX')
     else
         export TEST_DIR=$(mktemp -d '/tmp/XXXXXX')
     fi
