@@ -157,15 +157,15 @@ jobs:
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       with:
         name: rke2-test-artifacts
-        path: ./artifacts
+        path: ${{ github.workspace }}/artifacts
     - name: Place the artifacts back and compute sha256sum
       run: |
-        mkdir -p ./dist/artifacts
-        mkdir -p ./build/images
-        mkdir -p ./bin
-        mv ./artifacts/rke2-* ./build/images/
-        mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
-        sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+        repo_root="${GITHUB_WORKSPACE}"
+        mkdir -p "${repo_root}/dist/artifacts"
+        mkdir -p "${repo_root}/build/images"
+        mv "${repo_root}/artifacts"/rke2-* "${repo_root}/build/images/"
+        mv "${repo_root}/artifacts"/rke2.*-amd64.tar.gz "${repo_root}/dist/artifacts/"
+        sha256sum "${repo_root}/dist/artifacts/rke2.linux-amd64.tar.gz" > "${repo_root}/dist/artifacts/sha256sum-amd64.txt"
     - name: Run ${{ matrix.cni }},${{ matrix.filter }} Test
       run: | 
         E2E_CNI=${{ matrix.cni }} E2E_FILTER=${{ matrix.filter }} \
@@ -265,15 +265,15 @@ jobs:
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       with:
         name: rke2-test-artifacts
-        path: ./artifacts
+        path: ${{ github.workspace }}/artifacts
     - name: Place the artifacts back and compute sha256sum
       run: |
-        mkdir -p ./dist/artifacts
-        mkdir -p ./build/images
-        mkdir -p ./bin
-        mv ./artifacts/rke2-* ./build/images/
-        mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
-        sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+        repo_root="${GITHUB_WORKSPACE}"
+        mkdir -p "${repo_root}/dist/artifacts"
+        mkdir -p "${repo_root}/build/images"
+        mv "${repo_root}/artifacts"/rke2-* "${repo_root}/build/images/"
+        mv "${repo_root}/artifacts"/rke2.*-amd64.tar.gz "${repo_root}/dist/artifacts/"
+        sha256sum "${repo_root}/dist/artifacts/rke2.linux-amd64.tar.gz" > "${repo_root}/dist/artifacts/sha256sum-amd64.txt"
     - name: Run ${{ matrix.cni }},${{ matrix.dataplane }} Load Balancer Test
       run: |
         E2E_CNI=${{ matrix.cni }} E2E_DATAPLANE=${{ matrix.dataplane }} \
@@ -373,15 +373,15 @@ jobs:
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       with:
         name: rke2-test-artifacts
-        path: ./artifacts
+        path: ${{ github.workspace }}/artifacts
     - name: Place the artifacts back and compute sha256sum
       run: |
-        mkdir -p ./dist/artifacts
-        mkdir -p ./build/images
-        mkdir -p ./bin
-        mv ./artifacts/rke2-* ./build/images/
-        mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
-        sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+        repo_root="${GITHUB_WORKSPACE}"
+        mkdir -p "${repo_root}/dist/artifacts"
+        mkdir -p "${repo_root}/build/images"
+        mv "${repo_root}/artifacts"/rke2-* "${repo_root}/build/images/"
+        mv "${repo_root}/artifacts"/rke2.*-amd64.tar.gz "${repo_root}/dist/artifacts/"
+        sha256sum "${repo_root}/dist/artifacts/rke2.linux-amd64.tar.gz" > "${repo_root}/dist/artifacts/sha256sum-amd64.txt"
     - name: Run ${{ matrix.cni }},${{ matrix.dataplane }} kube-vip Load Balancer Test
       run: |
         E2E_CNI=${{ matrix.cni }} E2E_DATAPLANE=${{ matrix.dataplane }} \
