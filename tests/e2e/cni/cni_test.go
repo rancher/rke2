@@ -147,7 +147,7 @@ var _ = Describe("Verify DualStack in "+*cni+", "+*filter+" configuration", Orde
 				var calicoCmd, flannelCmd string
 				if *filter == "nftables" {
 					calicoCmd = "nft list ruleset | grep 'cali-'"
-					flannelCmd = "nft list ruleset | grep 'flannel'"
+					flannelCmd = "nft list ruleset | grep 'FLANNEL'"
 				} else {
 					calicoCmd = "iptables -L | grep 'cali-'"
 					flannelCmd = "iptables -L -t nat| grep 'FLANNEL'"
