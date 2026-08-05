@@ -253,6 +253,13 @@ func scpRKE2Artifacts(nodes []VagrantNode) error {
 	return nil
 }
 
+// SCPRke2Artifacts copies the locally built RKE2 binary, tarball, and image archive
+// to each node so they can be installed without fetching from a release channel.
+// It delegates to scpRKE2Artifacts and is exported for use in external test suites.
+func SCPRke2Artifacts(nodes []VagrantNode) error {
+	return scpRKE2Artifacts(nodes)
+}
+
 // CreateLocalCluster creates a cluster using the locally built RKE2 bundled binary and images.
 // Run at a minimum "make package-bundle" and "make package-image-runtime" first
 // The vagrant-scp plugin must be installed for this function to work.

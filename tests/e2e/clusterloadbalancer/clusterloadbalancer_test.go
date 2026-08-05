@@ -24,6 +24,7 @@ var nodeOS = flag.String("nodeOS", "bento/ubuntu-24.04", "VM operating system")
 var serverCount = flag.Int("serverCount", 3, "number of server nodes")
 var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
+var local = flag.Bool("local", false, "deploy a locally built RKE2")
 var cni = flag.String("cni", "canal", "canal or calico")
 var dataplane = flag.String("dataplane", "iptables", "iptables or ebpf")
 
@@ -63,6 +64,30 @@ func createLBCluster(nodeOS string, serverCount, agentCount int) (e2e.VagrantNod
 		}
 	}
 	nodeEnvs := fmt.Sprintf(`E2E_NODE_ROLES="%s" E2E_NODE_BOXES="%s"`, nodeRoles, nodeBoxes)
+
+	if *local {
+		testOptions += " E2E_RELEASE_VERSION=skip"
+		// Bring all nodes up without provisioning first so the VM images are imported.
+		allNodesStr := strings.Join(e2e.VagrantSlice(allNodes), " ")
+		cmd := fmt.Sprintf(`%s %s E2E_STANDUP_PARALLEL=true vagrant up --no-tty --no-provision %s &> vagrant.log`, nodeEnvs, testOptions, allNodesStr)
+		fmt.Println(cmd)
+		if _, err := e2e.RunCommand(cmd); err != nil {
+			return lbNode, serverNodes, agentNodes, fmt.Errorf("failed to bring up nodes: %w", err)
+		}
+		// SCP locally built artifacts to every RKE2 node (lb node runs HAProxy, not RKE2).
+		if err := e2e.SCPRke2Artifacts(append(serverNodes, agentNodes...)); err != nil {
+			return lbNode, serverNodes, agentNodes, err
+		}
+		// Provision nodes in the required order: lb, server-0, then the rest.
+		for _, node := range append([]e2e.VagrantNode{lbNode, serverNodes[0]}, append(serverNodes[1:], agentNodes...)...) {
+			cmd := fmt.Sprintf(`%s %s vagrant provision --no-tty %s &>> vagrant.log`, nodeEnvs, testOptions, node.Name)
+			fmt.Println(cmd)
+			if _, err := e2e.RunCommand(cmd); err != nil {
+				return lbNode, serverNodes, agentNodes, fmt.Errorf("failed to provision %s: %w", node.Name, err)
+			}
+		}
+		return lbNode, serverNodes, agentNodes, nil
+	}
 
 	// Bring up the load balancer (VIP) and then the cluster-init server sequentially.
 	for _, node := range []e2e.VagrantNode{lbNode, serverNodes[0]} {
