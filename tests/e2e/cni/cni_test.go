@@ -119,11 +119,22 @@ var _ = Describe("Verify DualStack in "+*cni+", "+*filter+" configuration", Orde
 		}, "180s", "5s").Should(Succeed())
 	})
 
-	It("Waits for traefik daemonset readiness", func() {
-		By("waiting for traefik daemonset readiness")
+	It("Waits for the bundled ingress controller daemonset readiness", func() {
+		By("waiting for the bundled ingress controller daemonset readiness")
 		Eventually(func() error {
-			_, err := e2e.RunCommand("kubectl -n kube-system rollout status ds/rke2-traefik --timeout=120s --kubeconfig=" + tc.KubeconfigFile)
-			return err
+			for _, daemonset := range []string{"rke2-ingress-nginx-controller", "rke2-traefik"} {
+				cmd := "kubectl -n kube-system get ds/" + daemonset + " --ignore-not-found -o name --kubeconfig=" + tc.KubeconfigFile
+				res, err := e2e.RunCommand(cmd)
+				if err != nil {
+					return err
+				}
+				if strings.TrimSpace(res) == "" {
+					continue
+				}
+				_, err = e2e.RunCommand("kubectl -n kube-system rollout status ds/" + daemonset + " --timeout=120s --kubeconfig=" + tc.KubeconfigFile)
+				return err
+			}
+			return fmt.Errorf("no supported ingress controller daemonset found")
 		}, "180s", "5s").Should(Succeed())
 	})
 
