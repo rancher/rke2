@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"errors"
+	"os"
 	"strings"
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
@@ -29,9 +30,9 @@ var (
 	IngressControllerFlag = &cli.StringSliceFlag{
 		Name:  "ingress-controller",
 		Usage: "(networking) Ingress Controllers to deploy, one of none, " + strings.Join(rke2cli.IngressItems, ", ") + "; the first value will be set as the default ingress class",
-		// TODO: In v1.36, add warning about RKE_INGRESS_CONTROLLER deprecation
-		// In v1.37, add fatal error if RKE_INGRESS_CONTROLLER is used
-		// In v1.38, remove RKE_INGRESS_CONTROLLER entirely
+		// TODO: In v1.37, add warning about RKE_INGRESS_CONTROLLER deprecation
+		// In v1.38, add fatal error if RKE_INGRESS_CONTROLLER is used
+		// In v1.39, remove RKE_INGRESS_CONTROLLER entirely
 		EnvVars:     []string{"RKE2_INGRESS_CONTROLLER", "RKE_INGRESS_CONTROLLER"},
 		Destination: &config.IngressController,
 	}
@@ -201,6 +202,9 @@ func NewServerCommand() *cli.Command {
 func ServerRun(clx *cli.Context) error {
 	if err := validateCloudProvider(clx, Server); err != nil {
 		return err
+	}
+	if _, set := os.LookupEnv("RKE_INGRESS_CONTROLLER"); set {
+		logrus.Warnf("RKE_INGRESS_CONTROLLER env var is deprecated, please use RKE2_INGRESS_CONTROLLER instead")
 	}
 	validateProfile(clx, Server)
 	validateCNI(clx)
