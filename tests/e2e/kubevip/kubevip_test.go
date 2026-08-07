@@ -27,6 +27,7 @@ var nodeOS = flag.String("nodeOS", "bento/ubuntu-24.04", "VM operating system")
 var serverCount = flag.Int("serverCount", 3, "number of server nodes")
 var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
+var local = flag.Bool("local", false, "deploy a locally built RKE2")
 var cni = flag.String("cni", "canal", "canal or calico")
 var dataplane = flag.String("dataplane", "iptables", "iptables or ebpf")
 
@@ -68,6 +69,38 @@ func createKubeVIPCluster(nodeOS string, serverCount, agentCount int) ([]e2e.Vag
 		}
 	}
 	nodeEnvs := fmt.Sprintf(`E2E_NODE_ROLES="%s" E2E_NODE_BOXES="%s"`, nodeRoles, nodeBoxes)
+
+	if *local {
+		testOptions += " E2E_RELEASE_VERSION=skip"
+		// Bring all nodes up without provisioning first so VM images are imported.
+		allNodesStr := strings.Join(e2e.VagrantSlice(allNodes), " ")
+		cmd := fmt.Sprintf(`%s %s E2E_STANDUP_PARALLEL=true vagrant up --no-tty --no-provision %s &> vagrant.log`, nodeEnvs, testOptions, allNodesStr)
+		fmt.Println(cmd)
+		if _, err := e2e.RunCommand(cmd); err != nil {
+			return serverNodes, agentNodes, fmt.Errorf("failed to bring up nodes: %w", err)
+		}
+		// SCP locally built artifacts to all RKE2 nodes.
+		if err := e2e.SCPRke2Artifacts(append(serverNodes, agentNodes...)); err != nil {
+			return serverNodes, agentNodes, err
+		}
+		// Provision server-0 first so kube-vip can claim the VIP, then the rest.
+		provCmd := fmt.Sprintf(`%s %s vagrant provision --no-tty %s &>> vagrant.log`, nodeEnvs, testOptions, serverNodes[0].Name)
+		fmt.Println(provCmd)
+		if _, err := e2e.RunCommand(provCmd); err != nil {
+			return serverNodes, agentNodes, fmt.Errorf("failed to provision %s: %w", serverNodes[0].Name, err)
+		}
+		if err := waitForVIP(serverNodes[0], 180*time.Second); err != nil {
+			return serverNodes, agentNodes, err
+		}
+		for _, node := range append(serverNodes[1:], agentNodes...) {
+			cmd := fmt.Sprintf(`%s %s vagrant provision --no-tty %s &>> vagrant.log`, nodeEnvs, testOptions, node.Name)
+			fmt.Println(cmd)
+			if _, err := e2e.RunCommand(cmd); err != nil {
+				return serverNodes, agentNodes, fmt.Errorf("failed to provision %s: %w", node.Name, err)
+			}
+		}
+		return serverNodes, agentNodes, nil
+	}
 
 	// Bring up the cluster-init server first so the cluster is up and kube-vip can claim the VIP.
 	cmd := fmt.Sprintf(`%s %s vagrant up --no-tty %s &>> vagrant.log`, nodeEnvs, testOptions, serverNodes[0].Name)

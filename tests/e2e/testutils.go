@@ -221,7 +221,9 @@ func CreateMixedCluster(nodeOS string, serverCount, linuxAgentCount, windowsAgen
 	return tc, nil
 }
 
-func scpRKE2Artifacts(nodes []VagrantNode) error {
+// SCPRke2Artifacts copies the locally built RKE2 binary, tarball, and image archive
+// to each node so they can be installed without fetching from a release channel.
+func SCPRke2Artifacts(nodes []VagrantNode) error {
 	binary := []string{
 		"dist/artifacts/rke2.linux-amd64.tar.gz",
 		"dist/artifacts/sha256sum-amd64.txt",
@@ -276,7 +278,7 @@ func CreateLocalCluster(nodeOS string, serverCount, agentCount int) (*TestConfig
 		return nil, newNodeError(cmd, serverNodes[0], err)
 	}
 
-	if err := scpRKE2Artifacts(append(serverNodes, agentNodes...)); err != nil {
+	if err := SCPRke2Artifacts(append(serverNodes, agentNodes...)); err != nil {
 		return nil, err
 	}
 	// Install RKE2 on all nodes in parallel
@@ -368,7 +370,7 @@ func CreateLocalMixedCluster(nodeOS string, serverCount, linuxAgentCount, window
 		return nil, err
 	}
 
-	if err := scpRKE2Artifacts(append(serverNodes, linuxAgents...)); err != nil {
+	if err := SCPRke2Artifacts(append(serverNodes, linuxAgents...)); err != nil {
 		return nil, err
 	}
 	if err := scpWindowsRKE2Artifacts(windowsAgents); err != nil {
