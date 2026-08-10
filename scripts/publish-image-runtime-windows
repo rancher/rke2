@@ -16,6 +16,6 @@ docker buildx build ${IID_FILE_FLAG} \
     --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
     --target windows-runtime \
     --file Dockerfile.windows \
-    --platform windows/amd64 \
+    --platform 'windows(10.0.17763.7919)/amd64,windows(10.0.20348.4294)/amd64,windows(10.0.26100.4294)/amd64' \
     --push \
     .

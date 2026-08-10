@@ -221,6 +221,14 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 		if len(config.Registries) > 0 {
 			registryConfig = fmt.Sprintf("--mount type=bind,source=%s,target=/etc/rancher/rke2/registries.yaml", filepath.Join(config.TestDir, "test_registries.yaml"))
 		}
+		dockerRoot := "/var/lib/docker"
+		if out, err := RunCommand("docker info -f '{{ .DockerRootDir }}'"); out != "" && err == nil {
+			dockerRoot = strings.TrimSpace(out)
+		}
+		dockerPath := "/var/run/docker.sock"
+		if host := os.Getenv("DOCKER_HOST"); host != "" {
+			dockerPath = strings.TrimPrefix(host, "unix://")
+		}
 
 		dRun := strings.Join([]string{"docker run -d",
 			"--name", name,
@@ -231,14 +239,15 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 			"-e", fmt.Sprintf("RKE2_TOKEN=%s", config.Token),
 			joinServer,
 			dualStackConfig,
+			"-e", "DOCKER_HOST",
 			"-e", "RKE2_DEBUG=true",
 			"-e", "GOCOVERDIR=/src/rke2-cov",
 			"-e", "PATH=$PATH:/var/lib/rancher/rke2/bin",
 			"-v", "/sys/fs/bpf:/sys/fs/bpf",
 			"-v", "/lib/modules:/lib/modules",
 			"-v", "/sys/fs/cgroup:/run/cilium/cgroupv2",
-			"-v", "/var/run/docker.sock:/var/run/docker.sock",
-			"-v", "/var/lib/docker:/var/lib/docker",
+			"-v", dockerPath + ":" + dockerPath,
+			"-v", dockerRoot + ":" + dockerRoot,
 			registryConfig,
 			"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/rke2.linux-amd64.tar.gz,target=/src/rke2-artifacts/rke2.linux-amd64.tar.gz",
 			"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/sha256sum-amd64.txt,target=/src/rke2-artifacts/sha256sum-amd64.txt",
@@ -337,6 +346,14 @@ func (config *TestConfig) ProvisionAgents(numOfAgents int) error {
 			if len(config.Registries) > 0 {
 				registryConfig = fmt.Sprintf("--mount type=bind,source=%s,target=/etc/rancher/rke2/registries.yaml", filepath.Join(config.TestDir, "test_registries.yaml"))
 			}
+			dockerRoot := "/var/lib/docker"
+			if out, err := RunCommand("docker info -f '{{ .DockerRootDir }}'"); out != "" && err == nil {
+				dockerRoot = strings.TrimSpace(out)
+			}
+			dockerPath := "/var/run/docker.sock"
+			if host := os.Getenv("DOCKER_HOST"); host != "" {
+				dockerPath = strings.TrimPrefix(host, "unix://")
+			}
 
 			dRun := strings.Join([]string{"docker run -d",
 				"--name", name,
@@ -346,13 +363,14 @@ func (config *TestConfig) ProvisionAgents(numOfAgents int) error {
 				"-e", fmt.Sprintf("RKE2_TOKEN=%s", config.Token),
 				"-e", fmt.Sprintf("RKE2_URL=%s", config.Servers[0].URL),
 				dualStackConfig,
+				"-e", "DOCKER_HOST",
 				"-e", "RKE2_DEBUG=true",
 				"-e", "GOCOVERDIR=/src/rke2-cov",
 				"-v", "/sys/fs/bpf:/sys/fs/bpf",
 				"-v", "/lib/modules:/lib/modules",
 				"-v", "/sys/fs/cgroup:/run/cilium/cgroupv2",
-				"-v", "/var/run/docker.sock:/var/run/docker.sock",
-				"-v", "/var/lib/docker:/var/lib/docker",
+				"-v", dockerPath + ":" + dockerPath,
+				"-v", dockerRoot + ":" + dockerRoot,
 				registryConfig,
 				"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/rke2.linux-amd64.tar.gz,target=/src/rke2-artifacts/rke2.linux-amd64.tar.gz",
 				"--mount", "type=bind,source=$(pwd)/../../../dist/artifacts/sha256sum-amd64.txt,target=/src/rke2-artifacts/sha256sum-amd64.txt",
