@@ -48,18 +48,5 @@ spec:
   failurePolicy: retry
   bootstrap: ${CHART_BOOTSTRAP:=false}
   takeOwnership: ${CHART_TAKE_OWNERSHIP:=false}
-EOF
-
-# rke2-flannel v0.28.900 references .Values.netpol.enabled without defining a default.
-# Set the missing value here so the chart remains installable until the upstream chart is fixed.
-if [ "${CHART_NAME}" = "rke2-flannel" ]; then
-cat <<-'EOF' >> "${CHART_FILE}"
-  valuesContent: |-
-    netpol:
-      enabled: false
-EOF
-fi
-
-cat <<-EOF >> "${CHART_FILE}"
   chartContent: $(base64 -w0 < "${CHART_TMP}.gz")
 EOF
