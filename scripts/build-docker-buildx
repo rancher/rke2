@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -ex
+
+VERSION=v0.36.1
+PACKAGE=github.com/docker/buildx
+PARENT=$(dirname ${PACKAGE})
+NAME=$(basename ${PACKAGE})
+
+mkdir -p $(go env GOPATH)/src/${PARENT}
+cd $(go env GOPATH)/src/${PARENT}
+if [[ -d ${NAME} ]]; then
+  cd ${NAME}
+  git fetch docker ${VERSION}:refs/tags/${VERSION}
+  git reset --hard ${VERSION}
+  git clean -xffd
+else
+  git clone -o docker --single-branch --depth 1 --branch ${VERSION} https://${PACKAGE}
+  cd ${NAME}
+fi
+REVISION=$(git rev-parse HEAD)
+
+# ref: https://github.com/docker/buildx/pull/4008
+# fixes issue where os version portion of --platform value is ignored
+sed -i 's|Format(|FormatAll(|' build/opt.go
+go build -ldflags "-s -w -X ${PACKAGE}/version.Version=${VERSION} -X ${PACKAGE}/version.Revision=${REVISION} -X ${PACKAGE}/version.Package=${PACKAGE}" -o "${HOME}/.docker/cli-plugins/docker-buildx" ./cmd/buildx

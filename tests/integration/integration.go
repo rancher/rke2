@@ -178,7 +178,7 @@ func Cleanup(rke2TestLock int) error {
 	exec.Command(uninstall).Run()
 
 	// Restore the agent/images directory
-	if err := os.MkdirAll("/var/lib/rancher/rke2/agent", 0755); err != nil {
+	if err := os.MkdirAll("/var/lib/rancher/rke2/agent/images", 0755); err != nil {
 		return fmt.Errorf("failed to make agent directory: %w", err)
 	}
 	cmd = exec.Command("sh", "-c", "mv /tmp/images-backup/* /var/lib/rancher/rke2/agent/images/")

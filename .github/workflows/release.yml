@@ -20,6 +20,13 @@ jobs:
   test:
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=256
     steps:
+    - name: Set up Docker
+      uses: docker/setup-docker-action@0234bb73ccb40f0c430b795634f9247e2b5c2d23 # v5
+      with:
+        version: type=image,tag=29
+        daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        set-host: true
+
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
@@ -55,6 +62,13 @@ jobs:
           - { arch: amd64, runner-arch: x64 }
           - { arch: arm64, runner-arch: arm64 }
     steps:
+    - name: Set up Docker
+      uses: docker/setup-docker-action@0234bb73ccb40f0c430b795634f9247e2b5c2d23 # v5
+      with:
+        version: type=image,tag=29
+        daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        set-host: true
+
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
@@ -146,6 +160,13 @@ jobs:
           - { arch: arm64, runner-arch: arm64, make-target: publish-image-runtime,         destination: staging  }
           - { arch: arm64, runner-arch: arm64, make-target: publish-image-runtime,         destination: prime    }
     steps:
+    - name: Set up Docker
+      uses: docker/setup-docker-action@0234bb73ccb40f0c430b795634f9247e2b5c2d23 # v5
+      with:
+        version: type=image,tag=29
+        daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        set-host: true
+
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
@@ -234,6 +255,13 @@ jobs:
           - { destination: staging  }
           - { destination: prime    }
     steps:
+    - name: Set up Docker
+      uses: docker/setup-docker-action@0234bb73ccb40f0c430b795634f9247e2b5c2d23 # v5
+      with:
+        version: type=image,tag=29
+        daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        set-host: true
+
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
@@ -312,6 +340,13 @@ jobs:
     needs: [manifest]
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
     steps:
+    - name: Set up Docker
+      uses: docker/setup-docker-action@0234bb73ccb40f0c430b795634f9247e2b5c2d23 # v5
+      with:
+        version: type=image,tag=29
+        daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        set-host: true
+
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
@@ -405,8 +440,16 @@ jobs:
       contents: read
       id-token: write
     steps:
+      - name: Set up Docker
+        uses: docker/setup-docker-action@0234bb73ccb40f0c430b795634f9247e2b5c2d23 # v5
+        with:
+          version: type=image,tag=29
+          daemon-config: '{"features":{"containerd-snapshotter":true}}'
+          set-host: true
+
       - name: Checkout code
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
       - name: Install crane
         uses: ./.github/actions/install-crane
 
@@ -493,6 +536,13 @@ jobs:
       TAG: ${{ github.ref_name }}
       GH_TOKEN: ${{ github.token }}
     steps:
+      - name: Set up Docker
+        uses: docker/setup-docker-action@0234bb73ccb40f0c430b795634f9247e2b5c2d23 # v5
+        with:
+          version: type=image,tag=29
+          daemon-config: '{"features":{"containerd-snapshotter":true}}'
+          set-host: true
+
       - name: Checkout code
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
