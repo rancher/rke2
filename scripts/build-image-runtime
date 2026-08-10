@@ -5,7 +5,9 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
-DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
+mkdir -p build/images
+
+docker buildx build \
     --build-arg TAG=${VERSION} \
     --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
     --build-arg MAJOR=${VERSION_MAJOR} \
@@ -16,10 +18,13 @@ DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
     --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH} \
     --target runtime \
     --file Dockerfile \
+    --output type=image \
+    --output type=docker,dest=build/images/${PROG}-images.${PLATFORM}.tar \
     .
+zstd -T0 -16 -f --long=25 --no-progress build/images/${PROG}-images.${PLATFORM}.tar
 
 if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ] && [ -z "$SKIP_WINDOWS" ]; then
-  DOCKER_BUILDKIT=${DOCKER_BUILDKIT:-1} docker image build \
+  docker buildx build \
       --build-arg TAG=${VERSION} \
       --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
       --build-arg MAJOR=${VERSION_MAJOR} \
@@ -28,14 +33,9 @@ if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ] && [ -z "$SKIP_WINDO
       --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
       --target windows-runtime \
       --file Dockerfile.windows \
+      --output type=image \
+      --output type=oci,dest=build/images/${PROG}-images.windows-amd64.tar \
+      --platform 'windows(10.0.17763.7919)/amd64,windows(10.0.20348.4294)/amd64,windows(10.0.26100.4294)/amd64' \
       .
-  # Only ever used in its compressed form for e2e tests
-  mkdir -p build/images
-  docker image save \
-    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-${GOARCH} | \
-    zstd -T0 -16 -f --long=25 --no-progress - -o build/images/${PROG}-images.windows-${GOARCH}.tar.zst    
+  zstd -T0 -16 -f --long=25 --no-progress build/images/${PROG}-images.windows-amd64.tar
 fi
-mkdir -p build/images
-docker image save \
-    --output build/images/${PROG}-runtime.tar \
-    ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH}
