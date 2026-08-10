@@ -254,7 +254,7 @@ func scpRKE2Artifacts(nodes []VagrantNode) error {
 }
 
 // CreateLocalCluster creates a cluster using the locally built RKE2 bundled binary and images.
-// Run at a minimum "make package-bundle" and "make package-image-runtime" first
+// Run at a minimum "make build-image-runtime" first
 // The vagrant-scp plugin must be installed for this function to work.
 func CreateLocalCluster(nodeOS string, serverCount, agentCount int) (*TestConfig, error) {
 
