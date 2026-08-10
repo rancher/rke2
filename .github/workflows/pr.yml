@@ -13,6 +13,12 @@ jobs:
   build-amd64:
     runs-on: runs-on,runner=16cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
     steps:
+    - name: Set up Docker
+      uses: docker/setup-docker-action@0234bb73ccb40f0c430b795634f9247e2b5c2d23 # v5
+      with:
+        version: type=image,tag=29
+        daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        set-host: true
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - name: Build
@@ -28,7 +34,6 @@ jobs:
         name: rke2-build-artifacts
         path: |
           build/images/rke2-images.linux-amd64.tar.zst
-          build/images/rke2-runtime.tar
           build/images/rke2-test-*.tar
   test-conformance:
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
@@ -38,6 +43,12 @@ jobs:
       matrix:
         suite: [parallel, serial]
     steps:
+    - name: Set up Docker
+      uses: docker/setup-docker-action@0234bb73ccb40f0c430b795634f9247e2b5c2d23 # v5
+      with:
+        version: type=image,tag=29
+        daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        set-host: true
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - name: Download Build Artifacts
@@ -47,7 +58,6 @@ jobs:
         path: build/images
     - name: Load Build Artifacts Into Docker
       run: |
-        docker load -i build/images/rke2-runtime.tar
         zstd -dc build/images/rke2-images.linux-amd64.tar.zst | docker load
         docker load -i build/images/rke2-test-*.tar
     - name: Load kernel modules
@@ -71,6 +81,12 @@ jobs:
   build-arm64:
     runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu24-full-arm64,hdd=64
     steps:
+    - name: Set up Docker
+      uses: docker/setup-docker-action@0234bb73ccb40f0c430b795634f9247e2b5c2d23 # v5
+      with:
+        version: type=image,tag=29
+        daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        set-host: true
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - name: Build
