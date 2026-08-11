@@ -24,7 +24,7 @@ permissions:
 jobs:
   build:
     name: Build RKE2 Images and Binary
-    runs-on: ${{ github.repository == 'rancher/rke2' && 'runs-on,runner=16cpu-linux-x64,image=ubuntu24-full-x64' || 'ubuntu-24.04' }}
+    runs-on: ${{ github.repository == 'rancher/rke2' && format('runs-on,runner=16cpu-linux-x64,image=ubuntu24-full-x64,run-id={0}', github.run_id) || 'ubuntu-24.04' }}
     permissions:
       contents: read
       id-token: write
