@@ -12,7 +12,7 @@ permissions:
 jobs:
   trivy_scan:
     if: github.event.workflow_run.conclusion == 'success'
-    runs-on: ${{ github.repository == 'rancher/rke2' && 'runs-on,runner=4cpu-linux-x64' || 'ubuntu-latest' }}
+    runs-on: ${{ github.repository == 'rancher/rke2' && format('runs-on,runner=4cpu-linux-x64,run-id={0}', github.run_id) || 'ubuntu-latest' }}
     outputs:
       pr_number: ${{ steps.pr_context.outputs.pr_number }}
       
@@ -96,7 +96,7 @@ jobs:
   report_results:
     needs: trivy_scan
     if: always() # Run even if the scan fails.
-    runs-on: ${{ github.repository == 'rancher/rke2' && 'runs-on,runner=4cpu-linux-x64' || 'ubuntu-latest' }}
+    runs-on: ${{ github.repository == 'rancher/rke2' && format('runs-on,runner=4cpu-linux-x64,run-id={0}', github.run_id) || 'ubuntu-latest' }}
     permissions:
       pull-requests: write # Required to post comments.
     
