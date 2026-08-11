@@ -119,8 +119,8 @@ var _ = Describe("Verify DualStack in "+*cni+", "+*filter+" configuration", Orde
 		}, "180s", "5s").Should(Succeed())
 	})
 
-	It("Waits for traefik daemonset readiness", func() {
-		By("waiting for traefik daemonset readiness")
+	It("Waits for the bundled ingress controller daemonset readiness", func() {
+		By("waiting for the bundled ingress controller daemonset readiness")
 		Eventually(func() error {
 			_, err := e2e.RunCommand("kubectl -n kube-system rollout status ds/rke2-traefik --timeout=120s --kubeconfig=" + tc.KubeconfigFile)
 			return err

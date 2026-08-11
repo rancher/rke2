@@ -221,7 +221,11 @@ func CreateMixedCluster(nodeOS string, serverCount, linuxAgentCount, windowsAgen
 	return tc, nil
 }
 
-func scpRKE2Artifacts(nodes []VagrantNode) error {
+// SCPRke2Artifacts copies the locally built RKE2 binary, tarball, and image archive
+// to each node so they can be installed without fetching from a release channel.
+func SCPRke2Artifacts(nodes []VagrantNode) error {
+	const artifactDir = "/home/vagrant"
+
 	binary := []string{
 		"dist/artifacts/rke2.linux-amd64.tar.gz",
 		"dist/artifacts/sha256sum-amd64.txt",
@@ -232,10 +236,10 @@ func scpRKE2Artifacts(nodes []VagrantNode) error {
 
 	// vagrant scp doesn't allow coping multiple files at once
 	// nor does it allow copying as sudo, so we have to copy each file individually
-	// to /tmp/ and then move them to the correct location
+	// to a persistent user-writable location and then move the image archive into place
 	for _, node := range nodes {
 		for _, artifact := range append(binary, images...) {
-			cmd := fmt.Sprintf(`vagrant scp ../../../%s %s:/tmp/`, artifact, node.Name)
+			cmd := fmt.Sprintf(`vagrant scp ../../../%s %s:%s/`, artifact, node.Name, artifactDir)
 			if _, err := RunCommand(cmd); err != nil {
 				return err
 			}
@@ -244,7 +248,7 @@ func scpRKE2Artifacts(nodes []VagrantNode) error {
 			return err
 		}
 		for _, image := range images {
-			cmd := fmt.Sprintf("mv /tmp/%s /var/lib/rancher/rke2/agent/images/", filepath.Base(image))
+			cmd := fmt.Sprintf("mv %s/%s /var/lib/rancher/rke2/agent/images/", artifactDir, filepath.Base(image))
 			if _, err := node.RunCmdOnNode(cmd); err != nil {
 				return err
 			}
@@ -276,7 +280,7 @@ func CreateLocalCluster(nodeOS string, serverCount, agentCount int) (*TestConfig
 		return nil, newNodeError(cmd, serverNodes[0], err)
 	}
 
-	if err := scpRKE2Artifacts(append(serverNodes, agentNodes...)); err != nil {
+	if err := SCPRke2Artifacts(append(serverNodes, agentNodes...)); err != nil {
 		return nil, err
 	}
 	// Install RKE2 on all nodes in parallel
@@ -368,7 +372,7 @@ func CreateLocalMixedCluster(nodeOS string, serverCount, linuxAgentCount, window
 		return nil, err
 	}
 
-	if err := scpRKE2Artifacts(append(serverNodes, linuxAgents...)); err != nil {
+	if err := SCPRke2Artifacts(append(serverNodes, linuxAgents...)); err != nil {
 		return nil, err
 	}
 	if err := scpWindowsRKE2Artifacts(windowsAgents); err != nil {
