@@ -1,0 +1,101 @@
+---
+name: "Update hardened runtime images"
+# Watches for new hardened-runc, hardened-containerd, and hardened-crictl builds
+# and bumps the corresponding FROM tags in the Dockerfile.
+#
+# Version filters are pinned to the minor line currently referenced in the
+# Dockerfile so we track new builds without jumping across minor/major versions
+# (each image-build repo publishes several lines concurrently).
+scms:
+  rke2:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      username: "{{ requiredEnv .github.username }}"
+      token: '{{ requiredEnv .github.token }}'
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repo }}"
+      branch: master
+
+sources:
+  hardenedRunc:
+    name: "Latest hardened-runc build"
+    kind: "githubrelease"
+    spec:
+      owner: "rancher"
+      repository: "image-build-runc"
+      token: '{{ requiredEnv .github.token }}'
+      versionfilter:
+        kind: "regex"
+        pattern: '^v1\.4\.\d+-build\d+$'
+  hardenedContainerd:
+    name: "Latest hardened-containerd build"
+    kind: "githubrelease"
+    spec:
+      owner: "rancher"
+      repository: "image-build-containerd"
+      token: '{{ requiredEnv .github.token }}'
+      versionfilter:
+        kind: "regex"
+        pattern: '^v2\.3\.\d+-k3s1-build\d+$'
+  hardenedCrictl:
+    name: "Latest hardened-crictl build"
+    kind: "githubrelease"
+    spec:
+      owner: "rancher"
+      repository: "image-build-crictl"
+      token: '{{ requiredEnv .github.token }}'
+      versionfilter:
+        kind: "regex"
+        pattern: '^v1\.36\.\d+-build\d+$'
+
+targets:
+  bumpRunc:
+    name: "Update hardened-runc image tag in Dockerfile"
+    kind: "dockerfile"
+    scmid: "rke2"
+    sourceid: hardenedRunc
+    spec:
+      file: Dockerfile
+      instruction:
+        keyword: "FROM"
+        matcher: "rancher/hardened-runc"
+  bumpContainerd:
+    name: "Update hardened-containerd image tag in Dockerfile"
+    kind: "dockerfile"
+    scmid: "rke2"
+    sourceid: hardenedContainerd
+    spec:
+      file: Dockerfile
+      instruction:
+        keyword: "FROM"
+        matcher: "rancher/hardened-containerd"
+  bumpCrictl:
+    name: "Update hardened-crictl image tag in Dockerfile"
+    kind: "dockerfile"
+    scmid: "rke2"
+    sourceid: hardenedCrictl
+    spec:
+      file: Dockerfile
+      instruction:
+        keyword: "FROM"
+        matcher: "rancher/hardened-crictl"
+
+actions:
+  github:
+    kind: "github/pullrequest"
+    scmid: "rke2"
+    spec:
+      automerge: false
+      draft: false
+      mergemethod: squash
+      parent: false
+      title: 'Update hardened runtime images in Dockerfile'
+      description: |
+        Automated PR to bump the hardened runtime image tags in the `Dockerfile`.
+
+        Updated references:
+        - `rancher/hardened-runc` -> {{ source "hardenedRunc" }}
+        - `rancher/hardened-containerd` -> {{ source "hardenedContainerd" }}
+        - `rancher/hardened-crictl` -> {{ source "hardenedCrictl" }}
