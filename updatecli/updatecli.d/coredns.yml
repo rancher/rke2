@@ -1,0 +1,108 @@
+---
+name: "Update CoreDNS chart and images"
+scms:
+  rke2:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      username: "{{ requiredEnv .github.username }}"
+      token: '{{ requiredEnv .github.token }}'
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repo }}"
+      branch: master
+
+sources:
+  chart:
+    name: "Get rke2-coredns chart version"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_chart_version.sh rke2-coredns
+  corednsImage:
+    name: "Get hardened-coredns tag from the selected chart"
+    kind: "shell"
+    spec:
+      command: |
+        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rke2-coredns/rke2-coredns-{{ source "chart" }}.tgz" \
+          | tar xzO rke2-coredns/values.yaml \
+          | yq -r '.image.tag'
+  clusterAutoscalerImage:
+    name: "Get hardened-cluster-autoscaler tag from the selected chart"
+    kind: "shell"
+    spec:
+      command: |
+        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rke2-coredns/rke2-coredns-{{ source "chart" }}.tgz" \
+          | tar xzO rke2-coredns/values.yaml \
+          | yq -r '.autoscaler.image.tag'
+  dnsNodeCacheImage:
+    name: "Get hardened-dns-node-cache tag from the selected chart"
+    kind: "shell"
+    spec:
+      command: |
+        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rke2-coredns/rke2-coredns-{{ source "chart" }}.tgz" \
+          | tar xzO rke2-coredns/values.yaml \
+          | yq -r '.nodelocal.image.tag'
+
+conditions:
+  chartVersionShouldBeUpdated:
+    name: "Check if CoreDNS chart should be updated"
+    kind: "shell"
+    sourceid: chart
+    spec:
+      command: bash ./updatecli/scripts/validate_version.sh rke2-coredns
+
+targets:
+  chartVersion:
+    name: "Update rke2-coredns version in charts/chart_versions.yaml"
+    kind: "yaml"
+    scmid: "rke2"
+    sourceid: chart
+    spec:
+      file: charts/chart_versions.yaml
+      key: '$.charts[4].version'
+  corednsImage:
+    name: "Update hardened-coredns tag in scripts/build-images"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: corednsImage
+    spec:
+      file: scripts/build-images
+      matchpattern: '(?m)^[ \t]*\$\{REGISTRY\}/rancher/hardened-coredns:.*$'
+      replacepattern: '    $${REGISTRY}/rancher/hardened-coredns:{{ source "corednsImage" }}'
+  clusterAutoscalerImage:
+    name: "Update hardened-cluster-autoscaler tag in scripts/build-images"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: clusterAutoscalerImage
+    spec:
+      file: scripts/build-images
+      matchpattern: '(?m)^[ \t]*\$\{REGISTRY\}/rancher/hardened-cluster-autoscaler:.*$'
+      replacepattern: '    $${REGISTRY}/rancher/hardened-cluster-autoscaler:{{ source "clusterAutoscalerImage" }}'
+  dnsNodeCacheImage:
+    name: "Update hardened-dns-node-cache tag in scripts/build-images"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: dnsNodeCacheImage
+    spec:
+      file: scripts/build-images
+      matchpattern: '(?m)^[ \t]*\$\{REGISTRY\}/rancher/hardened-dns-node-cache:.*$'
+      replacepattern: '    $${REGISTRY}/rancher/hardened-dns-node-cache:{{ source "dnsNodeCacheImage" }}'
+
+actions:
+  github:
+    kind: "github/pullrequest"
+    scmid: "rke2"
+    spec:
+      merge:
+        strategy: manual
+      draft: false
+      mergemethod: squash
+      parent: false
+      title: 'Update CoreDNS chart to {{ source "chart" }}'
+      description: |
+        This is an automated PR to update the CoreDNS chart and related hardened images.
+
+        - `rke2-coredns` chart -> `{{ source "chart" }}` (charts/chart_versions.yaml)
+        - `hardened-coredns` -> `{{ source "corednsImage" }}`
+        - `hardened-cluster-autoscaler` -> `{{ source "clusterAutoscalerImage" }}`
+        - `hardened-dns-node-cache` -> `{{ source "dnsNodeCacheImage" }}`
