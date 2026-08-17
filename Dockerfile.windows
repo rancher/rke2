@@ -51,7 +51,7 @@ RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
     fi
 WORKDIR /source
 
-FROM --platform=$BUILDPLATFORM rancher/hardened-containerd:v2.2.6-k3s1-build20260728-amd64-windows AS containerd
+FROM --platform=$BUILDPLATFORM rancher/hardened-containerd:v2.2.7-k3s1-build20260816-amd64-windows AS containerd
 FROM base AS windows-runtime-collect
 ARG KUBERNETES_VERSION=dev
 
@@ -71,7 +71,7 @@ RUN mkdir -p charts
 COPY Dockerfile ./
 RUN CONTAINERD_VERSION=$(grep "rancher/hardened-containerd" Dockerfile | grep ':v' | cut -d '=' -f 2- | grep -oE "([0-9]+)\.([0-9]+)\.([0-9]+)") \
  && curl -fsSLO https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz \
- && echo "c78c27cf307a0cdfa9a4a1795540a7a64ec97cc6434880bafcadd3b6e3390365  containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz" | sha256sum -c -
+ && echo "ab10d86a2cae781b9ff67c6a5edecb93ad837e6ab799f447492b2fcc3547e44c  containerd-${CONTAINERD_VERSION}-windows-amd64.tar.gz" | sha256sum -c -
 
 RUN curl -fsSLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-windows-amd64.tar.gz && \
     echo "a5329ebc16378ae1d2935414077695579d76617aaf936a9d8c8ed086951313f3  crictl-${CRICTL_VERSION}-windows-amd64.tar.gz" | sha256sum -c -
