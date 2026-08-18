@@ -165,7 +165,7 @@ test-serial:
 checksum:
 	./scripts/checksum
 
-DOCKER_HOST := $(or $(DOCKER_HOST),"unix:///var/run/docker.sock")
+DOCKER_HOST := $(or $(DOCKER_HOST),unix:///var/run/docker.sock)
 DOCKER_PATH := $(DOCKER_HOST:unix://%=%)
 DOCKER_ROOT := $(shell docker info -f '{{ .DockerRootDir}}')
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD | sed 's/\//-/g')
