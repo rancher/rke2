@@ -91,6 +91,7 @@ var (
 		"write-kubeconfig":                  copyFlag,
 		"write-kubeconfig-mode":             copyFlag,
 		"write-kubeconfig-group":            copyFlag,
+		"write-kubeconfig-name":             copyFlag,
 		"kube-apiserver-arg":                copyFlag,
 		"etcd-arg":                          copyFlag,
 		"kube-scheduler-arg":                copyFlag,
