@@ -53,7 +53,7 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-traefik.txt
 EOF
 
 xargs -n1 -t $PULL_CMD_CORE << EOF > $BUILD_DIR/images-canal.txt
-    ${REGISTRY}/rancher/hardened-calico:v3.32.1-build20260807
+    ${REGISTRY}/rancher/hardened-calico:v3.32.1-build20260818
     ${REGISTRY}/rancher/hardened-flannel:v0.28.9-build20260808
 EOF
 
