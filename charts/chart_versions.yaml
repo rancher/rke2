@@ -30,7 +30,7 @@ charts:
   - version: v4.3.008
     filename: /charts/rke2-multus.yaml
     bootstrap: false
-  - version: v0.28.902
+  - version: v0.28.905
     filename: /charts/rke2-flannel.yaml
     bootstrap: true
   - version: 1.15.300
