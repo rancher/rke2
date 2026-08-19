@@ -23,56 +23,13 @@ permissions:
 
 jobs:
   build:
-    name: Build RKE2 Images and Binary
-    runs-on: ${{ github.repository == 'rancher/rke2' && format('runs-on,runner=16cpu-linux-x64,image=ubuntu24-full-x64,run-id={0}', github.run_id) || 'ubuntu-24.04' }}
     permissions:
       contents: read
       id-token: write
-    steps:
-    - name: Set up Docker
-      uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
-      with:
-        version: type=image,tag=29
-        daemon-config: '{"features":{"containerd-snapshotter":true}}'
-        set-host: true
-    - name: Checkout
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      with:
-        fetch-depth: 1
-    - name: Find Go Version for Build
-      id: go-finder
-      run: |
-        GOOS=linux GOARCH=amd64 . ./scripts/version.sh
-        set +x
-        VERSION_GOLANG=$(echo $VERSION_GOLANG | sed 's/go//')
-        echo "VERSION_GOLANG=${VERSION_GOLANG}" >> "$GITHUB_OUTPUT"
-    - name: Install Go
-      uses: ./.github/actions/setup-go
-      with:
-        go-version: ${{ steps.go-finder.outputs.VERSION_GOLANG }}
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
-    - name: Install OS Packages
-      run: sudo apt-get update && sudo apt-get install -y libarchive-tools g++-mingw-w64-x86-64 gcc-mingw-w64-x86-64
-    - name: "Read secrets"
-      if: github.event_name != 'pull_request' && github.repository == 'rancher/rke2'
-      uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89 # v3
-      with:
-        secrets: |
-          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
-    # Can only upload from a single path, so we need to copy the binary to the image directory
-    # Additionally, we have a rke2-runtime.tar and a rke2-images.linux-amd64.tar.zst which are the same thing
-    # just compressed. We remove the rke2-runtime.tar as its not used by the install script.
-    - name: Build RKE2 Binary and Compressed Runtime Image
-      run: |
-        GOCOVER=true make build-image-runtime
-        cp ./bin/rke2 ./build/images/rke2
-        cp ./dist/artifacts/rke2.*-amd64.tar.gz ./build/images/
-    - name: Upload RKE2 Binary and Runtime Image
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-      with:
-        name: rke2-test-artifacts
-        path: ./build/images/*
+    uses: ./.github/workflows/build-e2e-artifacts.yml
+    with:
+      gocover: true
+      setup-docker: true
   itest:
     needs: build
     name: Integration Tests
