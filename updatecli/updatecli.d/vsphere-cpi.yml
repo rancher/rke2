@@ -30,10 +30,7 @@ sources:
     name: "Get vsphere-cpi public image tag"
     kind: "shell"
     spec:
-      command: |
-        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-cpi/rancher-vsphere-cpi-{{ source "vsphere-cpi" }}.tgz" \
-          | tar xzO rancher-vsphere-cpi/values.yaml \
-          | yq -r '.versionOverrides[0].values.cloudControllerManager.tag'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-cpi {{ source "vsphere-cpi" }} '.versionOverrides[0].values.cloudControllerManager.tag'
 
 conditions:
   vsphereCPIVersionShouldBeUpdated:
