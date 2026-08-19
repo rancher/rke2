@@ -22,18 +22,12 @@ sources:
     name: "Get hardened-k8s-metrics-server tag from the selected chart"
     kind: "shell"
     spec:
-      command: |
-        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rke2-metrics-server/rke2-metrics-server-{{ source "chart" }}.tgz" \
-          | tar xzO rke2-metrics-server/values.yaml \
-          | yq -r '.image.tag'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-metrics-server {{ source "chart" }} .image.tag
   addonResizerImage:
     name: "Get hardened-addon-resizer tag from the selected chart"
     kind: "shell"
     spec:
-      command: |
-        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rke2-metrics-server/rke2-metrics-server-{{ source "chart" }}.tgz" \
-          | tar xzO rke2-metrics-server/values.yaml \
-          | yq -r '.addonResizer.image.tag'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-metrics-server {{ source "chart" }} .addonResizer.image.tag
 
 conditions:
   chartVersionShouldBeUpdated:
