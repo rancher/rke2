@@ -17,9 +17,9 @@ CHART_NAME="${1}"
 CHART_VERSION="${2}"
 YQ_KEY="${3}"
 
-CHART_URL="https://github.com/rancher/rke2-charts/raw/main/assets/${CHART_NAME}/${CHART_NAME}-${CHART_VERSION}.tgz"
+VALUES_URL="https://raw.githubusercontent.com/rancher/rke2-charts/refs/heads/main/charts/${CHART_NAME}/${CHART_NAME}/${CHART_VERSION}/values.yaml"
 
-IMAGE_TAG=$(curl -sfL "${CHART_URL}" | tar xzO "${CHART_NAME}/values.yaml" | yq -r "${YQ_KEY}")
+IMAGE_TAG=$(curl -sfL "${VALUES_URL}" | yq -r "${YQ_KEY}")
 
 if [[ "${IMAGE_TAG}" = "null" ]] || [[ -z "${IMAGE_TAG}" ]]; then
     fatal "failed to retrieve image tag for key '${YQ_KEY}' from ${CHART_NAME}-${CHART_VERSION}"
