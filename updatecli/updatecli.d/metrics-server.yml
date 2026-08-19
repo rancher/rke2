@@ -1,0 +1,88 @@
+---
+name: "Update Metrics Server chart and images"
+scms:
+  rke2:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      username: "{{ requiredEnv .github.username }}"
+      token: '{{ requiredEnv .github.token }}'
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repo }}"
+      branch: master
+
+sources:
+  chart:
+    name: "Get rke2-metrics-server chart version"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_chart_version.sh rke2-metrics-server
+  metricsServerImage:
+    name: "Get hardened-k8s-metrics-server tag from the selected chart"
+    kind: "shell"
+    spec:
+      command: |
+        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rke2-metrics-server/rke2-metrics-server-{{ source "chart" }}.tgz" \
+          | tar xzO rke2-metrics-server/values.yaml \
+          | yq -r '.image.tag'
+  addonResizerImage:
+    name: "Get hardened-addon-resizer tag from the selected chart"
+    kind: "shell"
+    spec:
+      command: |
+        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rke2-metrics-server/rke2-metrics-server-{{ source "chart" }}.tgz" \
+          | tar xzO rke2-metrics-server/values.yaml \
+          | yq -r '.addonResizer.image.tag'
+
+conditions:
+  chartVersionShouldBeUpdated:
+    name: "Check if Metrics Server chart should be updated"
+    kind: "shell"
+    sourceid: chart
+    spec:
+      command: bash ./updatecli/scripts/validate_version.sh rke2-metrics-server
+
+targets:
+  chartVersion:
+    name: "Update rke2-metrics-server version in charts/chart_versions.yaml"
+    kind: "yaml"
+    scmid: "rke2"
+    sourceid: chart
+    spec:
+      file: charts/chart_versions.yaml
+      key: '$.charts[8].version'
+  metricsServerImage:
+    name: "Update hardened-k8s-metrics-server tag in scripts/build-images"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: metricsServerImage
+    spec:
+      file: scripts/build-images
+      matchpattern: '(?m)^[ \t]*\$\{REGISTRY\}/rancher/hardened-k8s-metrics-server:.*$'
+      replacepattern: '    $${REGISTRY}/rancher/hardened-k8s-metrics-server:{{ source "metricsServerImage" }}'
+  addonResizerImage:
+    name: "Update hardened-addon-resizer tag in scripts/build-images"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: addonResizerImage
+    spec:
+      file: scripts/build-images
+      matchpattern: '(?m)^[ \t]*\$\{REGISTRY\}/rancher/hardened-addon-resizer:.*$'
+      replacepattern: '    $${REGISTRY}/rancher/hardened-addon-resizer:{{ source "addonResizerImage" }}'
+
+actions:
+  github:
+    kind: "github/pullrequest"
+    scmid: "rke2"
+    spec:
+      merge:
+        strategy: manual
+      draft: false
+      mergemethod: squash
+      parent: false
+      title: 'Update Kubernetes Metrics Server chart {{ source "chart" }}'
+      description: |
+        Update to the latest chart and image versions:
+        - rancher/hardened-k8s-metrics-server:{{ source "metricsServerImage" }}
+        - rancher/hardened-addon-resizer:{{ source "addonResizerImage" }}
