@@ -38,7 +38,7 @@ sources:
       token: '{{ requiredEnv .github.token }}'
       versionfilter:
         kind: "regex"
-        pattern: '^v2\.3\.\d+-k3s1-build\d+$'
+        pattern: '^v2\.3\.\d+-k3s\d(?:\.\d+)?-build\d+$'
   hardenedCrictl:
     name: "Latest hardened-crictl build"
     kind: "githubrelease"
