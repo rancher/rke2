@@ -24,8 +24,8 @@ RUN set -x && \
     file \
     bash \
     py-pip
-RUN KUBECTL_VERSION=v1.36.3 && \
-    KUBECTL_SHA256="ebbd080e7c2e275093b55915722043257eb24004363e20acb3c4d71919f88336" ;; \
+RUN KUBECTL_VERSION=v1.36.4 && \
+    KUBECTL_SHA256="8b8f088da2dab964f853b38464033b1be15ede2839eca751482357c45abdd05a" ;; \
     cd /tmp && \
     curl -fsSL https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl -o kubectl && \
     echo "${KUBECTL_SHA256}  kubectl" | sha256sum -c - && \
@@ -76,10 +76,10 @@ RUN curl -fsSLO https://github.com/containernetworking/plugins/releases/download
     echo "c09a62523d76b32b883b6a9ee824c997b5c3cc8b3caebc8612c2f64fbbe97334  cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz" | sha256sum -c -
 
 RUN case "${KUBERNETES_VERSION}" in \
-        v1.36.3) \
-            KUBECTL_SHA256="ba76657b79d0ebcc3c029c171fc83c96351ba5ce0e71d185f1e5b8b873360a5f" && \
-            KUBELET_SHA256="683843a94c9ddd43023c6a06b630cf637f19f9838684a5526b811df5cdbd4c1a" && \
-            KUBE_PROXY_SHA256="19b002c905a26259331d2a82e8022797ddfa7aab8eec015614d07a5e9c418969"; \
+        v1.36.4) \
+            KUBECTL_SHA256="31947857be7583f3e4e6d889a3fb781ca813a45c20f11ccb3ef309714d01a9f3" && \
+            KUBELET_SHA256="dbb90c2e2028c60ce068049a27edd4bfc19d197c4e7ab2e39cf96002e3f99782" && \
+            KUBE_PROXY_SHA256="dccf1854af088f1f2050197bbf46c65ecb90219769832f992bbd796f72192455"; \
             ;; \
         *) echo "Unsupported KUBERNETES_VERSION for pinned Windows binaries: ${KUBERNETES_VERSION}" && exit 1 ;; \
     esac && \
