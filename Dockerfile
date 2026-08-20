@@ -147,6 +147,7 @@ RUN rm -vf /charts/*.sh /charts/*.md /charts/chart_versions.yaml
 # This image includes any host level programs that we might need. All binaries
 # must be placed in bin/ of the file image and subdirectories of bin/ will be flattened during installation.
 # This means bin/foo/bar will become bin/bar when rke2 installs this to the host
+# If you bump any of these to a new minor, don't forget to bump the updateCLI regex in hardened-runtime-images.yml
 FROM rancher/hardened-containerd:v2.3.4-k3s1.36-build20260819 AS containerd
 FROM rancher/hardened-crictl:v1.36.0-build20260819 AS crictl
 FROM rancher/hardened-runc:v1.4.3-build20260819 AS runc
