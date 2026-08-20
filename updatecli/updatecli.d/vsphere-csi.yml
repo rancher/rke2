@@ -30,59 +30,46 @@ sources:
     name: "Get vsphere-csi public driver tag"
     kind: "shell"
     spec:
-      command: |
-        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
-          | tar xzO rancher-vsphere-csi/values.yaml \
-          | yq -r '.versionOverrides[0].values.csiController.image.tag'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.versionOverrides[0].values.csiController.image.tag'
   vsphere-csi-public-syncer-tag:
     name: "Get vsphere-csi public syncer tag"
     kind: "shell"
     spec:
-      command: |
-        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
-          | tar xzO rancher-vsphere-csi/values.yaml \
-          | yq -r '.versionOverrides[0].values.csiController.image.vsphereSyncer.tag'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.versionOverrides[0].values.csiController.image.vsphereSyncer.tag'
   vsphere-csi-public-registrar-tag:
     name: "Get vsphere-csi public node driver registrar tag"
     kind: "shell"
     spec:
-      command: |
-        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
-          | tar xzO rancher-vsphere-csi/values.yaml \
-          | yq -r '.versionOverrides[0].values.csiNode.image.nodeDriverRegistrar.tag'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.versionOverrides[0].values.csiNode.image.nodeDriverRegistrar.tag'
   vsphere-csi-public-resizer-tag:
     name: "Get vsphere-csi public resizer tag"
     kind: "shell"
     spec:
-      command: |
-        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
-          | tar xzO rancher-vsphere-csi/values.yaml \
-          | yq -r '.versionOverrides[0].values.csiController.image.csiResizer.tag'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.versionOverrides[0].values.csiController.image.csiResizer.tag'
   vsphere-csi-public-liveness-tag:
     name: "Get vsphere-csi public livenessprobe tag"
     kind: "shell"
     spec:
-      command: |
-        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
-          | tar xzO rancher-vsphere-csi/values.yaml \
-          | yq -r '.versionOverrides[0].values.csiController.image.livenessProbe.tag'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.versionOverrides[0].values.csiController.image.livenessProbe.tag'
   vsphere-csi-public-attacher-tag:
     name: "Get vsphere-csi public attacher tag"
     kind: "shell"
     spec:
-      command: |
-        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
-          | tar xzO rancher-vsphere-csi/values.yaml \
-          | yq -r '.versionOverrides[0].values.csiController.image.csiAttacher.tag'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.versionOverrides[0].values.csiController.image.csiAttacher.tag'
   vsphere-csi-public-provisioner-tag:
     name: "Get vsphere-csi public provisioner tag"
     kind: "shell"
     spec:
-      command: |
-        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-csi/rancher-vsphere-csi-{{ source "vsphere-csi" }}.tgz" \
-          | tar xzO rancher-vsphere-csi/values.yaml \
-          | yq -r '.versionOverrides[0].values.csiController.image.csiProvisioner.tag'
-  
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.versionOverrides[0].values.csiController.image.csiProvisioner.tag'
+
+conditions:
+  vsphereCSIVersionShouldBeUpdated:
+    name: "Check if vsphere-csi chart should be updated or not"
+    kind: shell
+    sourceid: vsphere-csi
+    spec:
+      command: bash ./updatecli/scripts/validate_version.sh rancher-vsphere-csi
+
 targets:
   updateVsphereCSI:
     name: "Update the vsphere-csi airgap images"
@@ -91,6 +78,11 @@ targets:
     sourceid: vsphere-csi
     spec:
       command: bash ./updatecli/scripts/update_chart_and_images_prime.sh rancher-vsphere-csi {{ source "vsphere-csi" }}
+      changedif:
+        kind: file/checksum
+        spec:
+          files:
+            - charts/chart_versions.yaml
   updateVsphereCSIPublicImages:
     name: "Update public vsphere-csi tags in scripts/build-images docker.io images-vsphere block"
     kind: "file"
@@ -116,8 +108,7 @@ actions:
     scmid: "rke2"
     spec:
       merge:
-        strategy: auto
-      automerge: false
+        strategy: manual
       draft: false
       mergemethod: squash
       parent: false

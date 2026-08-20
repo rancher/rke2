@@ -44,6 +44,8 @@ metadata:
     helm.cattle.io/chart-url: "${CHART_URL}"
     rke2.cattle.io/inject-cluster-config: "true"
 spec:
+  forceConflicts: true
+  failurePolicy: retry
   bootstrap: ${CHART_BOOTSTRAP:=false}
   takeOwnership: ${CHART_TAKE_OWNERSHIP:=false}
   chartContent: $(base64 -w0 < "${CHART_TMP}.gz")

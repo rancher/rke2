@@ -20,6 +20,13 @@ jobs:
   test:
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=256
     steps:
+    - name: Set up Docker
+      uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
+      with:
+        version: type=image,tag=29
+        daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        set-host: true
+
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
@@ -55,6 +62,13 @@ jobs:
           - { arch: amd64, runner-arch: x64 }
           - { arch: arm64, runner-arch: arm64 }
     steps:
+    - name: Set up Docker
+      uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
+      with:
+        version: type=image,tag=29
+        daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        set-host: true
+
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
@@ -146,6 +160,13 @@ jobs:
           - { arch: arm64, runner-arch: arm64, make-target: publish-image-runtime,         destination: staging  }
           - { arch: arm64, runner-arch: arm64, make-target: publish-image-runtime,         destination: prime    }
     steps:
+    - name: Set up Docker
+      uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
+      with:
+        version: type=image,tag=29
+        daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        set-host: true
+
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
@@ -234,6 +255,13 @@ jobs:
           - { destination: staging  }
           - { destination: prime    }
     steps:
+    - name: Set up Docker
+      uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
+      with:
+        version: type=image,tag=29
+        daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        set-host: true
+
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
@@ -312,6 +340,13 @@ jobs:
     needs: [manifest]
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
     steps:
+    - name: Set up Docker
+      uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
+      with:
+        version: type=image,tag=29
+        daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        set-host: true
+
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
@@ -368,9 +403,9 @@ jobs:
 
     - name: Generate GitHub App token
       id: generate-token
-      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       with:
-        app-id: ${{ env.APP_ID }}
+        client-id: ${{ env.APP_ID }}
         private-key: ${{ env.PRIVATE_KEY }}
         owner: rancher
         repositories: |
@@ -405,8 +440,16 @@ jobs:
       contents: read
       id-token: write
     steps:
+      - name: Set up Docker
+        uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
+        with:
+          version: type=image,tag=29
+          daemon-config: '{"features":{"containerd-snapshotter":true}}'
+          set-host: true
+
       - name: Checkout code
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
       - name: Install crane
         uses: ./.github/actions/install-crane
 
@@ -434,7 +477,7 @@ jobs:
           fi
 
       - name: Log in to staging registry
-        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         if: ${{ contains(github.ref_name, '-rc') }}
         with:
           registry: ${{ env.PRIME_STAGING_REGISTRY }}
@@ -442,7 +485,7 @@ jobs:
           password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
       - name: Log in to prime registry
-        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         if: ${{ !contains(github.ref_name, '-rc') }}
         with:
           registry: ${{ env.PRIME_REGISTRY }}
@@ -493,6 +536,13 @@ jobs:
       TAG: ${{ github.ref_name }}
       GH_TOKEN: ${{ github.token }}
     steps:
+      - name: Set up Docker
+        uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
+        with:
+          version: type=image,tag=29
+          daemon-config: '{"features":{"containerd-snapshotter":true}}'
+          set-host: true
+
       - name: Checkout code
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 

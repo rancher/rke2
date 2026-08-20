@@ -5,7 +5,7 @@ default: in-docker-build                 ## Build using docker environment (defa
 .PHONY: ci
 ci: in-docker-.ci                 # Run CI in a docker environment
 
-.ci: validate validate-charts build package ## Run CI locally
+.ci: docker-buildx validate validate-charts build package ## Run CI locally
 
 .PHONY: build
 build:                                   ## Build using host go tools
@@ -36,8 +36,15 @@ build-windows-images:                     ## Build only the Windows images and t
 	./scripts/build-windows-images
 
 .PHONY: build-image-runtime
-build-image-runtime:                      ## Build the runtime image
+build-image-runtime: docker-buildx package-bundle ## Build the runtime image
 	./scripts/build-image-runtime
+
+## NOTE: docker-buildx targets can be removed once a release of buildx with https://github.com/docker/buildx/pull/4008 is available
+.PHONY: docker-buildx
+docker-buildx: $(HOME)/.docker/cli-plugins/docker-buildx
+
+$(HOME)/.docker/cli-plugins/docker-buildx:
+	./scripts/build-docker-buildx
 
 .PHONY: publish-image-runtime
 publish-image-runtime:
@@ -58,7 +65,6 @@ validate-release:
 .PHONY: validate-charts
 validate-charts:
 	./scripts/validate-charts
-
 
 .PHONY: run
 run: build-debug
@@ -124,10 +130,6 @@ package-images: build-images		## Package docker images for airgap environment
 package-windows-images: build-windows-images		## Package Windows crane images for airgap environment
 	./scripts/package-windows-images
 
-.PHONY: package-image-runtime
-package-image-runtime: build-image-runtime		## Package runtime image for GH Actions testing
-	./scripts/package-image-runtime
-
 .PHONY: package-bundle
 package-bundle: build-binary					## Package the tarball bundle
 	./scripts/package-bundle
@@ -163,12 +165,16 @@ test-serial:
 checksum:
 	./scripts/checksum
 
+DOCKER_HOST := $(or $(DOCKER_HOST),unix:///var/run/docker.sock)
+DOCKER_PATH := $(DOCKER_HOST:unix://%=%)
+DOCKER_ROOT := $(shell docker info -f '{{ .DockerRootDir}}')
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD | sed 's/\//-/g')
-in-docker-%: ## Advanced: wraps any target in Docker environment, for example: in-docker-build-debug
+in-docker-%: docker-buildx ## Advanced: wraps any target in Docker environment, for example: in-docker-build-debug
 	mkdir -p ./bin/ ./dist ./build
 	docker buildx build -t rke2:$(BRANCH) --target build-env -f Dockerfile --load .
 	docker run --privileged --rm --network host \
-		-v $${PWD}:/source -v /var/run/docker.sock:/var/run/docker.sock -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy \
+		-v $${PWD}:/source -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy \
+		-v $(DOCKER_PATH):$(DOCKER_PATH) -v $(DOCKER_ROOT):$(DOCKER_ROOT) -e DOCKER_HOST \
 		-e GODEBUG -e CI -e GOCOVER -e REPO -e TAG -e GITHUB_ACTION_TAG -e KUBERNETES_VERSION -e IMAGE_NAME -e AWS_SECRET_ACCESS_KEY -e AWS_ACCESS_KEY_ID \
 		-e DOCKER_PASSWORD -e BUILD_PARALLEL -e SONOBUOY_SUITE -e DOCKER_USERNAME -e GH_TOKEN -e SKIP_VALIDATE -e PACKAGE_SKIP_TARBALL -e REGISTRY -e PRIME_REGISTRY \
 		rke2:$(BRANCH) make $*

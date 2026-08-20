@@ -30,11 +30,16 @@ sources:
     name: "Get vsphere-cpi public image tag"
     kind: "shell"
     spec:
-      command: |
-        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rancher-vsphere-cpi/rancher-vsphere-cpi-{{ source "vsphere-cpi" }}.tgz" \
-          | tar xzO rancher-vsphere-cpi/values.yaml \
-          | yq -r '.versionOverrides[0].values.cloudControllerManager.tag'
-  
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-cpi {{ source "vsphere-cpi" }} '.versionOverrides[0].values.cloudControllerManager.tag'
+
+conditions:
+  vsphereCPIVersionShouldBeUpdated:
+    name: "Check if vsphere-cpi chart should be updated or not"
+    kind: shell
+    sourceid: vsphere-cpi
+    spec:
+      command: bash ./updatecli/scripts/validate_version.sh rancher-vsphere-cpi
+
 targets:
   updateVsphereCPI:
     name: "Update the vsphere-cpi airgap images"
@@ -43,6 +48,12 @@ targets:
     sourceid: vsphere-cpi
     spec:
       command: bash ./updatecli/scripts/update_chart_and_images_prime.sh rancher-vsphere-cpi {{ source "vsphere-cpi" }}
+      changedif:
+        kind: file/checksum
+        spec:
+          files:
+            - charts/chart_versions.yaml
+
   updateVsphereCPIPublicImage:
     name: "Update mirrored cloud-provider-vsphere tag in scripts/build-images"
     kind: "file"
@@ -50,7 +61,7 @@ targets:
     sourceid: vsphere-cpi-public-tag
     spec:
       file: scripts/build-images
-      matchpattern: '^\s*\$\{REGISTRY\}/rancher/mirrored-cloud-provider-vsphere:.*$'
+      matchpattern: '(?m)^[ \t]*\$\{REGISTRY\}/rancher/mirrored-cloud-provider-vsphere:.*$'
       replacepattern: '    $${REGISTRY}/rancher/mirrored-cloud-provider-vsphere:{{ source "vsphere-cpi-public-tag" }}'
 
 actions:
@@ -59,7 +70,7 @@ actions:
     scmid: "rke2"
     spec:
       merge:
-        strategy: auto
+        strategy: manual
       draft: false
       mergemethod: squash
       parent: false

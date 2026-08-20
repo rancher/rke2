@@ -2,7 +2,7 @@ charts:
   - version: 1.19.601
     filename: /charts/rke2-cilium.yaml
     bootstrap: true
-  - version: v3.32.1-build2026071700
+  - version: v3.32.1-build2026081900
     filename: /charts/rke2-canal.yaml
     bootstrap: true
   - version: v3.32.100
@@ -12,46 +12,46 @@ charts:
     filename: /charts/rke2-calico-crd.yaml
     bootstrap: true
     package: rke2-calico-crd
-  - version: 1.46.101
+  - version: 1.47.003
     filename: /charts/rke2-coredns.yaml
     bootstrap: true
-  - version: 4.15.106
+  - version: 4.15.109
     filename: /charts/rke2-ingress-nginx.yaml
     bootstrap: false
-  - version: 40.1.009
+  - version: 41.2.001
     filename: /charts/rke2-traefik.yaml
     bootstrap: false
-  - version: 40.1.009
+  - version: 41.2.001
     filename: /charts/rke2-traefik-crd.yaml
     bootstrap: false
-  - version: 3.13.104
+  - version: 3.14.000
     filename: /charts/rke2-metrics-server.yaml
     bootstrap: false
-  - version: v4.3.006
+  - version: v4.3.008
     filename: /charts/rke2-multus.yaml
     bootstrap: false
-  - version: v0.28.704
+  - version: v0.28.906
     filename: /charts/rke2-flannel.yaml
     bootstrap: true
-  - version: 1.15.200
+  - version: 1.15.300
     filename: /charts/rancher-vsphere-cpi.yaml
     bootstrap: true
-  - version: 3.7.2-rancher300
+  - version: 3.7.2-rancher700
     filename: /charts/rancher-vsphere-csi.yaml
     bootstrap: true
-  - version: 0.2.1400
+  - version: 0.2.1500
     filename: /charts/harvester-cloud-provider.yaml
     bootstrap: true
-  - version: 0.1.3000
+  - version: 0.1.3100
     filename: /charts/harvester-csi-driver.yaml
     bootstrap: true
   - version: 4.15.000
     filename: /charts/rke2-ovirt-csi-driver.yaml
     bootstrap: true
-  - version: 4.2.007
+  - version: 5.2.003
     filename: /charts/rke2-snapshot-controller.yaml
     bootstrap: false
-  - version: 4.2.007
+  - version: 5.2.003
     filename: /charts/rke2-snapshot-controller-crd.yaml
     bootstrap: false
   - version: 0.0.0 # this empty chart addon can be removed in v1.34, after we have shipped two minor versions that have never included it.
@@ -61,3 +61,6 @@ charts:
     filename: /charts/rke2-runtimeclasses.yaml
     bootstrap: false
     takeOwnership: true
+  - version: 0.1.401
+    filename: /charts/rke2-security-responder.yaml
+    bootstrap: false

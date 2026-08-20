@@ -50,13 +50,19 @@ targets:
       environments:
         - name: GH_TOKEN
           value: '{{ requiredEnv .github.token }}'
+      changedif:
+        kind: file/checksum
+        spec:
+          files:
+            - charts/chart_versions.yaml
 
 actions:
   github:
     kind: "github/pullrequest"
     scmid: "rke2"
     spec:
-      automerge: false
+      merge:
+        strategy: manual
       draft: false
       mergemethod: squash
       parent: false

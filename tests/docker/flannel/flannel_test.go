@@ -35,7 +35,7 @@ var _ = Describe("Flannel Tests", Ordered, func() {
 	Context("Setup Cluster", func() {
 		It("should provision server and agent", func() {
 			var err error
-			tc, err = docker.NewTestConfig()
+			tc, err = docker.NewTestConfig(GinkgoTB())
 			Expect(err).NotTo(HaveOccurred())
 			tc.ServerYaml = `
 cni: flannel

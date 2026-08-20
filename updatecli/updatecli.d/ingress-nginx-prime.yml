@@ -68,7 +68,13 @@ conditions:
       # the wrong chart.
       key: '$.charts[5].filename'
       value: /charts/rke2-ingress-nginx.yaml
-verifyPrimeInChartValues:
+  primeRequiresChartBump:
+    name: "Only update the prime image when the chart is updated"
+    kind: "shell"
+    sourceid: prime
+    spec:
+      command: bash ./updatecli/scripts/validate_version.sh rke2-ingress-nginx '{{ source "chart" }}'
+  verifyPrimeInChartValues:
     name: "Verify prime image is contained in the source chart's values.yaml"
     kind: "helmchart"
     disablesourceinput: true
@@ -104,7 +110,8 @@ actions:
     kind: "github/pullrequest"
     scmid: "rke2"
     spec:
-      automerge: false
+      merge:
+        strategy: manual
       draft: false
       mergemethod: squash
       parent: false

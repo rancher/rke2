@@ -12,7 +12,7 @@ end
 
 def getInstallType(vm, version, branch)
   if version == "skip"
-    return "INSTALL_RKE2_ARTIFACT_PATH=/tmp" 
+    return "INSTALL_RKE2_ARTIFACT_PATH=/home/vagrant"
   elsif !version.empty? && version.start_with?("v1")
     return "INSTALL_RKE2_VERSION=#{version}"
   elsif !version.empty?
