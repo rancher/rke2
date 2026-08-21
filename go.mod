@@ -217,7 +217,7 @@ require (
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/cabbie v1.0.2 // indirect
 	github.com/google/cadvisor v0.56.2 // indirect
-	github.com/google/cel-go v0.26.1 // indirect
+	github.com/google/cel-go v0.29.0 // indirect
 	github.com/google/glazier v0.0.0-20211029225403-9f766cca891d // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
@@ -383,7 +383,6 @@ require (
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/spegel-org/spegel v1.0.18 // indirect
 	github.com/spf13/cobra v1.10.2 // indirect
-	github.com/stoewer/go-strcase v1.3.1 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/t4db/t4 v1.0.5 // indirect
 	github.com/tidwall/btree v1.8.1 // indirect
