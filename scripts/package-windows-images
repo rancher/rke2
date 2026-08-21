@@ -6,28 +6,34 @@ cd $(dirname $0)/..
 source ./scripts/version.sh
 
 mkdir -p build/images dist/artifacts
-docker pull --platform windows/amd64 ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION}
-for DIGEST in $(docker buildx imagetools inspect ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} --raw | jq -r '.manifests[] | select(.platform.os == "windows") | .digest'); do
-  docker pull ${REGISTRY}/${REPO}/mirrored-pause@${DIGEST}
+
+PLATFORMS_JQ_EXPR='[.manifests[].platform | select(.os == "windows") | {"os": .os, "ver": ."os.version", "arch": .architecture} | "\(.os)(\(.ver))/\(.arch)"] | join(" ")'
+PLATFORMS=$(docker buildx imagetools inspect ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} --raw | jq -r "${PLATFORMS_JQ_EXPR}")
+
+for PLATFORM in ${PLATFORMS}; do
+  case "${PLATFORM}" in
+    "windows(10.0.17763.7919)/amd64")
+      RELEASE="1809" ;;     # Windows 10 Version 1809 (October 2018 Update) or Windows Server 2019
+    "windows(10.0.20348.4294)/amd64")
+      RELEASE="ltsc2022" ;; # Windows Server 2022 Version 21H2
+    "windows(10.0.26100.6899)/amd64")
+      RELEASE="2025" ;;     # Windows 11 Version 24H2 (2024 Update) or Windows Server 2025
+    *)
+      echo "Unknown platform ${PLATFORM}"
+      exit 1
+  esac
+
+  # try pulling the rke2-runtime image, in case this is release CI and it hasn't just been built locally.
+  # release CI builds and pushes the rke2-runtime image in a separate step, prior to packaging.
+  ctr -n moby image pull --platform "${PLATFORM}" \
+    ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
+    ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 1>/dev/null || true
+
+  ctr -n moby image export --platform "${PLATFORM}" \
+    build/images/rke2-windows-${RELEASE}-amd64-images.tar \
+    ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
+    ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION}
 done
-
-# Windows 10 Version 1809 (October 2018 Update) or Windows Server 2019
-docker image save --platform 'windows(10.0.17763.7919)/amd64' \
-  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
-  ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
-  -o build/images/rke2-windows-1809-amd64-images.tar
-
-# Windows Server 2022 Version 21H2
-docker image save --platform 'windows(10.0.20348.4294)/amd64' \
-  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
-  ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
-  -o build/images/rke2-windows-ltsc2022-amd64-images.tar
-
-# Windows 11 Version 24H2 (2024 Update) or Windows Server 2025
-docker image save --platform 'windows(10.0.20348.4294)/amd64' \
-  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
-  ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
-  -o build/images/rke2-windows-2025-amd64-images.tar
 
 for TARFILE in build/images/rke2-windows-*-images.tar; do
     FILENAME=$(basename ${TARFILE})
