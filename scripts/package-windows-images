@@ -6,25 +6,35 @@ cd $(dirname $0)/..
 source ./scripts/version.sh
 
 mkdir -p build/images dist/artifacts
-docker pull --platform windows/amd64 ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION}
-for DIGEST in $(docker buildx imagetools inspect ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} --raw | jq -r '.manifests[] | select(.platform.os == "windows") | .digest'); do
-  docker pull ${REGISTRY}/${REPO}/mirrored-pause@${DIGEST}
-done
+
+docker pull --platform windows/amd64 ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64
+
+MANIFEST=$(docker buildx imagetools inspect ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} --raw)
+
+PAUSE_DIGEST_1809=$(echo "$MANIFEST" | jq -r '.manifests[] | select(.platform.os=="windows" and (.platform["os.version"] | startswith("10.0.17763"))) | .digest')
+PAUSE_DIGEST_LTSC2022=$(echo "$MANIFEST" | jq -r '.manifests[] | select(.platform.os=="windows" and (.platform["os.version"] | startswith("10.0.20348"))) | .digest')
+PAUSE_DIGEST_2025=$(echo "$MANIFEST" | jq -r '.manifests[] | select(.platform.os=="windows" and (.platform["os.version"] | startswith("10.0.26100"))) | .digest')
 
 # Windows 10 Version 1809 (October 2018 Update) or Windows Server 2019
-docker image save --platform 'windows(10.0.17763.7919)/amd64' \
+docker pull ${REGISTRY}/${REPO}/mirrored-pause@${PAUSE_DIGEST_1809}
+docker tag ${REGISTRY}/${REPO}/mirrored-pause@${PAUSE_DIGEST_1809} ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION}
+docker image save \
   ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
   ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
   -o build/images/rke2-windows-1809-amd64-images.tar
 
 # Windows Server 2022 Version 21H2
-docker image save --platform 'windows(10.0.20348.4294)/amd64' \
+docker pull ${REGISTRY}/${REPO}/mirrored-pause@${PAUSE_DIGEST_LTSC2022}
+docker tag ${REGISTRY}/${REPO}/mirrored-pause@${PAUSE_DIGEST_LTSC2022} ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION}
+docker image save \
   ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
   ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
   -o build/images/rke2-windows-ltsc2022-amd64-images.tar
 
 # Windows 11 Version 24H2 (2024 Update) or Windows Server 2025
-docker image save --platform 'windows(10.0.20348.4294)/amd64' \
+docker pull ${REGISTRY}/${REPO}/mirrored-pause@${PAUSE_DIGEST_2025}
+docker tag ${REGISTRY}/${REPO}/mirrored-pause@${PAUSE_DIGEST_2025} ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION}
+docker image save \
   ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 \
   ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
   -o build/images/rke2-windows-2025-amd64-images.tar
