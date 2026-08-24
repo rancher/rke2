@@ -35,6 +35,9 @@ jobs:
         version: type=image,tag=29
         daemon-config: '{"features":{"containerd-snapshotter":true}}'
         set-host: true
+    - name: Set up Containerd
+      run: |
+        echo CONTAINERD_ADDRESS=$(docker info -f '{{.Containerd.Address}}') >> "$GITHUB_ENV"
     - name: Checkout
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
@@ -73,6 +76,14 @@ jobs:
       with:
         name: rke2-test-artifacts
         path: ./build/images/*
+    # The rke2-runtime airgap image tarballs are not used by tests, but we run
+    # the image package scripts here to ensure that they work outside of release CI.
+    - name: Package images
+      run: |
+        make in-docker-package-images
+    - name: Package images (windows)
+      run: |
+        make in-docker-package-windows-images
   itest:
     needs: build
     name: Integration Tests
@@ -92,6 +103,9 @@ jobs:
         version: type=image,tag=29
         daemon-config: '{"features":{"containerd-snapshotter":true}}'
         set-host: true
+    - name: Set up Containerd
+      run: |
+        echo CONTAINERD_ADDRESS=$(docker info -f '{{.Containerd.Address}}') >> "$GITHUB_ENV"
     - name: Checkout
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
@@ -145,6 +159,9 @@ jobs:
           version: type=image,tag=29
           daemon-config: '{"features":{"containerd-snapshotter":true}}'
           set-host: true
+      - name: Set up Containerd
+        run: |
+          echo CONTAINERD_ADDRESS=$(docker info -f '{{.Containerd.Address}}') >> "$GITHUB_ENV"
       - name: "Checkout"
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with: {fetch-depth: 1}
@@ -197,6 +214,9 @@ jobs:
           version: type=image,tag=29
           daemon-config: '{"features":{"containerd-snapshotter":true}}'
           set-host: true
+      - name: Set up Containerd
+        run: |
+          echo CONTAINERD_ADDRESS=$(docker info -f '{{.Containerd.Address}}') >> "$GITHUB_ENV"
       - name: "Checkout"
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with: {fetch-depth: 1}
