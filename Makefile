@@ -171,7 +171,7 @@ DOCKER_ROOT := $(shell docker info -f '{{ .DockerRootDir}}')
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD | sed 's/\//-/g')
 in-docker-%: docker-buildx ## Advanced: wraps any target in Docker environment, for example: in-docker-build-debug
 	mkdir -p ./bin/ ./dist ./build
-	docker buildx build -t rke2:$(BRANCH) --target build-env -f Dockerfile .
+	docker buildx build -t rke2:$(BRANCH) --load --target build-env -f Dockerfile .
 	docker run --privileged --rm --network host \
 		-v $${PWD}:/source -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy \
 		-v $(DOCKER_PATH):$(DOCKER_PATH) -v $(DOCKER_ROOT):$(DOCKER_ROOT) -v $(CONTAINERD_ADDRESS):$(CONTAINERD_ADDRESS) -e DOCKER_HOST -e CONTAINERD_ADDRESS \
