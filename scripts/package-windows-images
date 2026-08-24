@@ -10,6 +10,12 @@ mkdir -p build/images dist/artifacts
 PLATFORMS_JQ_EXPR='[.manifests[].platform | select(.os == "windows") | {"os": .os, "ver": ."os.version", "arch": .architecture} | "\(.os)(\(.ver))/\(.arch)"] | join(" ")'
 PLATFORMS=$(docker buildx imagetools inspect ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} --raw | jq -r "${PLATFORMS_JQ_EXPR}")
 
+# try pulling the rke2-runtime image, in case this is release CI and it hasn't just been built locally.
+# release CI builds and pushes the rke2-runtime image in a separate step, prior to packaging.
+ctr -n moby image pull --all-platforms \
+  ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
+  ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 1>/dev/null || true
+
 for PLATFORM in ${PLATFORMS}; do
   case "${PLATFORM}" in
     "windows(10.0.17763.7919)/amd64")
@@ -22,12 +28,6 @@ for PLATFORM in ${PLATFORMS}; do
       echo "Unknown platform ${PLATFORM}"
       exit 1
   esac
-
-  # try pulling the rke2-runtime image, in case this is release CI and it hasn't just been built locally.
-  # release CI builds and pushes the rke2-runtime image in a separate step, prior to packaging.
-  ctr -n moby image pull --platform "${PLATFORM}" \
-    ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
-    ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 1>/dev/null || true
 
   ctr -n moby image export --platform "${PLATFORM}" \
     build/images/rke2-windows-${RELEASE}-amd64-images.tar \
