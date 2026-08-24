@@ -24,6 +24,8 @@ docker buildx build \
 zstd -T0 -16 -f --long=25 --no-progress build/images/${PROG}-images.${PLATFORM}.tar
 
 if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ] && [ -z "$SKIP_WINDOWS" ]; then
+  PLATFORMS_JQ_EXPR='[.manifests[].platform | select(.os == "windows") | {"os": .os, "ver": ."os.version", "arch": .architecture} | "\(.os)(\(.ver))/\(.arch)"] | join(",")'
+  PLATFORMS=$(docker buildx imagetools inspect ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} --raw | jq -r "${PLATFORMS_JQ_EXPR}")
   docker buildx build \
       --build-arg TAG=${VERSION} \
       --build-arg KUBERNETES_VERSION=${KUBERNETES_VERSION} \
@@ -35,7 +37,7 @@ if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ] && [ -z "$SKIP_WINDO
       --file Dockerfile.windows \
       --output type=image \
       --output type=oci,dest=build/images/${PROG}-images.windows-amd64.tar \
-      --platform 'windows(10.0.17763.7919)/amd64,windows(10.0.20348.4294)/amd64,windows(10.0.26100.4294)/amd64' \
+      --platform "${PLATFORMS}" \
       .
   zstd -T0 -16 -f --long=25 --no-progress build/images/${PROG}-images.windows-amd64.tar
 fi
