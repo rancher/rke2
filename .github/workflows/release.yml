@@ -467,9 +467,9 @@ jobs:
           daemon-config: '{"features":{"containerd-snapshotter":true}}'
           set-host: true
 
-    - name: Set up Containerd
-      run: |
-        echo CONTAINERD_ADDRESS=$(docker info -f '{{.Containerd.Address}}') >> "$GITHUB_ENV"
+      - name: Set up Containerd
+        run: |
+          echo CONTAINERD_ADDRESS=$(docker info -f '{{.Containerd.Address}}') >> "$GITHUB_ENV"
 
       - name: Checkout code
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
