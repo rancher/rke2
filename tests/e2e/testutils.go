@@ -143,7 +143,7 @@ func genNodeEnvs(nodeOS string, serverCount, agentCount, windowsAgentCount int) 
 	nodeRoles = strings.TrimSpace(nodeRoles)
 
 	nodeBoxes := strings.Repeat(nodeOS+" ", serverCount+agentCount)
-	nodeBoxes = nodeBoxes + strings.Repeat("jborean93/WindowsServer2022"+" ", windowsAgentCount)
+	nodeBoxes = nodeBoxes + strings.Repeat("gusztavvargadr/windows-server-2025-standard-core"+" ", windowsAgentCount)
 	nodeBoxes = strings.TrimSpace(nodeBoxes)
 
 	nodeEnvs := fmt.Sprintf(`E2E_NODE_ROLES="%s" E2E_NODE_BOXES="%s"`, nodeRoles, nodeBoxes)
@@ -637,7 +637,7 @@ func (v VagrantNode) runCmdOnWindowsNode(cmd string) (string, error) {
 
 // RunCommand execute a command on the host
 func RunCommand(cmd string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*15)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*30)
 	defer cancel()
 	c := exec.CommandContext(ctx, "bash", "-c", cmd)
 	out, err := c.CombinedOutput()
