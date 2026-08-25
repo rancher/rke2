@@ -15,6 +15,7 @@ RUN set -x && \
     rsync \
     gcc \
     bsd-compat-headers \
+    containerd-ctr \
     aws-cli \
     pigz \
     tar \
