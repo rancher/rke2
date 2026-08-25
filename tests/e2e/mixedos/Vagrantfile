@@ -29,6 +29,12 @@ def provision(vm, role, role_num, node_num)
   defaultOSConfigure(vm)
  
   if role.include?("windows")
+    vm.provision "shell", path: "../scripts/install-bgp.ps1"
+    vm.provision "Reboot Windows",
+      type: "reload"
+    vm.provision "Configure RemoteAccess",
+      type: "shell",
+      path: "../scripts/configure-bgp.ps1"
     vm.synced_folder ".", "/vagrant", disabled: true
     if RELEASE_VERSION == "skip"
       install_type = "-ArtifactPath 'C:\tmp'" 
