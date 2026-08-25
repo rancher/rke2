@@ -13,7 +13,9 @@ PLATFORMS=$(docker buildx imagetools inspect ${REGISTRY}/${REPO}/mirrored-pause:
 # try pulling the rke2-runtime image, in case this is release CI and it hasn't just been built locally.
 # release CI builds and pushes the rke2-runtime image in a separate step, prior to packaging.
 ctr -n moby image pull --all-platforms \
-  ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} \
+  ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} 1>/dev/null || true
+
+ctr -n moby image pull --all-platforms \
   ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-windows-amd64 1>/dev/null || true
 
 for PLATFORM in ${PLATFORMS}; do
