@@ -151,16 +151,26 @@ func genNodeEnvs(nodeOS string, serverCount, agentCount, windowsAgentCount int) 
 	return serverNodes, agentNodes, windowsAgentNodes, nodeEnvs
 }
 
+// getE2ETestOptions returns all E2E_* env vars as shell-quoted key=value pairs.
+func getE2ETestOptions() string {
+	var opts string
+	for _, env := range os.Environ() {
+		if strings.HasPrefix(env, "E2E_") {
+			parts := strings.SplitN(env, "=", 2)
+			if len(parts) == 2 {
+				// wrap value in single quotes, escaping any single quotes inside
+				quoted := "'" + strings.ReplaceAll(parts[1], "'", `'\''`) + "'"
+				opts += " " + parts[0] + "=" + quoted
+			}
+		}
+	}
+	return opts
+}
+
 func CreateCluster(nodeOS string, serverCount int, agentCount int) (*TestConfig, error) {
 
 	serverNodes, agentNodes, _, nodeEnvs := genNodeEnvs(nodeOS, serverCount, agentCount, 0)
-
-	var testOptions string
-	for _, env := range os.Environ() {
-		if strings.HasPrefix(env, "E2E_") {
-			testOptions += " " + env
-		}
-	}
+	testOptions := getE2ETestOptions()
 
 	// Bring up the first server node
 	cmd := fmt.Sprintf(`%s %s vagrant up --no-tty %s &> vagrant.log`, nodeEnvs, testOptions, serverNodes[0].Name)
@@ -198,13 +208,7 @@ func CreateCluster(nodeOS string, serverCount int, agentCount int) (*TestConfig,
 
 func CreateMixedCluster(nodeOS string, serverCount, linuxAgentCount, windowsAgentCount int) (*TestConfig, error) {
 	serverNodes, linuxAgents, windowsAgents, nodeEnvs := genNodeEnvs(nodeOS, serverCount, linuxAgentCount, windowsAgentCount)
-
-	var testOptions string
-	for _, env := range os.Environ() {
-		if strings.HasPrefix(env, "E2E_") {
-			testOptions += " " + env
-		}
-	}
+	testOptions := getE2ETestOptions()
 
 	cmd := fmt.Sprintf("%s %s vagrant up --no-tty &> vagrant.log", nodeEnvs, testOptions)
 	fmt.Println(cmd)
@@ -263,15 +267,7 @@ func SCPRke2Artifacts(nodes []VagrantNode) error {
 func CreateLocalCluster(nodeOS string, serverCount, agentCount int) (*TestConfig, error) {
 
 	serverNodes, agentNodes, _, nodeEnvs := genNodeEnvs(nodeOS, serverCount, agentCount, 0)
-
-	var testOptions string
-
-	for _, env := range os.Environ() {
-		if strings.HasPrefix(env, "E2E_") {
-			testOptions += " " + env
-		}
-	}
-	testOptions += " E2E_RELEASE_VERSION=skip"
+	testOptions := getE2ETestOptions() + " E2E_RELEASE_VERSION=skip"
 
 	// Standup all VMs. In GitHub Actions, this also imports the VM image into libvirt, which takes time to complete.
 	cmd := fmt.Sprintf(`%s %s E2E_STANDUP_PARALLEL=true vagrant up --no-tty --no-provision &> vagrant.log`, nodeEnvs, testOptions)
@@ -356,14 +352,7 @@ func scpWindowsRKE2Artifacts(nodes []VagrantNode) error {
 
 func CreateLocalMixedCluster(nodeOS string, serverCount, linuxAgentCount, windowsAgentCount int) (*TestConfig, error) {
 	serverNodes, linuxAgents, windowsAgents, nodeEnvs := genNodeEnvs(nodeOS, serverCount, linuxAgentCount, windowsAgentCount)
-
-	var testOptions string
-	for _, env := range os.Environ() {
-		if strings.HasPrefix(env, "E2E_") {
-			testOptions += " " + env
-		}
-	}
-	testOptions += " E2E_RELEASE_VERSION=skip"
+	testOptions := getE2ETestOptions() + " E2E_RELEASE_VERSION=skip"
 
 	// Standup all nodes, relying on vagrant-libvirt native parallel provisioning
 	cmd := fmt.Sprintf(`%s %s E2E_STANDUP_PARALLEL=true vagrant up --no-tty --no-provision &> vagrant.log`, nodeEnvs, testOptions)
