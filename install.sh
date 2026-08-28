@@ -681,17 +681,17 @@ do_restorecon_tar() {
             info "applying correct SELinux contexts to RKE2 files"
 
             # this is for the .service files
-            restorecon -R -i /etc/systemd/system/rke2*
-            restorecon -R -i /usr/local/lib/systemd/system/rke2*
-            restorecon -R -i /usr/lib/systemd/system/rke2*
+            err_msg=$(restorecon -R -i /etc/systemd/system/rke2* 2>&1) || warn "Failed to run restorecon on /etc/systemd/system/rke2*: ${err_msg}"
+            err_msg=$(restorecon -R -i /usr/local/lib/systemd/system/rke2* 2>&1) || warn "Failed to run restorecon on /usr/local/lib/systemd/system/rke2: ${err_msg}"
+            err_msg=$(restorecon -R -i /usr/lib/systemd/system/rke2* 2>&1) || warn "Failed to run restorecon on /usr/lib/systemd/system/rke2: ${err_msg}"
 
             # this one is for the bin
-            restorecon -R -i /opt/rke2
-            restorecon -R -i /usr/local/bin/rke2*
-            restorecon -R -i /usr/bin/rke2*
+            err_msg=$(restorecon -R -i /opt/rke2 2>&1) || warn "Failed to run restorecon on /opt/rke2: ${err_msg}"
+            err_msg=$(restorecon -R -i /usr/local/bin/rke2* 2>&1) || warn "Failed to run restorecon on /usr/local/bin/rke2*: ${err_msg}"
+            err_msg=$(restorecon -R -i /usr/bin/rke2* 2>&1) || warn "Failed to run restorecon on /usr/bin/rke2*: ${err_msg}"
 
             if [ -n "${INSTALL_RKE2_ARTIFACT_PATH}" ]; then
-                restorecon -R -i /var/lib/rancher/rke2
+                err_msg=$(restorecon -R -i /var/lib/rancher/rke2 2>&1) || warn "Failed to run restorecon on /var/lib/rancher/rke2: ${err_msg}"
             fi
         fi
     fi
