@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	DisableItems = []string{"rke2-coredns", "rke2-metrics-server", "rke2-snapshot-controller", "rke2-snapshot-controller-crd", "rke2-snapshot-validation-webhook", "rke2-security-responder"}
+	DisableItems = []string{"rke2-coredns", "rke2-metrics-server", "rke2-snapshot-controller", "rke2-snapshot-controller-crd", "rke2-snapshot-validation-webhook", "rke2-security-responder", "rke2-gateway-api-crd"}
 	CNIItems     = []string{"calico", "canal", "cilium", "flannel"}
 	IngressItems = []string{"traefik", "ingress-nginx"}
 )
