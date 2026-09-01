@@ -61,7 +61,7 @@ charts:
     filename: /charts/rke2-runtimeclasses.yaml
     bootstrap: false
     takeOwnership: true
-  - version: 0.1.401
+  - version: 0.1.501
     filename: /charts/rke2-security-responder.yaml
     bootstrap: false
   - version: 1.6.100
