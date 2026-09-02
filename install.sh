@@ -717,26 +717,24 @@ EOF
 }
 
 do_add_completion() {
-    COMPLETION_DIR="/etc/bash_completion.d"
-    if [ ! -z "${INSTALL_RKE2_COMPLETION_ALL}" ]; then
-        INSTALL_RKE2_COMPLETION_RKE2=1
-        INSTALL_RKE2_COMPLETION_CRICTL=1
-        INSTALL_RKE2_COMPLETION_CTR=1
-        # TODO: add kubectl, crictl, ctr command completions options here too?
-    fi
-    if [ ! -z "${INSTALL_RKE2_COMPLETION_RKE2}" -o ! -z "${INSTALL_RKE2_COMPLETION_CRICTL}" -o ! -z "${INSTALL_RKE2_COMPLETION_CTR}" ]; then
-	 info "Adding RKE2 shell completions"
-         test -d "${COMPLETION_DIR}"  || mkdir -p "${COMPLETION_DIR}" >/dev/null
-    fi
-    if [ ! -z "${INSTALL_RKE2_COMPLETION_RKE2}" ]; then
-        ${INSTALL_RKE2_TAR_PREFIX}/rke2 completion bash --kubectl > ${COMPLETION_DIR}/rke2-kubectl
-    fi
-    if [ ! -z "${INSTALL_RKE2_COMPLETION_CRICTL}" ]; then
-        ${INSTALL_RKE2_TAR_PREFIX}/rke2 completion bash --crictl > ${COMPLETION_DIR}/rke2-crictl
-    fi
-    if [ ! -z "${INSTALL_RKE2_COMPLETION_CTR}" ]; then
-       ${INSTALL_RKE2_TAR_PREFIX}/rke2 completion bash --ctr > ${COMPLETION_DIR}/rke2-ctr
-    fi
+    test -z "${INSTALL_RKE2_COMPLETION}" || \
+        case "${INSTALL_RKE2_COMPLETION}" in
+        bash)
+            info "adding rke2 bash shell completion"
+            COMPLETION_DIR="/etc/bash_completion.d"
+            test -d "${COMPLETION_DIR}"  || mkdir -p "${COMPLETION_DIR}" >/dev/null
+            ${INSTALL_RKE2_TAR_PREFIX}/bin/rke2 completion bash --kubectl --crictl --ctr > ${COMPLETION_DIR}/rke2-completion
+        ;;
+        zsh)
+            info "adding rke2 zsh shell completion"
+            COMPLETION_DIR="/usr/local/share/zsh/site-functions"
+            test -d "${COMPLETION_DIR}"  || mkdir -p "${COMPLETION_DIR}" >/dev/null
+            ${INSTALL_RKE2_TAR_PREFIX}/bin/rke2 completion zsh --kubectl --crictl --ctr > ${COMPLETION_DIR}/rke2-completion
+        ;;
+        *)
+            info "valid completion options are 'bash' or 'zsh'. Continuing without installing any shell completions"
+        ;;
+        esac
 }
 
 do_install() {
@@ -750,8 +748,6 @@ do_install() {
     case ${INSTALL_RKE2_METHOD} in
     yum | rpm | dnf)
         do_install_rpm "${INSTALL_RKE2_CHANNEL}"
-        do_add_completion
-	# TODO: or add completion via rpm???
         ;;
     *)
         do_install_tar "${INSTALL_RKE2_CHANNEL}"
