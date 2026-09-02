@@ -679,20 +679,23 @@ do_restorecon_tar() {
     if command -v rpm >/dev/null 2>&1; then
         if rpm -q --quiet rke2-selinux; then
             info "applying correct SELinux contexts to RKE2 files"
+            (
+              set +e
 
-            # this is for the .service files
-            restorecon -R -i /etc/systemd/system/rke2*
-            restorecon -R -i /usr/local/lib/systemd/system/rke2*
-            restorecon -R -i /usr/lib/systemd/system/rke2*
+              # this is for the .service files
+              restorecon -R -i /etc/systemd/system/rke2*
+              restorecon -R -i /usr/local/lib/systemd/system/rke2*
+              restorecon -R -i /usr/lib/systemd/system/rke2*
 
-            # this one is for the bin
-            restorecon -R -i /opt/rke2
-            restorecon -R -i /usr/local/bin/rke2*
-            restorecon -R -i /usr/bin/rke2*
+              # this one is for the bin
+              restorecon -R -i /opt/rke2
+              restorecon -R -i /usr/local/bin/rke2*
+              restorecon -R -i /usr/bin/rke2*
 
-            if [ -n "${INSTALL_RKE2_ARTIFACT_PATH}" ]; then
-                restorecon -R -i /var/lib/rancher/rke2
-            fi
+              if [ -n "${INSTALL_RKE2_ARTIFACT_PATH}" ]; then
+                  restorecon -R -i /var/lib/rancher/rke2
+              fi
+            ) || true
         fi
     fi
 }
