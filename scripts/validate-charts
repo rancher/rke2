@@ -163,7 +163,7 @@ while IFS='|' read version filename bootstrap package; do
     fi
 
     chart_name=$(basename "${filename%%.yaml}")
-    chart_tmp=$(download_chart $version $chart_name $bootstrap $package)
+    chart_tmp=$(download_chart "$version" "$chart_name" "$bootstrap" "$package")
 
     info "Validating chart $chart_name, version $version..."
 
