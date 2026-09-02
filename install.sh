@@ -689,6 +689,7 @@ do_restorecon_tar() {
             restorecon -R -i /opt/rke2
             restorecon -R -i /usr/local/bin/rke2*
             restorecon -R -i /usr/bin/rke2*
+	    # TODO: Add the shell completion files here too?
 
             if [ -n "${INSTALL_RKE2_ARTIFACT_PATH}" ]; then
                 restorecon -R -i /var/lib/rancher/rke2
@@ -707,10 +708,34 @@ allow perm=any all : dir=/opt/cni/
 allow perm=any all : dir=/run/k3s/
 allow perm=any all : dir=/var/lib/kubelet/
 EOF
+	# TODO: Add the shell completion files here too?
         if [ -z "${INSTALL_RKE2_SKIP_RELOAD}" ]; then
             fagenrules --load || fatal "failed to load rke2 fapolicyd rules"
             systemctl restart fapolicyd
         fi
+    fi
+}
+
+do_add_completion() {
+    COMPLETION_DIR="/etc/bash_completion.d"
+    if [ ! -z "${INSTALL_RKE2_COMPLETION_ALL}" ]; then
+        INSTALL_RKE2_COMPLETION_RKE2=1
+        INSTALL_RKE2_COMPLETION_CRICTL=1
+        INSTALL_RKE2_COMPLETION_CTR=1
+        # TODO: add kubectl, crictl, ctr command completions options here too?
+    fi
+    if [ ! -z "${INSTALL_RKE2_COMPLETION_RKE2}" -o ! -z "${INSTALL_RKE2_COMPLETION_CRICTL}" -o ! -z "${INSTALL_RKE2_COMPLETION_CTR}" ]; then
+	 info "Adding RKE2 shell completions"
+         test -d "${COMPLETION_DIR}"  || mkdir -p "${COMPLETION_DIR}" >/dev/null
+    fi
+    if [ ! -z "${INSTALL_RKE2_COMPLETION_RKE2}" ]; then
+        ${INSTALL_RKE2_TAR_PREFIX}/rke2 completion bash --kubectl > ${COMPLETION_DIR}/rke2-kubectl
+    fi
+    if [ ! -z "${INSTALL_RKE2_COMPLETION_CRICTL}" ]; then
+        ${INSTALL_RKE2_TAR_PREFIX}/rke2 completion bash --crictl > ${COMPLETION_DIR}/rke2-crictl
+    fi
+    if [ ! -z "${INSTALL_RKE2_COMPLETION_CTR}" ]; then
+       ${INSTALL_RKE2_TAR_PREFIX}/rke2 completion bash --ctr > ${COMPLETION_DIR}/rke2-ctr
     fi
 }
 
@@ -725,9 +750,12 @@ do_install() {
     case ${INSTALL_RKE2_METHOD} in
     yum | rpm | dnf)
         do_install_rpm "${INSTALL_RKE2_CHANNEL}"
+        do_add_completion
+	# TODO: or add completion via rpm???
         ;;
     *)
         do_install_tar "${INSTALL_RKE2_CHANNEL}"
+        do_add_completion
         ;;
     esac
     if [ -z "${INSTALL_RKE2_SKIP_FAPOLICY}" ]; then
