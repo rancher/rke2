@@ -24,8 +24,8 @@ RUN set -x && \
     file \
     bash \
     py-pip
-RUN KUBECTL_VERSION=v1.36.4 && \
-    KUBECTL_SHA256="8b8f088da2dab964f853b38464033b1be15ede2839eca751482357c45abdd05a" ;; \
+RUN KUBECTL_VERSION=v1.37.0 && \
+    KUBECTL_SHA256="6129359f4e1f3848a5572ccb0b26cf28b8ca08cef38c95a765b2f64a2c961a2f" ;; \
     cd /tmp && \
     curl -fsSL https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl -o kubectl && \
     echo "${KUBECTL_SHA256}  kubectl" | sha256sum -c - && \
