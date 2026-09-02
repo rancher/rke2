@@ -29,9 +29,8 @@ var (
 	}
 	IngressControllerFlag = &cli.StringSliceFlag{
 		Name:  "ingress-controller",
-		Usage: "(networking) Ingress Controllers to deploy, one of none, " + strings.Join(rke2cli.IngressItems, ", ") + "; the first value will be set as the default ingress class",
-		// TODO: In v1.37, add warning about RKE_INGRESS_CONTROLLER deprecation
-		// In v1.38, add fatal error if RKE_INGRESS_CONTROLLER is used
+		Usage: "(networking) Ingress Controllers to deploy, one of none, traefik; optionally with ingress-nginx for migration purposes",
+		// TODO: In v1.38, add fatal error if RKE_INGRESS_CONTROLLER is used
 		// In v1.39, remove RKE_INGRESS_CONTROLLER entirely
 		EnvVars:     []string{"RKE2_INGRESS_CONTROLLER", "RKE_INGRESS_CONTROLLER"},
 		Destination: &config.IngressController,
@@ -206,6 +205,9 @@ func ServerRun(clx *cli.Context) error {
 	}
 	if _, set := os.LookupEnv("RKE_INGRESS_CONTROLLER"); set {
 		logrus.Warnf("RKE_INGRESS_CONTROLLER env var is deprecated, please use RKE2_INGRESS_CONTROLLER instead")
+	}
+	if ing := clx.StringSlice("ingress-controller"); len(ing) == 1 && ing[0] == "ingress-nginx" {
+		logrus.Fatal("ingress-nginx is no longer supported as a standalone ingress controller, please use traefik. Using ingress-nginx in dual mode for migration is still supported. See https://docs.rke2.io/reference/ingress_migration for more information.")
 	}
 	validateProfile(clx, Server)
 	validateCNI(clx)
