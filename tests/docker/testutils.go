@@ -595,6 +595,9 @@ func StageManifest(manifest string, nodes []DockerNode) (string, error) {
 		return "", fmt.Errorf("failed to write manifest to temp file: %w", err)
 	}
 	for _, node := range nodes {
+		if _, err := node.RunCmdOnNode("mkdir -p /var/lib/rancher/rke2/server/manifests"); err != nil {
+			return "", fmt.Errorf("failed to create manifest directory on node: %w", err)
+		}
 		cmd := fmt.Sprintf("docker cp %s %s:/var/lib/rancher/rke2/server/manifests/", tempFile.Name(), node.Name)
 		if _, err := RunCommand(cmd); err != nil {
 			return "", fmt.Errorf("failed to copy manifest to node: %w", err)
