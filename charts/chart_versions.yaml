@@ -68,7 +68,7 @@ charts:
   - version: 0.1.501
     filename: /charts/rke2-security-responder.yaml
     bootstrap: false
-  - version: 1.6.100
+  - version: 1.6.101
     filename: /charts/rke2-gateway-api-crd.yaml
     bootstrap: false
     package: rke2-gateway-api-crd
