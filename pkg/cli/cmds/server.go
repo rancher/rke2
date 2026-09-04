@@ -226,6 +226,7 @@ func validateCNI(clx *cli.Context) {
 				return nil, errors.New("multus must be used alongside another primary cni selection")
 			}
 			clx.Set("disable", "rke2-multus")
+			clx.Set("disable", "rke2-multus-crd")
 		case 2:
 			if values[0] == "multus" {
 				values = values[1:]
