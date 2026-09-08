@@ -97,7 +97,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dtest: [basics, flannel, profile, ingress-nginx, ing_migration, prime]
+        dtest: [basics, flannel, profile, ingress-nginx, ing_migration, gatewayapi, prime]
     steps:
       - name: Set up Docker
         uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
