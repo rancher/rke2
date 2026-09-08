@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatewayapi-echo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      k8s-app: gatewayapi-echo
+  template:
+    metadata:
+      labels:
+        k8s-app: gatewayapi-echo
+    spec:
+      containers:
+      - name: gatewayapi-echo
+        image: rancher/mirrored-library-busybox:1.36.1
+        args: ['sh', '-c', 'echo Gateway API works! > index.html; hostname > name.html; httpd -vvf']
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gatewayapi-echo
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  selector:
+    k8s-app: gatewayapi-echo
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: rke2-traefik
+spec:
+  controllerName: traefik.io/gateway-controller
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: rke2-traefik
+spec:
+  gatewayClassName: rke2-traefik
+  listeners:
+  - name: web
+    hostname: gatewayapi.example.com
+    port: 8000
+    protocol: HTTP
+  - name: tcp
+    port: 9000
+    protocol: TCP
+    allowedRoutes:
+      kinds:
+      - kind: TCPRoute
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gatewayapi-echo
+spec:
+  parentRefs:
+  - name: rke2-traefik
+  hostnames:
+  - gatewayapi.example.com
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: gatewayapi-echo
+      port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: TCPRoute
+metadata:
+  name: gatewayapi-echo
+spec:
+  parentRefs:
+  - name: rke2-traefik
+    sectionName: tcp
+  rules:
+  - backendRefs:
+    - name: gatewayapi-echo
+      port: 80
