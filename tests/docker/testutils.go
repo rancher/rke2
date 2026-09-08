@@ -606,6 +606,25 @@ func StageManifest(manifest string, nodes []DockerNode) (string, error) {
 	return tempFile.Name(), nil
 }
 
+func EnableTraefikGatewayAPI(nodes []DockerNode) (string, error) {
+	manifest := "apiVersion: helm.cattle.io/v1\n" +
+		"kind: HelmChartConfig\n" +
+		"metadata:\n" +
+		"  name: rke2-traefik\n" +
+		"  namespace: kube-system\n" +
+		"spec:\n" +
+		"  valuesContent: |-\n" +
+		"    ports:\n" +
+		"      tcp:\n" +
+		"        port: 9000\n" +
+		"        hostPort: 9000\n" +
+		"    providers:\n" +
+		"      kubernetesGateway:\n" +
+		"        enabled: true\n" +
+		"        experimentalChannel: true\n"
+	return StageManifest(manifest, nodes)
+}
+
 func RemoveManifest(manifestFile string, nodes []DockerNode) error {
 	cmd := fmt.Sprintf("rm -f /var/lib/rancher/rke2/server/manifests/%s", filepath.Base(manifestFile))
 	for _, node := range nodes {
