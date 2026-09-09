@@ -2,12 +2,21 @@
 
 ## Prerequisites
 
-By default, RKE2 is built with Dapper which uses Docker. To build RKE2 you will need to install these packages:
+By default, RKE2 is built in a Docker build environment. To build RKE2, install:
 - bash
 - docker
+- containerd
 - gcc (CGO, don't ya know, if using `scripts/build` directly)
 - go (check the `go.mod` for which series of go, e.g. 1.14.x, 1.15.x, etc)
 - make
+
+The default Docker Buildx driver requires Docker's containerd image store to export
+the runtime image tarball. Enable it in `/etc/docker/daemon.json`:
+
+```json
+{"features": {"containerd-snapshotter": true}}
+```
+
 
 ### Required for Running
 When running RKE2 you will also need to install these packages:
