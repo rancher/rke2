@@ -614,14 +614,9 @@ func EnableTraefikGatewayAPI(nodes []DockerNode) (string, error) {
 		"  namespace: kube-system\n" +
 		"spec:\n" +
 		"  valuesContent: |-\n" +
-		"    ports:\n" +
-		"      tcp:\n" +
-		"        port: 9000\n" +
-		"        hostPort: 9000\n" +
 		"    providers:\n" +
 		"      kubernetesGateway:\n" +
-		"        enabled: true\n" +
-		"        experimentalChannel: true\n"
+		"        enabled: true\n"
 	return StageManifest(manifest, nodes)
 }
 
