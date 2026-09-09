@@ -29,7 +29,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - name: "Read secrets"
-      uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89 # v3
+      uses: rancher-eio/read-vault-secrets@dfae8acd43a9e170fca5f90168da22f814fe4e9a # main
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials AWS_ACCESS_KEY_ID ;
@@ -71,7 +71,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - name: "Read secrets"
-      uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89 # v3
+      uses: rancher-eio/read-vault-secrets@dfae8acd43a9e170fca5f90168da22f814fe4e9a # main
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/aws/rke2-ci-uploader/credentials AWS_ACCESS_KEY_ID ;
