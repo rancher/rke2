@@ -25,7 +25,7 @@ replace (
 	golang.org/x/net => golang.org/x/net v0.57.0
 	golang.org/x/sys => golang.org/x/sys v0.47.0
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20241209162323-e6fa225c2576
-	google.golang.org/grpc => google.golang.org/grpc v1.82.1
+	google.golang.org/grpc => google.golang.org/grpc v1.82.2
 	k8s.io/api => github.com/k3s-io/kubernetes/staging/src/k8s.io/api v1.37.0-k3s1
 	k8s.io/apiextensions-apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/apiextensions-apiserver v1.37.0-k3s1
 	k8s.io/apimachinery => github.com/k3s-io/kubernetes/staging/src/k8s.io/apimachinery v1.37.0-k3s1
