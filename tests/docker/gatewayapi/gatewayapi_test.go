@@ -36,6 +36,7 @@ var _ = Describe("Gateway API Tests", Ordered, func() {
 			_, err = docker.EnableTraefikGatewayAPI(tc.Servers)
 			Expect(err).NotTo(HaveOccurred())
 
+			Expect(docker.RestartCluster(tc.Servers)).To(Succeed())
 			Expect(tc.CopyAndModifyKubeconfig()).To(Succeed())
 			Eventually(func(g Gomega) {
 				g.Expect(tests.CheckDefaultDeployments(tc.KubeconfigFile)).To(Succeed())
@@ -49,22 +50,22 @@ var _ = Describe("Gateway API Tests", Ordered, func() {
 
 	Context("Validate Gateway API", func() {
 		It("should install Gateway API CRDs from the standalone chart", func() {
-			cmd := "kubectl get crd gateways.gateway.networking.k8s.io httproutes.gateway.networking.k8s.io gatewayclasses.gateway.networking.k8s.io tcproutes.gateway.networking.k8s.io --kubeconfig=" + tc.KubeconfigFile
+			cmd := "kubectl get crd gateways.gateway.networking.k8s.io httproutes.gateway.networking.k8s.io gatewayclasses.gateway.networking.k8s.io --kubeconfig=" + tc.KubeconfigFile
 			Eventually(func() (string, error) {
 				return docker.RunCommand(cmd)
 			}, "300s", "5s").Should(ContainSubstring("gatewayclasses.gateway.networking.k8s.io"), "failed cmd: "+cmd)
 
-			cmd = "kubectl get crd gateways.gateway.networking.k8s.io httproutes.gateway.networking.k8s.io gatewayclasses.gateway.networking.k8s.io tcproutes.gateway.networking.k8s.io -o jsonpath='{range .items[*]}{.metadata.name}={.metadata.annotations.meta\\.helm\\.sh/release-name}{\"\\n\"}{end}' --kubeconfig=" + tc.KubeconfigFile
+			cmd = "kubectl get crd gateways.gateway.networking.k8s.io httproutes.gateway.networking.k8s.io gatewayclasses.gateway.networking.k8s.io -o jsonpath='{range .items[*]}{.metadata.name}={.metadata.annotations.meta\\.helm\\.sh/release-name}{\"\\n\"}{end}' --kubeconfig=" + tc.KubeconfigFile
 			Eventually(func(g Gomega) {
 				out, err := docker.RunCommand(cmd)
 				g.Expect(err).NotTo(HaveOccurred(), "failed cmd: "+cmd)
 				crdReleases := strings.Fields(out)
-				g.Expect(crdReleases).To(HaveLen(4))
-				g.Expect(crdReleases).To(HaveEach(MatchRegexp(`^[^=]+=gateway-api-crd$`)))
+				g.Expect(crdReleases).To(HaveLen(3))
+				g.Expect(crdReleases).To(HaveEach(MatchRegexp(`^[^=]+=rke2-gateway-api-crd$`)))
 			}, "120s", "5s").Should(Succeed())
 		})
 
-		It("should route HTTP and TCP traffic through Traefik Gateway API", func() {
+		It("should route HTTP traffic through Traefik Gateway API", func() {
 			_, err := tc.DeployWorkload("gatewayapi.yaml")
 			Expect(err).NotTo(HaveOccurred(), "Gateway API workload manifest not deployed")
 
@@ -83,20 +84,10 @@ var _ = Describe("Gateway API Tests", Ordered, func() {
 				return docker.RunCommand(cmd)
 			}, "120s", "5s").Should(Equal("True"), "HTTPRoute was not accepted")
 
-			cmd = "kubectl get tcproute gatewayapi-echo -o jsonpath='{.status.parents[0].conditions[?(@.type==\"Accepted\")].status}' --kubeconfig=" + tc.KubeconfigFile
-			Eventually(func() (string, error) {
-				return docker.RunCommand(cmd)
-			}, "120s", "5s").Should(Equal("True"), "TCPRoute was not accepted")
-
 			cmd = "curl -s -o /dev/null --max-time 10 -w '%{http_code}' -H 'Host: gatewayapi.example.com' http://" + tc.Servers[0].IP
 			Eventually(func() (string, error) {
 				return docker.RunCommand(cmd)
 			}, "120s", "5s").Should(Equal("200"), "failed to curl gatewayapi.example.com")
-
-			cmd = "curl -s -o /dev/null --max-time 10 -w '%{http_code}' http://" + tc.Servers[0].IP + ":9000"
-			Eventually(func() (string, error) {
-				return docker.RunCommand(cmd)
-			}, "120s", "5s").Should(Equal("200"), "failed to curl TCPRoute on port 9000")
 		})
 	})
 })
