@@ -6,7 +6,7 @@ SCAN_OUTPUT="trivy_scan_report.txt"
 rm "$SCAN_OUTPUT"
 
 # Download the Rancher OpenVEX Trivy report
-curl -fsSO https://github.com/rancher/vexhub/raw/refs/heads/main/reports/rancher.openvex.json
+curl -fsSOL https://github.com/rancher/vexhub/raw/refs/heads/main/reports/rancher.openvex.json
 export TRIVY_DISABLE_VEX_NOTICE=true
 
 for IMAGE in $(cat build/images*.txt); do
