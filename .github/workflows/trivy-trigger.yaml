@@ -55,18 +55,16 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
       
-      - name: Build RKE2 image lists
-        run: |
-          SKIP_WINDOWS=true PULL_CMD=echo make build-images
-          TAG=$(docker images --format "{{.Repository}}:{{.Tag}} {{.CreatedAt}}" | grep "rancher/rke2-runtime" | sort -k2 -r | head -n1 | awk '{print $1}')
-          docker save -o rke2-runtime.tar ${TAG}
-      
+      - name: Build RKE2 image list
+        run: SKIP_WINDOWS=true PULL_CMD=echo PULL_CMD_CORE=echo make build-images
+
+      # The rke2-images.linux-amd64.tar only contains the rke2-runtime image
       - name: Create PR context artifact
         run: |
           mkdir -p pr-context
           echo "${{ github.event.pull_request.number }}" > pr-context/pr_number
           mv build/images-core.txt build/images-canal.txt build/images-flannel.txt build/images-ingress-nginx.txt pr-context
-          mv rke2-runtime.tar pr-context/rke2-runtime.tar
+          mv build/images/rke2-images.linux-amd64.tar pr-context/rke2-runtime.tar
 
       - name: Upload PR context artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
