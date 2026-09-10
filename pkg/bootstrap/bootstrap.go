@@ -286,6 +286,8 @@ func updateManifests(ctx context.Context, resolver *images.Resolver, ingressCont
 	manifestsDir := manifestsDir(cfg.DataDir)
 	os.MkdirAll(manifestsDir, 0700)
 
+	ingressController = util.SplitStringSlice(ingressController)
+
 	// TODO: Remove this once we no longer support detecting legacy installations of ingress-nginx
 
 	// if ingress-controller is not set in config, determine what the default should be.
