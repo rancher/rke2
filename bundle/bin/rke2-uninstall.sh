@@ -115,7 +115,8 @@ uninstall_remove_files()
     $transactional_update rm -f -- "${INSTALL_RKE2_ROOT}/bin/rke2"
     $transactional_update rm -f -- "${INSTALL_RKE2_ROOT}/bin/rke2-killall.sh"
     $transactional_update rm -rf -- "${INSTALL_RKE2_ROOT}/share/rke2"
-    $transactional_update rm -f /etc/bash_completion.d/rke2-completion /usr/local/share/zsh/site-functions/rke2-completion
+    grep -q '^# >> rke2 command completion' ~/.bashrc 2>/dev/null && sed -i '/# >> rke2 command completion (start)/,/# >> rke2 command completion (end)/d' ~/.bashrc
+    grep -q '^# >> rke2 command completion' ~/.zshrc 2>/dev/null && sed -i '/# >> rke2 command completion (start)/,/# >> rke2 command completion (end)/d' ~/.zshrc
 
     rm -rf /etc/rancher/rke2 /etc/rancher/node /etc/cni /opt/cni/bin /var/lib/cni/ /var/log/pods/ /var/log/containers /var/log/calico
     rm -d /etc/rancher || true

@@ -721,15 +721,11 @@ do_add_completion() {
         case "${INSTALL_RKE2_COMPLETION}" in
         bash)
             info "adding rke2 bash shell completion"
-            COMPLETION_DIR="/etc/bash_completion.d"
-            test -d "${COMPLETION_DIR}"  || mkdir -p "${COMPLETION_DIR}" >/dev/null
-            ${INSTALL_RKE2_TAR_PREFIX}/bin/rke2 completion bash --kubectl --crictl --ctr > ${COMPLETION_DIR}/rke2-completion
+            grep -q '^# >> rke2 command completion' ~/.bashrc 2>/dev/null || ${INSTALL_RKE2_TAR_PREFIX}/bin/rke2 completion bash -i --kubectl --crictl --ctr
         ;;
         zsh)
             info "adding rke2 zsh shell completion"
-            COMPLETION_DIR="/usr/local/share/zsh/site-functions"
-            test -d "${COMPLETION_DIR}"  || mkdir -p "${COMPLETION_DIR}" >/dev/null
-            ${INSTALL_RKE2_TAR_PREFIX}/bin/rke2 completion zsh --kubectl --crictl --ctr > ${COMPLETION_DIR}/rke2-completion
+            grep -q '^# >> rke2 command completion' ~/.zshrc 2>/dev/null || ${INSTALL_RKE2_TAR_PREFIX}/bin/rke2 completion zsh -i --kubectl --crictl --ctr
         ;;
         *)
             info "valid completion options are 'bash' or 'zsh'. Continuing without installing any shell completions"

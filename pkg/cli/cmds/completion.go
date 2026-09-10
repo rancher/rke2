@@ -158,7 +158,7 @@ func writeToRC(shell, fileName string, kubectl, crictl, ctr bool) error {
 		return err
 	}
 	defer f.Close()
-	bashEntry := fmt.Sprintf("# >> %[1]s command completion (start)\n. <(%[1]s completion %[2]s%[3]s%[4]s%[5]s)\n# >> %[1]s command completion (end)", version.Program, shell, isKubectlSet(kubectl), isCrictlSet(crictl), isCtrSet(ctr))
+	bashEntry := fmt.Sprintf("\n# >> %[1]s command completion (start)\n. <(%[1]s completion %[2]s%[3]s%[4]s%[5]s)\n# >> %[1]s command completion (end)\n", version.Program, shell, isKubectlSet(kubectl), isCrictlSet(crictl), isCtrSet(ctr))
 	if _, err := f.WriteString(bashEntry); err != nil {
 		return err
 	}
