@@ -190,7 +190,7 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(func() (string, error) {
-			cmd = "kubectl exec volume-test cat /data/test --kubeconfig=" + tc.KubeconfigFile
+			cmd = "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec volume-test -- cat /data/test"
 			return e2e.RunCommand(cmd)
 		}, "180s", "2s").Should(ContainSubstring("local-path-test"))
 	})
