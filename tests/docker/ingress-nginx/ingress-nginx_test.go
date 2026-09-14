@@ -6,7 +6,6 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/rancher/rke2/tests"
 	"github.com/rancher/rke2/tests/docker"
 )
 
@@ -26,7 +25,7 @@ func Test_DockerIngressNginx(t *testing.T) {
 
 var _ = Describe("Ingress-NGINX Tests", Ordered, func() {
 
-	Context("Setup Cluster", func() {
+	Context("Make sure cluster fails", func() {
 		It("should provision servers and agents", func() {
 			var err error
 			tc, err = docker.NewTestConfig(GinkgoTB())
@@ -34,60 +33,8 @@ var _ = Describe("Ingress-NGINX Tests", Ordered, func() {
 			tc.ServerYaml = "ingress-controller: ingress-nginx"
 			Expect(tc.ProvisionServers(*serverCount)).To(Succeed())
 			Expect(tc.ProvisionAgents(*agentCount)).To(Succeed())
-			Expect(docker.RestartCluster(append(tc.Servers, tc.Agents...))).To(Succeed())
-			Expect(tc.CopyAndModifyKubeconfig()).To(Succeed())
-			Eventually(func(g Gomega) {
-				g.Expect(tests.CheckDefaultDeployments(tc.KubeconfigFile)).To(Succeed())
-				g.Expect(tests.CheckDaemonSets([]string{"rke2-canal", "rke2-ingress-nginx-controller"}, tc.KubeconfigFile)).To(Succeed())
-			}, "240s", "5s").Should(Succeed())
-			Eventually(func() error {
-				return tests.NodesReady(tc.KubeconfigFile, tc.GetNodeNames())
-			}, "40s", "5s").Should(Succeed())
-		})
-	})
-
-	Context("Validate various components", func() {
-		It("should deploy dns node cache", func() {
-			_, err := tc.DeployWorkload("dns-node-cache.yaml")
-			Expect(err).NotTo(HaveOccurred(), "failed to apply dns-node-cache manifest")
-			Eventually(func() error {
-				return tests.CheckDaemonSets([]string{"node-local-dns"}, tc.KubeconfigFile)
-			}, "40s", "5s").Should(Succeed())
-		})
-		It("should deploy loadbalancer service", func() {
-			_, err := tc.DeployWorkload("loadbalancer.yaml")
-			Expect(err).NotTo(HaveOccurred(), "failed to apply loadbalancer manifest")
-			Eventually(func(g Gomega) {
-				sers, err := tests.ParseServices(tc.KubeconfigFile)
-				g.Expect(err).NotTo(HaveOccurred())
-				foundLB := false
-				for _, ser := range sers {
-					if ser.Name == "lb-test" && ser.Namespace == "kube-system" {
-						foundLB = true
-						g.Expect(string(ser.Spec.Type)).To(Equal("LoadBalancer"))
-						g.Expect(ser.Spec.Ports).To(HaveLen(2))
-						if ser.Spec.Ports[0].Name == "http" {
-							g.Expect(ser.Spec.Ports[0].Port).To(Equal(int32(8080)))
-						} else {
-							g.Expect(ser.Spec.Ports[1].Name).To(Equal("http"))
-							g.Expect(ser.Spec.Ports[1].Port).To(Equal(int32(8080)))
-						}
-						if ser.Spec.Ports[0].Name == "https" {
-							g.Expect(ser.Spec.Ports[0].Port).To(Equal(int32(8443)))
-						} else {
-							g.Expect(ser.Spec.Ports[1].Name).To(Equal("https"))
-							g.Expect(ser.Spec.Ports[1].Port).To(Equal(int32(8443)))
-						}
-					}
-				}
-				g.Expect(foundLB).To(BeTrue())
-			}, "30s", "5s").Should(Succeed())
-		})
-		It("should have ingress-nginx as the default ingress", func() {
-			cmd := `kubectl get ingressclass -o 'custom-columns=NAME:.metadata.name,CONTROLLER:.spec.controller,DEFAULT:.metadata.annotations.ingressclass\.kubernetes\.io/is-default-class' --kubeconfig=` + tc.KubeconfigFile
-			res, err := docker.RunCommand(cmd)
-			Expect(err).NotTo(HaveOccurred(), "failed to get ingressclass:"+res)
-			Expect(res).To(MatchRegexp(`nginx\s+k8s.io/ingress-nginx`), "ingress-nginx ingressclass not found")
+			Expect(docker.RestartCluster(append(tc.Servers, tc.Agents...))).To(Not(Succeed()))
+			Expect(tc.DumpServiceLogs(50)).To(ContainSubstring("ingress-nginx is no longer supported as a standalone ingress controller"))
 		})
 	})
 })

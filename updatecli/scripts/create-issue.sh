@@ -43,8 +43,8 @@ check-issue() {
           exit 1
        fi
     else
-       number=$(echo $issue | jq -s 'sort_by(.[].number) | .[0]' | jq -r '.[].number')
-       body=$(echo $issue | jq -s 'sort_by(.[].number) | .[0]' | jq -r '.[].body')
+       number=$(echo $issue | jq 'sort_by(.number) | .[0]' | jq -r '.number')
+       body=$(echo $issue | jq 'sort_by(.number) | .[0]' | jq -r '.body')
        new_body=$(update_issue_body "${body}" ${CHART_NAME} ${CHART_VERSION})
        issue_url=$(gh issue edit \
               ${number} \

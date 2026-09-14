@@ -61,6 +61,13 @@ sources:
     kind: "shell"
     spec:
       command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.versionOverrides[0].values.csiController.image.csiProvisioner.tag'
+    vsphere-csi-public-snapshotter-tag:
+      name: "Get latest hardened csi snapshotter tag"
+      kind: "githubrelease"
+      spec:
+        owner: "rancher"
+        repository: "image-build-external-snapshotter"
+        token: '{{ requiredEnv .github.token }}'
 
 conditions:
   vsphereCSIVersionShouldBeUpdated:
@@ -99,7 +106,7 @@ targets:
             $${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:{{ source "vsphere-csi-public-liveness-tag" }}
             $${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:{{ source "vsphere-csi-public-attacher-tag" }}
             $${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:{{ source "vsphere-csi-public-provisioner-tag" }}
-            $${REGISTRY}/rancher/hardened-csi-snapshotter:v8.6.0-build20260708
+            $${REGISTRY}/rancher/hardened-csi-snapshotter:{{ source "vsphere-csi-public-snapshotter-tag" }}
         EOF
 
 actions:

@@ -50,25 +50,54 @@ func Test_DockerTraefik(t *testing.T) {
 var _ = Describe("Traefik Tests", Ordered, func() {
 
 	Context("Setup Cluster", func() {
-		It("should provision servers and agents", func() {
+		It("should provision servers and agents with dual ingress", func() {
 			var err error
 			tc, err = docker.NewTestConfig(GinkgoTB())
 			Expect(err).NotTo(HaveOccurred())
-			tc.ServerYaml = "ingress-controller: ingress-nginx"
+			tc.ServerYaml = "ingress-controller:\n  - ingress-nginx\n  - traefik"
 			if *registry {
 				Expect(tc.ProvisionRegistries()).To(Succeed())
 			}
+			Expect(err).NotTo(HaveOccurred())
 			Expect(tc.ProvisionServers(*serverCount)).To(Succeed())
 			Expect(tc.ProvisionAgents(*agentCount)).To(Succeed())
+			dualIngressManifest := `
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    ports:
+      web:
+        hostPort: 8000
+      websecure:
+        hostPort: 8443
+    providers:
+      kubernetesIngressNGINX:
+        enabled: true
+        ingressClass: "rke2-ingress-nginx-migration"
+        controllerClass: 'rke2.cattle.io/ingress-nginx-migration'
+`
+			dualManifestFile, err = docker.StageManifest(dualIngressManifest, tc.Servers)
+			Expect(err).NotTo(HaveOccurred())
 			Expect(docker.RestartCluster(append(tc.Servers, tc.Agents...))).To(Succeed())
 			Expect(tc.CopyAndModifyKubeconfig()).To(Succeed())
 			Eventually(func(g Gomega) {
 				g.Expect(tests.CheckDefaultDeployments(tc.KubeconfigFile)).To(Succeed())
-				g.Expect(tests.CheckDaemonSets([]string{"rke2-canal", "rke2-ingress-nginx-controller"}, tc.KubeconfigFile)).To(Succeed())
+				g.Expect(tests.CheckDaemonSets([]string{"rke2-canal", "rke2-ingress-nginx-controller", "rke2-traefik"}, tc.KubeconfigFile)).To(Succeed())
 			}, "240s", "5s").Should(Succeed())
 			Eventually(func() error {
 				return tests.NodesReady(tc.KubeconfigFile, tc.GetNodeNames())
 			}, "40s", "5s").Should(Succeed())
+		})
+		It("should have traefik available as an ingressClass", func() {
+			cmd := `kubectl get ingressclass -o 'custom-columns=NAME:.metadata.name,CONTROLLER:.spec.controller,DEFAULT:.metadata.annotations.ingressclass\.kubernetes\.io/is-default-class' --kubeconfig=` + tc.KubeconfigFile
+			res, err := docker.RunCommand(cmd)
+			Expect(err).NotTo(HaveOccurred(), "failed to get ingressclass:"+res)
+			Expect(res).To(MatchRegexp(`nginx\s+k8s\.io\/ingress-nginx\s+<none>`), "ingress-nginx ingressclass not found or not marked default")
+			Expect(res).To(MatchRegexp(`traefik\s+traefik\.io\/ingress-controller\s+false`), "traefik ingressclass not found")
 		})
 	})
 	Context("Deploy all ingress workloads", func() {
@@ -90,6 +119,20 @@ var _ = Describe("Traefik Tests", Ordered, func() {
 			Expect(err).NotTo(HaveOccurred(), "failed to create basic-auth-secret")
 			Expect(os.Remove(authFilePath)).To(Succeed())
 
+		})
+		It("should assign nginx ingressClassName to all existing ingress resources", func() {
+			cmd := `kubectl get ingress --all-namespaces -o custom-columns='NAMESPACE:.metadata.namespace,NAME:.metadata.name' --no-headers | while read NS NAME; do kubectl patch ingress "$NAME" -n "$NS" --type=merge -p '{"spec": {"ingressClassName": "nginx"}}'; done`
+			_, err := tc.Servers[0].RunCmdOnNode(cmd)
+			Expect(err).NotTo(HaveOccurred(), "failed to patch existing ingress resources")
+
+			cmd = "kubectl get ingress --all-namespaces --no-headers -o custom-columns='NAMESPACE:.metadata.namespace,NAME:.metadata.name,ICLASS:.spec.ingressClassName' --kubeconfig=" + tc.KubeconfigFile
+			res, err := docker.RunCommand(cmd)
+			Expect(err).NotTo(HaveOccurred(), "failed to get ingress resources:"+res)
+			resArray := strings.Split(res, "\n")
+			// Last entry is always an empty string
+			resArray = resArray[:len(resArray)-1]
+			Expect(resArray).To(HaveLen(6))
+			Expect(resArray).To(HaveEach(ContainSubstring("nginx")))
 		})
 		It("should return 200 on a simple app via node IP", func() {
 			cmd := "curl -s -o /dev/null --max-time 10 -w '%{http_code}' -H 'Host: simple.example.com' http://" + tc.Servers[0].IP
@@ -143,61 +186,6 @@ var _ = Describe("Traefik Tests", Ordered, func() {
 		It("should handle upstream vhost annotations", func() {
 			cmd := "curl -s -H 'Host: nowworking.upstreamvhost.example.com' http://" + tc.Servers[0].IP + "/"
 			Expect(docker.RunCommand(cmd)).To(ContainSubstring("Host: isitworking"))
-		})
-	})
-	Context("Deploy traefik as a secondary ingress controller", func() {
-		It("should assign nginx ingressClassName to all existing ingress resources", func() {
-			cmd := `kubectl get ingress --all-namespaces -o custom-columns='NAMESPACE:.metadata.namespace,NAME:.metadata.name' --no-headers | while read NS NAME; do kubectl patch ingress "$NAME" -n "$NS" --type=merge -p '{"spec": {"ingressClassName": "nginx"}}'; done`
-			_, err := tc.Servers[0].RunCmdOnNode(cmd)
-			Expect(err).NotTo(HaveOccurred(), "failed to patch existing ingress resources")
-
-			cmd = "kubectl get ingress --all-namespaces --no-headers -o custom-columns='NAMESPACE:.metadata.namespace,NAME:.metadata.name,ICLASS:.spec.ingressClassName' --kubeconfig=" + tc.KubeconfigFile
-			res, err := docker.RunCommand(cmd)
-			Expect(err).NotTo(HaveOccurred(), "failed to get ingress resources:"+res)
-			resArray := strings.Split(res, "\n")
-			// Last entry is always an empty string
-			resArray = resArray[:len(resArray)-1]
-			Expect(resArray).To(HaveLen(6))
-			Expect(resArray).To(HaveEach(ContainSubstring("nginx")))
-		})
-		It("restart rke2 with traefik ingress controller", func() {
-			newServerYaml := "ingress-controller:\n  - ingress-nginx\n  - traefik"
-			Expect(replaceConfigYaml(newServerYaml, tc.Servers[0])).To(Succeed())
-
-			dualIngressManifest := `
-apiVersion: helm.cattle.io/v1
-kind: HelmChartConfig
-metadata:
-  name: rke2-traefik
-  namespace: kube-system
-spec:
-  valuesContent: |-
-    ports:
-      web:
-        hostPort: 8000
-      websecure:
-        hostPort: 8443
-    providers:
-      kubernetesIngressNGINX:
-        enabled: true
-        ingressClass: "rke2-ingress-nginx-migration"
-        controllerClass: 'rke2.cattle.io/ingress-nginx-migration'
-`
-			var err error
-			dualManifestFile, err = docker.StageManifest(dualIngressManifest, tc.Servers)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(docker.RestartCluster(append(tc.Servers, tc.Agents...))).To(Succeed())
-			Eventually(func(g Gomega) {
-				g.Expect(tests.CheckDefaultDeployments(tc.KubeconfigFile)).To(Succeed())
-				g.Expect(tests.CheckDaemonSets([]string{"rke2-canal", "rke2-ingress-nginx-controller", "rke2-traefik"}, tc.KubeconfigFile)).To(Succeed())
-			}, "240s", "5s").Should(Succeed())
-		})
-		It("should have traefik available as an ingressClass", func() {
-			cmd := `kubectl get ingressclass -o 'custom-columns=NAME:.metadata.name,CONTROLLER:.spec.controller,DEFAULT:.metadata.annotations.ingressclass\.kubernetes\.io/is-default-class' --kubeconfig=` + tc.KubeconfigFile
-			res, err := docker.RunCommand(cmd)
-			Expect(err).NotTo(HaveOccurred(), "failed to get ingressclass:"+res)
-			Expect(res).To(MatchRegexp(`nginx\s+k8s\.io\/ingress-nginx\s+<none>`), "ingress-nginx ingressclass not found or not marked default")
-			Expect(res).To(MatchRegexp(`traefik\s+traefik\.io\/ingress-controller\s+false`), "traefik ingressclass not found")
 		})
 	})
 	Context("Test sample ingress workload via Traefik ports", func() {

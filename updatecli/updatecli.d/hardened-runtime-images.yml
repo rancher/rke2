@@ -48,7 +48,7 @@ sources:
       token: '{{ requiredEnv .github.token }}'
       versionfilter:
         kind: "regex"
-        pattern: '^v1\.36\.\d+-build\d+$'
+        pattern: '^v1\.37\.\d+-build\d+$'
 
 targets:
   bumpRunc:

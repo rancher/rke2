@@ -85,6 +85,19 @@ var _ = Describe("Verify multus Configuration", Ordered, func() {
 		}, "120s", "5s").Should(ContainSubstring("2"))
 	})
 
+	It("Verifies whereabouts CRDs are installed", func() {
+		for _, crd := range []string{
+			"ippools.whereabouts.cni.cncf.io",
+			"nodeslicepools.whereabouts.cni.cncf.io",
+			"overlappingrangeipreservations.whereabouts.cni.cncf.io",
+		} {
+			Eventually(func() (string, error) {
+				cmd := "kubectl get crd " + crd + " --kubeconfig=" + tc.KubeconfigFile
+				return e2e.RunCommand(cmd)
+			}, "120s", "5s").Should(ContainSubstring(crd), "whereabouts CRD not installed: "+crd)
+		}
+	})
+
 	It("Verifies macvlan communication via multus is working", func() {
 		_, err := tc.DeployWorkload("multus-pods.yaml")
 		Expect(err).NotTo(HaveOccurred())

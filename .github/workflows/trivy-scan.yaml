@@ -69,9 +69,6 @@ jobs:
           ./scripts/scan-images compact-report
           mv trivy_scan_report.txt trivy-images-report.txt
     
-      - name: Download Rancher's VEX Hub report
-        run: curl -fsSO https://raw.githubusercontent.com/rancher/vexhub/refs/heads/main/reports/rancher.openvex.json
-
       - name: Run Trivy on filesystem
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
@@ -80,7 +77,7 @@ jobs:
           severity: "HIGH,CRITICAL"
           output: "trivy-fs-report.txt"
         env:
-          TRIVY_VEX: rancher.openvex.json
+          TRIVY_VEX: rancher.openvex.json # scan-images script downloads the vex report
           TRIVY_DISABLE_VEX_NOTICE: true
 
       - name: Upload Trivy Reports

@@ -144,7 +144,7 @@ func checkManifestDeployed(ctx context.Context, cRuntime runtimeapi.RuntimeServi
 	}
 
 	// Use kubelet runtime logic to find the latest pod sandbox
-	newSandboxNeeded, _, sandboxID := runtimeutil.PodSandboxChanged(pod, podStatus)
+	newSandboxNeeded, _, sandboxID, _ := runtimeutil.PodSandboxChanged(pod, podStatus)
 
 	// Remove any pod sandboxes that are not the latest
 	var sandboxRemoved bool

@@ -28,7 +28,7 @@ jobs:
           cache: false
 
       - name: "Read Secrets"
-        uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89 # v3
+        uses: rancher-eio/read-vault-secrets@dfae8acd43a9e170fca5f90168da22f814fe4e9a # main
         with:
           secrets: |
             secret/data/github/repo/${{ github.repository }}/github/app-credentials appId | APP_ID ;
@@ -42,7 +42,7 @@ jobs:
           private-key: ${{ env.PRIVATE_KEY }}
 
       - name: Install Updatecli
-        uses: updatecli/updatecli-action@d422ba543720d01a96d4c3e3ab8544cc188cd711 # v3.5.0
+        uses: updatecli/updatecli-action@41b9c8d707830a9daebaeaa84c1b62d60b779564 # v3.6.0
 
       - name: Delete leftover UpdateCLI branches
         run: |

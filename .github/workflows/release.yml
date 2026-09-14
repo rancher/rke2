@@ -85,7 +85,7 @@ jobs:
         make in-docker-validate-release
     
     - name: "Read secrets"
-      uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89 # v3
+      uses: rancher-eio/read-vault-secrets@dfae8acd43a9e170fca5f90168da22f814fe4e9a # main
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials username | DOCKER_USERNAME ;
@@ -183,7 +183,7 @@ jobs:
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
     - name: "Read secrets"
-      uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89 # v3
+      uses: rancher-eio/read-vault-secrets@dfae8acd43a9e170fca5f90168da22f814fe4e9a # main
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials username | DOCKER_USERNAME ;
@@ -201,7 +201,7 @@ jobs:
 
     - name: Publish Image - Docker Hub
       if: ${{ matrix.destination == 'docker' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@e9b6789032dbe9e289ccc6f7532da8fd349922b3 # v0.75.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@086cd2f90ed82712e45701441a00e59b95b578c1 # v0.77.1
       env:
         GOARCH: ${{ matrix.arch }}
         GOOS: linux
@@ -217,7 +217,7 @@ jobs:
 
     - name: Publish Image - Staging
       if: ${{ matrix.destination == 'staging' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@e9b6789032dbe9e289ccc6f7532da8fd349922b3 # v0.75.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@086cd2f90ed82712e45701441a00e59b95b578c1 # v0.77.1
       env:
         GOARCH: ${{ matrix.arch }}
         GOOS: linux
@@ -235,7 +235,7 @@ jobs:
 
     - name: Publish Image Prime
       if: ${{ !contains(github.ref_name, '-rc') && matrix.destination == 'prime' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@e9b6789032dbe9e289ccc6f7532da8fd349922b3 # v0.75.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@086cd2f90ed82712e45701441a00e59b95b578c1 # v0.77.1
       env:
         GOARCH: ${{ matrix.arch }}
         GOOS: linux
@@ -282,7 +282,7 @@ jobs:
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
     - name: "Read secrets"
-      uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
+      uses: rancher-eio/read-vault-secrets@dfae8acd43a9e170fca5f90168da22f814fe4e9a # main
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials username | DOCKER_USERNAME ;
@@ -300,7 +300,7 @@ jobs:
 
     - name: Manifest - Docker
       if: ${{ matrix.destination == 'docker' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@e9b6789032dbe9e289ccc6f7532da8fd349922b3 # v0.75.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@086cd2f90ed82712e45701441a00e59b95b578c1 # v0.77.1
       env:
         GOARCH: amd64
         GOOS: linux
@@ -317,7 +317,7 @@ jobs:
 
     - name: Manifest - Staging
       if: ${{ matrix.destination == 'staging' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@e9b6789032dbe9e289ccc6f7532da8fd349922b3 # v0.75.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@086cd2f90ed82712e45701441a00e59b95b578c1 # v0.77.1
       env:
         GOARCH: amd64
         GOOS: linux
@@ -334,7 +334,7 @@ jobs:
         prime-password: ${{ env.PRIME_STAGING_REGISTRY_PASSWORD }}
 
     - name: Manifest - Prime
-      uses: rancher/ecm-distro-tools/actions/publish-image@e9b6789032dbe9e289ccc6f7532da8fd349922b3 # v0.75.0
+      uses: rancher/ecm-distro-tools/actions/publish-image@086cd2f90ed82712e45701441a00e59b95b578c1 # v0.77.1
       if: ${{ !contains(github.ref_name, '-rc') && matrix.destination == 'prime' }}
       env:
         GOARCH: amd64
@@ -415,7 +415,7 @@ jobs:
       id-token: write
     steps:
     - name: "Read Secrets"
-      uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89 # v3
+      uses: rancher-eio/read-vault-secrets@dfae8acd43a9e170fca5f90168da22f814fe4e9a # main
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/github/app-credentials appId | APP_ID ;
@@ -478,7 +478,7 @@ jobs:
         uses: ./.github/actions/install-crane
 
       - name: "Read secrets"
-        uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89 # v3
+        uses: rancher-eio/read-vault-secrets@dfae8acd43a9e170fca5f90168da22f814fe4e9a # main
         with:
           secrets: |
             secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
@@ -575,14 +575,14 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: setup ecm-distro-tools
-        uses: rancher/ecm-distro-tools@e9b6789032dbe9e289ccc6f7532da8fd349922b3 # v0.75.0
+        uses: rancher/ecm-distro-tools@086cd2f90ed82712e45701441a00e59b95b578c1 # v0.77.1
 
       - name: Make artifacts directory
         run: |
           mkdir -p dist/artifacts
 
       - name: Read secrets
-        uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89 # v3
+        uses: rancher-eio/read-vault-secrets@dfae8acd43a9e170fca5f90168da22f814fe4e9a # main
         with:
           secrets: |
             secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;

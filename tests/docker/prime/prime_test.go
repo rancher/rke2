@@ -32,7 +32,7 @@ var _ = Describe("Prime Tests", Ordered, func() {
 			var err error
 			tc, err = docker.NewTestConfig(GinkgoTB())
 			Expect(err).NotTo(HaveOccurred())
-			tc.ServerYaml = "prime: true\ningress-controller: ingress-nginx"
+			tc.ServerYaml = "prime: true\ningress-controller: traefik,ingress-nginx"
 			Expect(tc.ProvisionServers(*serverCount)).To(Succeed())
 			Expect(tc.ProvisionAgents(*agentCount)).To(Succeed())
 			Expect(docker.RestartCluster(append(tc.Servers, tc.Agents...))).To(Succeed())

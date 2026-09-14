@@ -332,7 +332,7 @@ var _ = Describe("Verify Upgrade", Ordered, func() {
 		})
 
 		It("After upgrade verify Local Path Provisioner storage ", func() {
-			cmd := "kubectl exec volume-test cat /data/test --kubeconfig=" + tc.KubeconfigFile
+			cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec volume-test -- cat /data/test"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
 			}, "180s", "2s").Should(ContainSubstring("local-path-test"), "failed cmd: "+cmd)

@@ -74,4 +74,4 @@ Our release versioning reflects the version of upstream Kubernetes that is being
 
 ## Security
 
-Security issues in RKE2 can be reported by sending an email to [security@rancher.com](mailto:security@rancher.com). Please do not open security issues here.
+Please do not open security issues here. Instead, refer to our [Security Policy](https://github.com/rancher/rke2/security/policy) to learn how to report any vulnerabilities. 
