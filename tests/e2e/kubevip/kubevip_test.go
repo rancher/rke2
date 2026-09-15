@@ -29,7 +29,7 @@ var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
 var local = flag.Bool("local", false, "deploy a locally built RKE2")
 var cni = flag.String("cni", "canal", "canal or calico")
-var dataplane = flag.String("dataplane", "iptables", "iptables or ebpf")
+var filter = flag.String("filter", "iptables", "iptables or ebpf")
 
 // The virtual IP fronted by kube-vip. Must match the Vagrantfile.
 const vip = "10.10.10.100"
@@ -41,7 +41,7 @@ func Test_E2EKubeVIP(t *testing.T) {
 	flag.Parse()
 	RegisterFailHandler(Fail)
 	suiteConfig, reporterConfig := GinkgoConfiguration()
-	RunSpecs(t, "Cluster Load Balancer kube-vip ("+*cni+", "+*dataplane+") Test Suite", suiteConfig, reporterConfig)
+	RunSpecs(t, "Cluster Load Balancer kube-vip ("+*cni+", "+*filter+") Test Suite", suiteConfig, reporterConfig)
 }
 
 // createKubeVIPCluster brings the nodes up in a deterministic order: the cluster-init server first,
@@ -317,7 +317,7 @@ var _ = Describe("Verify kube-vip load balancer cluster", Ordered, func() {
 	})
 
 	It("Verifies the eBPF dataplane disables kube-proxy", func() {
-		if *dataplane != "ebpf" {
+		if *filter != "ebpf" {
 			Skip("not an eBPF dataplane run")
 		}
 		// server-0 must bootstrap Calico against its local API server because kube-vip has not

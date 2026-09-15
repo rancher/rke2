@@ -13,7 +13,7 @@ NETWORK4_PREFIX = "10.10.10"
 # with any node's primary IP, so nodes start at .101.
 VIP = "#{NETWORK4_PREFIX}.100"
 CNI = (ENV['E2E_CNI'] || "canal")
-DATAPLANE = (ENV['E2E_DATAPLANE'] || "iptables")
+FILTER = (ENV['E2E_FILTER'] || "iptables")
 VIP_INTERFACE = "eth1"
 # kube-vip container image used for the control-plane VIP DaemonSet.
 KUBEVIP_IMAGE = (ENV['E2E_KUBEVIP_IMAGE'] || "ghcr.io/kube-vip/kube-vip:v0.8.9")
@@ -46,7 +46,7 @@ def provision(vm, roles, role_num, node_num, all_roles)
   # deployed via RKE2's auto-deploy dir, so it is applied automatically once the cluster is up
   # and then floats the VIP onto a control-plane node.
   if roles.include?("server")
-    if DATAPLANE == "ebpf"
+    if FILTER == "ebpf"
       # The bootstrap server cannot point Calico at the VIP yet: kube-vip only advertises the VIP
       # after server-0 has brought the cluster up. Once the VIP exists, the joining servers use it.
       calico_api_host = role_num == 0 ? "localhost" : VIP
@@ -69,7 +69,7 @@ def provision(vm, roles, role_num, node_num, all_roles)
         tls-san:
           - #{VIP}
         cni: #{CNI}
-        #{DATAPLANE == "ebpf" ? "disable-kube-proxy: true" : ""}
+        #{FILTER == "ebpf" ? "disable-kube-proxy: true" : ""}
       YAML
     end
   elsif roles.include?("server") && role_num != 0
@@ -85,7 +85,7 @@ def provision(vm, roles, role_num, node_num, all_roles)
         tls-san:
           - #{VIP}
         cni: #{CNI}
-        #{DATAPLANE == "ebpf" ? "disable-kube-proxy: true" : ""}
+        #{FILTER == "ebpf" ? "disable-kube-proxy: true" : ""}
       YAML
     end
   end
