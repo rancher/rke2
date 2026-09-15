@@ -226,7 +226,7 @@ jobs:
         sha256sum "${repo_root}/dist/artifacts/rke2.linux-amd64.tar.gz" > "${repo_root}/dist/artifacts/sha256sum-amd64.txt"
     - name: Run ${{ matrix.cni }},${{ matrix.dataplane }} Load Balancer Test
       run: |
-        E2E_CNI=${{ matrix.cni }} E2E_DATAPLANE=${{ matrix.dataplane }} \
+        E2E_CNI=${{ matrix.cni }} E2E_FILTER=${{ matrix.dataplane }} \
         go test -timeout=75m ./clusterloadbalancer_test.go -ci -local -cni=${{ matrix.cni }} -dataplane=${{ matrix.dataplane }} -ginkgo.v -test.v
 
   e2e-loadbalancer-kubevip:
@@ -330,5 +330,5 @@ jobs:
         sha256sum "${repo_root}/dist/artifacts/rke2.linux-amd64.tar.gz" > "${repo_root}/dist/artifacts/sha256sum-amd64.txt"
     - name: Run ${{ matrix.cni }},${{ matrix.dataplane }} kube-vip Load Balancer Test
       run: |
-        E2E_CNI=${{ matrix.cni }} E2E_DATAPLANE=${{ matrix.dataplane }} \
+        E2E_CNI=${{ matrix.cni }} E2E_FILTER=${{ matrix.dataplane }} \
         go test -timeout=75m ./kubevip_test.go -ci -local -cni=${{ matrix.cni }} -dataplane=${{ matrix.dataplane }} -ginkgo.v -test.v
