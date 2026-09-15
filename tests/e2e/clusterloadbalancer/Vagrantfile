@@ -13,7 +13,7 @@ NETWORK4_PREFIX = "10.10.10"
 # It must not collide with any node's primary IP, so nodes start at .101.
 VIP = "#{NETWORK4_PREFIX}.100"
 CNI = (ENV['E2E_CNI'] || "canal")
-DATAPLANE = (ENV['E2E_DATAPLANE'] || "iptables")
+FILTER = (ENV['E2E_FILTER'] || "iptables")
 LB_INTERFACE = "eth1"
 
 def node_ip4(node_num)
@@ -57,7 +57,7 @@ def provision(vm, roles, role_num, node_num, all_roles)
 
   # Server nodes need the CNI HelmChartConfig manifest.
   if roles.include?("server")
-    if DATAPLANE == "ebpf"
+    if FILTER == "ebpf"
       vm.provision "Create Calico eBPF Manifest", type: "shell", path: scripts_location + "/calico_ebpf_manifest.sh", args: [ VIP, "6443", "false" ]
     else
       vm.provision "Create CNI Manifest", type: "shell", path: scripts_location + "/create_cni_manifest.sh", args: [ CNI, "iptables" ]
@@ -76,7 +76,7 @@ def provision(vm, roles, role_num, node_num, all_roles)
         tls-san:
           - #{VIP}
         cni: #{CNI}
-        #{DATAPLANE == "ebpf" ? "disable-kube-proxy: true" : ""}
+        #{FILTER == "ebpf" ? "disable-kube-proxy: true" : ""}
       YAML
     end
   elsif roles.include?("server") && role_num != 0
@@ -92,7 +92,7 @@ def provision(vm, roles, role_num, node_num, all_roles)
         tls-san:
           - #{VIP}
         cni: #{CNI}
-        #{DATAPLANE == "ebpf" ? "disable-kube-proxy: true" : ""}
+        #{FILTER == "ebpf" ? "disable-kube-proxy: true" : ""}
       YAML
     end
   end
