@@ -26,7 +26,7 @@ var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
 var local = flag.Bool("local", false, "deploy a locally built RKE2")
 var cni = flag.String("cni", "canal", "canal or calico")
-var dataplane = flag.String("dataplane", "iptables", "iptables or ebpf")
+var filter = flag.String("filter", "iptables", "iptables or ebpf")
 
 // The virtual IP fronted by the load balancer. Must match the Vagrantfile.
 const vip = "10.10.10.100"
@@ -35,7 +35,7 @@ func Test_E2EClusterLoadBalancer(t *testing.T) {
 	flag.Parse()
 	RegisterFailHandler(Fail)
 	suiteConfig, reporterConfig := GinkgoConfiguration()
-	RunSpecs(t, "Cluster Load Balancer ("+*cni+", "+*dataplane+") Test Suite", suiteConfig, reporterConfig)
+	RunSpecs(t, "Cluster Load Balancer ("+*cni+", "+*filter+") Test Suite", suiteConfig, reporterConfig)
 }
 
 // createLBCluster brings the nodes up in a deterministic order: the load balancer first
@@ -269,7 +269,7 @@ var _ = Describe("Verify external load balancer cluster", Ordered, func() {
 	})
 
 	It("Verifies the eBPF dataplane disables kube-proxy", func() {
-		if *dataplane != "ebpf" {
+		if *filter != "ebpf" {
 			Skip("not an eBPF dataplane run")
 		}
 		// The calico HelmChartConfig must point at the VIP so pods reach the API server
