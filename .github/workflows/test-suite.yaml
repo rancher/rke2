@@ -65,11 +65,9 @@ jobs:
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       with:
         name: rke2-test-artifacts
-        path: ./build/images
+        path: .
     - name: Setup Binary
-      run: |
-        mv ./build/images/rke2 ./bin/rke2
-        chmod +x ./bin/rke2
+      run: chmod +x ./bin/rke2
     - name: Run Integration Tests
       run: | 
         mkdir -p $GOCOVERDIR
@@ -117,15 +115,9 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: rke2-test-artifacts
-          path: ./artifacts
-      - name: Place the artifacts back and compute sha256sum
-        run: |
-          mkdir -p ./dist/artifacts
-          mkdir -p ./build/images
-          mkdir -p ./bin
-          mv ./artifacts/rke2-* ./build/images/
-          mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
-          sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+          path: .
+      - name: Compute runtime checksum
+        run: sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
       - name: Load kernel modules
         run: |
           sudo modprobe br_netfilter overlay
@@ -174,15 +166,9 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: rke2-test-artifacts
-          path: ./artifacts
-      - name: Place the artifacts back and compute sha256sum
-        run: |
-          mkdir -p ./dist/artifacts
-          mkdir -p ./build/images
-          mkdir -p ./bin
-          mv ./artifacts/rke2-* ./build/images/
-          mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
-          sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+          path: .
+      - name: Compute runtime checksum
+        run: sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
       - name: Load kernel modules
         run: |
           sudo modprobe br_netfilter overlay
@@ -273,15 +259,9 @@ jobs:
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       with:
         name: rke2-test-artifacts
-        path: ./artifacts
-    - name: Place the artifacts back and compute sha256sum
-      run: |
-        mkdir -p ./dist/artifacts
-        mkdir -p ./build/images
-        mkdir -p ./bin
-        mv ./artifacts/rke2-* ./build/images/
-        mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
-        sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+        path: .
+    - name: Compute runtime checksum
+      run: sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
     - name: Run ${{ matrix.etest }} Test
       run: | 
         cd tests/e2e/${{ matrix.etest }}

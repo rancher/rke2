@@ -32,7 +32,9 @@ else
     ./scripts/build-windows-images
 fi
 
-./scripts/check-images
+if [ -z "${SKIP_VALIDATE}" ]; then
+    ./scripts/check-images
+fi
 ./scripts/package-bundle
 ./scripts/package-windows-bundle
 ./scripts/dev-runtime-image
