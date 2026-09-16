@@ -11,7 +11,7 @@ scms:
       token: '{{ requiredEnv .github.token }}'
       owner: "{{ .github.owner }}"
       repository: "{{ .github.repo }}"
-      branch: master
+      branch: '{{ .github.branch }}'
 
 sources:
   multus:
@@ -53,7 +53,8 @@ actions:
     kind: "github/pullrequest"
     scmid: "rke2"
     spec:
-      automerge: false
+      merge:
+        strategy: manual
       draft: false
       mergemethod: squash
       parent: false
