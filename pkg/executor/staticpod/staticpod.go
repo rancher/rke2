@@ -411,6 +411,8 @@ func (s *StaticPodConfig) ETCD(ctx context.Context, wg *sync.WaitGroup, args *ex
 		return err
 	}
 
+	extraArgs = append([]string{"log-outputs=[nonblock:stderr]"}, extraArgs...)
+
 	confFile, err := args.ToConfigFile(extraArgs)
 	if err != nil {
 		return err
