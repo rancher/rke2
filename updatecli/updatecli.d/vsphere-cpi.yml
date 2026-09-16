@@ -16,17 +16,35 @@ scms:
       email: "{{ .github.email }}"
       username: "{{ requiredEnv .github.username }}"
       token: '{{ requiredEnv .github.token }}'
-      owner: rancher
-      repository: rke2
-      branch: master
+      owner: '{{ .github.owner }}'
+      repository: "{{ .github.repo }}"
+      branch: '{{ .github.branch }}'
 
 sources:
+  kubernetesMinor:
+    name: "Get Kubernetes minor version from scripts/version.sh"
+    kind: "file"
+    spec:
+      file: scripts/version.sh
+      matchpattern: '(?m)^KUBERNETES_VERSION=\$\{KUBERNETES_VERSION:-v\d+\.\d+\.\d+[^}]*\}$'
+    transformers:
+      - findsubmatch:
+          pattern: ':-v(\d+\.\d+)\.'
+          captureindex: 1
   vsphere-cpi:
     name: "Get vsphere-cpi chart version"
     kind: "shell"
     spec:
       command: bash ./updatecli/scripts/retrieve_chart_version.sh rancher-vsphere-cpi
-  
+  vsphere-cpi-public-tag:
+    name: "Get vsphere-cpi public image tag"
+    kind: "shell"
+    dependson:
+      - kubernetesMinor
+      - vsphere-cpi
+    spec:
+      command: bash ./updatecli/scripts/retrieve_vsphere_image_tag.sh rancher-vsphere-cpi {{ source "vsphere-cpi" }} {{ source "kubernetesMinor" }} '.values.cloudControllerManager.tag'
+
 conditions:
   vsphereCPIVersionShouldBeUpdated:
     name: "Check if vsphere-cpi chart should be updated or not"
@@ -42,7 +60,22 @@ targets:
     scmid: "rke2"
     sourceid: vsphere-cpi
     spec:
-      command: bash ./updatecli/scripts/update_chart_and_images.sh rancher-vsphere-cpi
+      command: bash ./updatecli/scripts/update_chart_and_images_prime.sh rancher-vsphere-cpi {{ source "vsphere-cpi" }} {{ source "kubernetesMinor" }}
+      changedif:
+        kind: file/checksum
+        spec:
+          files:
+            - charts/chart_versions.yaml
+
+  updateVsphereCPIPublicImage:
+    name: "Update mirrored cloud-provider-vsphere tag in scripts/build-images"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: vsphere-cpi-public-tag
+    spec:
+      file: scripts/build-images
+      matchpattern: '(?m)^[ \t]*\$\{REGISTRY\}/rancher/mirrored-cloud-provider-vsphere:.*$'
+      replacepattern: '    $${REGISTRY}/rancher/mirrored-cloud-provider-vsphere:{{ source "vsphere-cpi-public-tag" }}'
 
 actions:
   github:
