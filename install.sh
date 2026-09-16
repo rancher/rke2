@@ -710,11 +710,29 @@ allow perm=any all : dir=/opt/cni/
 allow perm=any all : dir=/run/k3s/
 allow perm=any all : dir=/var/lib/kubelet/
 EOF
+	# TODO: Add the shell completion files here too?
         if [ -z "${INSTALL_RKE2_SKIP_RELOAD}" ]; then
             fagenrules --load || fatal "failed to load rke2 fapolicyd rules"
             systemctl restart fapolicyd
         fi
     fi
+}
+
+do_add_completion() {
+    test -z "${INSTALL_RKE2_COMPLETION}" || \
+        case "${INSTALL_RKE2_COMPLETION}" in
+        bash)
+            info "adding rke2 bash shell completion"
+            grep -q '^# >> rke2 command completion' ~/.bashrc 2>/dev/null || ${INSTALL_RKE2_TAR_PREFIX}/bin/rke2 completion bash -i --kubectl --crictl --ctr
+        ;;
+        zsh)
+            info "adding rke2 zsh shell completion"
+            grep -q '^# >> rke2 command completion' ~/.zshrc 2>/dev/null || ${INSTALL_RKE2_TAR_PREFIX}/bin/rke2 completion zsh -i --kubectl --crictl --ctr
+        ;;
+        *)
+            info "valid completion options are 'bash' or 'zsh'. Continuing without installing any shell completions"
+        ;;
+        esac
 }
 
 do_install() {
@@ -731,6 +749,7 @@ do_install() {
         ;;
     *)
         do_install_tar "${INSTALL_RKE2_CHANNEL}"
+        do_add_completion
         ;;
     esac
     if [ -z "${INSTALL_RKE2_SKIP_FAPOLICY}" ]; then
