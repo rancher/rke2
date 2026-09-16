@@ -25,7 +25,7 @@ scms:
       token: '{{ requiredEnv .github.token }}'
       owner: "{{ .github.owner }}"
       repository: "{{ .github.repo }}"
-      branch: master
+      branch: '{{ .github.branch }}'
 
 sources:
   chart:
