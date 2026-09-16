@@ -69,16 +69,16 @@ xargs -n1 -t $PULL_CMD_CORE << EOF > $BUILD_DIR/images-canal.txt
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-cilium.txt
-    ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.4.9
-    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.20.1
-    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.37.5-1786810558-766ccfb37260a43e9d228837aa84ce3faf9f64e7
-    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.20.1
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.20.1
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.13.5
-    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui-backend:v0.13.5
-    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.20.1
-    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.20.1
-    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.20.1
+    ${REGISTRY}/rancher/mirrored-cilium-certgen:v0.4.11
+    ${REGISTRY}/rancher/mirrored-cilium-cilium:v1.20.2
+    ${REGISTRY}/rancher/mirrored-cilium-cilium-envoy:v1.37.6-1789133542-cbec91f666af0bf742da986d43832932dbb26b82
+    ${REGISTRY}/rancher/mirrored-cilium-clustermesh-apiserver:v1.20.2
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-relay:v1.20.2
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui:v0.13.6
+    ${REGISTRY}/rancher/mirrored-cilium-hubble-ui-backend:v0.13.6
+    ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.20.2
+    ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.20.2
+    ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.20.2
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.1-build20260903
 EOF
 
