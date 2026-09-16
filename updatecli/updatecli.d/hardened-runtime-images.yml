@@ -18,9 +18,19 @@ scms:
       token: '{{ requiredEnv .github.token }}'
       owner: "{{ .github.owner }}"
       repository: "{{ .github.repo }}"
-      branch: master
+      branch: '{{ .github.branch }}'
 
 sources:
+  kubernetesMinor:
+    name: "Get Kubernetes minor version from scripts/version.sh"
+    kind: "file"
+    spec:
+      file: scripts/version.sh
+      matchpattern: '(?m)^KUBERNETES_VERSION=\$\{KUBERNETES_VERSION:-v\d+\.\d+\.\d+[^}]*\}$'
+    transformers:
+      - findsubmatch:
+          pattern: ':-v(\d+\.\d+)\.'
+          captureindex: 1
   hardenedRunc:
     name: "Latest hardened-runc build"
     kind: "githubrelease"
@@ -44,13 +54,15 @@ sources:
   hardenedCrictl:
     name: "Latest hardened-crictl build"
     kind: "githubrelease"
+    dependson:
+      - kubernetesMinor
     spec:
       owner: "rancher"
       repository: "image-build-crictl"
       token: '{{ requiredEnv .github.token }}'
       versionfilter:
         kind: "regex"
-        pattern: '^v1\.37\.\d+-build\d+$'
+        pattern: '^v{{ source "kubernetesMinor" }}\.\d+-build\d+$'
   etcd:
     name: "Latest etcd 3.7 build"
     kind: "githubrelease"
@@ -165,7 +177,8 @@ actions:
     kind: "github/pullrequest"
     scmid: "rke2"
     spec:
-      automerge: false
+      merge:
+        strategy: manual
       draft: false
       mergemethod: squash
       parent: false
