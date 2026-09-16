@@ -35,6 +35,27 @@ var _ = Describe("Prime Tests", Ordered, func() {
 			tc.ServerYaml = "prime: true\ningress-controller: traefik,ingress-nginx"
 			Expect(tc.ProvisionServers(*serverCount)).To(Succeed())
 			Expect(tc.ProvisionAgents(*agentCount)).To(Succeed())
+			dualIngressManifest := `
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: rke2-traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    ports:
+      web:
+        hostPort: 8000
+      websecure:
+        hostPort: 8443
+    providers:
+      kubernetesIngressNGINX:
+        enabled: true
+        ingressClass: "rke2-ingress-nginx-migration"
+        controllerClass: 'rke2.cattle.io/ingress-nginx-migration'
+`
+			_, err = docker.StageManifest(dualIngressManifest, tc.Servers)
+			Expect(err).NotTo(HaveOccurred())
 			Expect(docker.RestartCluster(append(tc.Servers, tc.Agents...))).To(Succeed())
 			Expect(tc.CopyAndModifyKubeconfig()).To(Succeed())
 			Eventually(func(g Gomega) {
