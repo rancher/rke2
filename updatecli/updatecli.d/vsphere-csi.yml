@@ -61,13 +61,13 @@ sources:
     kind: "shell"
     spec:
       command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.versionOverrides[0].values.csiController.image.csiProvisioner.tag'
-    vsphere-csi-public-snapshotter-tag:
-      name: "Get latest hardened csi snapshotter tag"
-      kind: "githubrelease"
-      spec:
-        owner: "rancher"
-        repository: "image-build-external-snapshotter"
-        token: '{{ requiredEnv .github.token }}'
+  vsphere-csi-public-snapshotter-tag:
+    name: "Get latest hardened csi snapshotter tag"
+    kind: "githubrelease"
+    spec:
+      owner: "rancher"
+      repository: "image-build-external-snapshotter"
+      token: '{{ requiredEnv .github.token }}'
 
 conditions:
   vsphereCSIVersionShouldBeUpdated:
