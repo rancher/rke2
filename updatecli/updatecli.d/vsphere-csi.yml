@@ -16,9 +16,9 @@ scms:
       email: "{{ .github.email }}"
       username: "{{ requiredEnv .github.username }}"
       token: '{{ requiredEnv .github.token }}'
-      owner: rancher
-      repository: rke2
-      branch: master
+      owner: '{{ .github.owner }}'
+      repository: "{{ .github.repo }}"
+      branch: '{{ .github.branch }}'
 
 sources:
   vsphere-csi:
