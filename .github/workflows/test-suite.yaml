@@ -97,7 +97,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dtest: [basics, flannel, profile, ingress-nginx, ing_migration, gatewayapi, prime]
+        dtest: [basics, flannel, profile, ingress-nginx, ing_migration, gatewayapi, prime, upgrade]
     steps:
       - name: Set up Docker
         uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
@@ -125,6 +125,7 @@ jobs:
           mkdir -p ./bin
           mv ./artifacts/rke2-* ./build/images/
           mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
+          mv ./artifacts/images.txt ./build/images.txt
           sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
       - name: Load kernel modules
         run: |
@@ -135,10 +136,18 @@ jobs:
         with:
           secrets: |
             secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
+      - name: Determine channel
+        run: |
+          CHANNEL="$(. ./scripts/version.sh >/dev/null; printf '%s' "${KUBERNETES_VERSION%.*}")"
+          echo "CHANNEL=$CHANNEL" >> "$GITHUB_ENV"
       - name: Run ${{ matrix.dtest }} Test
         if: matrix.dtest != 'prime'
         run: |
-            go test -v -timeout=20m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci
+            if [ "${{ matrix.dtest }}" = "upgrade" ]; then
+              go test -v -timeout=45m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci -channel $CHANNEL
+            else
+              go test -v -timeout=20m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci
+            fi
       - name: Run ${{ matrix.dtest }} Merge Tests
         if: matrix.dtest == 'prime' && github.event_name == 'push'
         run: go test -v -timeout=20m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci -registry $PRIME_REGISTRY
