@@ -21,7 +21,7 @@ jobs:
     uses: ./.github/workflows/build-e2e-artifacts.yml
 
   e2e:
-    name: "Nightly ${{ matrix.test }}: ${{ matrix.cni }}/${{ matrix.filter }}"
+    name: "Nightly CNI"
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 60
