@@ -138,7 +138,7 @@ var _ = Describe("DualStack Tests", Ordered, func() {
 	})
 	Context("Validate dnscache feature", func() {
 		It("deploys nodecache daemonset", func() {
-			_, err := tc.DeployWorkload("nodecache.yaml")
+			_, err := tc.DeployWorkload("dns-node-cache.yaml")
 			Expect(err).NotTo(HaveOccurred())
 			Eventually(func() error {
 				return tests.CheckDaemonSets([]string{"node-local-dns"}, tc.KubeconfigFile)
