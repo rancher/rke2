@@ -22,6 +22,14 @@ sources:
       name: rke2-multus
       versionfilter:
         kind: "latest"
+  multusCRD:
+    name: "Get Multus CRD chart version"
+    kind: "helmchart"
+    spec:
+      url: https://rancher.github.io/rke2-charts
+      name: rke2-multus-crd
+      versionfilter:
+        kind: "latest"
   issue:
     name: "Get issue number"
     kind: "shell"
@@ -47,6 +55,18 @@ targets:
     sourceid: multus
     spec:
       command: bash ./updatecli/scripts/update_chart_and_images_cni.sh rke2-multus
+      changedif:
+        kind: file/checksum
+        spec:
+          files:
+            - charts/chart_versions.yaml
+  multusCRD:
+    name: "Update the Multus CRD chart version"
+    kind: "shell"
+    scmid: "rke2"
+    sourceid: multusCRD
+    spec:
+      command: bash ./updatecli/scripts/update_chart_and_images_cni.sh rke2-multus-crd
       changedif:
         kind: file/checksum
         spec:
