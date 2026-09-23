@@ -176,7 +176,7 @@ in-docker-%: docker-buildx ## Advanced: wraps any target in Docker environment, 
 		-v $${PWD}:/source -v /tmp:/tmp -v rke2-pkg:/go/pkg -v rke2-cache:/root/.cache/go-build -v trivy-cache:/root/.cache/trivy \
 		-v $(DOCKER_PATH):$(DOCKER_PATH) -v $(DOCKER_ROOT):$(DOCKER_ROOT) -v $(CONTAINERD_ADDRESS):$(CONTAINERD_ADDRESS) -e DOCKER_HOST -e CONTAINERD_ADDRESS \
 		-e GODEBUG -e CI -e GOCOVER -e REPO -e TAG -e GITHUB_ACTION_TAG -e KUBERNETES_VERSION -e IMAGE_NAME -e AWS_SECRET_ACCESS_KEY -e AWS_ACCESS_KEY_ID \
-		-e DOCKER_PASSWORD -e BUILD_PARALLEL -e SONOBUOY_SUITE -e DOCKER_USERNAME -e GH_TOKEN -e SKIP_VALIDATE -e PACKAGE_SKIP_TARBALL -e REGISTRY -e PRIME_REGISTRY \
+		-e DOCKER_PASSWORD -e BUILD_PARALLEL -e SONOBUOY_SUITE -e DOCKER_USERNAME -e GH_TOKEN -e SKIP_VALIDATE -e SKIP_DEV -e PACKAGE_SKIP_TARBALL -e REGISTRY -e PRIME_REGISTRY \
 		rke2:$(BRANCH) make $*
 
 .PHONY: help

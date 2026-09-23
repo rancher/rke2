@@ -53,14 +53,21 @@ jobs:
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
     - name: Build RKE2 Binary and Compressed Runtime Image
       run: |
-        make build-image-runtime
-        cp ./bin/rke2 ./build/images/rke2
+        make ci
+        sudo chown $USER:$USER -R ./bin/ ./dist/ ./build/
+        cp ./bin/rke2* ./build/images/
         cp ./dist/artifacts/rke2.*-amd64.tar.gz ./build/images/
       env:
         GOCOVER: ${{ inputs.gocover && 'true' || '' }}
+        SKIP_DEV: 'true'
+        SKIP_VALIDATE: 'true'
+        BUILD_PARALLEL: 'true'
     - name: Upload RKE2 Binary and Runtime Image
       # https://github.com/actions/upload-artifact/releases
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       with:
         name: rke2-test-artifacts
-        path: ./build/images/*
+        path: |
+          bin/
+          build/images/
+          dist/artifacts/
