@@ -73,8 +73,8 @@ require (
 	github.com/containernetworking/plugins v1.9.1
 	github.com/google/go-containerregistry v0.20.3
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
-	github.com/k3s-io/helm-controller v0.16.26
-	github.com/k3s-io/k3s v1.34.12-0.20260915234148-f2918dc7011c // release-1.34
+	github.com/k3s-io/helm-controller v0.16.27
+	github.com/k3s-io/k3s v1.34.12-rc2.0.20260924184658-47b4749964eb // release-1.34
 	github.com/k3s-io/kine v0.16.5
 	github.com/libp2p/go-netroute v0.4.0
 	github.com/onsi/ginkgo/v2 v2.27.2
