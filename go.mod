@@ -73,12 +73,12 @@ require (
 	github.com/containernetworking/plugins v1.9.1
 	github.com/google/go-containerregistry v0.20.3
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
-	github.com/k3s-io/helm-controller v0.17.7
-	github.com/k3s-io/k3s v1.35.9-0.20260915234130-a341ba01f9eb // release-1.35
+	github.com/k3s-io/helm-controller v0.17.9
+	github.com/k3s-io/k3s v1.35.9-rc2.0.20260924184633-58877f27435f // release-1.35
 	github.com/k3s-io/kine v0.16.5
 	github.com/libp2p/go-netroute v0.4.0
-	github.com/onsi/ginkgo/v2 v2.27.2
-	github.com/onsi/gomega v1.38.2
+	github.com/onsi/ginkgo/v2 v2.32.1
+	github.com/onsi/gomega v1.42.1
 	github.com/rancher/permissions v0.0.0-20240523180510-4001d3d637f7
 	github.com/rancher/wharfie v0.7.1
 	github.com/rancher/wins v0.4.17
@@ -99,7 +99,7 @@ require (
 	k8s.io/component-base v0.36.0
 	k8s.io/cri-api v0.35.8
 	k8s.io/klog/v2 v2.140.0
-	k8s.io/kubernetes v1.35.8
+	k8s.io/kubernetes v1.35.9
 	k8s.io/utils v0.0.0-20260319190234-28399d86e0b5
 	sigs.k8s.io/yaml v1.6.0
 )
@@ -451,8 +451,8 @@ require (
 	k8s.io/cli-runtime v0.35.2 // indirect
 	k8s.io/cloud-provider v0.35.2 // indirect
 	k8s.io/cluster-bootstrap v0.35.2 // indirect
-	k8s.io/component-helpers v0.35.2 // indirect
-	k8s.io/controller-manager v0.35.2 // indirect
+	k8s.io/component-helpers v0.35.8 // indirect
+	k8s.io/controller-manager v0.35.8 // indirect
 	k8s.io/cri-client v0.35.8 // indirect
 	k8s.io/csi-translation-lib v0.0.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
@@ -461,7 +461,7 @@ require (
 	k8s.io/kube-aggregator v0.36.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260317180543-43fb72c5454a // indirect
 	k8s.io/kube-proxy v0.35.2 // indirect
-	k8s.io/kubelet v0.35.2 // indirect
+	k8s.io/kubelet v0.35.8 // indirect
 	k8s.io/mount-utils v0.35.2 // indirect
 	k8s.io/pod-security-admission v0.0.0 // indirect
 	lukechampine.com/blake3 v1.4.1 // indirect
