@@ -1227,10 +1227,10 @@ github.com/k3s-io/etcd/pkg/v3 v3.6.14-k3s3 h1:SfZVsK/9PaBICd5kWRIRDQADY1uK8nsgb7
 github.com/k3s-io/etcd/pkg/v3 v3.6.14-k3s3/go.mod h1:grZHgzt+JCM8hnwSFrEAGxcl/VXksW0dRXfU0R2RmF8=
 github.com/k3s-io/etcd/server/v3 v3.6.14-k3s3 h1:YputbFBKq2o+V4wqldcSNusMdPrKyQG++H/WwmSVrEY=
 github.com/k3s-io/etcd/server/v3 v3.6.14-k3s3/go.mod h1:yj1SNtvmNLLl7JUQY3vpaUBm24qAzTVixJn/1OKG6i4=
-github.com/k3s-io/helm-controller v0.17.7 h1:9hzzLE4YeCHmpAn2Y/A4DjqYAQtQxnbsQSkBx6qTJrc=
-github.com/k3s-io/helm-controller v0.17.7/go.mod h1:pLlCfQ0hLtuA5Ga9fcIWWdB20id67pUgYCGHYVIn9e4=
-github.com/k3s-io/k3s v1.36.5-0.20260915232631-dca49392c395 h1:z2Ggk/g6wvA0Z+xZwtjR6+/9ZppGEDpm0pTfxdlhYYE=
-github.com/k3s-io/k3s v1.36.5-0.20260915232631-dca49392c395/go.mod h1:4u2OwFNG921WsslUvDJX5rxHTLthwxKm+S+LVv710ps=
+github.com/k3s-io/helm-controller v0.17.9 h1:HhZTiFhVDzhbAYeb/aSlExWhJTnDTpHypMqu5Mh8Uow=
+github.com/k3s-io/helm-controller v0.17.9/go.mod h1:iNhJkyNxQo3sG9PHvTDw/FFm0eVDo/CSsDjl1Gls3Pg=
+github.com/k3s-io/k3s v1.36.5-rc2.0.20260924184629-3dd98cc58ec3 h1:5h0oft/9NsTdxR2PEf7py/QP+ENVQuqSWebXyCc+M6o=
+github.com/k3s-io/k3s v1.36.5-rc2.0.20260924184629-3dd98cc58ec3/go.mod h1:2Lkv93MFXKJzzJeinmqBA+WnkJMUx6yO1o1Ow8LgVDw=
 github.com/k3s-io/kine v0.16.5 h1:K3KWJo5dD1GYac6G+NPdwxY99KBtEiOkmKk3Q/HbN7E=
 github.com/k3s-io/kine v0.16.5/go.mod h1:aFaA9xfod+gam4Yp+j34cAXV8i5cOQYjObyn0hGRtpM=
 github.com/k3s-io/klog/v2 v2.140.0-k3s1 h1:Z6S9oqaxcKtLaTcQNgWsaZNE5a+qJmCrTI+Lahor4X8=
@@ -1546,8 +1546,8 @@ github.com/onsi/ginkgo/v2 v2.13.0/go.mod h1:TE309ZR8s5FsKKpuB1YAQYBzCaAfUgatB/xl
 github.com/onsi/ginkgo/v2 v2.17.1/go.mod h1:llBI3WDLL9Z6taip6f33H76YcWtJv+7R3HigUjbIBOs=
 github.com/onsi/ginkgo/v2 v2.17.2/go.mod h1:nP2DPOQoNsQmsVyv5rDA8JkXQoCs6goXIvr/PRJ1eCc=
 github.com/onsi/ginkgo/v2 v2.19.0/go.mod h1:rlwLi9PilAFJ8jCg9UE1QP6VBpd6/xj3SRC0d6TU0To=
-github.com/onsi/ginkgo/v2 v2.28.1 h1:S4hj+HbZp40fNKuLUQOYLDgZLwNUVn19N3Atb98NCyI=
-github.com/onsi/ginkgo/v2 v2.28.1/go.mod h1:CLtbVInNckU3/+gC8LzkGUb9oF+e8W8TdUsxPwvdOgE=
+github.com/onsi/ginkgo/v2 v2.32.1 h1:6tlvcDm/3sE8lGJbZ4+d4mO3RLy24/tQWOFzVSQNIfw=
+github.com/onsi/ginkgo/v2 v2.32.1/go.mod h1:+aXOY+vzZ5mu2iI2HpTZUPmM//oQfsNFX6gU9kNcA44=
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
 github.com/onsi/gomega v1.7.1/go.mod h1:XdKZgCCFLUoM/7CFJVPcG8C1xQ1AJ0vpAezJrB7JYyY=
 github.com/onsi/gomega v1.10.1/go.mod h1:iN09h71vgCQne3DLsj+A5owkum+a2tYe+TOCB1ybHNo=
@@ -1570,8 +1570,8 @@ github.com/onsi/gomega v1.27.10/go.mod h1:RsS8tutOdbdgzbPtzzATp12yT7kM5I5aElG3ev
 github.com/onsi/gomega v1.30.0/go.mod h1:9sxs+SwGrKI0+PWe4Fxa9tFQQBG5xSsSbMXOI8PPpoQ=
 github.com/onsi/gomega v1.33.0/go.mod h1:+925n5YtiFsLzzafLUHzVMBpvvRAzrydIBiSIxjX3wY=
 github.com/onsi/gomega v1.33.1/go.mod h1:U4R44UsT+9eLIaYRB2a5qajjtQYn0hauxvRm16AVYg0=
-github.com/onsi/gomega v1.39.1 h1:1IJLAad4zjPn2PsnhH70V4DKRFlrCzGBNrNaru+Vf28=
-github.com/onsi/gomega v1.39.1/go.mod h1:hL6yVALoTOxeWudERyfppUcZXjMwIMLnuSfruD2lcfg=
+github.com/onsi/gomega v1.42.1 h1:iN1rCUX+44NZ1Dc97MPoeFYbFR0vh8zxoxMFwKdyZ6I=
+github.com/onsi/gomega v1.42.1/go.mod h1:REff/hsDsodHoKlWsP2mAPhu1+5/6hVYNf9rIEBpeSg=
 github.com/op/go-logging v0.0.0-20160315200505-970db520ece7/go.mod h1:HzydrMdWErDVzsI23lYNej1Htcns9BCg93Dk0bBINWk=
 github.com/opencontainers/cgroups v0.0.6 h1:tfZFWTIIGaUUFImTyuTg+Mr5x8XRiSdZESgEBW7UxuI=
 github.com/opencontainers/cgroups v0.0.6/go.mod h1:oWVzJsKK0gG9SCRBfTpnn16WcGEqDI8PAcpMGbqWxcs=
@@ -2854,8 +2854,8 @@ honnef.co/go/tools v0.0.1-2019.2.3/go.mod h1:a3bituU0lyd329TUQxRnasdCoJDkEUEAqEt
 honnef.co/go/tools v0.0.1-2020.1.3/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9vFzvIQ3k=
 honnef.co/go/tools v0.0.1-2020.1.4/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9vFzvIQ3k=
 honnef.co/go/tools v0.1.3/go.mod h1:NgwopIslSNH47DimFoV78dnkksY2EFtX0ajyb3K/las=
-k8s.io/cri-client v0.36.4 h1:OHNNbsxzsWcsGWN5JkL4IMeSzambvdi6EYUzAbGdTjU=
-k8s.io/cri-client v0.36.4/go.mod h1:XuVGQiUEGTz+okUyjSt9Gq9aoTlz663ybG5h/L5pno0=
+k8s.io/cri-client v0.36.5 h1:5lDflhiV2SJe7B5EZPSPAxQZy0P5veZHhDmmbMdAxGs=
+k8s.io/cri-client v0.36.5/go.mod h1:oW37BKbSD0YescjAhpRxHhxRAbPOL+Xdu9P/r2Ykpbk=
 k8s.io/cri-streaming v0.36.4 h1:5ZDPw8CoyQT9yBAsBP7oPNV45ckEMJNpL/Bt6OcwEdc=
 k8s.io/cri-streaming v0.36.4/go.mod h1:ThmlLMjLhDYrh98OF+xHcJg+iL1Dj4gyWz3/H7XX5GU=
 k8s.io/gengo/v2 v2.0.0-20250604051438-85fd79dbfd9f/go.mod h1:EJykeLsmFC60UQbYJezXkEsG2FLrt0GPNkU5iK5GWxU=
