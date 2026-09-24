@@ -132,6 +132,9 @@ nft list tables | grep calico | while read -r _ family name; do
     nft delete table "$family" "$name"
 done
 
+# Remove leftover flannel config
+rm /run/flannel/subnet.env
+
 set +x
 
 echo 'If this cluster was upgraded from an older release of the Canal CNI plugin, you may need to manually remove some flannel iptables rules:'
