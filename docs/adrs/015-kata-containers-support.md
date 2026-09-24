@@ -26,13 +26,31 @@ The recommended installation method of Kata containers in any Kubernetes distrib
 
 Given that the chart works well in RKE2 and it is supported by upstream, we should reuse it as much as possible.
 
-### (Option 1) Loosely Integration based on documentation
+We should take a two-phases approach in which we start with documentation, and then, if required, move to deeper integration with Kata.
 
-Describe in our rke2-docs documentation how to install Kata containers using kata-deploy and add some sections about prerequisites, how to verify it works and how to debug. In the documentation, we should show the HelmChart with the few options that we would support initially.
+### (Phase 1) Loosely Integration based on documentation
 
-### (Option 2) Integration using rke2-charts
+Describe in our rke2-product-docs documentation how to install Kata containers using kata-deploy and add some sections about prerequisites, how to verify it works and how to debug. In the documentation, we should show the HelmChart with the few options that we would support initially.
 
-Add kata-deploy to our rke2-charts as rke2-kata-deploy. Include a new flag in RKE2 that would install the kata-deploy helm chart.
+Initial PR: https://github.com/rancher/rke2-product-docs/pull/253
+
+#### Prime differentiation
+
+In this phase, the only approach we can take is adding the docs to rke2-product-docs only. Chart and images are consumed from upstream.
+
+
+### (Phase 2) Integration using rke2-charts
+
+Add kata-deploy to our rke2-charts as rke2-kata-deploy. We can integrate the chart in two different ways:
+
+1 - (preferable) By using an rke2-chart patch to the upstream chart, we should add a switch to the rke2-kata-deploy chart that allows the chart to be dormant and perform no-op in the cluster. This is currently not possible in upstream kata-deploy.
+
+Then, via a HelmChart API, we install Kata in all the RKE2 prime clusters with that switch turned off. If the customer wants to leverage Kata containers, then the customer must turn that switch on and set the correct configuration. The customer can do that using the HelmChartConfig API.
+
+One challenge for this option is to support the use case in which the customer turns it off again. There is currently not a good clean-up mechanism in kata-deploy. We would need to create it.
+
+2 - Include a new flag in RKE2 that would install the kata-deploy helm chart (e.g. --kata)
+
 
 ### Other options
 
@@ -43,13 +61,12 @@ There is a process that automatically searches for runtimes, that RKE2 inherits 
 
 CPU architecture: amd64
 Snapshotter: nydus (default)
-shims: qemu-runtime-rs
+shims: qemu-runtime-rs, qemu-runtime-rs-nvidia
 hypervisor: qemu
 
 Optionally, and as part of the Rancher CoCo initiative, we should allow these extra shims:
 * qemu-nvidia-gpu-snp-runtime-rs (if we have hardware to test)
 * qemu-nvidia-gpu-tdx-runtime-rs (if we have hardware to test)
-* qemu-coco-dev-runtime-rs
 
 To fully support these options, collaboration with the QA team is expected to develop test cases. It would be highly recommended to add a test case in the CI and also prepare our support friends with a session about Kata containers.
 
