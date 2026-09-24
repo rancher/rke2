@@ -73,7 +73,7 @@ require (
 	github.com/google/go-containerregistry v0.20.6
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.17.9
-	github.com/k3s-io/k3s v1.35.1-0.20260923225140-86a77cb0da5c // main
+	github.com/k3s-io/k3s v1.35.1-0.20260924184503-bb14efb43119 // main
 	github.com/k3s-io/kine v0.17.1
 	github.com/libp2p/go-netroute v0.4.0
 	github.com/onsi/ginkgo/v2 v2.32.1
@@ -92,14 +92,14 @@ require (
 	golang.org/x/sys v0.47.0
 	google.golang.org/grpc v1.83.2
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
-	k8s.io/api v0.37.0
-	k8s.io/apimachinery v0.37.0
-	k8s.io/apiserver v0.37.0
+	k8s.io/api v0.37.1
+	k8s.io/apimachinery v0.37.1
+	k8s.io/apiserver v0.37.1
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/component-base v0.37.0
-	k8s.io/cri-api v0.37.0
+	k8s.io/component-base v0.37.1
+	k8s.io/cri-api v0.37.1
 	k8s.io/klog/v2 v2.140.0
-	k8s.io/kubernetes v1.36.3
+	k8s.io/kubernetes v1.37.1
 	k8s.io/utils v0.0.0-20260626114624-be93311217bd
 	sigs.k8s.io/yaml v1.6.0
 )
@@ -443,12 +443,12 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.36.0 // indirect
-	k8s.io/cli-runtime v0.37.0 // indirect
+	k8s.io/cli-runtime v0.37.1 // indirect
 	k8s.io/cloud-provider v0.35.2 // indirect
 	k8s.io/cluster-bootstrap v0.35.2 // indirect
 	k8s.io/component-helpers v0.36.1 // indirect
 	k8s.io/controller-manager v0.35.8 // indirect
-	k8s.io/cri-client v0.37.0 // indirect
+	k8s.io/cri-client v0.37.1 // indirect
 	k8s.io/cri-streaming v0.37.0-rc.0 // indirect
 	k8s.io/csi-translation-lib v0.0.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
@@ -457,7 +457,7 @@ require (
 	k8s.io/kube-aggregator v0.36.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260721132016-d427ff9ee9ad // indirect
 	k8s.io/kube-proxy v0.35.2 // indirect
-	k8s.io/kubelet v0.37.0 // indirect
+	k8s.io/kubelet v0.37.1 // indirect
 	k8s.io/mount-utils v0.35.0 // indirect
 	k8s.io/pod-security-admission v0.0.0 // indirect
 	k8s.io/streaming v0.37.0 // indirect

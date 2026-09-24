@@ -1251,8 +1251,8 @@ github.com/k3s-io/etcd/server/v3 v3.7.1-k3s3 h1:+oVS1xEXPKi5Q/5+J4uFDPCU8zr+7lzi
 github.com/k3s-io/etcd/server/v3 v3.7.1-k3s3/go.mod h1:ua3hv+hHkI9GtipFrRDtdHx4N/M7fev9DA7P6EF5uNg=
 github.com/k3s-io/helm-controller v0.17.9 h1:HhZTiFhVDzhbAYeb/aSlExWhJTnDTpHypMqu5Mh8Uow=
 github.com/k3s-io/helm-controller v0.17.9/go.mod h1:iNhJkyNxQo3sG9PHvTDw/FFm0eVDo/CSsDjl1Gls3Pg=
-github.com/k3s-io/k3s v1.35.1-0.20260923225140-86a77cb0da5c h1:NvwQ5ifPu95cNu0crM1M3CJSZvYj12pKLzwZN44qgg0=
-github.com/k3s-io/k3s v1.35.1-0.20260923225140-86a77cb0da5c/go.mod h1:6RJYfETC/AA229xwJz28WVeXBjzXrUXcJZ9hObOmgX4=
+github.com/k3s-io/k3s v1.35.1-0.20260924184503-bb14efb43119 h1:VvR6P2vIggmGk1petXb7mjs6HocdJiwrH1n2n3AjiY0=
+github.com/k3s-io/k3s v1.35.1-0.20260924184503-bb14efb43119/go.mod h1:dAkztb78JXwPXcifG2G8VrVGQeFZR3hcIvf6ks7CrXo=
 github.com/k3s-io/kine v0.17.1 h1:Ng30ST8clH0kLwO6VJ4/c0ldlCqFAinMI8qHn+Th4wA=
 github.com/k3s-io/kine v0.17.1/go.mod h1:rXAfWtpSQ9+wkKNqwYdfWmswQ2UuXis6rpqKe01pZbE=
 github.com/k3s-io/klog/v2 v2.140.0-k3s1 h1:Z6S9oqaxcKtLaTcQNgWsaZNE5a+qJmCrTI+Lahor4X8=
@@ -2870,8 +2870,8 @@ honnef.co/go/tools v0.0.1-2019.2.3/go.mod h1:a3bituU0lyd329TUQxRnasdCoJDkEUEAqEt
 honnef.co/go/tools v0.0.1-2020.1.3/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9vFzvIQ3k=
 honnef.co/go/tools v0.0.1-2020.1.4/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9vFzvIQ3k=
 honnef.co/go/tools v0.1.3/go.mod h1:NgwopIslSNH47DimFoV78dnkksY2EFtX0ajyb3K/las=
-k8s.io/cri-client v0.37.0 h1:X1TEEx74zCwqDoVnJ4OIXtrQLHY21AOe8vXbBNSOb40=
-k8s.io/cri-client v0.37.0/go.mod h1:x/nROOizpdhU/VGcokYhxtWioDPMhqinRRCHWOoVL2c=
+k8s.io/cri-client v0.37.1 h1:hX4MsRvXIx/lj7pnD4YFY28t46Oynrt4f9wZwkD88mk=
+k8s.io/cri-client v0.37.1/go.mod h1:ENwsn+040R/qXfIGy4yNufhY9IHHNOmGXlw3+ubjHvE=
 k8s.io/cri-streaming v0.37.0-rc.0 h1:X/O8PR64U6sN4HE/3y+z++afwlFyfVY/vzqJh4PT8aQ=
 k8s.io/cri-streaming v0.37.0-rc.0/go.mod h1:B+JP3bcIxF+SycJ7kMTO3Kr052GMjHAE/nccePz9m+I=
 k8s.io/gengo/v2 v2.0.0-20250922181213-ec3ebc5fd46b/go.mod h1:CgujABENc3KuTrcsdpGmrrASjtQsWCT7R99mEV4U/fM=
