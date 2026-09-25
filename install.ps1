@@ -84,6 +84,7 @@ param (
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+$suffix = ""
 
 function Write-InfoLog() {
     Write-Output "[INFO] $($args -join " ")"
@@ -100,10 +101,12 @@ function Write-DebugLog() {
 # fatal logs the given argument at fatal log level.
 function Write-FatalLog() {
     Write-Output "[ERROR] $($args -join " ")"
-    if ([string]::IsNullOrEmpty($suffix)) {
-        $archInfo = Get-ArchitectureInfo
-        $suffix = $archInfo.Suffix
-        Write-Output "[ALT] Please visit 'https://github.com/rancher/rke2/releases' directly and download the latest rke2.$suffix.tar.gz"
+    $downloadSuffix = $suffix
+    if ([string]::IsNullOrEmpty($downloadSuffix) -and $env:PROCESSOR_ARCHITECTURE) {
+        $downloadSuffix = "windows-$($env:PROCESSOR_ARCHITECTURE.ToLower())"
+    }
+    if (-not [string]::IsNullOrEmpty($downloadSuffix)) {
+        Write-Output "[ALT] Please visit 'https://github.com/rancher/rke2/releases' directly and download the latest rke2.$downloadSuffix.tar.gz"
     }
     exit 1
 }
