@@ -28,6 +28,7 @@ type TestConfig struct {
 	ServerYaml     string
 	AgentYaml      string
 	DualStack      bool // If true, the docker containers will be attached to a dual-stack network
+	SkipInstall    bool
 }
 
 type DockerNode struct {
@@ -284,23 +285,10 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 			config.TB.Logf("Node has artifacts: \n%s", out)
 		}
 
-		if _, err := newServer.RunCmdOnNode("curl -sfL https://get.rke2.io | INSTALL_RKE2_ARTIFACT_PATH=/src/rke2-artifacts sh -"); err != nil {
-			return fmt.Errorf("failed to install server: %w", err)
-		}
-
-		if _, err := newServer.RunCmdOnNode("systemctl enable rke2-server"); err != nil {
-			return fmt.Errorf("failed to enable server: %w", err)
-		}
-
-		// Fill RKE2_* environment variables.
-		envVars, err := newServer.RunCmdOnNode("env | grep ^RKE2_")
-		if err != nil {
-			return fmt.Errorf("failed to get RKE2_* environment variables: %w", err)
-		}
-		envFile := strings.ReplaceAll(envVars, "\n", "\\n")
-		writeCmd := fmt.Sprintf("printf '%s' > /usr/local/lib/systemd/system/rke2-server.env", envFile)
-		if _, err := newServer.RunCmdOnNode(writeCmd); err != nil {
-			return fmt.Errorf("failed to write env vars to /usr/local/lib/systemd/system/rke2-server.env: %w", err)
+		if !config.SkipInstall {
+			if err := installRKE2(newServer, "rke2-server", InstallOptions{ArtifactPath: "/src/rke2-artifacts"}); err != nil {
+				return err
+			}
 		}
 
 		cmd = "docker inspect --format '{{range $k,$v := .NetworkSettings.Networks}}{{printf \"%s\" $v.IPAddress}}{{end}}' " + name
@@ -397,23 +385,10 @@ func (config *TestConfig) ProvisionAgents(numOfAgents int) error {
 				}
 			}
 
-			if _, err := newAgent.RunCmdOnNode("curl -sfL https://get.rke2.io | INSTALL_RKE_TYPE='agent' INSTALL_RKE2_ARTIFACT_PATH=/src/rke2-artifacts sh -"); err != nil {
-				return fmt.Errorf("failed to install agent: %w", err)
-			}
-
-			// Fill RKE2_* environment variables.
-			envVars, err := newAgent.RunCmdOnNode("env | grep ^RKE2_")
-			if err != nil {
-				return fmt.Errorf("failed to get RKE2_* environment variables: %w", err)
-			}
-			envFile := strings.ReplaceAll(envVars, "\n", "\\n")
-			writeCmd := fmt.Sprintf("printf '%s' > /usr/local/lib/systemd/system/rke2-agent.env", envFile)
-			if _, err := newAgent.RunCmdOnNode(writeCmd); err != nil {
-				return fmt.Errorf("failed to write env vars to /usr/local/lib/systemd/system/rke2-agent.env: %w", err)
-			}
-
-			if _, err := newAgent.RunCmdOnNode("systemctl enable rke2-agent"); err != nil {
-				return fmt.Errorf("failed to enable agent: %w", err)
+			if !config.SkipInstall {
+				if err := installRKE2(newAgent, "rke2-agent", InstallOptions{ArtifactPath: "/src/rke2-artifacts"}); err != nil {
+					return err
+				}
 			}
 
 			// Get the IP address of the container
@@ -435,6 +410,61 @@ func (config *TestConfig) ProvisionAgents(numOfAgents int) error {
 		return err
 	}
 
+	return nil
+}
+
+func persistRKE2Environment(node DockerNode, service string) error {
+	envVars, err := node.RunCmdOnNode("env | grep ^RKE2_")
+	if err != nil {
+		return fmt.Errorf("failed to get RKE2_* environment variables: %w", err)
+	}
+	envFile := strings.ReplaceAll(envVars, "\n", "\\n")
+	writeCmd := fmt.Sprintf("printf '%s' > /usr/local/lib/systemd/system/%s.env", envFile, service)
+	if _, err := node.RunCmdOnNode(writeCmd); err != nil {
+		return fmt.Errorf("failed to write env vars to /usr/local/lib/systemd/system/%s.env: %w", service, err)
+	}
+	return nil
+}
+
+type InstallOptions struct {
+	Channel      string
+	ArtifactPath string
+}
+
+func installRKE2(node DockerNode, service string, options InstallOptions) error {
+	if (options.Channel == "") == (options.ArtifactPath == "") {
+		return fmt.Errorf("exactly one of Channel or ArtifactPath must be set")
+	}
+
+	installOption := fmt.Sprintf("INSTALL_RKE2_CHANNEL=%q", options.Channel)
+	if options.ArtifactPath != "" {
+		installOption = fmt.Sprintf("INSTALL_RKE2_ARTIFACT_PATH=%q", options.ArtifactPath)
+	}
+	if service == "rke2-agent" {
+		installOption = "INSTALL_RKE2_TYPE=agent " + installOption
+	}
+
+	if _, err := node.RunCmdOnNode("curl -sfL https://get.rke2.io | " + installOption + " sh -"); err != nil {
+		return fmt.Errorf("failed to install %s: %w", service, err)
+	}
+	if _, err := node.RunCmdOnNode("systemctl enable " + service); err != nil {
+		return fmt.Errorf("failed to enable %s: %w", service, err)
+	}
+	return persistRKE2Environment(node, service)
+}
+
+// Install installs RKE2 on all servers and agents from the selected channel or artifact path.
+func (config *TestConfig) Install(options InstallOptions) error {
+	for _, server := range config.Servers {
+		if err := installRKE2(server, "rke2-server", options); err != nil {
+			return err
+		}
+	}
+	for _, agent := range config.Agents {
+		if err := installRKE2(agent, "rke2-agent", options); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
