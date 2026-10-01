@@ -120,15 +120,7 @@ jobs:
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       with:
         name: rke2-test-artifacts
-        path: ${{ github.workspace }}/artifacts
-    - name: Place the artifacts back and compute sha256sum
-      run: |
-        repo_root="${GITHUB_WORKSPACE}"
-        mkdir -p "${repo_root}/dist/artifacts"
-        mkdir -p "${repo_root}/build/images"
-        mv "${repo_root}/artifacts"/rke2-* "${repo_root}/build/images/"
-        mv "${repo_root}/artifacts"/rke2.*-amd64.tar.gz "${repo_root}/dist/artifacts/"
-        sha256sum "${repo_root}/dist/artifacts/rke2.linux-amd64.tar.gz" > "${repo_root}/dist/artifacts/sha256sum-amd64.txt"
+        path: ${{ github.workspace }}
     - name: "Run ${{ matrix.test }}: ${{ matrix.cni }}/${{ matrix.filter }}"
       working-directory: tests/e2e/${{ matrix.test }}
       run: |

@@ -3,6 +3,11 @@ set -ex
 
 cd $(dirname $0)/..
 
+if [ -n "${SKIP_DEV}" ]; then
+    echo "skipping dev runtime builds. continuing..."
+    exit 0
+fi
+
 source ./scripts/version.sh
 
 if [ "${GOARCH}" == "s390x" ] || [ "${GOARCH}" == "arm64" ]; then

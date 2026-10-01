@@ -9,7 +9,7 @@ if [ "${GOARCH}" != "amd64" ]; then
     exit 0
 fi
 
-if [ -z "${SKIP_DEV_RPM}" ] && [ -z "${DRONE_TAG}" ]; then
+if [ -z "${SKIP_DEV}" ] && [ -z "${DRONE_TAG}" ]; then
     scripts/package-dev-rpm
     scripts/publish-dev-rpm
 fi
