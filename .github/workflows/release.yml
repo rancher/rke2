@@ -66,8 +66,6 @@ jobs:
       uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
       with:
         secrets: |
-          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials username | DOCKER_USERNAME ;
-          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials password | DOCKER_PASSWORD ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD ;
@@ -134,15 +132,12 @@ jobs:
       matrix:
         include:
           # amd64 – Linux runtime
-          - { arch: amd64, runner-arch: x64,   make-target: publish-image-runtime,         destination: docker   }
           - { arch: amd64, runner-arch: x64,   make-target: publish-image-runtime,         destination: staging  }
           - { arch: amd64, runner-arch: x64,   make-target: publish-image-runtime,         destination: prime    }
           # amd64 – Windows runtime
-          - { arch: amd64, runner-arch: x64,   make-target: publish-image-runtime-windows, destination: docker   }
           - { arch: amd64, runner-arch: x64,   make-target: publish-image-runtime-windows, destination: staging  }
           - { arch: amd64, runner-arch: x64,   make-target: publish-image-runtime-windows, destination: prime    }
           # arm64 – Linux runtime (no Windows runtime image for arm64)
-          - { arch: arm64, runner-arch: arm64, make-target: publish-image-runtime,         destination: docker   }
           - { arch: arm64, runner-arch: arm64, make-target: publish-image-runtime,         destination: staging  }
           - { arch: arm64, runner-arch: arm64, make-target: publish-image-runtime,         destination: prime    }
     steps:
@@ -153,8 +148,6 @@ jobs:
       uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
       with:
         secrets: |
-          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials username | DOCKER_USERNAME ;
-          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials password | DOCKER_PASSWORD ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD ;
@@ -165,22 +158,6 @@ jobs:
     - name: Set environment variables
       run: |
         echo "GIT_TAG=$(echo "${GITHUB_REF_NAME}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
-
-    - name: Publish Image - Docker Hub
-      if: ${{ matrix.destination == 'docker' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@03cb52c4bd23670a192d47ef7b49d566928738d6 # v0.72.0
-      env:
-        GOARCH: ${{ matrix.arch }}
-        GOOS: linux
-      with:
-        image: "rke2-runtime"
-        tag: ${{ env.GIT_TAG }}
-        make-target: ${{ matrix.make-target }}
-
-        public-repo: rancher
-        public-username: ${{ env.DOCKER_USERNAME }}
-        public-password: ${{ env.DOCKER_PASSWORD }}
-        push-to-prime: false
 
     - name: Publish Image - Staging
       if: ${{ matrix.destination == 'staging' }}
@@ -230,7 +207,6 @@ jobs:
       matrix:
         include:
           # amd64 – Linux runtime
-          - { destination: docker   }
           - { destination: staging  }
           - { destination: prime    }
     steps:
@@ -241,8 +217,6 @@ jobs:
       uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
       with:
         secrets: |
-          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials username | DOCKER_USERNAME ;
-          secret/data/github/repo/${{ github.repository }}/dockerhub/${{ github.repository_owner }}/credentials password | DOCKER_PASSWORD ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials username | PRIME_REGISTRY_USERNAME ;
           secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials password | PRIME_REGISTRY_PASSWORD ;
@@ -253,23 +227,6 @@ jobs:
     - name: Set environment variables
       run: |
         echo "GIT_TAG=$(echo "${GITHUB_REF_NAME}" | sed -e 's/+/-/g')" >> "$GITHUB_ENV"
-
-    - name: Manifest - Docker
-      if: ${{ matrix.destination == 'docker' }}
-      uses: rancher/ecm-distro-tools/actions/publish-image@03cb52c4bd23670a192d47ef7b49d566928738d6 # v0.72.0
-      env:
-        GOARCH: amd64
-        GOOS: linux
-      with:
-        image: "rke2-runtime"
-        tag: ${{ env.GIT_TAG }}
-        make-target: publish-manifest-runtime
-
-        public-repo: rancher
-        public-username: ${{ env.DOCKER_USERNAME }}
-        public-password: ${{ env.DOCKER_PASSWORD }}
-
-        push-to-prime: false
 
     - name: Manifest - Staging
       if: ${{ matrix.destination == 'staging' }}
@@ -385,6 +342,7 @@ jobs:
           --repo rancher/rke2-upgrade \
           --title "$GITHUB_ACTION_TAG" \
           --latest="false" \
+          --target="prime-only" \
           --notes "Automated release created from $GITHUB_ACTION_TAG tag in ${{ github.repository }}"
 
     - name: Create release in `rancher/system-agent-installer-rke2`
@@ -395,6 +353,7 @@ jobs:
           --repo rancher/system-agent-installer-rke2 \
           --title "$GITHUB_ACTION_TAG" \
           --latest="false" \
+          --target="prime-only" \
           --notes "Automated release created from $GITHUB_ACTION_TAG tag in ${{ github.repository }}"
 
   sync-prime-images:
