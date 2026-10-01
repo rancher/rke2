@@ -522,9 +522,12 @@ jobs:
         run: |
           docker pull "${{ steps.registry.outputs.REGISTRY }}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
 
-      - name: Download Binaries
-        run: |
-          gh release download "$TAG" --repo "${{ github.repository }}" --dir ./dist/artifacts -p "rke2.*" -p "*.exe"
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: rke2-artifacts-*
+          path: ./dist/artifacts
+          merge-multiple: true
 
       - name: Package Images
         env:
