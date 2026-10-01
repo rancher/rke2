@@ -272,6 +272,26 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
+    - name: "Read secrets"
+      uses: rancher-eio/read-vault-secrets@0da85151ad1f19ed7986c41587e45aac1ace74b6 # v3
+      with:
+        secrets: |
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
+          secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials registry |  PRIME_STAGING_REGISTRY ;
+
+    - name: Set Registry output
+      id: registry
+      env:
+        IS_RC: ${{ contains(github.ref_name, '-rc') }}
+        STAGING_REG: ${{ env.PRIME_STAGING_REGISTRY }}
+        PROD_REG: ${{ env.PRIME_REGISTRY }}
+      run: |
+        if [ "$IS_RC" = "true" ]; then
+          echo "REGISTRY=$STAGING_REG" >> "$GITHUB_OUTPUT"
+        else
+          echo "REGISTRY=$PROD_REG" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Download Artifacts
       uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
       with:
@@ -280,8 +300,10 @@ jobs:
         path: dist/artifacts
  
     - name: Package windows images
+      env:
+        REGISTRY: ${{ steps.registry.outputs.REGISTRY }}
       run: |
-        GITHUB_ACTION_TAG="${GITHUB_REF_NAME}" make in-docker-package-windows-images
+        REGISTRY="${REGISTRY}" GITHUB_ACTION_TAG="${GITHUB_REF_NAME}" make in-docker-package-windows-images
 
     - name: Upload Image List
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
@@ -380,16 +402,17 @@ jobs:
             secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials username |  PRIME_STAGING_REGISTRY_USERNAME ;
             secret/data/github/repo/${{ github.repository }}/rancher-prime-stg-registry/credentials password |  PRIME_STAGING_REGISTRY_PASSWORD ;
 
-      - name: Set Registry variable
+      - name: Set Registry output
+        id: registry
         env:
           IS_RC: ${{ contains(github.ref_name, '-rc') }}
           STAGING_REG: ${{ env.PRIME_STAGING_REGISTRY }}
           PROD_REG: ${{ env.PRIME_REGISTRY }}
         run: |
           if [ "$IS_RC" = "true" ]; then
-            echo "REGISTRY=$STAGING_REG" >> "$GITHUB_ENV"
+            echo "REGISTRY=$STAGING_REG" >> "$GITHUB_OUTPUT"
           else
-            echo "REGISTRY=$PROD_REG" >> "$GITHUB_ENV"
+            echo "REGISTRY=$PROD_REG" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Log in to staging registry
@@ -431,9 +454,9 @@ jobs:
 
       - name: Sync images
         run: |
-          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i dist/artifacts/rke2-images-all.linux-amd64.txt
-          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i dist/artifacts/rke2-images-all.linux-arm64.txt
-          ./scripts/copy-images.sh -t ${{ env.REGISTRY }} -i dist/artifacts/rke2-images.windows-amd64.txt
+          ./scripts/copy-images.sh -t ${{ steps.registry.outputs.REGISTRY }} -i dist/artifacts/rke2-images-all.linux-amd64.txt
+          ./scripts/copy-images.sh -t ${{ steps.registry.outputs.REGISTRY }} -i dist/artifacts/rke2-images-all.linux-arm64.txt
+          ./scripts/copy-images.sh -t ${{ steps.registry.outputs.REGISTRY }} -i dist/artifacts/rke2-images.windows-amd64.txt
 
   sync-prime-ribs:
     name: "Sync Prime ribs"
@@ -482,21 +505,22 @@ jobs:
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Set Registry variable
+      - name: Set Registry output
+        id: registry
         env:
           IS_RC: ${{ contains(github.ref_name, '-rc') }}
           STAGING_REG: ${{ env.PRIME_STAGING_REGISTRY }}
           PROD_REG: ${{ env.PRIME_REGISTRY }}
         run: |
           if [ "$IS_RC" = "true" ]; then
-            echo "REGISTRY=$STAGING_REG" >> "$GITHUB_ENV"
+            echo "REGISTRY=$STAGING_REG" >> "$GITHUB_OUTPUT"
           else
-            echo "REGISTRY=$PROD_REG" >> "$GITHUB_ENV"
+            echo "REGISTRY=$PROD_REG" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Pull rke2-runtime
         run: |
-          docker pull "${{ env.REGISTRY }}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
+          docker pull "${{ steps.registry.outputs.REGISTRY }}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
 
       - name: Download Binaries
         run: |
@@ -504,14 +528,14 @@ jobs:
 
       - name: Package Images
         env:
-          REGISTRY: ${{ env.REGISTRY }}
+          REGISTRY: ${{ steps.registry.outputs.REGISTRY }}
         run: |
           make in-docker-package-images
 
       - name: Package windows images
         if: ${{ matrix.arch == 'amd64' }}
         env:
-          REGISTRY: ${{ env.REGISTRY }}
+          REGISTRY: ${{ steps.registry.outputs.REGISTRY }}
         run: |
           make in-docker-package-windows-images
 
