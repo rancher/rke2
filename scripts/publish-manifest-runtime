@@ -6,10 +6,6 @@ cd $(dirname $0)/..
 source ./scripts/version.sh
 export DOCKER_CLI_EXPERIMENTAL=enabled
 
-set +x
-docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-set -x
-
 docker buildx imagetools create \
     --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
     ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-linux-amd64 \
