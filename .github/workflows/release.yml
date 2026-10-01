@@ -522,9 +522,16 @@ jobs:
         run: |
           docker pull "${{ steps.registry.outputs.REGISTRY }}/rancher/rke2-runtime:${GITHUB_ACTION_TAG/+/-}"
 
-      - name: Download Binaries
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: rke2-artifacts-*
+          path: ./dist/artifacts
+          merge-multiple: true
+
+      - name: Keep only binaries
         run: |
-          gh release download "$TAG" --repo "${{ github.repository }}" --dir ./dist/artifacts -p "rke2.*" -p "*.exe"
+          find dist/artifacts -type f \( ! \( -name 'rke2.linux-*' -o -name '*.exe' \) -o -name '*.tar.gz' \) -delete
 
       - name: Package Images
         env:
