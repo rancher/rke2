@@ -529,6 +529,10 @@ jobs:
           path: ./dist/artifacts
           merge-multiple: true
 
+      - name: Keep only binaries
+        run: |
+          find dist/artifacts -type f \( ! \( -name 'rke2.linux-*' -o -name '*.exe' \) -o -name '*.tar.gz' \) -delete
+
       - name: Package Images
         env:
           REGISTRY: ${{ steps.registry.outputs.REGISTRY }}
