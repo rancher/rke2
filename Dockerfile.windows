@@ -5,7 +5,7 @@ RUN apk --no-cache add \
     unzip
 
 # Build environment
-FROM rancher/hardened-build-base:v1.25.11b1 AS build-env
+FROM rancher/hardened-build-base:v1.25.14b1 AS build-env
 ARG BUILDARCH
 ENV ARCH $BUILDARCH
 RUN apk update
