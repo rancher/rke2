@@ -6,7 +6,7 @@ metadata:
 spec:
   type: LoadBalancer
   selector:
-    app.kubernetes.io/name: rke2-ingress-nginx
+    app.kubernetes.io/name: rke2-traefik
   ports:
   - name: http
     protocol: TCP
