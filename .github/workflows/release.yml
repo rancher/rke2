@@ -529,9 +529,16 @@ jobs:
           path: ./dist/artifacts
           merge-multiple: true
 
-      - name: Keep only binaries
+      - name: Keep only rke2 binaries and their tarballs
         run: |
-          find dist/artifacts -type f \( ! \( -name 'rke2.linux-*' -o -name '*.exe' \) -o -name '*.tar.gz' \) -delete
+          find dist/artifacts -type f \
+            ! -name 'rke2.windows-amd64.tar.gz' \
+            ! -name 'rke2-windows-amd64.exe' \
+            ! -name 'rke2.linux-amd64.tar.gz' \
+            ! -name 'rke2.linux-amd64' \
+            ! -name 'rke2.linux-arm64.tar.gz' \
+            ! -name 'rke2.linux-arm64' \
+            -delete
 
       - name: Package Images
         env:
