@@ -83,24 +83,26 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-cilium.txt
     ${REGISTRY}/rancher/hardened-cni-plugins:v1.9.1-build20261020
 EOF
 
+if [ "${REGISTRY}" != "docker.io" ]; then
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-calico.txt
-    ${REGISTRY}/rancher/mirrored-calico-operator:v1.42.6
-    ${REGISTRY}/rancher/mirrored-calico-ctl:v3.32.2
-    ${REGISTRY}/rancher/mirrored-calico-kube-controllers:v3.32.2
-    ${REGISTRY}/rancher/mirrored-calico-typha:v3.32.2
-    ${REGISTRY}/rancher/mirrored-calico-node:v3.32.2
-    ${REGISTRY}/rancher/mirrored-calico-pod2daemon-flexvol:v3.32.2
-    ${REGISTRY}/rancher/mirrored-calico-cni:v3.32.2
-    ${REGISTRY}/rancher/mirrored-calico-apiserver:v3.32.2
-    ${REGISTRY}/rancher/mirrored-calico-csi:v3.32.2
-    ${REGISTRY}/rancher/mirrored-calico-node-driver-registrar:v3.32.2
-    ${REGISTRY}/rancher/mirrored-calico-envoy-gateway:v3.32.2
-    ${REGISTRY}/rancher/mirrored-calico-envoy-proxy:v3.32.2
-    ${REGISTRY}/rancher/mirrored-calico-envoy-ratelimit:v3.32.2
-    ${REGISTRY}/rancher/mirrored-calico-goldmane:v3.32.2
-    ${REGISTRY}/rancher/mirrored-calico-whisker:v3.32.2
-    ${REGISTRY}/rancher/mirrored-calico-whisker-backend:v3.32.2
+    ${REGISTRY}/rancher/hardened-calico-operator:v1.44.0-build20261012
+    ${REGISTRY}/rancher/hardened-calico-node:v3.33.0-build20261007
+    ${REGISTRY}/rancher/hardened-calico-envoy-gateway:v3.33.0-build20261007
+    ${REGISTRY}/rancher/hardened-calico-envoy-proxy:v3.33.0-build20261007
+    ${REGISTRY}/rancher/hardened-calico-envoy-ratelimit:v3.33.0-build20261007
+    ${REGISTRY}/rancher/hardened-calico-whisker:v3.33.0-build20261007
 EOF
+else
+xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-calico.txt
+    ${REGISTRY}/rancher/mirrored-calico-operator:v1.44.0
+    ${REGISTRY}/rancher/mirrored-calico-node:v3.33.0
+    ${REGISTRY}/rancher/mirrored-calico-envoy-gateway:v3.33.0
+    ${REGISTRY}/rancher/mirrored-calico-envoy-proxy:v3.33.0
+    ${REGISTRY}/rancher/mirrored-calico-envoy-ratelimit:v3.33.0
+    ${REGISTRY}/rancher/mirrored-calico-whisker:v3.33.0
+EOF
+fi
+
 
 if [ "${GOARCH}" != "arm64" ]; then
 
