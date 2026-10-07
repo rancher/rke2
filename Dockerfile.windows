@@ -57,7 +57,7 @@ ARG KUBERNETES_VERSION=dev
 
 # windows runtime image
 ENV CRICTL_VERSION="v1.34.0"
-ENV CALICO_VERSION="v3.32.2"
+ENV CALICO_VERSION="v3.33.1"
 ENV CNI_PLUGIN_VERSION="v1.10.0"
 ENV FLANNEL_VERSION="v0.28.11"
 ENV CNI_FLANNEL_VERSION="v1.10.0-flannel1"
@@ -98,7 +98,7 @@ RUN case "${KUBERNETES_VERSION}" in \
     mv kube-proxy.exe rancher/
 
 RUN curl -fsSLO https://github.com/projectcalico/calico/releases/download/${CALICO_VERSION}/calico-windows-${CALICO_VERSION}.zip && \
-    echo "07f81f0c71a63919a0c93ada6c6f2bbc854fe0a89e0089b747d9d73a41369a0c  calico-windows-${CALICO_VERSION}.zip" | sha256sum -c -
+    echo "908d4dfa01b63bdac990ba0814251096b5865d5ef698db8c9ae8c9b5b0033697  calico-windows-${CALICO_VERSION}.zip" | sha256sum -c -
 RUN curl -fsSL https://github.com/flannel-io/flannel/releases/download/${FLANNEL_VERSION}/flanneld.exe -o flanneld.exe && \
     echo "a192a48876779db372564e1705a333db8be71ed4bac543ae1159b26b12480cb2  flanneld.exe" | sha256sum -c - && \
     mv flanneld.exe rancher/flanneld.exe
@@ -115,9 +115,7 @@ RUN tar xzvf crictl-${CRICTL_VERSION}-windows-amd64.tar.gz crictl.exe -C rancher
 RUN tar xzvf cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz ./win-overlay.exe ./host-local.exe -C rancher/
 
 RUN unzip calico-windows-${CALICO_VERSION}.zip
-RUN mv CalicoWindows/calico-node.exe rancher/
-RUN mv CalicoWindows/cni/calico.exe rancher/
-RUN mv CalicoWindows/cni/calico-ipam.exe rancher/
+RUN mv CalicoWindows/calico.exe rancher/
 RUN mv CalicoWindows/confd confd/
 
 FROM scratch AS windows-runtime
