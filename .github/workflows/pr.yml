@@ -14,7 +14,7 @@ jobs:
     runs-on: runs-on,runner=16cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
     steps:
     - name: Set up Docker
-      uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
+      uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5.5.0
       with:
         version: type=image,tag=29
         daemon-config: '{"features":{"containerd-snapshotter":true}}'
@@ -47,7 +47,7 @@ jobs:
         suite: [parallel, serial]
     steps:
     - name: Set up Docker
-      uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
+      uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5.5.0
       with:
         version: type=image,tag=29
         daemon-config: '{"features":{"containerd-snapshotter":true}}'
@@ -88,7 +88,7 @@ jobs:
     runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu24-full-arm64,hdd=64
     steps:
     - name: Set up Docker
-      uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
+      uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5.5.0
       with:
         version: type=image,tag=29
         daemon-config: '{"features":{"containerd-snapshotter":true}}'
