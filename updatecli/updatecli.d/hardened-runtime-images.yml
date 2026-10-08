@@ -50,7 +50,7 @@ sources:
       versionfilter:
         kind: "regex"
         pattern: '^v1\.37\.\d+-build\d+$'
-  containerdWindowsChecksum:
+  hardenedContainerdWindowsChecksum:
     name: "Get containerd windows tarball checksum for the selected hardened-containerd build"
     kind: "shell"
     spec:
@@ -58,12 +58,12 @@ sources:
         VERSION=$(echo "{{ source "hardenedContainerd" }}" | cut -d '-' -f 1)
         CHECKSUM=$(curl -sfL "https://github.com/containerd/containerd/releases/download/${VERSION}/containerd-${VERSION#v}-windows-amd64.tar.gz.sha256sum") || exit 1
         echo "${CHECKSUM%% *}"
-  crictlVersion:
+  hardenedCrictlWindows:
     name: "Get crictl version from the selected hardened-crictl build"
     kind: "shell"
     spec:
       command: echo "{{ source "hardenedCrictl" }}" | cut -d '-' -f 1
-  crictlWindowsChecksum:
+  hardenedCrictlWindowsChecksum:
     name: "Get crictl windows tarball checksum for the selected hardened-crictl build"
     kind: "shell"
     spec:
@@ -116,29 +116,29 @@ targets:
     name: "Update containerd windows tarball checksum in Dockerfile.windows"
     kind: "file"
     scmid: "rke2"
-    sourceid: containerdWindowsChecksum
+    sourceid: hardenedContainerdWindowsChecksum
     spec:
       file: Dockerfile.windows
       matchpattern: '"[0-9a-f]{64}  containerd-'
-      replacepattern: '"{{ source "containerdWindowsChecksum" }}  containerd-'
+      replacepattern: '"{{ source "hardenedContainerdWindowsChecksum" }}  containerd-'
   bumpCrictlWindows:
     name: "Update CRICTL_VERSION in Dockerfile.windows"
     kind: "file"
     scmid: "rke2"
-    sourceid: crictlVersion
+    sourceid: hardenedCrictlWindows
     spec:
       file: Dockerfile.windows
       matchpattern: 'CRICTL_VERSION=".*"'
-      replacepattern: 'CRICTL_VERSION="{{ source "crictlVersion" }}"'
+      replacepattern: 'CRICTL_VERSION="{{ source "hardenedCrictlWindows" }}"'
   bumpCrictlWindowsChecksum:
     name: "Update crictl windows tarball checksum in Dockerfile.windows"
     kind: "file"
     scmid: "rke2"
-    sourceid: crictlWindowsChecksum
+    sourceid: hardenedCrictlWindowsChecksum
     spec:
       file: Dockerfile.windows
       matchpattern: '"[0-9a-f]{64}  crictl-'
-      replacepattern: '"{{ source "crictlWindowsChecksum" }}  crictl-'
+      replacepattern: '"{{ source "hardenedCrictlWindowsChecksum" }}  crictl-'
 
 actions:
   github:
