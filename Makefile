@@ -39,13 +39,6 @@ build-windows-images:                     ## Build only the Windows images and t
 build-image-runtime: docker-buildx package-bundle ## Build the runtime image
 	./scripts/build-image-runtime
 
-## NOTE: docker-buildx targets can be removed once a release of buildx with https://github.com/docker/buildx/pull/4008 is available
-.PHONY: docker-buildx
-docker-buildx: $(HOME)/.docker/cli-plugins/docker-buildx
-
-$(HOME)/.docker/cli-plugins/docker-buildx:
-	./scripts/build-docker-buildx
-
 .PHONY: publish-image-runtime
 publish-image-runtime:
 	./scripts/publish-image-runtime
@@ -169,7 +162,7 @@ DOCKER_HOST := $(or $(DOCKER_HOST),unix:///var/run/docker.sock)
 DOCKER_PATH := $(DOCKER_HOST:unix://%=%)
 DOCKER_ROOT := $(shell docker info -f '{{ .DockerRootDir}}')
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD | sed 's/\//-/g')
-in-docker-%: docker-buildx ## Advanced: wraps any target in Docker environment, for example: in-docker-build-debug
+in-docker-%: ## Advanced: wraps any target in Docker environment, for example: in-docker-build-debug
 	mkdir -p ./bin/ ./dist ./build
 	docker buildx build -t rke2:$(BRANCH) --load --target build-env -f Dockerfile .
 	docker run --privileged --rm --network host \
