@@ -5,6 +5,14 @@ cd $(dirname $0)/..
 
 source ./scripts/version.sh
 
+# Minimum buildx version that contains https://github.com/docker/buildx/pull/4008
+BUILDX_VERSION=$(docker buildx version | awk '{print $2}')
+MIN_BUILDX_VERSION=$(printf '%s\n' "${BUILDX_VERSION}" "v0.37.0" | sort -V | sed -n '1p')
+if [ "${MIN_BUILDX_VERSION}" != "v0.37.0" ]; then
+    echo "Buildx version must be >= v0.37.0"
+    exit 1
+fi
+
 docker buildx build ${IID_FILE_FLAG} \
     --sbom=true \
     --attest type=provenance,mode=max \
