@@ -1,7 +1,8 @@
 ---
 name: "Update hardened runtime images"
 # Watches for new hardened-runc, hardened-containerd, and hardened-crictl builds
-# and bumps the corresponding FROM tags in the Dockerfile.
+# and bumps the corresponding FROM tags in the Dockerfile, along with the
+# matching containerd and crictl references in Dockerfile.windows.
 #
 # Version filters are pinned to the minor line currently referenced in the
 # Dockerfile so we track new builds without jumping across minor/major versions
@@ -49,6 +50,27 @@ sources:
       versionfilter:
         kind: "regex"
         pattern: '^v1\.37\.\d+-build\d+$'
+  hardenedContainerdWindowsChecksum:
+    name: "Get containerd windows tarball checksum for the selected hardened-containerd build"
+    kind: "shell"
+    spec:
+      command: |
+        VERSION=$(echo "{{ source "hardenedContainerd" }}" | cut -d '-' -f 1)
+        CHECKSUM=$(curl -sfL "https://github.com/containerd/containerd/releases/download/${VERSION}/containerd-${VERSION#v}-windows-amd64.tar.gz.sha256sum") || exit 1
+        echo "${CHECKSUM%% *}"
+  hardenedCrictlWindows:
+    name: "Get crictl version from the selected hardened-crictl build"
+    kind: "shell"
+    spec:
+      command: echo "{{ source "hardenedCrictl" }}" | cut -d '-' -f 1
+  hardenedCrictlWindowsChecksum:
+    name: "Get crictl windows tarball checksum for the selected hardened-crictl build"
+    kind: "shell"
+    spec:
+      command: |
+        VERSION=$(echo "{{ source "hardenedCrictl" }}" | cut -d '-' -f 1)
+        CHECKSUM=$(curl -sfL "https://github.com/kubernetes-sigs/cri-tools/releases/download/${VERSION}/crictl-${VERSION}-windows-amd64.tar.gz.sha256") || exit 1
+        echo "${CHECKSUM%% *}"
 
 targets:
   bumpRunc:
@@ -81,6 +103,42 @@ targets:
       instruction:
         keyword: "FROM"
         matcher: "rancher/hardened-crictl"
+  bumpContainerdWindows:
+    name: "Update hardened-containerd image tag in Dockerfile.windows"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: hardenedContainerd
+    spec:
+      file: Dockerfile.windows
+      matchpattern: 'rancher/hardened-containerd:\S+'
+      replacepattern: 'rancher/hardened-containerd:{{ source "hardenedContainerd" }}-amd64-windows'
+  bumpContainerdWindowsChecksum:
+    name: "Update containerd windows tarball checksum in Dockerfile.windows"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: hardenedContainerdWindowsChecksum
+    spec:
+      file: Dockerfile.windows
+      matchpattern: '"[0-9a-f]{64}  containerd-'
+      replacepattern: '"{{ source "hardenedContainerdWindowsChecksum" }}  containerd-'
+  bumpCrictlWindows:
+    name: "Update CRICTL_VERSION in Dockerfile.windows"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: hardenedCrictlWindows
+    spec:
+      file: Dockerfile.windows
+      matchpattern: 'CRICTL_VERSION=".*"'
+      replacepattern: 'CRICTL_VERSION="{{ source "hardenedCrictlWindows" }}"'
+  bumpCrictlWindowsChecksum:
+    name: "Update crictl windows tarball checksum in Dockerfile.windows"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: hardenedCrictlWindowsChecksum
+    spec:
+      file: Dockerfile.windows
+      matchpattern: '"[0-9a-f]{64}  crictl-'
+      replacepattern: '"{{ source "hardenedCrictlWindowsChecksum" }}  crictl-'
 
 actions:
   github:
@@ -93,7 +151,8 @@ actions:
       parent: false
       title: 'Update hardened runtime images in Dockerfile'
       description: |
-        Automated PR to bump the hardened runtime image tags in the `Dockerfile`.
+        Automated PR to bump the hardened runtime image tags in the `Dockerfile`
+        and the matching containerd and crictl references in `Dockerfile.windows`.
 
         Updated references:
         - `rancher/hardened-runc` -> {{ source "hardenedRunc" }}
