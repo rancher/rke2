@@ -615,17 +615,17 @@ EOF
 }
 
 check_breaking_version() {
-  maj=$2
-  min=$3
+    maj=$2
+    min=$3
 
-  current_maj=$(rpm -qi $1 | awk -F': ' '/Version/ {print $2}' | sed -E -e "s/^([0-9]+)\.([0-9]+).*/\1/")
-  current_min=$(rpm -qi $1 | awk -F': ' '/Version/ {print $2}' | sed -E -e "s/^([0-9]+)\.([0-9]+).*/\2/")
+    current_maj=$(rpm -qi $1 | awk -F': ' '/Version/ {print $2}' | sed -E -e "s/^([0-9]+)\.([0-9]+).*/\1/")
+    current_min=$(rpm -qi $1 | awk -F': ' '/Version/ {print $2}' | sed -E -e "s/^([0-9]+)\.([0-9]+).*/\2/")
 
-  if [ "${current_maj}" == "${maj}" ] && [ $current_min -le $min ]; then
-    return 0
-  fi
+    if [ "${current_maj}" == "${maj}" ] && [ $current_min -le $min ]; then
+        return 0
+    fi
 
-  return 1
+    return 1
 }
 
 check_available_upgrades() {
