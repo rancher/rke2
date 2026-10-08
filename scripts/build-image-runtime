@@ -24,6 +24,13 @@ docker buildx build \
 zstd -T0 -16 -f --long=25 --no-progress build/images/${PROG}-images.${PLATFORM}.tar
 
 if [ "${GOARCH}" != "s390x" ] && [ "${GOARCH}" != "arm64" ] && [ -z "$SKIP_WINDOWS" ]; then
+  # Minimum buildx version that contains https://github.com/docker/buildx/pull/4008
+  BUILDX_VERSION=$(docker buildx version | awk '{print $2}')
+  MIN_BUILDX_VERSION=$(printf '%s\n' "${BUILDX_VERSION}" "v0.37.0" | sort -V | sed -n '1p')
+  if [ "${MIN_BUILDX_VERSION}" != "v0.37.0" ]; then
+      echo "Buildx version must be >= v0.37.0"
+      exit 1
+  fi
   PLATFORMS_JQ_EXPR='[.manifests[].platform | select(.os == "windows") | {"os": .os, "ver": ."os.version", "arch": .architecture} | "\(.os)(\(.ver))/\(.arch)"] | join(",")'
   PLATFORMS=$(docker buildx imagetools inspect ${REGISTRY}/${REPO}/mirrored-pause:${PAUSE_VERSION} --raw | jq -r "${PLATFORMS_JQ_EXPR}")
   docker buildx build \
