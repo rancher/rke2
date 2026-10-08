@@ -48,7 +48,7 @@ jobs:
       GOCOVERDIR: /tmp/rke2cov
     steps:
     - name: Set up Docker
-      uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5
+      uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5.7.0
       with:
         version: type=image,tag=29
         daemon-config: '{"features":{"containerd-snapshotter":true}}'
@@ -104,7 +104,7 @@ jobs:
         dtest: [basics, flannel, profile, ingress-nginx, ing_migration, gatewayapi, prime, upgrade]
     steps:
       - name: Set up Docker
-        uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5
+        uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5.7.0
         with:
           version: type=image,tag=29
           daemon-config: '{"features":{"containerd-snapshotter":true}}'
@@ -177,7 +177,7 @@ jobs:
         dtest: [dualstack, secretsencryption, splitserver]
     steps:
       - name: Set up Docker
-        uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5
+        uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5.7.0
         with:
           version: type=image,tag=29
           daemon-config: '{"features":{"containerd-snapshotter":true}}'
