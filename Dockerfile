@@ -1,7 +1,7 @@
 ARG KUBERNETES_VERSION=dev
 
 # Base image for common build tools
-FROM rancher/hardened-build-base:v1.26.10b1 AS base
+FROM rancher/hardened-build-base:v1.26.11b1 AS base
 ARG BUILDARCH
 ENV ARCH $BUILDARCH
 RUN set -x && \
