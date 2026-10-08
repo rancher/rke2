@@ -444,8 +444,16 @@ func installRKE2(node DockerNode, service string, options InstallOptions) error 
 		installOption = "INSTALL_RKE2_TYPE=agent " + installOption
 	}
 
-	if _, err := node.RunCmdOnNode("curl -sfL https://get.rke2.io | " + installOption + " sh -"); err != nil {
-		return fmt.Errorf("failed to install %s: %w", service, err)
+	// The docker containers network connection can be unreliable, so we attempt the installation twice if a 404 error occurs.
+	installCmd := "curl -sfL https://get.rke2.io | " + installOption + " sh -"
+	if _, err := node.RunCmdOnNode(installCmd); err != nil {
+		if strings.Contains(err.Error(), "The requested URL returned error: 404") {
+			time.Sleep(10 * time.Second)
+			_, err = node.RunCmdOnNode(installCmd)
+		}
+		if err != nil {
+			return fmt.Errorf("failed to install %s: %w", service, err)
+		}
 	}
 	if _, err := node.RunCmdOnNode("systemctl enable " + service); err != nil {
 		return fmt.Errorf("failed to enable %s: %w", service, err)
