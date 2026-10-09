@@ -615,17 +615,17 @@ EOF
 }
 
 check_breaking_version() {
-  maj=$2
-  min=$3
+    maj=$2
+    min=$3
 
-  current_maj=$(rpm -qi $1 | awk -F': ' '/Version/ {print $2}' | sed -E -e "s/^([0-9]+)\.([0-9]+).*/\1/")
-  current_min=$(rpm -qi $1 | awk -F': ' '/Version/ {print $2}' | sed -E -e "s/^([0-9]+)\.([0-9]+).*/\2/")
+    current_maj=$(rpm -qi $1 | awk -F': ' '/Version/ {print $2}' | sed -E -e "s/^([0-9]+)\.([0-9]+).*/\1/")
+    current_min=$(rpm -qi $1 | awk -F': ' '/Version/ {print $2}' | sed -E -e "s/^([0-9]+)\.([0-9]+).*/\2/")
 
-  if [ "${current_maj}" == "${maj}" ] && [ $current_min -le $min ]; then
-    return 0
-  fi
+    if [ "${current_maj}" == "${maj}" ] && [ $current_min -le $min ]; then
+        return 0
+    fi
 
-  return 1
+    return 1
 }
 
 check_available_upgrades() {
@@ -676,26 +676,30 @@ do_install_tar() {
 # if rke2-selinux is installed, restorecon the systemd units and the rke2 folders that have the bin
 # since they will have wrong contexts after being installed with the tarball method
 do_restorecon_tar() {
-    if command -v rpm >/dev/null 2>&1; then
-        if rpm -q --quiet rke2-selinux; then
-            info "applying correct SELinux contexts to RKE2 files"
-            (
-              set +e
+    if ! command -v restorecon >/dev/null 2>&1 ; then
+        return
+    fi
+    if ! command -v semodule >/dev/null 2>&1 ; then
+        return
+    fi
+    if ! /usr/sbin/selinuxenabled >/dev/null 2>&1 ; then
+        return
+    fi
+    if semodule -l | grep -qx rke2; then
+        info "applying correct SELinux contexts to RKE2 files"
 
-              # this is for the .service files
-              restorecon -R -i /etc/systemd/system/rke2*
-              restorecon -R -i /usr/local/lib/systemd/system/rke2*
-              restorecon -R -i /usr/lib/systemd/system/rke2*
+        # this is for the .service files
+        restorecon -R -i /etc/systemd/system/rke2*
+        restorecon -R -i /usr/local/lib/systemd/system/rke2*
+        restorecon -R -i /usr/lib/systemd/system/rke2*
 
-              # this one is for the bin
-              restorecon -R -i /opt/rke2
-              restorecon -R -i /usr/local/bin/rke2*
-              restorecon -R -i /usr/bin/rke2*
+        # this one is for the bin
+        restorecon -R -i /opt/rke2
+        restorecon -R -i /usr/local/bin/rke2*
+        restorecon -R -i /usr/bin/rke2*
 
-              if [ -n "${INSTALL_RKE2_ARTIFACT_PATH}" ]; then
-                  restorecon -R -i /var/lib/rancher/rke2
-              fi
-            ) || true
+        if [ -n "${INSTALL_RKE2_ARTIFACT_PATH}" ]; then
+            restorecon -R -i /var/lib/rancher/rke2
         fi
     fi
 }
