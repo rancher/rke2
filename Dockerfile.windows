@@ -53,7 +53,7 @@ ARG KUBERNETES_VERSION=dev
 
 # windows runtime image
 ENV CRICTL_VERSION="v1.37.0"
-ENV CALICO_VERSION="v3.32.2"
+ENV CALICO_VERSION="v3.33.0"
 ENV CNI_PLUGIN_VERSION="v1.9.1"
 ENV FLANNEL_VERSION="v0.28.9"
 ENV CNI_FLANNEL_VERSION="v1.9.1-flannel3"
@@ -97,7 +97,7 @@ RUN case "${KUBERNETES_VERSION}" in \
     mv kube-proxy.exe rancher/
 
 RUN curl -fsSLO https://github.com/projectcalico/calico/releases/download/${CALICO_VERSION}/calico-windows-${CALICO_VERSION}.zip && \
-    echo "07f81f0c71a63919a0c93ada6c6f2bbc854fe0a89e0089b747d9d73a41369a0c  calico-windows-${CALICO_VERSION}.zip" | sha256sum -c -
+    echo "9802df2d02188ef8a33dd122ec3f1900b199dd0028f97cc2c76aa5bb36b20a70  calico-windows-${CALICO_VERSION}.zip" | sha256sum -c -
 RUN curl -fsSL https://github.com/flannel-io/flannel/releases/download/${FLANNEL_VERSION}/flanneld.exe -o flanneld.exe && \
     echo "7d43b3de5635891e68b36458d912a94c2eb94e15d878d486f539309db5845861  flanneld.exe" | sha256sum -c - && \
     mv flanneld.exe rancher/flanneld.exe
