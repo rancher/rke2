@@ -44,7 +44,7 @@ jobs:
       GOCOVERDIR: /tmp/rke2cov
     steps:
     - name: Set up Docker
-      uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
+      uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5
       with:
         version: type=image,tag=29
         daemon-config: '{"features":{"containerd-snapshotter":true}}'
@@ -77,7 +77,7 @@ jobs:
     - name: Generate coverage report
       run:  sudo -E env "PATH=$PATH" go tool covdata textfmt -i $GOCOVERDIR -o ${{ matrix.itest }}.out
     - name: Upload Results To Codecov
-      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v5
+      uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./${{ matrix.itest }}.out
@@ -100,7 +100,7 @@ jobs:
         dtest: [basics, flannel, profile, ingress-nginx, ing_migration, gatewayapi, prime, upgrade]
     steps:
       - name: Set up Docker
-        uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
+        uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5
         with:
           version: type=image,tag=29
           daemon-config: '{"features":{"containerd-snapshotter":true}}'
@@ -164,7 +164,7 @@ jobs:
         dtest: [dualstack, secretsencryption, splitserver]
     steps:
       - name: Set up Docker
-        uses: docker/setup-docker-action@77e84dbf09b47d1e29270283c22f16145aa85ca1 # v5
+        uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5
         with:
           version: type=image,tag=29
           daemon-config: '{"features":{"containerd-snapshotter":true}}'
