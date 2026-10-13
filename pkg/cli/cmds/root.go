@@ -251,6 +251,11 @@ func validateCloudProvider(clx *cli.Context, role CLIRole) error {
 		}
 	}
 
+	if role == Server && cloudProvider == "external" {
+		clx.Set("disable-cloud-controller", "true")
+		return nil
+	}
+
 	for _, provider := range cloudProviders {
 		if provider.name == cloudProvider {
 			clx.Set("cloud-provider-name", "external")
