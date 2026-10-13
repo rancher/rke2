@@ -700,6 +700,30 @@ func PodIPsUsingLabel(kubeConfigFile string, label string) ([]objIP, error) {
 	return getObjIPs(cmd)
 }
 
+// DeploymentPodIPv4s waits for a deployment rollout to complete and returns the IPv4 of each of its pods.
+// It fails if any pod matching the label does not have an IPv4 yet, rather than only checking the first one.
+func DeploymentPodIPv4s(kubeConfigFile, deployment, label, timeout string) ([]string, error) {
+	cmd := "kubectl rollout status deployment/" + deployment + " --timeout=" + timeout + " --kubeconfig=" + kubeConfigFile
+	if res, err := RunCommand(cmd); err != nil {
+		return nil, fmt.Errorf("failed cmd: %s, result: %s: %w", cmd, res, err)
+	}
+	pods, err := PodIPsUsingLabel(kubeConfigFile, label)
+	if err != nil {
+		return nil, err
+	}
+	if len(pods) == 0 {
+		return nil, fmt.Errorf("no pods found with label %s", label)
+	}
+	var ips []string
+	for _, pod := range pods {
+		if pod.Ipv4 == "" {
+			return nil, fmt.Errorf("pod %s has no IP yet", pod.Name)
+		}
+		ips = append(ips, pod.Ipv4)
+	}
+	return ips, nil
+}
+
 // GetPodIPs returns the IPs of all the pods
 func GetPodIPs(kubeConfigFile string) ([]objIP, error) {
 	cmd := `kubectl get pods -A -o=jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.podIPs[*].ip}{"\n"}{end}' --kubeconfig=` + kubeConfigFile
