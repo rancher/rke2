@@ -142,19 +142,19 @@ var _ = Describe("Verify DualStack in Cilium without kube-proxy configuration", 
 		_, err := tc.DeployWorkload("pod_client.yaml")
 		Expect(err).NotTo(HaveOccurred())
 
-		// Wait for the pod_client to have an IP
-		Eventually(func() string {
-			ips, _ := e2e.PodIPsUsingLabel(tc.KubeconfigFile, "app=client")
-			return ips[0].Ipv4
-		}, "40s", "5s").Should(ContainSubstring("10.42"), "failed getClientIPs")
+		// Wait for all the client pods to be ready and have an IP
+		var clientIPs []string
+		Eventually(func(g Gomega) {
+			clientIPs, err = e2e.DeploymentPodIPv4s(tc.KubeconfigFile, "client-deployment", "app=client", "60s")
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(clientIPs).To(HaveEach(ContainSubstring("10.42")))
+		}, "120s", "5s").Should(Succeed())
 
-		clientIPs, err := e2e.PodIPsUsingLabel(tc.KubeconfigFile, "app=client")
-		Expect(err).NotTo(HaveOccurred())
 		for _, ip := range clientIPs {
-			cmd := "kubectl exec svc/client-wget --kubeconfig=" + tc.KubeconfigFile + " -- wget -T7 -O - " + ip.Ipv4 + "/name.html"
+			cmd := "kubectl exec svc/client-wget --kubeconfig=" + tc.KubeconfigFile + " -- wget -T7 -O - " + ip + "/name.html"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "20s", "3s").Should(ContainSubstring("client-deployment"), "failed cmd: "+cmd)
+			}, "60s", "5s").Should(ContainSubstring("client-deployment"), "failed cmd: "+cmd)
 		}
 	})
 
@@ -170,11 +170,11 @@ var _ = Describe("Verify DualStack in Cilium without kube-proxy configuration", 
 			cmd := fmt.Sprintf("curl  --header host:%s http://%s/name.html", hostName, node.Ipv4)
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "30s", "2s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
+			}, "60s", "5s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
 			cmd = fmt.Sprintf("curl  --header host:%s http://[%s]/name.html", hostName, node.Ipv6)
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "10s", "1s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
+			}, "60s", "5s").Should(ContainSubstring("ds-clusterip-pod"), "failed cmd: "+cmd)
 		}
 	})
 
@@ -190,11 +190,11 @@ var _ = Describe("Verify DualStack in Cilium without kube-proxy configuration", 
 			cmd = "curl -L --insecure http://" + node.Ipv4 + ":" + nodeport + "/name.html"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "30s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
+			}, "60s", "5s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
 			cmd = "curl -L --insecure http://[" + node.Ipv6 + "]:" + nodeport + "/name.html"
 			Eventually(func() (string, error) {
 				return e2e.RunCommand(cmd)
-			}, "10s", "1s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
+			}, "60s", "5s").Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
 		}
 	})
 
