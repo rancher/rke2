@@ -94,15 +94,15 @@ if [ "${GOARCH}" != "arm64" ]; then
 
     if [ "${REGISTRY}" != "docker.io" ]; then
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-vsphere.txt
-    ${REGISTRY}/rancher/hardened-cloud-provider-vsphere:v1.35.1-build20260911
-    ${REGISTRY}/rancher/hardened-vsphere-csi-driver:v3.7.3-build20260909
-    ${REGISTRY}/rancher/hardened-vsphere-csi-syncer:v3.7.3-build20260909
-    ${REGISTRY}/rancher/hardened-csi-node-driver-registrar:v2.13.0-build20260909
-    ${REGISTRY}/rancher/hardened-csi-resizer:v1.12.0-build20260909
-    ${REGISTRY}/rancher/hardened-livenessprobe:v2.15.0-build20260909
-    ${REGISTRY}/rancher/hardened-csi-attacher:v4.9.0-build20260909
-    ${REGISTRY}/rancher/hardened-csi-provisioner:v4.0.1-build20260909
-    ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.6.0-build20260909
+    ${REGISTRY}/rancher/hardened-cloud-provider-vsphere:v1.35.1-build20261012
+    ${REGISTRY}/rancher/hardened-vsphere-csi-driver:v3.7.3-build20261012
+    ${REGISTRY}/rancher/hardened-vsphere-csi-syncer:v3.7.3-build20261012
+    ${REGISTRY}/rancher/hardened-csi-node-driver-registrar:v2.13.0-build20261012
+    ${REGISTRY}/rancher/hardened-csi-resizer:v1.12.0-build20261012
+    ${REGISTRY}/rancher/hardened-livenessprobe:v2.15.0-build20261012
+    ${REGISTRY}/rancher/hardened-csi-attacher:v4.9.0-build20261012
+    ${REGISTRY}/rancher/hardened-csi-provisioner:v4.0.1-build20261012
+    ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.6.0-build20261012
 EOF
     else
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-vsphere.txt
@@ -114,7 +114,7 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-vsphere.txt
     ${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:v2.15.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:v4.9.0
     ${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:v4.0.1
-    ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.6.0-build20260909
+    ${REGISTRY}/rancher/hardened-csi-snapshotter:v8.6.0-build20261012
 EOF
     fi
 
