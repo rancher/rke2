@@ -82,17 +82,19 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 		res, err := tc.WindowsAgents[0].RunCmdOnNode(cmdPowershell)
 		Expect(err).NotTo(HaveOccurred(), "failed output:"+res)
 
-		// Wait for the pod_client pods to have an IP
-		Eventually(func() string {
-			ips, _ := e2e.PodIPsUsingLabel(tc.KubeconfigFile, "app=client")
-			return ips[0].Ipv4
-		}, "120s", "10s").Should(ContainSubstring("10.42"), "failed getClientIPs")
+		// Wait for all the pod_client pods to be ready and have an IP
+		Eventually(func(g Gomega) {
+			ips, err := e2e.DeploymentPodIPv4s(tc.KubeconfigFile, "client-deployment", "app=client", "60s")
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(ips).To(HaveEach(ContainSubstring("10.42")))
+		}, "120s", "10s").Should(Succeed(), "failed getClientIPs")
 
-		// Wait for the windows_app_deployment pods to have an IP (We must wait 250s because it takes time)
-		Eventually(func() string {
-			ips, _ := e2e.PodIPsUsingLabel(tc.KubeconfigFile, "app=windows-app")
-			return ips[0].Ipv4
-		}, "620s", "10s").Should(ContainSubstring("10.42"), "failed getClientIPs")
+		// Wait for all the windows_app_deployment pods to be ready and have an IP (We must wait 250s because it takes time)
+		Eventually(func(g Gomega) {
+			ips, err := e2e.DeploymentPodIPv4s(tc.KubeconfigFile, "windows-app-deployment", "app=windows-app", "60s")
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(ips).To(HaveEach(ContainSubstring("10.42")))
+		}, "620s", "10s").Should(Succeed(), "failed getWindowsAppIPs")
 
 		// Verify there are BGP routes
 		cmdRoute := "ip route"
