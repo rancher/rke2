@@ -3,9 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -17,7 +15,8 @@ import (
 )
 
 var (
-	channel = flag.String("channel", "latest", "RKE2 release channel to upgrade from")
+	//channel = flag.String("channel", "latest", "RKE2 release channel to upgrade from")
+	version = flag.String("version", "", "RKE2 version to upgrade from")
 	ci      = flag.Bool("ci", false, "running on CI, force cleanup")
 	tc      *docker.TestConfig
 )
@@ -40,7 +39,8 @@ var _ = Describe("Upgrade Tests", Ordered, func() {
 			tc.ServerYaml = "enable-servicelb: true"
 			Expect(tc.ProvisionServers(1)).To(Succeed())
 			Expect(tc.ProvisionAgents(1)).To(Succeed())
-			Expect(tc.Install(docker.InstallOptions{Channel: *channel})).To(Succeed())
+			//TODO: If flakiness of the channel server improves, we can go back to using the channel directly in the install script
+			Expect(tc.Install(docker.InstallOptions{Version: *version})).To(Succeed())
 			// Should use the rancher/hardened-addon-resizer image
 			metricAddonManifest := `
 apiVersion: helm.cattle.io/v1
@@ -106,11 +106,9 @@ spec:
 			}, "30s", "5s").Should(Succeed())
 		})
 		It("validates the release cluster images", func() {
-			version, err := getVersionFromChannel(*channel)
-			Expect(err).NotTo(HaveOccurred())
 			expectedImages := filepath.Join(tc.TestDir, "release-images.txt")
-			releaseURL := fmt.Sprintf("https://github.com/rancher/rke2/releases/download/%s/rke2-images.linux-amd64.txt", version)
-			_, err = docker.RunCommand(fmt.Sprintf("curl -fsSL -o %s %s", expectedImages, releaseURL))
+			releaseURL := fmt.Sprintf("https://github.com/rancher/rke2/releases/download/%s/rke2-images.linux-amd64.txt", *version)
+			_, err := docker.RunCommand(fmt.Sprintf("curl -fsSL -o %s %s", expectedImages, releaseURL))
 			Expect(err).NotTo(HaveOccurred())
 			contents, err := os.ReadFile(expectedImages)
 			Expect(err).NotTo(HaveOccurred())
@@ -167,6 +165,7 @@ spec:
 	})
 })
 
+/* TODO restore usage once channel server stability is ensured
 func getVersionFromChannel(channel string) (string, error) {
 	client := &http.Client{}
 	resp, err := client.Get("https://update.rke2.io/v1-release/channels/" + channel)
@@ -186,6 +185,7 @@ func getVersionFromChannel(channel string) (string, error) {
 	}
 	return version, nil
 }
+*/
 
 func imageList(contents []byte) []string {
 	var expected []string
