@@ -428,15 +428,19 @@ func persistRKE2Environment(node DockerNode, service string) error {
 
 type InstallOptions struct {
 	Channel      string
+	Version      string
 	ArtifactPath string
 }
 
 func installRKE2(node DockerNode, service string, options InstallOptions) error {
-	if (options.Channel == "") == (options.ArtifactPath == "") {
-		return fmt.Errorf("exactly one of Channel or ArtifactPath must be set")
+	if (options.Channel == "") == (options.ArtifactPath == "") == (options.Version == "") {
+		return fmt.Errorf("exactly one of Channel/Version/ArtifactPath must be set")
 	}
 
 	installOption := fmt.Sprintf("INSTALL_RKE2_CHANNEL=%q", options.Channel)
+	if options.Version != "" {
+		installOption = fmt.Sprintf("INSTALL_RKE2_VERSION=%q", options.Version)
+	}
 	if options.ArtifactPath != "" {
 		installOption = fmt.Sprintf("INSTALL_RKE2_ARTIFACT_PATH=%q", options.ArtifactPath)
 	}
