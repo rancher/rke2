@@ -1,9 +1,11 @@
 package staticpod
 
 import (
+	"cmp"
 	"context"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 
 	"github.com/k3s-io/k3s/pkg/agent/config"
@@ -120,6 +122,11 @@ func checkManifestDeployed(ctx context.Context, cRuntime runtimeapi.RuntimeServi
 		SandboxStatuses: []*runtimeapi.PodSandboxStatus{},
 	}
 
+	// sort sandboxes; PodSandboxChanged assumes that the first pod sandbox status in the list is the newest,
+	// but containerd does not return them in any specific order.
+	// Ref: https://github.com/kubernetes/kubernetes/blob/v1.28.2/pkg/kubelet/kuberuntime/kuberuntime_sandbox.go#L357-L362
+	slices.SortFunc(resp.Items, podSandboxByCreatedThenID)
+
 	// Get detailed pod sandbox status for any sandboxes associated with the current pod,
 	// so that we can use kubelet runtime logic to determine which is the latest.
 	// Ref: https://github.com/kubernetes/kubernetes/blob/v1.28.2/pkg/kubelet/kuberuntime/kuberuntime_manager.go#L1404
@@ -195,4 +202,14 @@ func determinePodSandboxIPs(podSandbox *runtimeapi.PodSandboxStatus) []string {
 	}
 
 	return podIPs
+}
+
+func podSandboxByCreatedThenID(a, b *runtimeapi.PodSandbox) int {
+	if a.Metadata == nil || b.Metadata == nil || (a.Metadata.Attempt == b.Metadata.Attempt) {
+		if a.CreatedAt != b.CreatedAt {
+			return cmp.Compare(a.CreatedAt, b.CreatedAt)
+		}
+		return cmp.Compare(a.Id, b.Id)
+	}
+	return cmp.Compare(a.Metadata.Attempt, b.Metadata.Attempt)
 }
