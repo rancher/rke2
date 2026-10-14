@@ -136,15 +136,24 @@ jobs:
         with:
           secrets: |
             secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
-      - name: Determine channel
+      - name: Determine latest RKE2 version for minor branch
+        if: matrix.dtest == 'upgrade'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          CHANNEL="$(. ./scripts/version.sh >/dev/null; printf '%s' "${KUBERNETES_VERSION%.*}")"
-          echo "CHANNEL=$CHANNEL" >> "$GITHUB_ENV"
+          KUBERNETES_MINOR="$(. ./scripts/version.sh >/dev/null; printf '%s' "${KUBERNETES_VERSION%.*}")"
+          RKE2_RELEASES="$(gh release list --repo rancher/rke2 --limit 100 --exclude-drafts --exclude-pre-releases --json tagName -q '.[] | .tagName' | sort -V)"
+          RKE2_VERSION="$(printf '%s\n' "$RKE2_RELEASES" | awk -v prefix="${KUBERNETES_MINOR}." 'index($0, prefix) == 1' | tail -n 1)"
+          if [[ -z "$RKE2_VERSION" ]]; then
+            echo "No stable RKE2 release found for $KUBERNETES_MINOR; using the highest available release"
+            RKE2_VERSION="$(printf '%s\n' "$RKE2_RELEASES" | tail -n 1)"
+          fi
+          echo "RKE2_VERSION=$RKE2_VERSION" >> "$GITHUB_ENV"
       - name: Run ${{ matrix.dtest }} Test
         if: matrix.dtest != 'prime'
         run: |
             if [ "${{ matrix.dtest }}" = "upgrade" ]; then
-              go test -v -timeout=45m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci -channel $CHANNEL
+              go test -v -timeout=45m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci -version "$RKE2_VERSION"
             else
               go test -v -timeout=20m ./tests/docker/${{ matrix.dtest }}/${{ matrix.dtest }}_test.go -ginkgo.v -ci
             fi
