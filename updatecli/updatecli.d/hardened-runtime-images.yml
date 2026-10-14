@@ -1,11 +1,12 @@
 ---
 name: "Update hardened runtime images"
-# Watches for new hardened-runc, hardened-containerd, and hardened-crictl builds
+# Watches for new hardened-runc, hardened-containerd, hardened-crictl, and hardened-etcd builds
 # and bumps the corresponding FROM tags in the Dockerfile, along with the
-# matching containerd and crictl references in Dockerfile.windows.
+# matching containerd and crictl references in Dockerfile.windows, and the etcd
+# image tag in scripts/version.sh.
 #
 # Version filters are pinned to the minor line currently referenced in the
-# Dockerfile so we track new builds without jumping across minor/major versions
+# Dockerfile or scripts/version.sh so we track new builds without jumping across minor/major versions
 # (each image-build repo publishes several lines concurrently).
 scms:
   rke2:
@@ -31,7 +32,7 @@ sources:
           pattern: ':-v(\d+\.\d+)\.'
           captureindex: 1
   hardenedRunc:
-    name: "Latest hardened-runc build"
+    name: "Latest hardened-runc 1.4 build"
     kind: "githubrelease"
     spec:
       owner: "rancher"
@@ -41,7 +42,7 @@ sources:
         kind: "regex"
         pattern: '^v1\.4\.\d+-build\d+$'
   hardenedContainerd:
-    name: "Latest hardened-containerd build"
+    name: "Latest hardened-containerd 2.2 build"
     kind: "githubrelease"
     spec:
       owner: "rancher"
@@ -49,7 +50,7 @@ sources:
       token: '{{ requiredEnv .github.token }}'
       versionfilter:
         kind: "regex"
-        pattern: '^v2\.3\.\d+-k3s\d(?:\.\d+)?-build\d+$'
+        pattern: '^v2\.2\.\d+-k3s\d(?:\.\d+)?-build\d+$'
   hardenedCrictl:
     name: "Latest hardened-crictl build"
     kind: "githubrelease"
@@ -62,6 +63,16 @@ sources:
       versionfilter:
         kind: "regex"
         pattern: '^v{{ source "kubernetesMinor" }}\.\d+-build\d+$'
+  etcd:
+    name: "Latest etcd 3.6 build"
+    kind: "githubrelease"
+    spec:
+      owner: "rancher"
+      repository: "image-build-etcd"
+      token: '{{ requiredEnv .github.token }}'
+      versionfilter:
+        kind: "regex"
+        pattern: '^v3\.6\.\d+-k3s\d+(?:\.\d+)?-build\d+$'
   hardenedContainerdWindowsChecksum:
     name: "Get containerd windows tarball checksum for the selected hardened-containerd build"
     kind: "shell"
@@ -85,6 +96,15 @@ sources:
         echo "${CHECKSUM%% *}"
 
 targets:
+  bumpEtcd:
+    name: "Update ETCD_IMAGE_TAG in scripts/version.sh"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: etcd
+    spec:
+      file: scripts/version.sh
+      matchpattern: '(?m)^ETCD_IMAGE_TAG=\$\{ETCD_IMAGE_TAG:-[^}]+\}$'
+      replacepattern: 'ETCD_IMAGE_TAG=$${ETCD_IMAGE_TAG:-{{ source "etcd" }}}'
   bumpRunc:
     name: "Update hardened-runc image tag in Dockerfile"
     kind: "dockerfile"
@@ -162,12 +182,14 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: 'Update hardened runtime images in Dockerfile'
+      title: 'Update hardened runtime images'
       description: |
         Automated PR to bump the hardened runtime image tags in the `Dockerfile`
-        and the matching containerd and crictl references in `Dockerfile.windows`.
+        and the matching containerd and crictl references in `Dockerfile.windows`,
+        along with `ETCD_IMAGE_TAG` in `scripts/version.sh`.
 
         Updated references:
         - `rancher/hardened-runc` -> {{ source "hardenedRunc" }}
         - `rancher/hardened-containerd` -> {{ source "hardenedContainerd" }}
         - `rancher/hardened-crictl` -> {{ source "hardenedCrictl" }}
+        - `rancher/hardened-etcd` -> {{ source "etcd" }}
