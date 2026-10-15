@@ -1,0 +1,53 @@
+---
+name: "Update klipper-helm image"
+scms:
+  rke2:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      username: "{{ requiredEnv .github.username }}"
+      token: '{{ requiredEnv .github.token }}'
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repo }}"
+      branch: master
+
+sources:
+  klipperHelm:
+    name: "Latest klipper-helm build"
+    kind: "githubrelease"
+    spec:
+      owner: "k3s-io"
+      repository: "klipper-helm"
+      token: '{{ requiredEnv .github.token }}'
+      typefilter:
+        draft: false
+        prerelease: false
+        release: true
+
+targets:
+  bumpKlipperHelm:
+    name: "Update KLIPPERHELM_VERSION in scripts/version.sh"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: klipperHelm
+    spec:
+      file: scripts/version.sh
+      matchpattern: '(?m)^KLIPPERHELM_VERSION=\$\{KLIPPERHELM_VERSION:-[^}]+\}$'
+      replacepattern: 'KLIPPERHELM_VERSION=$${KLIPPERHELM_VERSION:-{{ source "klipperHelm" }}}'
+
+actions:
+  github:
+    kind: "github/pullrequest"
+    scmid: "rke2"
+    spec:
+      automerge: false
+      draft: false
+      mergemethod: squash
+      parent: false
+      title: 'Update klipper-helm image'
+      description: |
+        Automated PR to bump `KLIPPERHELM_VERSION` in `scripts/version.sh`.
+
+        Updated references:
+        - `rancher/klipper-helm` -> {{ source "klipperHelm" }}
