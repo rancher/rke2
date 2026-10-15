@@ -204,12 +204,14 @@ func determinePodSandboxIPs(podSandbox *runtimeapi.PodSandboxStatus) []string {
 	return podIPs
 }
 
+// podSandboxByCreatedThenID compares pod sandboxes in descending order by attempt, creation time, or ID.
+// This will sort newer sandboxes (more attempts or newer creation time) first.
 func podSandboxByCreatedThenID(a, b *runtimeapi.PodSandbox) int {
 	if a.Metadata == nil || b.Metadata == nil || (a.Metadata.Attempt == b.Metadata.Attempt) {
-		if a.CreatedAt != b.CreatedAt {
-			return cmp.Compare(a.CreatedAt, b.CreatedAt)
+		if c := cmp.Compare(b.CreatedAt, a.CreatedAt); c != 0 {
+			return c
 		}
-		return cmp.Compare(a.Id, b.Id)
+		return cmp.Compare(b.Id, a.Id)
 	}
-	return cmp.Compare(a.Metadata.Attempt, b.Metadata.Attempt)
+	return cmp.Compare(b.Metadata.Attempt, a.Metadata.Attempt)
 }
