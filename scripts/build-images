@@ -56,7 +56,7 @@ xargs -n1 -t $PULL_CMD_CORE << EOF >> $BUILD_DIR/images-core.txt
     ${REGISTRY}/rancher/mirrored-pause:${PAUSE_VERSION}
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
     ${REGISTRY}/rancher/rke2-security-responder:v0.1.8
-    ${REGISTRY}/rancher/hardened-snapshot-controller:v8.6.0-build20261012
+    ${REGISTRY}/rancher/hardened-snapshot-controller:v8.7.0-build20261015
     ${REGISTRY}/rancher/hardened-traefik:v3.7.14-build20261009
 EOF
 
