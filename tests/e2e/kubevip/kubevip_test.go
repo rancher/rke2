@@ -211,6 +211,12 @@ func dumpVIPDiagnostics() {
 var _ = Describe("Verify kube-vip load balancer cluster", Ordered, func() {
 	It("Starts up with no issues", func() {
 		var err error
+		if os.Getenv("E2E_CNI") == "" {
+			Expect(os.Setenv("E2E_CNI", *cni)).To(Succeed())
+		}
+		if os.Getenv("E2E_FILTER") == "" {
+			Expect(os.Setenv("E2E_FILTER", *filter)).To(Succeed())
+		}
 		serverNodes, agentNodes, err = createKubeVIPCluster(*nodeOS, *serverCount, *agentCount)
 		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog(err))
 		tc = &e2e.TestConfig{
