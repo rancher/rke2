@@ -53,7 +53,7 @@ channels:
   excludeRegexp: ^[^+]+-
 - name: v1.33
   latestRegexp: v1\.33\..*
-  excludeRegexp: ^[^+]+-
+  excludeRegexp: (^[^+]+-|v1\.33\.13\+rke2r3)
 - name: v1.34
   latestRegexp: v1\.34\..*
   excludeRegexp: ^[^+]+-
