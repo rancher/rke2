@@ -132,5 +132,4 @@ jobs:
     - name: "Run ${{ matrix.test }}: ${{ matrix.cni }}/${{ matrix.filter }}"
       working-directory: tests/e2e/${{ matrix.test }}
       run: |
-        E2E_CNI=${{ matrix.cni }} E2E_FILTER=${{ matrix.filter }} \
         go test -timeout=45m ./${{ matrix.test }}_test.go -ci -local -cni=${{ matrix.cni }} -filter=${{ matrix.filter }} -ginkgo.v -test.v
