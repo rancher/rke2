@@ -5,8 +5,8 @@ go 1.26.8
 replace (
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.15.0-rc.1
 	github.com/Mirantis/cri-dockerd => github.com/k3s-io/cri-dockerd v0.3.19-k3s5
-	github.com/cloudnativelabs/kube-router/v2 => github.com/k3s-io/kube-router/v2 v2.6.3-k3s1
-	github.com/containerd/containerd/v2 => github.com/k3s-io/containerd/v2 v2.3.4-k3s1.36
+	github.com/cloudnativelabs/kube-router/v2 => github.com/k3s-io/kube-router/v2 v2.11.1-k3s1
+	github.com/containerd/containerd/v2 => github.com/k3s-io/containerd/v2 v2.3.7-k3s1
 	github.com/docker/distribution => github.com/docker/distribution v2.8.3+incompatible
 	github.com/docker/docker => github.com/docker/docker v25.0.15-0.20260325154711-d2dbc0547253+incompatible
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.4
@@ -43,7 +43,6 @@ replace (
 	k8s.io/dynamic-resource-allocation => github.com/k3s-io/kubernetes/staging/src/k8s.io/dynamic-resource-allocation v1.37.1-k3s1
 	k8s.io/endpointslice => github.com/k3s-io/kubernetes/staging/src/k8s.io/endpointslice v1.37.1-k3s1
 	k8s.io/externaljwt => github.com/k3s-io/kubernetes/staging/src/k8s.io/externaljwt v1.37.1-k3s1
-	k8s.io/klog => github.com/k3s-io/klog v1.0.0-k3s2 // k3s-release-1.x
 	k8s.io/klog/v2 => github.com/k3s-io/klog/v2 v2.140.0-k3s1 // k3s-main
 	k8s.io/kms => github.com/k3s-io/kubernetes/staging/src/k8s.io/kms v1.37.1-k3s1
 	k8s.io/kube-aggregator => github.com/k3s-io/kubernetes/staging/src/k8s.io/kube-aggregator v1.37.1-k3s1
@@ -56,11 +55,8 @@ replace (
 	k8s.io/kubernetes => github.com/k3s-io/kubernetes v1.37.1-k3s1
 	k8s.io/metrics => github.com/k3s-io/kubernetes/staging/src/k8s.io/metrics v1.37.1-k3s1
 	k8s.io/mount-utils => github.com/k3s-io/kubernetes/staging/src/k8s.io/mount-utils v1.37.1-k3s1
-	k8s.io/node-api => github.com/k3s-io/kubernetes/staging/src/k8s.io/node-api v1.37.1-k3s1
 	k8s.io/pod-security-admission => github.com/k3s-io/kubernetes/staging/src/k8s.io/pod-security-admission v1.37.1-k3s1
 	k8s.io/sample-apiserver => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-apiserver v1.37.1-k3s1
-	k8s.io/sample-cli-plugin => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-cli-plugin v1.37.1-k3s1
-	k8s.io/sample-controller => github.com/k3s-io/kubernetes/staging/src/k8s.io/sample-controller v1.37.1-k3s1
 	k8s.io/streaming => github.com/k3s-io/kubernetes/staging/src/k8s.io/streaming v1.37.1-k3s1
 	sigs.k8s.io/cri-tools => github.com/k3s-io/cri-tools v1.37.0-k3s1
 )
@@ -73,11 +69,11 @@ require (
 	github.com/google/go-containerregistry v0.20.3
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.17.9
-	github.com/k3s-io/k3s v1.37.1-rc2.0.20260924184608-356c025475bb // main
+	github.com/k3s-io/k3s v1.37.2-0.20261016152943-06368081f0b2 // main
 	github.com/k3s-io/kine v0.17.1
 	github.com/libp2p/go-netroute v0.4.0
-	github.com/onsi/ginkgo/v2 v2.32.1
-	github.com/onsi/gomega v1.43.0
+	github.com/onsi/ginkgo/v2 v2.33.0
+	github.com/onsi/gomega v1.44.0
 	github.com/otiai10/copy v1.14.1
 	github.com/rancher/permissions v0.0.0-20240523180510-4001d3d637f7
 	github.com/rancher/wharfie v0.7.1
@@ -88,8 +84,8 @@ require (
 	github.com/tigera/operator v1.36.13
 	github.com/urfave/cli/v2 v2.27.7
 	golang.org/x/crypto v0.55.0
-	golang.org/x/sync v0.22.0
-	golang.org/x/sys v0.47.0
+	golang.org/x/sync v0.23.0
+	golang.org/x/sys v0.48.0
 	google.golang.org/grpc v1.83.2
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	k8s.io/api v0.37.1
@@ -146,7 +142,7 @@ require (
 	github.com/containerd/fifo v1.1.0 // indirect
 	github.com/containerd/fuse-overlayfs-snapshotter/v2 v2.1.7 // indirect
 	github.com/containerd/log v0.1.0 // indirect
-	github.com/containerd/platforms v1.0.0-rc.4 // indirect
+	github.com/containerd/platforms v1.0.0-rc.5 // indirect
 	github.com/containerd/plugin v1.1.0 // indirect
 	github.com/containerd/stargz-snapshotter v0.18.2 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.18.2 // indirect
@@ -299,7 +295,7 @@ require (
 	github.com/moby/sys/mountinfo v0.7.2 // indirect
 	github.com/moby/sys/sequential v0.6.0 // indirect
 	github.com/moby/sys/signal v0.7.1 // indirect
-	github.com/moby/sys/user v0.4.0 // indirect
+	github.com/moby/sys/user v0.4.1 // indirect
 	github.com/moby/sys/userns v0.1.0 // indirect
 	github.com/moby/term v0.5.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -389,7 +385,7 @@ require (
 	github.com/tinylib/msgp v1.6.1 // indirect
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20220101234140-673ab2c3ae75 // indirect
 	github.com/vbatts/tar-split v0.12.2 // indirect
-	github.com/vishvananda/netlink v1.3.1 // indirect
+	github.com/vishvananda/netlink v1.3.2-0.20260505210927-99e979749d3e // indirect
 	github.com/vishvananda/netns v0.0.5 // indirect
 	github.com/whyrusleeping/go-keyspace v0.0.0-20160322163242-5b898ac5add1 // indirect
 	github.com/wlynxg/anet v0.0.5 // indirect
@@ -399,12 +395,12 @@ require (
 	github.com/yl2chen/cidranger v1.0.2 // indirect
 	github.com/zeebo/xxh3 v1.1.0 // indirect
 	go.etcd.io/bbolt v1.5.0 // indirect
-	go.etcd.io/etcd/api/v3 v3.7.1 // indirect
-	go.etcd.io/etcd/client/pkg/v3 v3.7.1 // indirect
-	go.etcd.io/etcd/client/v3 v3.7.1 // indirect
+	go.etcd.io/etcd/api/v3 v3.7.2 // indirect
+	go.etcd.io/etcd/client/pkg/v3 v3.7.2 // indirect
+	go.etcd.io/etcd/client/v3 v3.7.2 // indirect
 	go.etcd.io/etcd/etcdutl/v3 v3.7.1 // indirect
-	go.etcd.io/etcd/pkg/v3 v3.7.1 // indirect
-	go.etcd.io/etcd/server/v3 v3.7.1 // indirect
+	go.etcd.io/etcd/pkg/v3 v3.7.2 // indirect
+	go.etcd.io/etcd/server/v3 v3.7.2 // indirect
 	go.etcd.io/raft/v3 v3.7.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
@@ -449,7 +445,7 @@ require (
 	k8s.io/component-helpers v0.36.1 // indirect
 	k8s.io/controller-manager v0.35.8 // indirect
 	k8s.io/cri-client v0.37.1 // indirect
-	k8s.io/cri-streaming v0.37.0-rc.0 // indirect
+	k8s.io/cri-streaming v0.37.1 // indirect
 	k8s.io/csi-translation-lib v0.0.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
 	k8s.io/externaljwt v1.32.0 // indirect
@@ -460,7 +456,7 @@ require (
 	k8s.io/kubelet v0.37.1 // indirect
 	k8s.io/mount-utils v0.35.0 // indirect
 	k8s.io/pod-security-admission v0.0.0 // indirect
-	k8s.io/streaming v0.37.0 // indirect
+	k8s.io/streaming v0.37.1 // indirect
 	lukechampine.com/blake3 v1.4.1 // indirect
 	modernc.org/libc v1.75.6 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
