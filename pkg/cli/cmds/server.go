@@ -121,6 +121,7 @@ var (
 		"etcd-snapshot-dir":                 copyFlag,
 		"etcd-snapshot-name":                copyFlag,
 		"etcd-snapshot-compress":            copyFlag,
+		"etcd-snapshot-restrictions":        copyFlag,
 		"node-name":                         copyFlag,
 		"with-node-id":                      copyFlag,
 		"node-label":                        copyFlag,
