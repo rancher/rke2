@@ -45,6 +45,8 @@ func NewEtcdSnapshotCommand() *cli.Command {
 		"s3-skip-ssl-verify":    copyFlag,
 		"s3-timeout":            copyFlag,
 		"s3-retention":          copyFlag,
+
+		"etcd-snapshot-restrictions": hideFlag,
 	}
 	subcommandOpts := map[string]K3SFlagSet{
 		"ls": {
