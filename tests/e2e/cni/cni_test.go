@@ -3,7 +3,6 @@ package nightly_cni
 import (
 	"flag"
 	"fmt"
-
 	"os"
 	"strings"
 	"testing"
@@ -34,6 +33,12 @@ var _ = ReportAfterEach(e2e.GenReport)
 var _ = Describe("Verify DualStack in "+*cni+", "+*filter+" configuration", Ordered, func() {
 	It("Starts up with no issues", func() {
 		var err error
+		if os.Getenv("E2E_CNI") == "" {
+			Expect(os.Setenv("E2E_CNI", *cni)).To(Succeed())
+		}
+		if os.Getenv("E2E_FILTER") == "" {
+			Expect(os.Setenv("E2E_FILTER", *filter)).To(Succeed())
+		}
 		if *local {
 			tc, err = e2e.CreateLocalCluster(*nodeOS, *serverCount, *agentCount)
 		} else {
