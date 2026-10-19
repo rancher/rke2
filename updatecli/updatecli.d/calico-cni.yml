@@ -15,14 +15,14 @@ scms:
 
 sources:
   calico:
-    name: "Get Calico chart version"
+    name: "Get Calico 3.32 chart version"
     kind: "helmchart"
     spec:
       url: https://rancher.github.io/rke2-charts
       name: rke2-calico
       versionfilter:
         kind: "regex"
-        pattern: ^v?\d+\.\d+\.\d+$
+        pattern: ^v?3\.32\.\d+$
   issue:
     name: "Get issue number"
     kind: "shell"
