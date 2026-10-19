@@ -104,7 +104,12 @@ $0 ~ pattern {
 
 update_chart_images_windows() {
     app_version="${2%??}"
-    tempdir=$(mktemp -d)
+    gh_state_dir=$(mktemp -d -t gh_state_dir.XXXXXX)
+    export GH_CONFIG_DIR="${gh_state_dir}/gh-config"
+    export XDG_CONFIG_HOME="${gh_state_dir}/xdg-config"
+    export XDG_STATE_HOME="${gh_state_dir}/xdg-state"
+    export XDG_DATA_HOME="${gh_state_dir}/xdg-data"
+    export XDG_CACHE_HOME="${gh_state_dir}/xdg-cache"
     case "${1}" in
        "rke2-flannel")
 	  flanneld_sha256=$(gh api repos/flannel-io/flannel/releases/tags/${app_version}   --jq '.assets[] | select(.name == "flanneld.exe") | .digest' | cut -d':' -f2)
@@ -132,7 +137,7 @@ update_chart_images_windows() {
           sed -i "s/ENV CALICO_VERSION=.*/ENV CALICO_VERSION=\"$app_version\"/g" Dockerfile.windows
 	  ;;
     esac
-    rm -rf $tempdir/
+    rm -rf "$gh_state_dir"
 }
 
 CHART_VERSIONS_FILE="charts/chart_versions.yaml"
