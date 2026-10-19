@@ -98,7 +98,7 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: 'Update CoreDNS chart to {{ source "chart" }}'
+      title: '[{{ .github.branch }}] Update CoreDNS chart to {{ source "chart" }}'
       description: |
         This is an automated PR to update the CoreDNS chart and related hardened images.
 
