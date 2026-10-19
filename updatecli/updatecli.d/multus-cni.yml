@@ -58,5 +58,5 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: 'Update Multus chart to {{ source "multus" }}'
+      title: '[{{ .github.branch }}] Update Multus chart to {{ source "multus" }}'
       description: 'This is an automated PR to update Helm chart versions. issue #{{ source "issue" }}'
