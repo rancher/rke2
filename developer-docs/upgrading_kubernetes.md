@@ -145,7 +145,7 @@ It can be confusing to track where each number for a component is getting pulled
 
 Here are some locations to check component versions:
 - Kubernetes: Look in `Dockerfile` for `FROM rancher/hardened-kubernetes`.
-- Etcd: Look in `scripts/version` for `ETCD_VERSION`.
+- Etcd: Look in `scripts/version` for `ETCD_IMAGE_TAG`.
 - Containerd: Look in `Dockerfile` for `FROM rancher/hardened-containerd`.
 - Runc: Look in `Dockerfile` for `FROM rancher/hardened-runc`.
 - Metrics-server: Look in `scripts/build-images` for `rancher/hardened-k8s-metrics-server`.
