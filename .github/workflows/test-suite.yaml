@@ -1,6 +1,9 @@
 name: Test Suite
 on: 
   push:
+    branches:
+      - "master"
+      - "release-*"
     paths-ignore:
       - "**.md"
       - "channel.yaml"
