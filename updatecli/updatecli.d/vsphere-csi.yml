@@ -119,4 +119,4 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: "Update vsphere-csi chart"
+      title: '[{{ .github.branch }}] Update vsphere-csi chart'

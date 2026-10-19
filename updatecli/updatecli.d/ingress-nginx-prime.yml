@@ -115,7 +115,7 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: 'Update ingress-nginx to chart {{ source "chart" }} / image {{ source "prime" }}'
+      title: '[{{ .github.branch }}] Update ingress-nginx to chart {{ source "chart" }} / image {{ source "prime" }}'
       description: |
         This is an automated PR to keep ingress-nginx in sync with upstream.
 

@@ -75,7 +75,7 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: 'Update Kubernetes Metrics Server chart {{ source "chart" }}'
+      title: '[{{ .github.branch }}] Update Kubernetes Metrics Server chart {{ source "chart" }}'
       description: |
         Update to the latest chart and image versions:
         - rancher/hardened-k8s-metrics-server:{{ source "metricsServerImage" }}
