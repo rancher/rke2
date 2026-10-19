@@ -1,6 +1,9 @@
 name: Unit Test Coverage
 on:
   push:
+    branches:
+      - "master"
+      - "release-*"
     paths-ignore:
       - "**.md"
       - "channels.yaml"
