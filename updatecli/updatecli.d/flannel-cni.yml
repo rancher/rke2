@@ -66,5 +66,5 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: 'Update Flannel chart to {{ source "flannel" }}'
+      title: '[{{ .github.branch }}] Update Flannel chart to {{ source "flannel" }}'
       description: 'This is an automated PR to update Helm chart versions. issue #{{ source "issue" }}'
