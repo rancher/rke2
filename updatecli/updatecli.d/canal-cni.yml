@@ -58,5 +58,5 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: 'Update Canal chart to {{ source "canal" }}'
+      title: '[{{ .github.branch }}] Update Canal chart to {{ source "canal" }}'
       description: 'This is an automated PR to update Helm chart versions. issue #{{ source "issue" }}'

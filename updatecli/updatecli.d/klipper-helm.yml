@@ -46,7 +46,7 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: 'Update klipper-helm image'
+      title: '[{{ .github.branch }}] Update klipper-helm image'
       description: |
         Automated PR to bump `KLIPPERHELM_VERSION` in `scripts/version.sh`.
 
