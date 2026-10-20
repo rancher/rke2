@@ -24,7 +24,7 @@ update_chart_version() {
         info "found version ${CURRENT_VERSION}, updating to ${NEW_VERSION}"
         chart_updated=true
         if test "$DRY_RUN" == "false"; then
-            sed -i "s/${CURRENT_VERSION}/${NEW_VERSION}/g" ${CHART_VERSIONS_FILE}
+            sed -i "s|^\(  - version: \)${CURRENT_VERSION}\$|\1${NEW_VERSION}|g" ${CHART_VERSIONS_FILE}
         else
             info "dry-run is enabled, no changes will occur"
         fi
