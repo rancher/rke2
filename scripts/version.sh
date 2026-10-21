@@ -72,3 +72,4 @@ if [[ "${VERSION}" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)([-+][a-zA-Z0-9.]+)?[-+]((rk
 fi
 
 DOCKERIZED_VERSION="${VERSION/+/-}" # this mimics what kubernetes builds do
+
