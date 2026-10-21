@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
@@ -23,9 +24,7 @@ import (
 	toolswatch "k8s.io/client-go/tools/watch"
 )
 
-var (
-	removalAnnotation = "etcd." + version.Program + ".cattle.io/remove"
-)
+var removedNodeNameAnnotation = "etcd." + version.Program + ".cattle.io/removed-node-name"
 
 // cleanupStaticPodsOnSelfDelete returns a StartupHook that will start a
 // goroutine to watch for deletion of the local node, and trigger static pod
@@ -45,24 +44,14 @@ func cleanupStaticPodsOnSelfDelete(dataDir string) cmds.StartupHook {
 	}
 }
 
-// watchForSelfDelete watches for delete of the local node. When a delete event
-// is found, it calls static pod cleanup.  Much of this is cribbed from
-// kubernetes/cmd/kube-proxy/app/server_others.go
+// watchForSelfDelete watches for deletion of the local node or confirmation that
+// its current etcd member has been removed, then cleans up static pods.
+// Much of this is cribbed from kubernetes/cmd/kube-proxy/app/server_others.go.
 func watchForSelfDelete(ctx context.Context, dataDir string, client kubernetes.Interface) {
 	nodeName := os.Getenv("NODE_NAME")
 	logrus.Infof("Watching for delete of %s Node object", nodeName)
 	lw := toolscache.NewListWatchFromClient(client.CoreV1().RESTClient(), "nodes", metav1.NamespaceNone, fields.OneTermEqualSelector(metav1.ObjectNameField, nodeName))
-	condition := func(event watch.Event) (bool, error) {
-		if n, ok := event.Object.(*v1.Node); ok {
-			if n.ObjectMeta.DeletionTimestamp != nil || n.Annotations[removalAnnotation] == "true" {
-				return true, nil
-			}
-			return false, nil
-		}
-		return false, fmt.Errorf("event object not of type Node")
-	}
-
-	if _, err := toolswatch.UntilWithSync(ctx, lw, &v1.Node{}, nil, condition); err != nil {
+	if _, err := waitForSelfDelete(ctx, dataDir, lw); err != nil {
 		if !wait.Interrupted(err) {
 			logrus.Errorf("spc: failed to wait for node deletion: %v", err)
 		}
@@ -73,6 +62,44 @@ func watchForSelfDelete(ctx context.Context, dataDir string, client kubernetes.I
 	if err := cleanupStaticPods(dataDir); err != nil {
 		logrus.Errorf("spc: failed to clean up static pods: %v", err)
 	}
+}
+
+// waitForSelfDelete keeps the watch active while etcd member removal is only
+// requested. The removal controller publishes removed-node-name after RemovePeer
+// succeeds; stopping etcd on the request itself can prevent removal from committing.
+func waitForSelfDelete(ctx context.Context, dataDir string, lw toolscache.ListerWatcher) (*watch.Event, error) {
+	condition := func(event watch.Event) (bool, error) {
+		if node, ok := event.Object.(*v1.Node); ok {
+			return shouldCleanupStaticPods(node, dataDir)
+		}
+		return false, fmt.Errorf("event object not of type Node")
+	}
+	return toolswatch.UntilWithSync(ctx, lw, &v1.Node{}, nil, condition)
+}
+
+// shouldCleanupStaticPods preserves Node-deletion cleanup, but requires an etcd
+// removal acknowledgement to identify the current local member. An old removal
+// annotation may remain on a Node that has rejoined with a new member name.
+func shouldCleanupStaticPods(node *v1.Node, dataDir string) (bool, error) {
+	if node.DeletionTimestamp != nil {
+		return true, nil
+	}
+
+	removedName := node.Annotations[removedNodeNameAnnotation]
+	if removedName == "" {
+		return false, nil
+	}
+
+	name, err := os.ReadFile(etcdNameFile(dataDir))
+	if os.IsNotExist(err) {
+		// A server without a local etcd member cannot match an acknowledgement.
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("failed to read local etcd member name: %w", err)
+	}
+	localName := strings.TrimSpace(string(name))
+	return localName != "" && removedName == localName, nil
 }
 
 // cleanupStaticPods deletes all the control-plane and etc static pod manifests.
