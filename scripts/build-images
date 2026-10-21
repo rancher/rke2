@@ -57,7 +57,7 @@ xargs -n1 -t $PULL_CMD_CORE << EOF >> $BUILD_DIR/images-core.txt
     ${REGISTRY}/rancher/rke2-cloud-provider:${CCM_VERSION}
     ${REGISTRY}/rancher/rke2-security-responder:v0.1.9
     ${REGISTRY}/rancher/hardened-snapshot-controller:v8.7.0-build20261015
-    ${REGISTRY}/rancher/hardened-traefik:v3.7.15-build20261020
+    ${REGISTRY}/rancher/hardened-traefik:v3.7.16-build20261020
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-ingress-nginx.txt
