@@ -52,7 +52,7 @@ update_chart_images() {
 	      IMAGES_TAG=$(echo "${IMAGES_TAG_AWS}"$'\n'"${IMAGES_TAG_AZURE}"$'\n'"${IMAGES_TAG_GENERIC}" | sort -u)
 	      ;;
 	   "rke2-multus")
-	      IMAGES_TAG_THICK=$(helm template ${1} --repo ${HELM_REPO} --version ${2} --set thickPlugin.enabled=true --set dynamicNetworksController.enabled=true | yq -r '[.. | .image? | select(.)] | .[]' | sort -u)
+	      IMAGES_TAG_THICK=$(helm template ${1} --repo ${HELM_REPO} --version ${2} --set thickPlugin.enabled=true --set dynamicNetworksController.enabled=true --set manifests.dhcpDaemonSet=true | yq -r '[.. | .image? | select(.)] | .[]' | sort -u)
 	      IMAGES_TAG_MULTUS=$(helm template ${1} --repo ${HELM_REPO} --version ${2} --set rke2-whereabouts.enabled=true | yq -r '[.. | .image? | select(.)] | .[]' | sort -u)
 	      IMAGES_TAG="${IMAGES_TAG_THICK}"$'\n'"${IMAGES_TAG_MULTUS}"
 	      ;;
