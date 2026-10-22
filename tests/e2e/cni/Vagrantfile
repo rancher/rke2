@@ -7,6 +7,7 @@ NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
 NODE_MEMORY = (ENV['E2E_NODE_MEMORY'] || 3072).to_i
 NETWORK4_PREFIX = "10.10.10"
 NETWORK6_PREFIX = "fd11:decf:c0ff:ee"
+PRIME = (ENV['E2E_PRIME'] || "false")
 CNI = (ENV['E2E_CNI'] || "calico")
 FILTER = (ENV['E2E_FILTER'] || "iptables")
 
@@ -81,6 +82,7 @@ def provision(vm, roles, role_num, node_num)
         cluster-cidr: 10.42.0.0/16,2001:cafe:42:0::/56
         service-cidr: 10.43.0.0/16,2001:cafe:43:0::/112
         cni: #{cni}
+        prime: #{PRIME}
       YAML
     end
   end
