@@ -1,6 +1,7 @@
 package podtemplate
 
 import (
+	"cmp"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -37,6 +38,14 @@ func NewConfigFromCLI(dataDir string, cfg rke2cli.Config) (*Config, error) {
 		return nil, err
 	}
 
+	livenessPath := cmp.Or(cfg.KubeAPIServerLivenessPath, DefaultKubeAPIServerLivenessPath)
+	readinessPath := cmp.Or(cfg.KubeAPIServerReadinessPath, DefaultKubeAPIServerReadinessPath)
+	for _, p := range []string{livenessPath, readinessPath} {
+		if !strings.HasPrefix(p, "/") {
+			return nil, fmt.Errorf("invalid %s probe path %q: must start with /", KubeAPIServer, p)
+		}
+	}
+
 	return &Config{
 		Resolver:  resolver,
 		ImagesDir: filepath.Join(dataDir, "agent", "images"),
@@ -45,6 +54,9 @@ func NewConfigFromCLI(dataDir string, cfg rke2cli.Config) (*Config, error) {
 		Probes:    controlPlaneProbeConfs,
 		Env:       env,
 		Mounts:    mounts,
+
+		KubeAPIServerLivenessPath:  livenessPath,
+		KubeAPIServerReadinessPath: readinessPath,
 	}, nil
 }
 
