@@ -4,6 +4,7 @@ on:
     branches:
       - "master"
       - "release-*"
+      - "updatecli_*"
     paths-ignore:
       - "**.md"
       - "channel.yaml"
@@ -35,6 +36,7 @@ jobs:
       setup-docker: true
   itest:
     needs: build
+    if: github.event_name != 'push' || !startsWith(github.ref, 'refs/heads/updatecli_')
     name: Integration Tests
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -100,7 +102,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dtest: [basics, flannel, profile, ingress-nginx, ing_migration, gatewayapi, prime, upgrade]
+        dtest: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/updatecli_') && fromJSON('["prime"]') || fromJSON('["basics", "flannel", "profile", "ingress-nginx", "ing_migration", "gatewayapi", "prime", "upgrade"]') }}
     steps:
       - name: Set up Docker
         uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5
@@ -167,7 +169,7 @@ jobs:
   docker-large:
     name: "Docker Tests (Large)"
     needs: build
-    if: github.repository == 'rancher/rke2'
+    if: github.repository == 'rancher/rke2' && (github.event_name != 'push' || !startsWith(github.ref, 'refs/heads/updatecli_'))
     runs-on: runs-on,runner=8cpu-linux-x64,ram=16+24,image=ubuntu24-full-x64,run-id=${{ github.run_id }}
     timeout-minutes: 45
     strategy:
@@ -213,6 +215,7 @@ jobs:
   e2e:
     name: "E2E Tests"
     needs: build
+    if: github.event_name != 'push' || !startsWith(github.ref, 'refs/heads/updatecli_')
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     strategy:
