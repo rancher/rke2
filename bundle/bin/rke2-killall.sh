@@ -69,6 +69,27 @@ ip link show 2>/dev/null | grep 'master cni0' | while read ignore iface ignore; 
     iface=${iface%%@*}
     [ -z "$iface" ] || ip link delete $iface
 done
+
+# --- Blackhole Canal route cleanup ---
+MASK_V4=$(ip -4 route show dev flannel.1 2>/dev/null | grep -oP '/\K[0-9]+' | head -n1)
+if [ -n "$MASK_V4" ]; then
+  LOCAL_IP_V4=$(ip -4 addr show dev flannel.1 2>/dev/null | awk '/inet / {print $2}' | cut -d/ -f1)
+  if [ -n "$LOCAL_IP_V4" ]; then
+    LOCAL_CIDR_V4="${LOCAL_IP_V4}/${MASK_V4}"
+    ip route del blackhole "$LOCAL_CIDR_V4" 2>/dev/null || true
+  fi
+fi
+
+MASK_V6=$(ip -6 route show dev flannel-v6.1 2>/dev/null | grep -oP '/\K[0-9]+' | head -n1)
+if [ -n "$MASK_V6" ]; then
+  LOCAL_IP_V6=$(ip -6 addr show dev flannel-v6.1 scope global 2>/dev/null | awk '/inet6 / {print $2}' | cut -d/ -f1)
+  if [ -n "$LOCAL_IP_V6" ]; then
+    LOCAL_CIDR_V6="${LOCAL_IP_V6}/${MASK_V6}"
+    ip -6 route del blackhole "$LOCAL_CIDR_V6" 2>/dev/null || true
+  fi
+fi
+
+# Delete interfaces
 ip link delete cni0
 ip link delete flannel.1
 ip link delete flannel.4096
@@ -116,7 +137,11 @@ rm /run/flannel/subnet.env
 
 set +x
 
-echo 'If this cluster was upgraded from an older release of the Canal CNI, you may need to manually remove some flannel iptables rules:'
+echo 'If this cluster was upgraded from an older release of the Canal CNI plugin, you may need to manually remove some flannel iptables rules:'
 echo -e '\texport cluster_cidr=YOUR-CLUSTER-CIDR'
 echo -e '\tiptables -D POSTROUTING -s $cluster_cidr -j MASQUERADE --random-fully'
 echo -e '\tiptables -D POSTROUTING ! -s $cluster_cidr -d  -j MASQUERADE --random-fully'
+
+echo 'If this was a one node cluster and was using the Canal CNI Plugin, you need to manually remove a blackhole route:'
+echo -e '\tip route del blackhole "$ipv4_node_cidr="'
+echo -e '\tip -6 route del blackhole "$ipv6_node_cidr="'
