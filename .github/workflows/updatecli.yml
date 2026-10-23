@@ -69,3 +69,17 @@ jobs:
         env:
           UPDATECLI_GITHUB_ACTOR: ${{ github.actor }}
           UPDATECLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Backport ingress-nginx chart/prime bump to active release branches
+        # Re-applies just the ingress-nginx manifest against each release branch's
+        # values file (updatecli/values-release-*.yaml), opening a
+        # "[Backport release-X.Y]" PR on that branch. Add a new values file here
+        # to cover another release line.
+        run: |
+          for values in ./updatecli/values-release-*.yaml; do
+            echo "Applying ingress-nginx-prime.yml with $values"
+            updatecli pipeline apply --clean --config ./updatecli/updatecli.d/ingress-nginx-prime.yml --values "$values"
+          done
+        env:
+          UPDATECLI_GITHUB_ACTOR: ${{ github.actor }}
+          UPDATECLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
