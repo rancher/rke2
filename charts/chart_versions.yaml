@@ -29,7 +29,7 @@ charts:
   - version: 3.14.004
     filename: /charts/rke2-metrics-server.yaml
     bootstrap: false
-  - version: v4.3.114
+  - version: v4.3.118
     filename: /charts/rke2-multus.yaml
     package: rke2-multus-1.34-1.36
     bootstrap: false
