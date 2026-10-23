@@ -55,7 +55,8 @@ update_chart_prime_images() {
     local chart_name="${1}"
     local chart_version="${2}"
     local kubernetes_minor="${3:-}"
-    local constraint
+    local constraint=""
+    CHART_TEMP_DIR=$(mktemp -d)
 
     if [[ -z "${kubernetes_minor}" ]]; then
         info "using default PRIME image values for ${chart_name}"
@@ -67,12 +68,12 @@ update_chart_prime_images() {
 
     info "downloading chart ${chart_name} version ${chart_version} to extract PRIME image versions for Kubernetes ${kubernetes_minor}"
     CHART_URL="https://github.com/rancher/rke2-charts/raw/main/assets/${chart_name}/${chart_name}-${chart_version}.tgz"
-    if ! curl -sfL "${CHART_URL}" | tar xz "${chart_name}/values.yaml" 1> /dev/null; then
+    if ! curl -sfL "${CHART_URL}" | tar xz -C "${CHART_TEMP_DIR}" "${chart_name}/values.yaml" 1> /dev/null; then
         fatal "failed to download or extract ${CHART_URL}"
     fi
 
     if [[ -n "${constraint}" ]]; then
-        OVERRIDE_COUNT=$(yq -r '[.versionOverrides[] | select(.constraint == strenv(constraint))] | length' "${chart_name}/values.yaml")
+        OVERRIDE_COUNT=$(yq -r '[.versionOverrides[] | select(.constraint == strenv(constraint))] | length' "${CHART_TEMP_DIR}/${chart_name}/values.yaml")
         if [[ "${OVERRIDE_COUNT}" != "1" ]]; then
             fatal "expected one version override with constraint '${constraint}', found ${OVERRIDE_COUNT} in ${chart_name}-${chart_version}"
         fi
@@ -112,7 +113,7 @@ update_chart_prime_images() {
                 | select(.primeTag != "latest")
                 | [.primeRepository, .primeTag]
                 | @tsv
-            ' "${chart_name}/values.yaml"
+            ' "${CHART_TEMP_DIR}/${chart_name}/values.yaml"
         else
             yq -r '
                 del(.versionOverrides)
@@ -122,15 +123,21 @@ update_chart_prime_images() {
                 | select(.primeTag != "latest")
                 | [.primeRepository, .primeTag]
                 | @tsv
-            ' "${chart_name}/values.yaml"
+            ' "${CHART_TEMP_DIR}/${chart_name}/values.yaml"
         fi | sort -u
     )
-
-    rm -rf -- "${chart_name:?}/"
 }
 
 CHART_VERSIONS_FILE="charts/chart_versions.yaml"
 CHART_AIRGAP_IMAGES_FILE="scripts/build-images"
+CHART_TEMP_DIR=
+
+cleanup_chart_temp_dir() {
+    if [[ -n "${CHART_TEMP_DIR}" ]]; then
+        rm -rf -- "${CHART_TEMP_DIR}"
+    fi
+}
+trap cleanup_chart_temp_dir EXIT
 
 
 : "${DRY_RUN:=false}"
