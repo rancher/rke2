@@ -1,0 +1,398 @@
+vCenter:
+  host: ""
+  port: 443
+  insecureFlag: "1"
+  clusterId: ""
+  datacenters: ""
+  username: ""
+  password: ""
+  labels:
+    topologyCategories: ""
+  configSecret:
+    name: "vsphere-config-secret"
+    generate: true
+    configTemplate: |
+      [Global]
+      cluster-id = {{ required ".Values.vCenter.clusterId must be provided" (default .Values.vCenter.clusterId .Values.global.cattle.clusterId) | quote }}
+      user = {{ .Values.vCenter.username | quote }}
+      password = {{ .Values.vCenter.password | quote }}
+      port = {{ .Values.vCenter.port | quote }}
+      insecure-flag = {{ .Values.vCenter.insecureFlag | quote }}
+
+      [VirtualCenter {{ .Values.vCenter.host | quote }}]
+      datacenters = {{ .Values.vCenter.datacenters | quote }}
+
+
+      {{- if .Values.vCenter.labels.topologyCategories }}
+      [Labels]
+      topology-categories = {{ .Values.vCenter.labels.topologyCategories | quote }}
+      {{- end }}
+
+csiController:
+  csiResizer:
+    enabled: false
+  image:
+    repository: rancher/mirrored-cloud-provider-vsphere-csi-release-driver
+    primeRepository: rancher/hardened-vsphere-csi-driver
+    tag: v3.7.3
+    primeTag: v3.7.3-build20261012
+    imagePullPolicy: ""
+    additionalArgs: []
+    resources: {}
+    #resources:
+    # limits:
+    #   cpu: 100m
+    #   memory: 256Mi
+    # requests:
+    #   cpu: 50m
+    #   memory: 128Mi
+    csiAttacher:
+      repository: rancher/mirrored-sig-storage-csi-attacher
+      primeRepository: rancher/hardened-csi-attacher
+      tag: v4.9.0
+      primeTag: v4.9.0-build20261020
+      imagePullPolicy: ""
+      additionalArgs: []
+      resources: {}
+      #resources:
+      # limits:
+      #   cpu: 100m
+      #   memory: 256Mi
+      # requests:
+      #   cpu: 50m
+      #   memory: 128Mi
+    csiResizer:
+      repository: rancher/mirrored-sig-storage-csi-resizer
+      primeRepository: rancher/hardened-csi-resizer
+      tag: v1.12.0
+      primeTag: v1.12.0-build20261020
+      imagePullPolicy: ""
+      additionalArgs: []
+      resources: {}
+      #resources:
+      # limits:
+      #   cpu: 100m
+      #   memory: 256Mi
+      # requests:
+      #   cpu: 50m
+      #   memory: 128Mi
+    livenessProbe:
+      repository: rancher/mirrored-sig-storage-livenessprobe
+      primeRepository: rancher/hardened-livenessprobe
+      tag: v2.15.0
+      primeTag: v2.15.0-build20261020
+      imagePullPolicy: ""
+      additionalArgs: []
+      resources: {}
+      #resources:
+      # limits:
+      #   cpu: 100m
+      #   memory: 256Mi
+      # requests:
+      #   cpu: 50m
+      #   memory: 128Mi
+    vsphereSyncer:
+      repository: rancher/mirrored-cloud-provider-vsphere-csi-release-syncer
+      primeRepository: rancher/hardened-vsphere-csi-syncer
+      tag: v3.7.3
+      primeTag: v3.7.3-build20261012
+      imagePullPolicy: ""
+      additionalArgs: []
+      resources: {}
+      #resources:
+      # limits:
+      #   cpu: 100m
+      #   memory: 256Mi
+      # requests:
+      #   cpu: 50m
+      #   memory: 128Mi
+    csiProvisioner:
+      repository: rancher/mirrored-sig-storage-csi-provisioner
+      primeRepository: rancher/hardened-csi-provisioner
+      tag: v4.0.1
+      primeTag: v4.0.1-build20261020
+      imagePullPolicy: ""
+      additionalArgs: []
+      resources: {}
+      #resources:
+      # limits:
+      #   cpu: 100m
+      #   memory: 256Mi
+      # requests:
+      #   cpu: 50m
+      #   memory: 128Mi
+    csiSnapshotter:
+      repository: rancher/mirrored-sig-storage-csi-snapshotter
+      primeRepository: rancher/hardened-csi-snapshotter
+      tag: v8.6.0
+      primeTag: v8.6.0-build20261012
+      imagePullPolicy: ""
+      additionalArgs: []
+      resources: {}
+      #resources:
+      # limits:
+      #   cpu: 100m
+      #   memory: 256Mi
+      # requests:
+      #   cpu: 50m
+      #   memory: 128Mi
+
+  ## Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+  ##
+  nodeSelector: {}
+  ## Affinity for pod assignment
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
+  # Example:
+  # affinity:
+  #   nodeAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       nodeSelectorTerms:
+  #       - matchExpressions:
+  #         - key: kubernetes.io/arch
+  #           operator: In
+  #           values:
+  #           - arm64
+  #     preferredDuringSchedulingIgnoredDuringExecution:
+  #     - weight: 50
+  #       preference:
+  #         matchExpressions:
+  #         - key: zone
+  #           operator: In
+  #           values:
+  #           - us-west
+  # Uncomment below toleration if you need an aggressive pod eviction in case when
+  # node becomes not-ready or unreachable. Default is 300 seconds if not specified.
+  tolerations: []
+  # - key: node.kubernetes.io/not-ready
+  #   operator: Exists
+  #   effect: NoExecute
+  #   tolerationSeconds: 30
+  # - key: node.kubernetes.io/unreachable
+  #   operator: Exists
+  #   effect: NoExecute
+  #   tolerationSeconds: 30
+  ##
+  ## Optional additional labels to add to pods
+  podLabels: {}
+  # Pod DNS policy
+  # Ref: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+  dnsPolicy: "Default"
+  ## Pod priority class
+  ## https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+  priorityClassName: ""
+
+# Internal features
+csiMigration:
+  enabled: false
+csiAuthCheck:
+  enabled: true
+onlineVolumeExtend:
+  enabled: false
+triggerCsiFullsync:
+  enabled: false
+asyncQueryVolume:
+  enabled: false
+improvedCsiIdempotency:
+  enabled: false
+improvedVolumeTopology:
+  enabled: false
+blockVolumeSnapshot:
+  enabled: false
+csiWindowsSupport:
+  enabled: false
+useCsinodeId:
+  enabled: true
+listVolumes:
+  enabled: false
+pvToBackingdiskobjectidMapping:
+  enabled: false
+cnsmgrSuspendCreateVolume:
+  enabled: false
+topology:
+  enabled: false
+topologyPreferentialDatastores:
+  enabled: false
+maxPvscsiTargetsPerVm:
+  enabled: false
+multiVcenterCsiTopology:
+  enabled: true
+csiInternalGeneratedClusterId:
+  enabled: false
+
+csiNode:
+  ## Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+  ##
+  nodeSelector: {}
+  ## List of node taints to tolerate (requires Kubernetes >= 1.6)
+  tolerations: []
+  ## Optional additional labels to add to pods
+  podLabels: {}
+  prefixPath: ""
+  prefixPathWindows: ""
+  # Maximum number of volumes that controller can publish to the node.
+  # If value is not set or zero Kubernetes decide how many volumes can be published by the controller to the node.
+  maxVolumesPerNode: "59"
+  # Pod DNS policy
+  # Ref: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+  dnsPolicy: "ClusterFirstWithHostNet"
+  ## Pod priority class
+  ## https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
+  priorityClassName: ""
+  image:
+    repository: rancher/mirrored-cloud-provider-vsphere-csi-release-driver
+    primeRepository: rancher/hardened-vsphere-csi-driver
+    tag: v3.7.3
+    primeTag: v3.7.3-build20261012
+    imagePullPolicy: ""
+    additionalArgs: []
+    resources: {}
+    #resources:
+    # limits:
+    #   cpu: 100m
+    #   memory: 256Mi
+    # requests:
+    #   cpu: 50m
+    #   memory: 128Mi
+    nodeDriverRegistrar:
+      repository: rancher/mirrored-sig-storage-csi-node-driver-registrar
+      primeRepository: rancher/hardened-csi-node-driver-registrar
+      tag: v2.13.0
+      primeTag: v2.13.0-build20261020
+      imagePullPolicy: ""
+      additionalArgs: []
+      resources: {}
+      #resources:
+      # limits:
+      #   cpu: 100m
+      #   memory: 256Mi
+      # requests:
+      #   cpu: 50m
+      #   memory: 128Mi
+    livenessProbe:
+      repository: rancher/mirrored-sig-storage-livenessprobe
+      primeRepository: rancher/hardened-livenessprobe
+      tag: v2.15.0
+      primeTag: v2.15.0-build20261020
+      imagePullPolicy: ""
+      additionalArgs: []
+      resources: {}
+      #resources:
+      # limits:
+      #   cpu: 500m
+      #   memory: 256Mi
+      # requests:
+      #   cpu: 50m
+      #   memory: 128Mi
+
+storageClass:
+  enabled: true
+  allowVolumeExpansion: false
+  name: "vsphere-csi-sc"
+  isDefault: true
+  storagePolicyName: ""
+  datastoreURL: ""
+  reclaimPolicy: Delete
+
+global:
+  imagePullSecrets: []
+  cattle:
+    systemDefaultRegistry: ""
+  # When prime.enabled is true, images are pulled from their `primeRepository`
+  # (the hardened `rancher/hardened-*` images published to the Rancher Prime
+  # registry) instead of the community `rancher/mirrored-*` images. Set
+  # global.cattle.systemDefaultRegistry to the Prime registry host alongside
+  # this. This flag is enabled automatically for Rancher Prime installs.
+  prime:
+    enabled: false
+
+# A list of Semver constraint strings (defined by https://github.com/Masterminds/semver) and values.yaml overrides.
+#
+# For each key in versionOverrides, this chart will check to see if the current Kubernetes cluster's version matches
+# any of the semver constraints provided as keys on the map.
+#
+# On seeing a match, the default value for each values.yaml field overridden will be updated with the new value.
+#
+# If multiple matches are encountered (due to overlapping semver ranges), the matches will be applied in order.
+#
+# Notes:
+# - On running a helm template, Helm uses the `.Capabilities.APIVersion` of whatever
+#   Kubernetes release that version of Helm was built against.
+# - On running a helm install --dry-run, the correct kubeVersion should be chosen.
+#
+# Supported versions can be found at:
+# https://docs.vmware.com/en/VMware-vSphere-Container-Storage-Plug-in/3.0/vmware-vsphere-csp-getting-started/GUID-D4AAD99E-9128-40CE-B89C-AD451DA8379D.html#kubernetes-versions-compatible-with-vsphere-container-storage-plugin-1
+versionOverrides:
+  # Versions from https://github.com/kubernetes-sigs/vsphere-csi-driver/blob/v3.3.1/manifests/vanilla/vsphere-csi-driver.yaml
+  - constraint: ">= 1.28 < 1.31"
+    values:
+      csiController:
+        image:
+          repository: rancher/mirrored-cloud-provider-vsphere-csi-release-driver
+          tag: v3.3.1
+          csiAttacher:
+            repository: rancher/mirrored-sig-storage-csi-attacher
+            tag: v4.7.0
+          csiResizer:
+            repository: rancher/mirrored-sig-storage-csi-resizer
+            tag: v1.10.1
+          livenessProbe:
+            repository: rancher/mirrored-sig-storage-livenessprobe
+            tag: v2.14.0
+          vsphereSyncer:
+            repository: rancher/mirrored-cloud-provider-vsphere-csi-release-syncer
+            tag: v3.3.1
+          csiProvisioner:
+            repository: rancher/mirrored-sig-storage-csi-provisioner
+            tag: v4.0.1
+          csiSnapshotter:
+            repository: rancher/mirrored-sig-storage-csi-snapshotter
+            tag: v7.0.2
+      csiNode:
+        image:
+          repository: rancher/mirrored-cloud-provider-vsphere-csi-release-driver
+          tag: v3.3.1
+          nodeDriverRegistrar:
+            repository: rancher/mirrored-sig-storage-csi-node-driver-registrar
+            tag: v2.12.0
+          livenessProbe:
+            repository: rancher/mirrored-sig-storage-livenessprobe
+            tag: v2.14.0
+  # Versions from https://github.com/kubernetes-sigs/vsphere-csi-driver/blob/v3.2.0/manifests/vanilla/vsphere-csi-driver.yaml
+  - constraint: ">= 1.27 < 1.28"
+    values:
+      csiController:
+        image:
+          repository: rancher/mirrored-cloud-provider-vsphere-csi-release-driver
+          tag: v3.2.0
+          csiAttacher:
+            repository: rancher/mirrored-sig-storage-csi-attacher
+            tag: v4.5.0
+          csiResizer:
+            repository: rancher/mirrored-sig-storage-csi-resizer
+            tag: v1.10.0
+          livenessProbe:
+            repository: rancher/mirrored-sig-storage-livenessprobe
+            tag: v2.12.0
+          vsphereSyncer:
+            repository: rancher/mirrored-cloud-provider-vsphere-csi-release-syncer
+            tag: v3.2.0
+          csiProvisioner:
+            repository: rancher/mirrored-sig-storage-csi-provisioner
+            tag: v4.0.0
+          csiSnapshotter:
+            repository: rancher/mirrored-sig-storage-csi-snapshotter
+            tag: v7.0.1
+      csiNode:
+        image:
+          repository: rancher/mirrored-cloud-provider-vsphere-csi-release-driver
+          tag: v3.2.0
+          nodeDriverRegistrar:
+            repository: rancher/mirrored-sig-storage-csi-node-driver-registrar
+            tag: v2.10.0
+          livenessProbe:
+            repository: rancher/mirrored-sig-storage-livenessprobe
+            tag: v2.12.0
