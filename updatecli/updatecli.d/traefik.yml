@@ -1,0 +1,73 @@
+---
+name: "Update Traefik chart and images"
+scms:
+  rke2:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      username: "{{ requiredEnv .github.username }}"
+      token: '{{ requiredEnv .github.token }}'
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repo }}"
+      branch: '{{ .github.branch }}'
+
+sources:
+  chart:
+    name: "Get rke2-traefik chart version"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_chart_version.sh rke2-traefik
+  traefikImage:
+    name: "Get hardened-traefik tag from the selected chart"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-traefik {{ source "chart" }} .image.tag
+
+conditions:
+  chartVersionShouldBeUpdated:
+    name: "Check if Traefik chart should be updated"
+    kind: "shell"
+    sourceid: chart
+    spec:
+      command: bash ./updatecli/scripts/validate_version.sh rke2-traefik
+
+targets:
+  chartVersion:
+    name: "Update rke2-traefik and rke2-traefik-crd versions in charts/chart_versions.yaml"
+    kind: "yaml"
+    scmid: "rke2"
+    sourceid: chart
+    spec:
+      engine: yamlpath
+      file: charts/chart_versions.yaml
+      keys:
+        - "$.charts[?(@.filename == '/charts/rke2-traefik.yaml')].version"
+        - "$.charts[?(@.filename == '/charts/rke2-traefik-crd.yaml')].version"
+  traefikImage:
+    name: "Update hardened-traefik tag in scripts/build-images"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: traefikImage
+    spec:
+      file: scripts/build-images
+      matchpattern: '(?m)^[ \t]*\$\{REGISTRY\}/rancher/hardened-traefik:.*$'
+      replacepattern: '    $${REGISTRY}/rancher/hardened-traefik:{{ source "traefikImage" }}'
+
+actions:
+  github:
+    kind: "github/pullrequest"
+    scmid: "rke2"
+    spec:
+      merge:
+        strategy: manual
+      draft: false
+      mergemethod: squash
+      parent: false
+      title: 'Update Traefik chart to {{ source "chart" }}'
+      description: |
+        This is an automated PR to update the Traefik chart and related hardened images.
+
+        - `rke2-traefik` chart -> `{{ source "chart" }}` (charts/chart_versions.yaml)
+        - `rke2-traefik-crd` chart -> `{{ source "chart" }}` (charts/chart_versions.yaml)
+        - `hardened-traefik` -> `{{ source "traefikImage" }}`
