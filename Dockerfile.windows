@@ -51,7 +51,7 @@ RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
     fi
 WORKDIR /source
 
-FROM --platform=$BUILDPLATFORM rancher/hardened-containerd:v2.2.10-k3s1-build20261020-amd64-windows AS containerd
+FROM --platform=$BUILDPLATFORM rancher/hardened-containerd:v2.2.10-k3s1-build20261028-amd64-windows AS containerd
 FROM base AS windows-runtime-collect
 ARG KUBERNETES_VERSION=dev
 
