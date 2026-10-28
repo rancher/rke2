@@ -8,6 +8,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/configfilearg"
 	rke2cli "github.com/rancher/rke2/pkg/cli"
+	"github.com/rancher/rke2/pkg/podtemplate"
 	"github.com/rancher/rke2/pkg/rke2"
 	"github.com/rancher/wrangler/v3/pkg/slice"
 	"github.com/sirupsen/logrus"
@@ -52,6 +53,18 @@ var (
 		IngressControllerFlag,
 		ServiceLBFlag,
 		PrimeFlag,
+		&cli.StringFlag{
+			Name:        podtemplate.KubeAPIServer + "-liveness-probe-path",
+			Usage:       "(components) " + podtemplate.KubeAPIServer + " liveness and startup probe path. Default /livez",
+			EnvVars:     []string{"RKE2_KUBE_APISERVER_LIVENESS_PROBE_PATH"},
+			Destination: &config.KubeAPIServerLivenessPath,
+		},
+		&cli.StringFlag{
+			Name:        podtemplate.KubeAPIServer + "-readiness-probe-path",
+			Usage:       "(components) " + podtemplate.KubeAPIServer + " readiness probe path. Default /readyz",
+			EnvVars:     []string{"RKE2_KUBE_APISERVER_READINESS_PROBE_PATH"},
+			Destination: &config.KubeAPIServerReadinessPath,
+		},
 	}
 
 	k3sServerBase = mustCmdFromK3S(cmds.NewServerCommand(ServerRun), K3SFlagSet{
