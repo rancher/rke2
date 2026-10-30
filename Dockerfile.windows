@@ -114,9 +114,7 @@ RUN tar xzvf crictl-${CRICTL_VERSION}-windows-amd64.tar.gz crictl.exe -C rancher
 RUN tar xzvf cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz ./win-overlay.exe ./host-local.exe -C rancher/
 
 RUN unzip calico-windows-${CALICO_VERSION}.zip
-RUN mv CalicoWindows/calico-node.exe rancher/
-RUN mv CalicoWindows/cni/calico.exe rancher/
-RUN mv CalicoWindows/cni/calico-ipam.exe rancher/
+RUN mv CalicoWindows/calico.exe rancher/
 RUN mv CalicoWindows/confd confd/
 
 FROM scratch AS windows-runtime
