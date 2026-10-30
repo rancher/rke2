@@ -15,7 +15,7 @@ charts:
   - version: 1.49.002
     filename: /charts/rke2-coredns.yaml
     bootstrap: true
-  - version: 4.15.114
+  - version: 4.15.115
     filename: /charts/rke2-ingress-nginx.yaml
     bootstrap: false
   - version: 40.1.022
@@ -57,7 +57,7 @@ charts:
   - version: 5.4.001
     filename: /charts/rke2-snapshot-controller-crd.yaml
     bootstrap: false
-  - version: 0.0.0  # this empty chart addon can be removed in v1.34, after we have shipped two minor versions that have never included it.
+  - version: 0.0.0 # this empty chart addon can be removed in v1.34, after we have shipped two minor versions that have never included it.
     filename: /charts/rke2-snapshot-validation-webhook.yaml
     bootstrap: false
   - version: 0.1.000
