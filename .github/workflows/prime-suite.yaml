@@ -23,7 +23,7 @@ jobs:
     with:
       setup-docker: true
 
-  prime:
+  prime-docker:
     name: Prime Docker Tests
     needs: build
     runs-on: ubuntu-24.04
@@ -71,3 +71,72 @@ jobs:
             secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
       - name: Run Tests
         run: go test -v -timeout=20m ./tests/docker/prime/prime_test.go -ginkgo.v -ci -registry "$PRIME_REGISTRY"
+  prime-e2e:
+    name: "E2E Tests"
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        etest: [cni]
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      with: {fetch-depth: 1}
+    - name: Remove Unnecessary Tools
+      run: |
+        sudo rm -rf \
+          /home/linuxbrew \
+          /home/packer \
+          /opt/az \
+          /opt/microsoft \
+          /usr/lib/firefox \
+          /usr/lib/google-cloud-sdk \
+          /usr/local/julia* \
+          /usr/local/share/boost \
+          /usr/local/share/chromium \
+          /usr/local/share/powershell \
+          /usr/share/az* \
+          /usr/share/dotnet \
+          /usr/share/miniconda \
+          /usr/share/swift
+        df -khl
+    - name: Set up vagrant and libvirt
+      uses: ./.github/actions/vagrant-setup
+    - name: Vagrant R/W Cache
+      if: github.ref == 'refs/heads/master'
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v5
+      with:
+        path: |
+            ~/.vagrant.d/boxes
+        key: vagrant-box-ubuntu-2404
+    - name: Vagrant Read Cache
+      if: github.ref != 'refs/heads/master'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v5
+      with:
+        path: |
+            ~/.vagrant.d/boxes
+        key: vagrant-box-ubuntu-2404
+    - name: Install Go
+      uses: ./.github/actions/setup-go
+    - name: Install Kubectl
+      uses: ./.github/actions/install-kubectl
+    - name: Download RKE2 Binary and Runtime Image
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+      with:
+        name: rke2-test-artifacts
+        path: ./artifacts
+    - name: Place the artifacts back and compute sha256sum
+      run: |
+        mkdir -p ./dist/artifacts
+        mkdir -p ./build/images
+        mkdir -p ./bin
+        mv ./artifacts/rke2-* ./build/images/
+        mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
+        sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+    - name: "Run Calico CNI Prime Test"
+      working-directory: tests/e2e/${{ matrix.test }}
+      run: |
+        E2E_PRIME=true go test -timeout=45m ./${{ matrix.test }}_test.go -ci -local -cni=calico -ginkgo.v -test.v
+

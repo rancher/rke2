@@ -176,6 +176,12 @@ func dumpLoadBalancerDiagnostics() {
 var _ = Describe("Verify external load balancer cluster", Ordered, func() {
 	It("Starts up with no issues", func() {
 		var err error
+		if os.Getenv("E2E_CNI") == "" {
+			Expect(os.Setenv("E2E_CNI", *cni)).To(Succeed())
+		}
+		if os.Getenv("E2E_FILTER") == "" {
+			Expect(os.Setenv("E2E_FILTER", *filter)).To(Succeed())
+		}
 		lbNode, serverNodes, agentNodes, err = createLBCluster(*nodeOS, *serverCount, *agentCount)
 		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog(err))
 		tc = &e2e.TestConfig{
