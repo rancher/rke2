@@ -1,0 +1,73 @@
+name: Prime Suite
+on:
+  push:
+    branches:
+      - "updatecli_*"
+    paths-ignore:
+      - "**.md"
+      - "channel.yaml"
+      - "install.sh"
+      - "updatecli/**"
+      - ".github/**"
+      - "!.github/workflows/prime-suite.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/build-e2e-artifacts.yml
+    with:
+      setup-docker: true
+
+  prime:
+    name: Prime Docker Tests
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Set up Docker
+        uses: docker/setup-docker-action@2bf61fb9464cc67f0cbdeabed6aa0380accd1c70 # v5
+        with:
+          version: type=image,tag=29
+          daemon-config: '{"features":{"containerd-snapshotter":true}}'
+          set-host: true
+      - name: Set up Containerd
+        run: |
+          echo "CONTAINERD_ADDRESS=$(docker info -f '{{.Containerd.Address}}')" >> "$GITHUB_ENV"
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 1
+      - name: Install Go
+        uses: ./.github/actions/setup-go
+      - name: Download RKE2 Binary and Runtime Image
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: rke2-test-artifacts
+          path: ./artifacts
+      - name: Place the artifacts back and compute sha256sum
+        run: |
+          mkdir -p ./dist/artifacts
+          mkdir -p ./build/images
+          mkdir -p ./bin
+          mv ./artifacts/rke2-* ./build/images/
+          mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
+          mv ./artifacts/images.txt ./build/images.txt
+          sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
+      - name: Load kernel modules
+        run: |
+          sudo modprobe br_netfilter overlay
+      - name: Read secrets
+        uses: rancher-eio/read-vault-secrets@dfae8acd43a9e170fca5f90168da22f814fe4e9a # main
+        with:
+          secrets: |
+            secret/data/github/repo/${{ github.repository }}/rancher-prime-registry/credentials registry | PRIME_REGISTRY ;
+      - name: Run Tests
+        run: go test -v -timeout=20m ./tests/docker/prime/prime_test.go -ginkgo.v -ci -registry "$PRIME_REGISTRY"
