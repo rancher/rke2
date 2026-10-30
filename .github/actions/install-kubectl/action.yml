@@ -1,0 +1,16 @@
+name: Install kubectl
+inputs:
+  version:
+    default: v1.34.12
+  checksum:
+    default: 90b7b9058ffeb5c10710bb1c73f541eaf426fb1b4e87df435db669de9a2564a2
+
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      run: |
+          curl --retry 3 -fsSL "https://dl.k8s.io/release/${{ inputs.version }}/bin/linux/amd64/kubectl" -o kubectl
+          echo "${{ inputs.checksum }}  kubectl" | sha256sum -c
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          rm -f kubectl
