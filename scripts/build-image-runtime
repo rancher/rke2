@@ -14,7 +14,7 @@ docker buildx build \
     --build-arg MINOR=${VERSION_MINOR} \
     --build-arg BUILDARCH=${GOARCH} \
     --build-arg CACHEBUST="$(date +%s%N)" \
-    --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
+    --tag ${REGISTRY}/${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION} \
     --tag ${REPO}/${PROG}-runtime:${DOCKERIZED_VERSION}-${GOOS}-${GOARCH} \
     --target runtime \
     --file Dockerfile \
