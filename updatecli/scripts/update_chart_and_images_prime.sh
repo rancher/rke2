@@ -52,10 +52,31 @@ update_chart_version() {
 }
 
 update_chart_prime_images() {
-    info "downloading chart ${1} version ${2} to extract PRIME image versions"
-    CHART_URL="https://github.com/rancher/rke2-charts/raw/main/assets/${1}/${1}-${2}.tgz"
-    if ! curl -sfL "${CHART_URL}" | tar xz "${1}/values.yaml" 1> /dev/null; then
+    local chart_name="${1}"
+    local chart_version="${2}"
+    local kubernetes_minor="${3:-}"
+    local constraint=""
+    CHART_TEMP_DIR=$(mktemp -d)
+
+    if [[ -z "${kubernetes_minor}" ]]; then
+        info "using default PRIME image values for ${chart_name}"
+    fi
+    if [[ -n "${kubernetes_minor}" ]]; then
+        constraint="~ ${kubernetes_minor}"
+        export constraint
+    fi
+
+    info "downloading chart ${chart_name} version ${chart_version} to extract PRIME image versions for Kubernetes ${kubernetes_minor}"
+    CHART_URL="https://github.com/rancher/rke2-charts/raw/main/assets/${chart_name}/${chart_name}-${chart_version}.tgz"
+    if ! curl -sfL "${CHART_URL}" | tar xz -C "${CHART_TEMP_DIR}" "${chart_name}/values.yaml" 1> /dev/null; then
         fatal "failed to download or extract ${CHART_URL}"
+    fi
+
+    if [[ -n "${constraint}" ]]; then
+        OVERRIDE_COUNT=$(yq -r '[.versionOverrides[] | select(.constraint == strenv(constraint))] | length' "${CHART_TEMP_DIR}/${chart_name}/values.yaml")
+        if [[ "${OVERRIDE_COUNT}" != "1" ]]; then
+            fatal "expected one version override with constraint '${constraint}', found ${OVERRIDE_COUNT} in ${chart_name}-${chart_version}"
+        fi
     fi
 
     while IFS=$'\t' read -r image tag; do
@@ -82,23 +103,41 @@ update_chart_prime_images() {
             info "prime image ${image} did not update from version ${tag}"
         fi
     done < <(
-        yq -r '
-            (. * (.versionOverrides[0].values // {}))
-            | del(.versionOverrides)
-            | ..
-            | select(tag == "!!map")
-            | select(has("primeRepository") and has("primeTag"))
-            | select(.primeTag != "latest")
-            | [.primeRepository, .primeTag]
-            | @tsv
-        ' "${1}/values.yaml" | sort -u
+        if [[ -n "${constraint}" ]]; then
+            yq -r '
+                (. * ((.versionOverrides[] | select(.constraint == strenv(constraint))).values // {}))
+                | del(.versionOverrides)
+                | ..
+                | select(tag == "!!map")
+                | select(has("primeRepository") and has("primeTag"))
+                | select(.primeTag != "latest")
+                | [.primeRepository, .primeTag]
+                | @tsv
+            ' "${CHART_TEMP_DIR}/${chart_name}/values.yaml"
+        else
+            yq -r '
+                del(.versionOverrides)
+                | ..
+                | select(tag == "!!map")
+                | select(has("primeRepository") and has("primeTag"))
+                | select(.primeTag != "latest")
+                | [.primeRepository, .primeTag]
+                | @tsv
+            ' "${CHART_TEMP_DIR}/${chart_name}/values.yaml"
+        fi | sort -u
     )
-
-    rm -rf -- "${1:?}/"
 }
 
 CHART_VERSIONS_FILE="charts/chart_versions.yaml"
 CHART_AIRGAP_IMAGES_FILE="scripts/build-images"
+CHART_TEMP_DIR=
+
+cleanup_chart_temp_dir() {
+    if [[ -n "${CHART_TEMP_DIR}" ]]; then
+        rm -rf -- "${CHART_TEMP_DIR}"
+    fi
+}
+trap cleanup_chart_temp_dir EXIT
 
 
 : "${DRY_RUN:=false}"
