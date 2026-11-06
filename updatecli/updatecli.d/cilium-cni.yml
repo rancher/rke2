@@ -63,5 +63,5 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: 'Update Cilium chart to {{ source "cilium" }}'
+      title: '[{{ .github.branch }}] Update Cilium chart to {{ source "cilium" }}'
       description: 'This is an automated PR to update Helm chart versions. issue #{{ source "issue" }}'

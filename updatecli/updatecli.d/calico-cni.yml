@@ -67,5 +67,5 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: 'Update Calico chart to {{ source "calico" }}'
+      title: '[{{ .github.branch }}] Update Calico chart to {{ source "calico" }}'
       description: 'This is an automated PR to update Helm chart versions. issue #{{ source "issue" }}'
