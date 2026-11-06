@@ -15,6 +15,10 @@ name: "Update ingress-nginx chart and prime image"
 #   have "UPDATECLI_GITHUB_ACTOR" env set to your github username
 #   have "UPDATECLI_GITHUB_TOKEN" env set to your github token
 #   updatecli diff --values updatecli/values.yaml --config updatecli/updatecli.d/ingress-nginx-prime.yml
+#
+# This manifest also backports the same bump to active release branches: the
+# workflow re-applies it with updatecli/values-release-*.yaml, each of which
+# overrides github.branch and pr.titlePrefix for that branch.
 scms:
   rke2:
     kind: "github"
@@ -60,6 +64,7 @@ conditions:
   ingressNginxEntry:
     name: "Verify chart_versions.yaml entry position"
     kind: "yaml"
+    scmid: "rke2"
     disablesourceinput: true
     spec:
       file: charts/chart_versions.yaml
@@ -71,6 +76,7 @@ conditions:
   primeRequiresChartBump:
     name: "Only update the prime image when the chart is updated"
     kind: "shell"
+    scmid: "rke2"
     sourceid: prime
     spec:
       command: bash ./updatecli/scripts/validate_version.sh rke2-ingress-nginx '{{ source "chart" }}'
@@ -115,7 +121,7 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: 'Update ingress-nginx to chart {{ source "chart" }} / image {{ source "prime" }}'
+      title: '{{ .pr.titlePrefix }}Update ingress-nginx to chart {{ source "chart" }} / image {{ source "prime" }}'
       description: |
         This is an automated PR to keep ingress-nginx in sync with upstream.
 
