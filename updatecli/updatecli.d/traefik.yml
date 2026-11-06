@@ -15,14 +15,18 @@ scms:
 sources:
   chart:
     name: "Get rke2-traefik chart version"
-    kind: "shell"
+    kind: "helmchart"
     spec:
-      command: bash ./updatecli/scripts/retrieve_chart_version.sh rke2-traefik
+      url: https://rancher.github.io/rke2-charts
+      name: rke2-traefik
+      versionfilter:
+        kind: "semver"
+        pattern: ">=40.0.0 <41.0.0"
   traefikImage:
     name: "Get hardened-traefik tag from the selected chart"
     kind: "shell"
     spec:
-      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-traefik {{ source "chart" }} .image.tag
+      command: helm show values rke2-traefik --repo https://rancher.github.io/rke2-charts --version {{ source "chart" }} | yq -r '.image.tag'
 
 conditions:
   chartVersionShouldBeUpdated:
