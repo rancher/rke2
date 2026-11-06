@@ -182,7 +182,7 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: 'Update hardened runtime images'
+      title: '[{{ .github.branch }}] Update hardened runtime images'
       description: |
         Automated PR to bump the hardened runtime image tags in the `Dockerfile`
         and the matching containerd and crictl references in `Dockerfile.windows`,

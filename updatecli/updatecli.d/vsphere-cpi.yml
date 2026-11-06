@@ -87,4 +87,4 @@ actions:
       draft: false
       mergemethod: squash
       parent: false
-      title: "Update vsphere-cpi chart"
+      title: '[{{ .github.branch }}] Update vsphere-cpi chart'
