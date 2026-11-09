@@ -85,9 +85,9 @@ func NewResolver(c ImageOverrideConfig) (*Resolver, error) {
 		{Runtime, c.Runtime},
 		{CloudControllerManager, c.CloudControllerManager},
 	}
-	for _, s := range config {
-		if err := r.ParseAndSetOverride(s.i, s.n); err != nil {
-			return nil, errors.WithMessagef(err, "failed to parse %s", s.i)
+	for _, a := range config {
+		if err := r.ParseAndSetOverride(a.i, a.n); err != nil {
+			return nil, errors.WithMessagef(err, "failed to parse %s", a.i)
 		}
 	}
 
