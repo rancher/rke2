@@ -287,10 +287,21 @@ var _ = Describe("Verify external load balancer cluster", Ordered, func() {
 		Expect(res).ShouldNot(ContainSubstring("nodeAddressAutodetectionV6"))
 
 		// With kube-proxy disabled, no KUBE-SVC iptables rules should exist.
+		var checkLegacy bool
 		for _, server := range serverNodes {
 			res, err := server.RunCmdOnNode("iptables-save | grep -e 'KUBE-SVC' | wc -l")
 			Expect(err).NotTo(HaveOccurred(), res)
+			checkLegacy = false
+			if strings.Contains(res, "# Warning: iptables-legacy") {
+				checkLegacy = true
+				res = strings.ReplaceAll(res, "# Warning: iptables-legacy tables present, use iptables-legacy-save to see them\n", "")
+			}
 			Expect(strings.TrimSpace(res)).Should(Equal("0"), server.Name)
+			if checkLegacy {
+				res, err = server.RunCmdOnNode("iptables-legacy-save | grep -e 'KUBE-SVC' | wc -l")
+				Expect(err).NotTo(HaveOccurred(), res)
+				Expect(strings.TrimSpace(res)).Should(Equal("0"), server.Name)
+			}
 		}
 	})
 
