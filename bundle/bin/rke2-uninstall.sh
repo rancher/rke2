@@ -89,10 +89,18 @@ uninstall_remove_files()
     fi
 
     if [ "${ID_LIKE%%[ ]*}" = "suse" ]; then
-         if rpm -q rke2-common >/dev/null 2>&1; then
+         # Only pass installed packages: zypper exits 104 for the others, and transactional-update
+         # discards the snapshot when the command fails. rke2-selinux alone (a tarball install on top
+         # of the policy) is removed too, as yum does on RHEL, since its module is removed below.
+         rke2_packages=""
+         for pkg in rke2-server rke2-agent rke2-common rke2-selinux; do
+             if rpm -q "$pkg" >/dev/null 2>&1; then
+                 rke2_packages="$rke2_packages $pkg"
+             fi
+         done
+         if [ -n "$rke2_packages" ]; then
             log "Removing rke2 packages using zypper"
-            # rke2 rpm detected
-            uninstall_cmd="zypper remove -y rke2-server rke2-agent rke2-common rke2-selinux"
+            uninstall_cmd="zypper remove -y$rke2_packages"
             if [ "${TRANSACTIONAL_UPDATE=false}" != "true" ] && [ -x /usr/sbin/transactional-update ]; then
                 uninstall_cmd="transactional-update -c --no-selfupdate -d run $uninstall_cmd"
             fi
@@ -159,7 +167,13 @@ cleanup() {
 uninstall_remove_policy()
 {
     log "Removing SELinux policy"
-    semodule -r rke2 || true
+    # On transactional systems remove the module in a snapshot, like the packages above: removing it from
+    # the running system while a snapshot is pending leaves a broken module store after the reboot
+    if [ "${TRANSACTIONAL_UPDATE=false}" != "true" ] && [ -x /usr/sbin/transactional-update ]; then
+        transactional-update -c --no-selfupdate -d run semodule -n -r rke2 || true
+    else
+        semodule -r rke2 || true
+    fi
 }
 
 # Set a trap to log an error if the script exits unexpectedly
