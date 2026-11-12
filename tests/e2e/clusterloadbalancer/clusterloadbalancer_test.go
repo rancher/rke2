@@ -176,6 +176,12 @@ func dumpLoadBalancerDiagnostics() {
 var _ = Describe("Verify external load balancer cluster", Ordered, func() {
 	It("Starts up with no issues", func() {
 		var err error
+		if os.Getenv("E2E_CNI") == "" {
+			Expect(os.Setenv("E2E_CNI", *cni)).To(Succeed())
+		}
+		if os.Getenv("E2E_FILTER") == "" {
+			Expect(os.Setenv("E2E_FILTER", *filter)).To(Succeed())
+		}
 		lbNode, serverNodes, agentNodes, err = createLBCluster(*nodeOS, *serverCount, *agentCount)
 		Expect(err).NotTo(HaveOccurred(), e2e.GetVagrantLog(err))
 		tc = &e2e.TestConfig{
@@ -281,10 +287,21 @@ var _ = Describe("Verify external load balancer cluster", Ordered, func() {
 		Expect(res).ShouldNot(ContainSubstring("nodeAddressAutodetectionV6"))
 
 		// With kube-proxy disabled, no KUBE-SVC iptables rules should exist.
+		var checkLegacy bool
 		for _, server := range serverNodes {
 			res, err := server.RunCmdOnNode("iptables-save | grep -e 'KUBE-SVC' | wc -l")
 			Expect(err).NotTo(HaveOccurred(), res)
+			checkLegacy = false
+			if strings.Contains(res, "# Warning: iptables-legacy") {
+				checkLegacy = true
+				res = strings.ReplaceAll(res, "# Warning: iptables-legacy tables present, use iptables-legacy-save to see them\n", "")
+			}
 			Expect(strings.TrimSpace(res)).Should(Equal("0"), server.Name)
+			if checkLegacy {
+				res, err = server.RunCmdOnNode("iptables-legacy-save | grep -e 'KUBE-SVC' | wc -l")
+				Expect(err).NotTo(HaveOccurred(), res)
+				Expect(strings.TrimSpace(res)).Should(Equal("0"), server.Name)
+			}
 		}
 	})
 
