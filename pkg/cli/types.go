@@ -22,6 +22,8 @@ type Config struct {
 	ControlPlaneResourceRequests   urfave.StringSlice
 	ControlPlaneResourceLimits     urfave.StringSlice
 	ControlPlaneProbeConf          urfave.StringSlice
+	KubeAPIServerLivenessPath      string
+	KubeAPIServerReadinessPath     string
 	CNI                            urfave.StringSlice
 	IngressController              urfave.StringSlice
 	ExtraMounts                    ExtraMounts
