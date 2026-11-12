@@ -782,3 +782,19 @@ func RestartCluster(nodes []DockerNode) error {
 	}
 	return nil
 }
+
+func TailDockerLogs(lines int, nodes []DockerNode) string {
+	if len(nodes) == 0 {
+		return "** no nodes to read docker logs from **\n"
+	}
+	logs := &strings.Builder{}
+	for _, node := range nodes {
+		cmd := fmt.Sprintf("docker logs %s --tail=%d", node.Name, lines)
+		if l, err := RunCommand(cmd); err != nil {
+			fmt.Fprintf(logs, "** failed to read docker logs for node %s ***\n%v\n", node.Name, err)
+		} else {
+			fmt.Fprintf(logs, "** docker logs for node %s ***\n%s\n", node.Name, l)
+		}
+	}
+	return logs.String()
+}
