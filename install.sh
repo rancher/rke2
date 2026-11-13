@@ -684,20 +684,23 @@ do_restorecon_tar() {
     fi
     if semodule -l | grep -qx rke2; then
         info "applying correct SELinux contexts to RKE2 files"
+        (
+            set +e
 
-        # this is for the .service files
-        restorecon -R -i /etc/systemd/system/rke2*
-        restorecon -R -i /usr/local/lib/systemd/system/rke2*
-        restorecon -R -i /usr/lib/systemd/system/rke2*
+            # this is for the .service files
+            restorecon -R -i /etc/systemd/system/rke2*
+            restorecon -R -i /usr/local/lib/systemd/system/rke2*
+            restorecon -R -i /usr/lib/systemd/system/rke2*
 
-        # this one is for the bin
-        restorecon -R -i /opt/rke2
-        restorecon -R -i /usr/local/bin/rke2*
-        restorecon -R -i /usr/bin/rke2*
+            # this one is for the bin
+            restorecon -R -i /opt/rke2
+            restorecon -R -i /usr/local/bin/rke2*
+            restorecon -R -i /usr/bin/rke2*
 
-        if [ -n "${INSTALL_RKE2_ARTIFACT_PATH}" ]; then
-            restorecon -R -i /var/lib/rancher/rke2
-        fi
+            if [ -n "${INSTALL_RKE2_ARTIFACT_PATH}" ]; then
+                restorecon -R -i /var/lib/rancher/rke2
+            fi
+      ) || true
     fi
 }
 
@@ -711,7 +714,7 @@ allow perm=any all : dir=/opt/cni/
 allow perm=any all : dir=/run/k3s/
 allow perm=any all : dir=/var/lib/kubelet/
 EOF
-	# TODO: Add the shell completion files here too?
+        # TODO: Add the shell completion files here too?
         if [ -z "${INSTALL_RKE2_SKIP_RELOAD}" ]; then
             fagenrules --load || fatal "failed to load rke2 fapolicyd rules"
             systemctl restart fapolicyd
