@@ -27,6 +27,9 @@ const (
 	TimeoutSeconds      = "timeout-seconds"
 	FailureThreshold    = "failure-threshold"
 	PeriodSeconds       = "period-seconds"
+
+	DefaultKubeAPIServerLivenessPath  = "/livez"
+	DefaultKubeAPIServerReadinessPath = "/readyz"
 )
 
 var (
@@ -48,6 +51,9 @@ type Config struct {
 	Mounts    *ControlPlaneMounts
 	Probes    *ControlPlaneProbeConfs
 	Resources *ControlPlaneResources
+
+	KubeAPIServerLivenessPath  string
+	KubeAPIServerReadinessPath string
 }
 
 type Spec struct {

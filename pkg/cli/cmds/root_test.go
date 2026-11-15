@@ -119,3 +119,24 @@ func Test_UnitValidateCloudProvider(t *testing.T) {
 		})
 	}
 }
+
+func Test_UnitAPIServerProbePathFlagsAreServerOnly(t *testing.T) {
+	server := NewServerCommand()
+	agent := NewAgentCommand()
+	for _, name := range []string{"kube-apiserver-liveness-probe-path", "kube-apiserver-readiness-probe-path"} {
+		serverHasFlag := false
+		agentHasFlag := false
+		for _, f := range server.Flags {
+			serverHasFlag = serverHasFlag || slices.Contains(f.Names(), name)
+		}
+		for _, f := range agent.Flags {
+			agentHasFlag = agentHasFlag || slices.Contains(f.Names(), name)
+		}
+		if !serverHasFlag {
+			t.Errorf("server is missing %s", name)
+		}
+		if agentHasFlag {
+			t.Errorf("agent unexpectedly has %s", name)
+		}
+	}
+}

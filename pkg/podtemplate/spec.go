@@ -35,7 +35,7 @@ func (c *Config) APIServer(args []string) (*Spec, error) {
 			"--client-certificate=" + c.DataDir + "/server/tls/client-kube-apiserver.crt",
 			"--client-key=" + c.DataDir + "/server/tls/client-kube-apiserver.key",
 			"--certificate-authority=" + c.DataDir + "/server/tls/server-ca.crt",
-			"--raw=/livez",
+			"--raw=" + c.KubeAPIServerLivenessPath,
 		},
 		HealthExec: []string{
 			"kubectl",
@@ -44,7 +44,7 @@ func (c *Config) APIServer(args []string) (*Spec, error) {
 			"--client-certificate=" + c.DataDir + "/server/tls/client-kube-apiserver.crt",
 			"--client-key=" + c.DataDir + "/server/tls/client-kube-apiserver.key",
 			"--certificate-authority=" + c.DataDir + "/server/tls/server-ca.crt",
-			"--raw=/livez",
+			"--raw=" + c.KubeAPIServerLivenessPath,
 		},
 		ReadyExec: []string{
 			"kubectl",
@@ -53,7 +53,7 @@ func (c *Config) APIServer(args []string) (*Spec, error) {
 			"--client-certificate=" + c.DataDir + "/server/tls/client-kube-apiserver.crt",
 			"--client-key=" + c.DataDir + "/server/tls/client-kube-apiserver.key",
 			"--certificate-authority=" + c.DataDir + "/server/tls/server-ca.crt",
-			"--raw=/readyz",
+			"--raw=" + c.KubeAPIServerReadinessPath,
 		},
 		Ports: []v1.ContainerPort{
 			{Name: "apiserver", Protocol: v1.ProtocolTCP, ContainerPort: int32(cmds.ServerConfig.APIServerPort)},
