@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -18,6 +19,7 @@ var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
 var local = flag.Bool("local", false, "deploy a locally built RKE2")
 var filter = flag.String("filter", "iptables", "iptables or nftables")
+var prime = flag.Bool("prime", false, "enable prime registry/images")
 var cni = flag.String("cni", "canal", "calico, canal, cilium, or flannel")
 
 func Test_E2ENightlyCNI(t *testing.T) {
@@ -38,6 +40,9 @@ var _ = Describe("Verify DualStack in "+*cni+", "+*filter+" configuration", Orde
 		}
 		if os.Getenv("E2E_FILTER") == "" {
 			Expect(os.Setenv("E2E_FILTER", *filter)).To(Succeed())
+		}
+		if os.Getenv("E2E_PRIME") == "" {
+			Expect(os.Setenv("E2E_PRIME", strconv.FormatBool(*prime))).To(Succeed())
 		}
 		if *local {
 			tc, err = e2e.CreateLocalCluster(*nodeOS, *serverCount, *agentCount)
@@ -243,6 +248,23 @@ var _ = Describe("Verify DualStack in "+*cni+", "+*filter+" configuration", Orde
 			Eventually(e2e.RunCommand, "60s", "5s").WithArguments(cmd).Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
 			cmd = "curl -L --insecure http://[" + node.Ipv6 + "]:" + nodeport + "/name.html"
 			Eventually(e2e.RunCommand, "60s", "5s").WithArguments(cmd).Should(ContainSubstring("ds-nodeport-pod"), "failed cmd: "+cmd)
+		}
+	})
+	It("Verifies Calico Prime Images)", func() {
+		if !*prime || *cni != "calico" {
+			Skip("Prime images test skipped")
+		}
+		cmd := "kubectl get pods -n calico-system --no-headers -o custom-columns='POD:.metadata.name,IMAGE:.spec.containers[*].image'"
+		images, err := e2e.RunCommand(cmd)
+		Expect(err).NotTo(HaveOccurred(), "failed cmd: "+cmd)
+		for _, image := range strings.Split(images, "\n") {
+			Expect(image).To(ContainSubstring("hardened-calico"))
+		}
+		cmd = "kubectl get pods -n tigera-operator --no-headers -o custom-columns='POD:.metadata.name,IMAGE:.spec.containers[*].image'"
+		images, err = e2e.RunCommand(cmd)
+		Expect(err).NotTo(HaveOccurred(), "failed cmd: "+cmd)
+		for _, image := range strings.Split(images, "\n") {
+			Expect(image).To(ContainSubstring("hardened-calico"))
 		}
 	})
 })
