@@ -63,6 +63,18 @@ sources:
       versionfilter:
         kind: "regex"
         pattern: '^v{{ source "kubernetesMinor" }}\.\d+-build\d+$'
+  rke2cloudprovider:
+    name: "Latest minor specific rke2-cloud-provider build"
+    kind: "githubrelease"
+    dependson:
+      - kubernetesMinor
+    spec:
+      owner: "rancher"
+      repository: "image-build-rke2-cloud-provider"
+      token: '{{ requiredEnv .github.token }}'
+      versionfilter:
+        kind: "regex"
+        pattern: '^v{{ source "kubernetesMinor" }}-r\d+-build\d+$'
   etcd:
     name: "Latest etcd 3.6 build"
     kind: "githubrelease"
@@ -135,6 +147,15 @@ targets:
       instruction:
         keyword: "FROM"
         matcher: "rancher/hardened-crictl"
+  bumpRke2CloudProvider:
+    name: "Update rke2-cloud-provider in scripts/version.sh"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: rke2cloudprovider
+    spec:
+      file: scripts/version.sh
+      matchpattern: '(?m)^CCM_VERSION=\$\{CCM_VERSION:-[^}]+\}$'
+      replacepattern: 'CCM_VERSION=$${CCM_VERSION:-{{ source "rke2cloudprovider" }}}'
   bumpContainerdWindows:
     name: "Update hardened-containerd image tag in Dockerfile.windows"
     kind: "file"
