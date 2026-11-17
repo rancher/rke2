@@ -13,7 +13,7 @@ set -x
 
 # tests to run
 tests=("ciliumnokp" "mixedos" "mixedosbgp" "multus" "secretsencryption" "splitserver" "upgradecluster" "validatecluster" "kine")
-nodeOS=${1:-"bento/ubuntu-24.04"}
+nodeOS=${1:-"bento/ubuntu-26.04"}
 OS=$(echo "$nodeOS"|cut -d'/' -f2)
 
 E2E_REGISTRY=true && export E2E_REGISTRY

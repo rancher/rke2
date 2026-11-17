@@ -1,6 +1,6 @@
 ENV['VAGRANT_NO_PARALLEL'] = ENV['E2E_STANDUP_PARALLEL'] ? nil : 'no'
 NODE_ROLES = (ENV['E2E_NODE_ROLES'] || ["server-0", "agent-0" ])
-NODE_BOXES = (ENV['E2E_NODE_BOXES'] || ['bento/ubuntu-24.04', 'bento/ubuntu-24.04'])
+NODE_BOXES = (ENV['E2E_NODE_BOXES'] || ['bento/ubuntu-26.04', 'bento/ubuntu-26.04'])
 GITHUB_BRANCH = (ENV['E2E_GITHUB_BRANCH'] || "master")
 RELEASE_VERSION = (ENV['E2E_RELEASE_VERSION'] || "")
 NODE_CPUS = (ENV['E2E_NODE_CPUS'] || 2).to_i
@@ -10,15 +10,12 @@ NETWORK6_PREFIX = "fd11:decf:c0ff:ee"
 CNI = (ENV['E2E_CNI'] || "calico")
 FILTER = (ENV['E2E_FILTER'] || "iptables")
 
-# Load vagrantdefaults.rb for getInstallType; the local defaultOSConfigure below overrides the one from vagrantdefaults.rb
 vagrant_defaults = File.exist?("./vagrantdefaults.rb") ? "./vagrantdefaults.rb" : "../vagrantdefaults.rb"
 load vagrant_defaults
 
-def defaultOSConfigure(vm)
+def configureFilter(vm)
   box = vm.box.to_s
   if box.include?("ubuntu")
-    vm.provision "netplan dns", type: "shell", inline: "netplan set ethernets.eth0.nameservers.addresses=[8.8.8.8,1.1.1.1]; netplan apply", run: 'once'
-    vm.provision "Install jq", type: "shell", inline: "apt-get install -y jq", run: 'once'
     if FILTER == "nftables"
       vm.provision "Install nftables", type: "shell", inline: "apt-get install -y nftables", run: 'once'
       # calico delegates to portmap for hostPort, which requires iptables and is used in the ingress test case.
@@ -32,10 +29,6 @@ def defaultOSConfigure(vm)
       vm.provision "Blacklist nf_tables", type: "shell", inline: "echo 'blacklist nf_tables' | tee /etc/modprobe.d/blacklist-nf_tables.conf", run: 'once'
     end
     vm.provision :reload, run: 'once'
-  elsif box.include?("Leap") || box.include?("Tumbleweed")
-    vm.provision "Install jq", type: "shell", inline: "zypper install -y jq", run: 'once'
-  elsif box.match?(/Windows.*2019/) || box.match?(/Windows.*2022/)
-    vm.communicator = "winssh"
   end
 end
 
@@ -58,6 +51,7 @@ def provision(vm, roles, role_num, node_num)
     :libvirt__ipv6_prefix => "64"
       
   defaultOSConfigure(vm)
+  configureFilter(vm)
   
   install_type = getInstallType(vm, RELEASE_VERSION, GITHUB_BRANCH)
 
