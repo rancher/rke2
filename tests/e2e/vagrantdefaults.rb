@@ -3,6 +3,21 @@ def defaultOSConfigure(vm)
   if box.include?("ubuntu")
     vm.provision "netplan dns", type: "shell", inline: "netplan set ethernets.eth0.nameservers.addresses=[8.8.8.8,1.1.1.1]; netplan apply", run: 'once'
     vm.provision "Install jq", type: "shell", inline: "apt-get install -y jq", run: 'once'
+    # https://github.com/chef/bento/issues/1684
+    # Requires ovmf package on host
+    if box.include?("26.04")
+      ovmf_code = "/usr/share/OVMF/OVMF_CODE_4M.fd"
+      ovmf_vars = "/usr/share/OVMF/OVMF_VARS_4M.fd"
+      # Create NVRAM vars for each VM (if host is rebooted machine needs to be recreated)
+      nvram = "/tmp/.vagrant/nvram/#{vm.hostname}_VARS.fd"
+      FileUtils.mkdir_p(File.dirname(nvram))
+      FileUtils.cp(ovmf_vars, nvram) unless File.exist?(nvram)
+      vm.provider "libvirt" do |v|
+        v.driver = "kvm"
+        v.loader = ovmf_code
+        v.nvram = nvram
+      end
+    end
   elsif box.include?("Leap") || box.include?("Tumbleweed")
     vm.provision "Install jq", type: "shell", inline: "zypper install -y jq", run: 'once'
   elsif box.match?(/Windows.*2019/) || box.match?(/Windows.*2022/)

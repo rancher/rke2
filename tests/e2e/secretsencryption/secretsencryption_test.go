@@ -15,8 +15,8 @@ import (
 // This test is desigened for the new secrets-encrypt rotate-keys command,
 // Added in v1.28.0+rke2r1
 
-// Valid nodeOS: bento/ubuntu-24.04, opensuse/Leap-15.6.x86_64
-var nodeOS = flag.String("nodeOS", "bento/ubuntu-24.04", "VM operating system")
+// Valid nodeOS: bento/ubuntu-26.04, opensuse/Leap-15.6.x86_64
+var nodeOS = flag.String("nodeOS", "bento/ubuntu-26.04", "VM operating system")
 var serverCount = flag.Int("serverCount", 3, "number of server nodes")
 var ci = flag.Bool("ci", false, "running on CI")
 
