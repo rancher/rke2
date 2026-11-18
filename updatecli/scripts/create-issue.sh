@@ -36,8 +36,11 @@ check-issue() {
             --repo ${GITHUB_REPOSITORY} \
             --state "open" \
             --search "${ISSUE_TITLE}" \
-            --json number,body
+            --limit 100 \
+            --json number,title,body
     )
+    # --search is fuzzy; only accept an exact title match.
+    issue=$(echo "$issue" | jq -c --arg title "${ISSUE_TITLE}" '[.[] | select(.title == $title)]')
     if [[ $(echo "$issue" | jq '. | length') -eq 0 ]]; then
        issue_url=$(gh issue create \
            --title "${ISSUE_TITLE}" \
