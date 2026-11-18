@@ -22,12 +22,14 @@ check-issue() {
       | .[0].title
     ')
 
+    MILESTONE_ARGS=()
     if [ "$TARGET_MILESTONE" == "null" ] || [ -z "$TARGET_MILESTONE" ]; then
-      echo "No unexpired Release Cycle milestone found."
-      exit 1
+      echo "WARNING: No unexpired Release Cycle milestone found; using issue without milestone." >&2
+      ISSUE_TITLE="Update CNIs (no milestone)"
+    else
+      ISSUE_TITLE="Update CNIs for $TARGET_MILESTONE"
+      MILESTONE_ARGS=(--milestone "${TARGET_MILESTONE}")
     fi
-
-    ISSUE_TITLE="Update CNIs for $TARGET_MILESTONE"
 
     issue=$(
         gh issue list \
@@ -42,7 +44,7 @@ check-issue() {
            --body "Update CNIs for latest release:
 - ${CHART_NAME}:${CHART_VERSION}" \
            --repo ${GITHUB_REPOSITORY} \
-           --milestone "${TARGET_MILESTONE}" 2>&1)
+           "${MILESTONE_ARGS[@]}" 2>&1)
        if [ $? -eq 0 ]; then
 	  number=$(echo "$issue_url" | awk -F'/' '{print $NF}')
        else
