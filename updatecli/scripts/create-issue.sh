@@ -9,9 +9,16 @@ check-issue() {
     MILESTONES_JSON=$(gh api repos/${GITHUB_REPOSITORY}/milestones)
     TODAY=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
+    # Milestones may have a null due_on; fall back to the YYYY-MM prefix in the title.
     TARGET_MILESTONE=$(echo "$MILESTONES_JSON" | jq -r --arg today "$TODAY" '
-      [ .[] | select(.title | contains("Release Cycle")) | select(.due_on >= $today) | select(.state == "open")] 
-      | sort_by(.due_on) 
+      [ .[]
+        | select(.state == "open" and (.title | contains("Release Cycle")))
+        | (.title | capture("^(?<month>[0-9]{4}-[0-9]{2})")? // null) as $m
+        | . + { sort_key: (.due_on // (if $m then $m.month + "-01T00:00:00Z" else null end)) }
+        | select(.sort_key != null)
+        | select(if .due_on then .due_on >= $today else $m.month >= $today[0:7] end)
+      ]
+      | sort_by(.sort_key)
       | .[0].title
     ')
 
