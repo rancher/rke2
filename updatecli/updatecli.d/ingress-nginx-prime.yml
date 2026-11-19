@@ -53,8 +53,8 @@ sources:
         prerelease: false
       versionfilter:
         kind: "regex"
-        # -primeN CVE rebuilds of the pinned nginx v1.15.1 hardened line
-        pattern: 'v1\.15\.1-prime[0-9]+'
+        # -primeN CVE rebuilds of the pinned nginx v1.15.2 hardened line
+        pattern: 'v1\.15\.2-prime[0-9]+'
 
 conditions:
   ingressNginxEntry:
