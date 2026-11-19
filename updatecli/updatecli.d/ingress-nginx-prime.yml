@@ -1,5 +1,6 @@
 ---
 name: "Update ingress-nginx chart and prime image"
+pipelineid: "rke2-charts"
 # Keeps the rke2-ingress-nginx chart version (charts/chart_versions.yaml) and the
 # ingress-nginx prime image tag (scripts/build-images) in sync with upstream:
 #
@@ -88,7 +89,7 @@ conditions:
       
 targets:
   chartVersion:
-    name: "Update rke2-ingress-nginx version in charts/chart_versions.yaml"
+    name: 'Bump rke2-ingress-nginx chart to {{ source "chart" }}'
     kind: "yaml"
     scmid: "rke2"
     sourceid: chart
@@ -96,7 +97,7 @@ targets:
       file: charts/chart_versions.yaml
       key: '$.charts[5].version'
   buildImages:
-    name: "Update INGRESS_NGINX_PRIME_TAG in scripts/build-images"
+    name: 'Bump ingress-nginx prime image to {{ source "prime" }}'
     kind: "file"
     scmid: "rke2"
     sourceid: prime
@@ -114,8 +115,7 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
-      parent: false
-      title: '[{{ .github.branch }}] Update ingress-nginx to chart {{ source "chart" }} / image {{ source "prime" }}'
+      title: '[{{ .github.branch }}] Update bundled charts and images'
       description: |
         This is an automated PR to keep ingress-nginx in sync with upstream.
 
