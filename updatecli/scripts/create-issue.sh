@@ -9,33 +9,45 @@ check-issue() {
     MILESTONES_JSON=$(gh api repos/${GITHUB_REPOSITORY}/milestones)
     TODAY=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
+    # Milestones may have a null due_on; fall back to the YYYY-MM prefix in the title.
     TARGET_MILESTONE=$(echo "$MILESTONES_JSON" | jq -r --arg today "$TODAY" '
-      [ .[] | select(.title | contains("Release Cycle")) | select(.due_on >= $today) | select(.state == "open")] 
-      | sort_by(.due_on) 
+      [ .[]
+        | select(.state == "open" and (.title | contains("Release Cycle")))
+        | (.title | capture("^(?<month>[0-9]{4}-[0-9]{2})")? // null) as $m
+        | . + { sort_key: (.due_on // (if $m then $m.month + "-01T00:00:00Z" else null end)) }
+        | select(.sort_key != null)
+        | select(if .due_on then .due_on >= $today else $m.month >= $today[0:7] end)
+      ]
+      | sort_by(.sort_key)
       | .[0].title
     ')
 
+    MILESTONE_ARGS=()
     if [ "$TARGET_MILESTONE" == "null" ] || [ -z "$TARGET_MILESTONE" ]; then
-      echo "No unexpired Release Cycle milestone found."
-      exit 1
+      echo "WARNING: No unexpired Release Cycle milestone found; using issue without milestone." >&2
+      ISSUE_TITLE="Update CNIs (no milestone)"
+    else
+      ISSUE_TITLE="Update CNIs for $TARGET_MILESTONE"
+      MILESTONE_ARGS=(--milestone "${TARGET_MILESTONE}")
     fi
-
-    ISSUE_TITLE="Update CNIs for $TARGET_MILESTONE"
 
     issue=$(
         gh issue list \
             --repo ${GITHUB_REPOSITORY} \
             --state "open" \
             --search "${ISSUE_TITLE}" \
-            --json number,body
+            --limit 100 \
+            --json number,title,body
     )
+    # --search is fuzzy; only accept an exact title match.
+    issue=$(echo "$issue" | jq -c --arg title "${ISSUE_TITLE}" '[.[] | select(.title == $title)]')
     if [[ $(echo "$issue" | jq '. | length') -eq 0 ]]; then
        issue_url=$(gh issue create \
            --title "${ISSUE_TITLE}" \
            --body "Update CNIs for latest release:
 - ${CHART_NAME}:${CHART_VERSION}" \
            --repo ${GITHUB_REPOSITORY} \
-           --milestone "${TARGET_MILESTONE}" 2>&1)
+           "${MILESTONE_ARGS[@]}" 2>&1)
        if [ $? -eq 0 ]; then
 	  number=$(echo "$issue_url" | awk -F'/' '{print $NF}')
        else
