@@ -1,5 +1,6 @@
 ---
 name: "Update Traefik chart and images"
+pipelineid: "rke2-charts"
 scms:
   rke2:
     kind: "github"
@@ -37,7 +38,7 @@ conditions:
 
 targets:
   chartVersion:
-    name: "Update rke2-traefik and rke2-traefik-crd versions in charts/chart_versions.yaml"
+    name: 'Bump rke2-traefik and rke2-traefik-crd charts to {{ source "chart" }}'
     kind: "yaml"
     scmid: "rke2"
     sourceid: chart
@@ -48,7 +49,7 @@ targets:
         - "$.charts[?(@.filename == '/charts/rke2-traefik.yaml')].version"
         - "$.charts[?(@.filename == '/charts/rke2-traefik-crd.yaml')].version"
   traefikImage:
-    name: "Update hardened-traefik tag in scripts/build-images"
+    name: 'Bump hardened-traefik to {{ source "traefikImage" }}'
     kind: "file"
     scmid: "rke2"
     sourceid: traefikImage
@@ -66,8 +67,7 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
-      parent: false
-      title: '[{{ .github.branch }}] Update Traefik chart to {{ source "chart" }}'
+      title: '[{{ .github.branch }}] Update bundled charts and images'
       description: |
         This is an automated PR to update the Traefik chart and related hardened images.
 

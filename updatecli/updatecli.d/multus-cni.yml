@@ -1,5 +1,6 @@
 ---
 name: "Update Multus charts and images"
+pipelineid: "rke2-cni"
 # Make sure we can pull in github repos from multiple orgs
 scms:
   rke2:
@@ -49,7 +50,7 @@ conditions:
 
 targets:
   multusCNI:
-    name: "Update the Multus airgap images"
+    name: 'Bump Multus chart and images to {{ source "multus" }}'
     kind: "shell"
     scmid: "rke2"
     sourceid: multus
@@ -61,7 +62,7 @@ targets:
           files:
             - charts/chart_versions.yaml
   multusCRD:
-    name: "Update the Multus CRD chart version"
+    name: 'Bump Multus CRD chart to {{ source "multusCRD" }}'
     kind: "shell"
     scmid: "rke2"
     sourceid: multusCRD
@@ -82,6 +83,5 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
-      parent: false
-      title: '[{{ .github.branch }}] Update Multus chart to {{ source "multus" }}'
+      title: '[{{ .github.branch }}] Update CNI charts'
       description: 'This is an automated PR to update Helm chart versions. issue #{{ source "issue" }}'
