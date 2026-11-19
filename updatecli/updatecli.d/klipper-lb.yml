@@ -1,0 +1,53 @@
+---
+name: "Update klipper-lb image"
+scms:
+  rke2:
+    kind: "github"
+    spec:
+      user: "{{ .github.user }}"
+      email: "{{ .github.email }}"
+      username: "{{ requiredEnv .github.username }}"
+      token: '{{ requiredEnv .github.token }}'
+      owner: "{{ .github.owner }}"
+      repository: "{{ .github.repo }}"
+      branch: '{{ .github.branch }}'
+
+sources:
+  klipperLB:
+    name: "Latest klipper-lb build"
+    kind: "githubrelease"
+    spec:
+      owner: "k3s-io"
+      repository: "klipper-lb"
+      token: '{{ requiredEnv .github.token }}'
+      typefilter:
+        draft: false
+        prerelease: false
+        release: true
+
+targets:
+  bumpKlipperLB:
+    name: "Update KLIPPERLB_VERSION in scripts/version.sh"
+    kind: "file"
+    scmid: "rke2"
+    sourceid: klipperLB
+    spec:
+      file: scripts/version.sh
+      matchpattern: '(?m)^KLIPPERLB_VERSION=\$\{KLIPPERLB_VERSION:-[^}]+\}$'
+      replacepattern: 'KLIPPERLB_VERSION=$${KLIPPERLB_VERSION:-{{ source "klipperLB" }}}'
+
+actions:
+  github:
+    kind: "github/pullrequest"
+    scmid: "rke2"
+    spec:
+      automerge: false
+      draft: false
+      mergemethod: squash
+      parent: false
+      title: '[{{ .github.branch }}] Update klipper-lb image'
+      description: |
+        Automated PR to bump `KLIPPERLB_VERSION` in `scripts/version.sh`.
+
+        Updated references:
+        - `rancher/klipper-lb` -> {{ source "klipperLB" }}
