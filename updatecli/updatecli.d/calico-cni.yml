@@ -1,5 +1,6 @@
 ---
 name: "Update Calico charts and images"
+pipelineid: "rke2-cni"
 # Make sure we can pull in github repos from multiple orgs
 scms:
   rke2:
@@ -42,7 +43,7 @@ conditions:
 
 targets:
   calicoCNI:
-    name: "Update the Calico airgap images"
+    name: 'Bump Calico chart and images to {{ source "calico" }}'
     kind: "shell"
     scmid: "rke2"
     sourceid: calico
@@ -66,6 +67,5 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
-      parent: false
-      title: '[{{ .github.branch }}] Update Calico chart to {{ source "calico" }}'
+      title: '[{{ .github.branch }}] Update CNI charts'
       description: 'This is an automated PR to update Helm chart versions. issue #{{ source "issue" }}'

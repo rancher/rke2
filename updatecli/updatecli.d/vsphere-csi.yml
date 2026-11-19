@@ -6,7 +6,8 @@
 #   'updatecli pipeline diff -v updatecli/values.yaml -c updatecli/updatecli.d/vsphere-csi.yml'
 # In the future, more useful files should be added to this directory.
 ---
-name: "Update vsphere csi/cpi charts and images"
+name: "Update vsphere-csi chart and images"
+pipelineid: "rke2-charts"
 # Make sure we can pull in github repos from multiple orgs
 scms:
   rke2:
@@ -79,7 +80,7 @@ conditions:
 
 targets:
   updateVsphereCSI:
-    name: "Update the vsphere-csi airgap images"
+    name: 'Bump rancher-vsphere-csi chart to {{ source "vsphere-csi" }}'
     kind: "shell"
     scmid: "rke2"
     sourceid: vsphere-csi
@@ -91,7 +92,7 @@ targets:
           files:
             - charts/chart_versions.yaml
   updateVsphereCSIPublicImages:
-    name: "Update public vsphere-csi tags in scripts/build-images docker.io images-vsphere block"
+    name: 'Bump public vsphere-csi images for chart {{ source "vsphere-csi" }}'
     kind: "file"
     scmid: "rke2"
     sourceid: vsphere-csi-public-driver-tag
@@ -118,5 +119,4 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
-      parent: false
-      title: "Update vsphere-csi chart"
+      title: '[{{ .github.branch }}] Update bundled charts and images'
