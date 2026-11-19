@@ -22,8 +22,8 @@ import (
 // lease, and that node already serves the registration address (9345) and API server (6443)
 // locally. Servers beyond the first, and all agents, join the cluster through the VIP.
 
-// Valid nodeOS: bento/ubuntu-24.04
-var nodeOS = flag.String("nodeOS", "bento/ubuntu-24.04", "VM operating system")
+// Valid nodeOS: bento/ubuntu-26.04
+var nodeOS = flag.String("nodeOS", "bento/ubuntu-26.04", "VM operating system")
 var serverCount = flag.Int("serverCount", 3, "number of server nodes")
 var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
