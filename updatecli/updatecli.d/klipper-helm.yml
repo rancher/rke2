@@ -1,5 +1,6 @@
 ---
 name: "Update klipper-helm image"
+pipelineid: "rke2-charts"
 scms:
   rke2:
     kind: "github"
@@ -27,7 +28,7 @@ sources:
 
 targets:
   bumpKlipperHelm:
-    name: "Update KLIPPERHELM_VERSION in scripts/version.sh"
+    name: 'Bump klipper-helm to {{ source "klipperHelm" }}'
     kind: "file"
     scmid: "rke2"
     sourceid: klipperHelm
@@ -41,11 +42,11 @@ actions:
     kind: "github/pullrequest"
     scmid: "rke2"
     spec:
-      automerge: false
+      merge:
+        strategy: manual
       draft: false
       mergemethod: squash
-      parent: false
-      title: '[{{ .github.branch }}] Update klipper-helm image'
+      title: '[{{ .github.branch }}] Update bundled charts and images'
       description: |
         Automated PR to bump `KLIPPERHELM_VERSION` in `scripts/version.sh`.
 

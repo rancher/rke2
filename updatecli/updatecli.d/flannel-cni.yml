@@ -1,5 +1,6 @@
 ---
 name: "Update Flannel charts and images"
+pipelineid: "rke2-cni"
 # Make sure we can pull in github repos from multiple orgs
 scms:
   rke2:
@@ -41,7 +42,7 @@ conditions:
 
 targets:
   flannelCNI:
-    name: "Update the Flannel airgap images"
+    name: 'Bump Flannel chart and images to {{ source "flannel" }}'
     kind: "shell"
     scmid: "rke2"
     sourceid: flannel
@@ -65,6 +66,5 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
-      parent: false
-      title: '[{{ .github.branch }}] Update Flannel chart to {{ source "flannel" }}'
+      title: '[{{ .github.branch }}] Update CNI charts'
       description: 'This is an automated PR to update Helm chart versions. issue #{{ source "issue" }}'
