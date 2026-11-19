@@ -25,7 +25,7 @@ charts:
     filename: /charts/rke2-traefik-crd.yaml
     bootstrap: false
     package: rke2-traefik-crd
-  - version: 3.14.004
+  - version: 3.14.6
     filename: /charts/rke2-metrics-server.yaml
     bootstrap: false
   - version: v4.3.118
