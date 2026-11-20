@@ -102,6 +102,8 @@ jobs:
       matrix:
         dtest: [basics, flannel, profile, ingress-nginx, ing_migration, gatewayapi, prime, upgrade]
     steps:
+      - name: Make /sys a shared mount
+        run: mount --make-rshared /sys
       - name: Set up Docker
         uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5
         with:
