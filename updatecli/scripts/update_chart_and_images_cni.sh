@@ -42,6 +42,7 @@ update_chart_images() {
 	case "${1}" in
            "rke2-calico")
               app_version="${2%??}"
+              app_version="v${app_version#v}"
 	      sed -i "/mirrored-calico-operator/b; /mirrored-calico/s/:v[0-9.]*$/:${app_version}/" ${CHART_AIRGAP_IMAGES_FILE}
 	      IMAGES_TAG=$(helm template ${1} --repo ${HELM_REPO} --version ${2} | yq -r '[.. | .image? | select(.)] | .[]' | sort -u)
               ;;
@@ -112,6 +113,7 @@ update_chart_images_windows() {
     export XDG_CACHE_HOME="${gh_state_dir}/xdg-cache"
     case "${1}" in
        "rke2-flannel")
+	  app_version="v${app_version#v}"
 	  flanneld_sha256=$(gh api repos/flannel-io/flannel/releases/tags/${app_version}   --jq '.assets[] | select(.name == "flanneld.exe") | .digest' | cut -d':' -f2)
           sed -i "s/echo \".*  flanneld.exe\" | sha256sum -c -/echo \"${flanneld_sha256}  flanneld.exe\" | sha256sum -c -/g" Dockerfile.windows
 	  sed -i "s/ENV FLANNEL_VERSION=.*/ENV FLANNEL_VERSION=\"$app_version\"/g" Dockerfile.windows
@@ -132,6 +134,7 @@ update_chart_images_windows() {
 	  sed -i "s/ENV CNI_PLUGIN_VERSION=.*/ENV CNI_PLUGIN_VERSION=\"${CLEAN_VERSION}\"/g" Dockerfile.windows
 	  ;;
        "rke2-calico")
+	  app_version="v${app_version#v}"
 	  windows_sha256=$(gh api repos/projectcalico/calico/releases/tags/${app_version}   --jq '.assets[] | select(.name == "calico-windows-'${app_version}'.zip") | .digest' | cut -d':' -f2)
 	  sed -i "s/echo \".*  calico-windows-.*.zip\" | sha256sum -c -/echo \"${windows_sha256}  calico-windows-\${CALICO_VERSION}.zip\" | sha256sum -c -/g" Dockerfile.windows
           sed -i "s/ENV CALICO_VERSION=.*/ENV CALICO_VERSION=\"$app_version\"/g" Dockerfile.windows

@@ -144,6 +144,7 @@ trap cleanup_chart_temp_dir EXIT
 
 CHART_NAME=${1}
 CHART_VERSION=$(resolve_chart_version "${CHART_NAME}" "${2:-}")
+KUBERNETES_MINOR=${3:-}
 
 update_chart_version ${CHART_NAME} ${CHART_VERSION}
-update_chart_prime_images ${CHART_NAME} ${CHART_VERSION}
+update_chart_prime_images ${CHART_NAME} ${CHART_VERSION} ${KUBERNETES_MINOR}

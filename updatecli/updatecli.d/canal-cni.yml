@@ -1,5 +1,6 @@
 ---
 name: "Update Canal charts and images"
+pipelineid: "rke2-cni"
 # Make sure we can pull in github repos from multiple orgs
 scms:
   rke2:
@@ -41,12 +42,17 @@ conditions:
 
 targets:
   canalCNI:
-    name: "Update the Canal airgap images"
+    name: 'Bump Canal chart and images to {{ source "canal" }}'
     kind: "shell"
     scmid: "rke2"
     sourceid: canal
     spec:
       command: bash ./updatecli/scripts/update_chart_and_images_cni.sh rke2-canal
+      changedif:
+        kind: file/checksum
+        spec:
+          files:
+            - charts/chart_versions.yaml
 
 actions:
   github:
@@ -57,6 +63,5 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
-      parent: false
-      title: '[{{ .github.branch }}] Update Canal chart to {{ source "canal" }}'
+      title: '[{{ .github.branch }}] Update CNI charts'
       description: 'This is an automated PR to update Helm chart versions. issue #{{ source "issue" }}'
