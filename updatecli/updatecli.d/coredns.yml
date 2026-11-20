@@ -1,5 +1,6 @@
 ---
 name: "Update CoreDNS chart and images"
+pipelineid: "rke2-charts"
 scms:
   rke2:
     kind: "github"
@@ -53,7 +54,7 @@ conditions:
 
 targets:
   chartVersion:
-    name: "Update rke2-coredns version in charts/chart_versions.yaml"
+    name: 'Bump rke2-coredns chart to {{ source "chart" }}'
     kind: "yaml"
     scmid: "rke2"
     sourceid: chart
@@ -61,7 +62,7 @@ targets:
       file: charts/chart_versions.yaml
       key: '$.charts[4].version'
   corednsImage:
-    name: "Update hardened-coredns tag in scripts/build-images"
+    name: 'Bump hardened-coredns to {{ source "corednsImage" }}'
     kind: "file"
     scmid: "rke2"
     sourceid: corednsImage
@@ -70,7 +71,7 @@ targets:
       matchpattern: '(?m)^[ \t]*\$\{REGISTRY\}/rancher/hardened-coredns:.*$'
       replacepattern: '    $${REGISTRY}/rancher/hardened-coredns:{{ source "corednsImage" }}'
   clusterAutoscalerImage:
-    name: "Update hardened-cluster-autoscaler tag in scripts/build-images"
+    name: 'Bump hardened-cluster-autoscaler to {{ source "clusterAutoscalerImage" }}'
     kind: "file"
     scmid: "rke2"
     sourceid: clusterAutoscalerImage
@@ -79,7 +80,7 @@ targets:
       matchpattern: '(?m)^[ \t]*\$\{REGISTRY\}/rancher/hardened-cluster-autoscaler:.*$'
       replacepattern: '    $${REGISTRY}/rancher/hardened-cluster-autoscaler:{{ source "clusterAutoscalerImage" }}'
   dnsNodeCacheImage:
-    name: "Update hardened-dns-node-cache tag in scripts/build-images"
+    name: 'Bump hardened-dns-node-cache to {{ source "dnsNodeCacheImage" }}'
     kind: "file"
     scmid: "rke2"
     sourceid: dnsNodeCacheImage
@@ -97,8 +98,7 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
-      parent: false
-      title: '[{{ .github.branch }}] Update CoreDNS chart to {{ source "chart" }}'
+      title: '[{{ .github.branch }}] Update bundled charts and images'
       description: |
         This is an automated PR to update the CoreDNS chart and related hardened images.
 

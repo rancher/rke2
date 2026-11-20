@@ -1,5 +1,6 @@
 ---
 name: "Update Metrics Server chart and images"
+pipelineid: "rke2-charts"
 scms:
   rke2:
     kind: "github"
@@ -39,7 +40,7 @@ conditions:
 
 targets:
   chartVersion:
-    name: "Update rke2-metrics-server version in charts/chart_versions.yaml"
+    name: 'Bump rke2-metrics-server chart to {{ source "chart" }}'
     kind: "yaml"
     scmid: "rke2"
     sourceid: chart
@@ -47,7 +48,7 @@ targets:
       file: charts/chart_versions.yaml
       key: '$.charts[8].version'
   metricsServerImage:
-    name: "Update hardened-k8s-metrics-server tag in scripts/build-images"
+    name: 'Bump hardened-k8s-metrics-server to {{ source "metricsServerImage" }}'
     kind: "file"
     scmid: "rke2"
     sourceid: metricsServerImage
@@ -56,7 +57,7 @@ targets:
       matchpattern: '(?m)^[ \t]*\$\{REGISTRY\}/rancher/hardened-k8s-metrics-server:.*$'
       replacepattern: '    $${REGISTRY}/rancher/hardened-k8s-metrics-server:{{ source "metricsServerImage" }}'
   addonResizerImage:
-    name: "Update hardened-addon-resizer tag in scripts/build-images"
+    name: 'Bump hardened-addon-resizer to {{ source "addonResizerImage" }}'
     kind: "file"
     scmid: "rke2"
     sourceid: addonResizerImage
@@ -74,8 +75,7 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
-      parent: false
-      title: '[{{ .github.branch }}] Update Kubernetes Metrics Server chart {{ source "chart" }}'
+      title: '[{{ .github.branch }}] Update bundled charts and images'
       description: |
         Update to the latest chart and image versions:
         - rancher/hardened-k8s-metrics-server:{{ source "metricsServerImage" }}
