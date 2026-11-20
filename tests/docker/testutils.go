@@ -261,7 +261,13 @@ func (config *TestConfig) ProvisionServers(numOfServers int) error {
 			return fmt.Errorf("failed to start systemd server container: %s: %w", out, err)
 		}
 		time.Sleep(5 * time.Second)
-		cmd := "mkdir -p /src/rke2-cov"
+		// systemd does not make mounts shared when running in a container, but
+		// pods using Bidirectional mount propagation under /sys and /run require it.
+		cmd := "mount --make-rshared /sys && mount --make-rshared /run"
+		if out, err := newServer.RunCmdOnNode(cmd); err != nil {
+			return fmt.Errorf("failed to make /sys and /run rshared: %s: %w", out, err)
+		}
+		cmd = "mkdir -p /src/rke2-cov"
 		if out, err := newServer.RunCmdOnNode(cmd); err != nil {
 			return fmt.Errorf("failed to create coverage directory: %s: %w", out, err)
 		}
@@ -371,9 +377,15 @@ func (config *TestConfig) ProvisionAgents(numOfAgents int) error {
 				return fmt.Errorf("failed to start systemd agent container: %s: %w", out, err)
 			}
 			time.Sleep(5 * time.Second)
+			// systemd does not make mounts shared when running in a container, but
+			// pods using Bidirectional mount propagation under /sys and /run require it.
+			cmd := "mount --make-rshared /sys && mount --make-rshared /run"
+			if out, err := newAgent.RunCmdOnNode(cmd); err != nil {
+				return fmt.Errorf("failed to make /sys and /run rshared: %s: %w", out, err)
+			}
 
 			// Create empty config.yaml for later use
-			cmd := "mkdir -p /etc/rancher/rke2; touch /etc/rancher/rke2/config.yaml"
+			cmd = "mkdir -p /etc/rancher/rke2; touch /etc/rancher/rke2/config.yaml"
 			if out, err := newAgent.RunCmdOnNode(cmd); err != nil {
 				return fmt.Errorf("failed to create empty config.yaml: %s: %w", out, err)
 			}
