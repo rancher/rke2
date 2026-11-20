@@ -21,7 +21,9 @@ sources:
       url: https://rancher.github.io/rke2-charts
       name: rke2-multus
       versionfilter:
-        kind: "latest"
+        kind: "regex/semver"
+        regex: '^(\d+\.\d+\.\d+)$'
+        pattern: "*"
   multusCRD:
     name: "Get Multus CRD chart version"
     kind: "helmchart"
