@@ -5,12 +5,10 @@ pipelineid: "rke2-charts"
 # ingress-nginx prime image tag (scripts/build-images) in sync with upstream:
 #
 #   * chart version  <- latest rke2-ingress-nginx chart published to rke2-charts
-#   * prime image    <- latest -primeN release (CVE rebuild) of the pinned nginx
-#                       hardened line in rancher/ingress-nginx
+#   * prime image    <- controller.image.primeTag from the selected chart's values
 #
-# Both version patterns are pinned to the current nginx line on purpose, so a
-# nginx minor/patch bump stays a deliberate human change. When that line is
-# bumped, update the two versionfilter patterns below.
+# The chart version pattern is pinned to the current nginx line on purpose, so a
+# nginx minor bump stays a deliberate human change.
 #
 # To test locally:
 #   have "UPDATECLI_GITHUB_ACTOR" env set to your github username
@@ -40,22 +38,10 @@ sources:
         # rke2-ingress-nginx chart on the nginx v1.15 (upstream chart 4.15) line
         pattern: '^4\.15\.\d+$'
   prime:
-    name: "Get latest ingress-nginx prime image tag"
-    kind: "githubrelease"
+    name: "Get ingress-nginx prime image tag from the selected chart"
+    kind: "shell"
     spec:
-      owner: rancher
-      repository: ingress-nginx
-      token: '{{ requiredEnv .github.token }}'
-      username: '{{ requiredEnv .github.username }}'
-      # Only consider published releases - never drafts or pre-releases.
-      typefilter:
-        release: true
-        draft: false
-        prerelease: false
-      versionfilter:
-        kind: "regex"
-        # -primeN CVE rebuilds of the pinned nginx v1.15.1 hardened line
-        pattern: 'v1\.15\.1-prime[0-9]+'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-ingress-nginx {{ source "chart" }} .controller.image.primeTag
 
 conditions:
   ingressNginxEntry:
@@ -75,18 +61,7 @@ conditions:
     sourceid: prime
     spec:
       command: bash ./updatecli/scripts/validate_version.sh rke2-ingress-nginx '{{ source "chart" }}'
-  verifyPrimeInChartValues:
-    name: "Verify prime image is contained in the source chart's values.yaml"
-    kind: "helmchart"
-    disablesourceinput: true
-    spec:
-      url: "https://rancher.github.io/rke2-charts"
-      name: "rke2-ingress-nginx"
-      version: '{{ source "chart" }}'
-      file: "values.yaml"
-      key: "primeTag"
-      value: '{{ source "prime" }}'
-      
+
 targets:
   chartVersion:
     name: 'Bump rke2-ingress-nginx chart to {{ source "chart" }}'
