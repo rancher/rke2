@@ -82,7 +82,7 @@ targets:
     name: "Update the vsphere-csi airgap images"
     kind: "shell"
     scmid: "rke2"
-    sourceid: vsphere-csi
+    disablesourceinput: true
     spec:
       command: bash ./updatecli/scripts/update_chart_and_images_prime.sh rancher-vsphere-csi {{ source "vsphere-csi" }}
       changedif:
