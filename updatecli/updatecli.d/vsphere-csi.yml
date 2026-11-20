@@ -3,10 +3,11 @@
 #   have "UPDATECLI_GITHUB_ACTOR" env set to your github username
 #   have "UPDATECLI_GITHUB_TOKEN" env set to your github token
 #   have the latest version of updatecli installed
-#   'updatecli diff -v updatecli/values.yaml -c updatecli/updatecli.d/vsphere-csi.yml'
+#   'updatecli pipeline diff -v updatecli/values.yaml -c updatecli/updatecli.d/vsphere-csi.yml'
 # In the future, more useful files should be added to this directory.
 ---
-name: "Update vsphere csi/cpi charts and images"
+name: "Update vsphere-csi chart and images"
+pipelineid: "rke2-charts"
 # Make sure we can pull in github repos from multiple orgs
 scms:
   rke2:
@@ -26,7 +27,49 @@ sources:
     kind: "shell"
     spec:
       command: bash ./updatecli/scripts/retrieve_chart_version.sh rancher-vsphere-csi
-  
+  vsphere-csi-public-driver-tag:
+    name: "Get vsphere-csi public driver tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.csiController.image.tag'
+  vsphere-csi-public-syncer-tag:
+    name: "Get vsphere-csi public syncer tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.csiController.image.vsphereSyncer.tag'
+  vsphere-csi-public-registrar-tag:
+    name: "Get vsphere-csi public node driver registrar tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.csiNode.image.nodeDriverRegistrar.tag'
+  vsphere-csi-public-resizer-tag:
+    name: "Get vsphere-csi public resizer tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.csiController.image.csiResizer.tag'
+  vsphere-csi-public-liveness-tag:
+    name: "Get vsphere-csi public livenessprobe tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.csiController.image.livenessProbe.tag'
+  vsphere-csi-public-attacher-tag:
+    name: "Get vsphere-csi public attacher tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.csiController.image.csiAttacher.tag'
+  vsphere-csi-public-provisioner-tag:
+    name: "Get vsphere-csi public provisioner tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rancher-vsphere-csi {{ source "vsphere-csi" }} '.csiController.image.csiProvisioner.tag'
+  vsphere-csi-public-snapshotter-tag:
+    name: "Get latest hardened csi snapshotter tag"
+    kind: "githubrelease"
+    spec:
+      owner: "rancher"
+      repository: "image-build-external-snapshotter"
+      token: '{{ requiredEnv .github.token }}'
+
 conditions:
   vsphereCSIVersionShouldBeUpdated:
     name: "Check if vsphere-csi chart should be updated or not"
@@ -37,12 +80,35 @@ conditions:
 
 targets:
   updateVsphereCSI:
-    name: "Update the vsphere-csi airgap images"
+    name: 'Bump rancher-vsphere-csi chart to {{ source "vsphere-csi" }}'
     kind: "shell"
     scmid: "rke2"
-    sourceid: vsphere-csi
+    disablesourceinput: true
     spec:
-      command: bash ./updatecli/scripts/update_chart_and_images.sh rancher-vsphere-csi
+      command: bash ./updatecli/scripts/update_chart_and_images_prime.sh rancher-vsphere-csi {{ source "vsphere-csi" }}
+      changedif:
+        kind: file/checksum
+        spec:
+          files:
+            - charts/chart_versions.yaml
+  updateVsphereCSIPublicImages:
+    name: 'Bump public vsphere-csi images for chart {{ source "vsphere-csi" }}'
+    kind: "file"
+    scmid: "rke2"
+    sourceid: vsphere-csi-public-driver-tag
+    spec:
+      file: scripts/build-images
+      matchpattern: '(?ms)[ \t]*\$\{REGISTRY\}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:.*?\nEOF'
+      replacepattern: |2-
+            $${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-driver:{{ source "vsphere-csi-public-driver-tag" }}
+            $${REGISTRY}/rancher/mirrored-cloud-provider-vsphere-csi-release-syncer:{{ source "vsphere-csi-public-syncer-tag" }}
+            $${REGISTRY}/rancher/mirrored-sig-storage-csi-node-driver-registrar:{{ source "vsphere-csi-public-registrar-tag" }}
+            $${REGISTRY}/rancher/mirrored-sig-storage-csi-resizer:{{ source "vsphere-csi-public-resizer-tag" }}
+            $${REGISTRY}/rancher/mirrored-sig-storage-livenessprobe:{{ source "vsphere-csi-public-liveness-tag" }}
+            $${REGISTRY}/rancher/mirrored-sig-storage-csi-attacher:{{ source "vsphere-csi-public-attacher-tag" }}
+            $${REGISTRY}/rancher/mirrored-sig-storage-csi-provisioner:{{ source "vsphere-csi-public-provisioner-tag" }}
+            $${REGISTRY}/rancher/hardened-csi-snapshotter:{{ source "vsphere-csi-public-snapshotter-tag" }}
+        EOF
 
 actions:
   github:
@@ -53,5 +119,4 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
-      parent: false
-      title: '[{{ .github.branch }}] Update vsphere-csi chart'
+      title: '[{{ .github.branch }}] Update bundled charts and images'
