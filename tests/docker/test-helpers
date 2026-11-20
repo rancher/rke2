@@ -365,6 +365,7 @@ provision-server() {
     docker run \
         -d --name $name \
         --privileged \
+        --tmpfs /run:rw,exec,mode=755 \
         -v $TEST_DIR/db-ca/:/db-ca \
         -p 127.0.0.1:$port:6443 \
         -e RKE2_TOKEN=$(cat $TEST_DIR/metadata/secret) \
@@ -372,6 +373,10 @@ provision-server() {
         ${REGISTRY_CLUSTER_ARGS:-} \
         $RKE2_IMAGE server $ARGS $SERVER_ARGS ${!SERVER_INSTANCE_ARGS}
     docker exec $name mount --make-rshared /var/lib/kubelet
+    docker exec $name mount --make-rshared /sys
+    docker exec $name mount --make-rshared /run
+    docker exec $name mkdir -p /run/containerd
+    docker exec $name ln -sf /run/k3s/containerd/containerd.sock /run/containerd/containerd.sock
 
     local ip=$(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $name | tee $TEST_DIR/servers/$count/metadata/ip)
     local url=$(echo "https://$ip:9345" | tee $TEST_DIR/servers/$count/metadata/url)
@@ -395,12 +400,17 @@ provision-agent() {
     docker run \
         -d --name $name \
         --privileged \
+        --tmpfs /run:rw,exec,mode=755 \
         -e RKE2_TOKEN=$(cat $TEST_DIR/metadata/secret) \
         -e RKE2_URL=$RKE2_URL \
         -e RKE2_DEBUG=true \
         ${REGISTRY_CLUSTER_ARGS:-} \
         $RKE2_IMAGE agent $ARGS $AGENT_ARGS ${!AGENT_INSTANCE_ARGS}
     docker exec $name mount --make-rshared /var/lib/kubelet
+    docker exec $name mount --make-rshared /sys
+    docker exec $name mount --make-rshared /run
+    docker exec $name mkdir -p /run/containerd
+    docker exec $name ln -sf /run/k3s/containerd/containerd.sock /run/containerd/containerd.sock
 
     echo "Started $name"
     run-function agent-post-hook $count
