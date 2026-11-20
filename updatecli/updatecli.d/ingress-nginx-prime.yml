@@ -1,10 +1,11 @@
 ---
-name: "Update ingress-nginx chart and prime image"
+name: "Update ingress-nginx chart and images"
 pipelineid: "rke2-charts"
 # Keeps the rke2-ingress-nginx chart version (charts/chart_versions.yaml) and the
-# ingress-nginx prime image tag (scripts/build-images) in sync with upstream:
+# ingress-nginx image tags (scripts/build-images) in sync with upstream:
 #
 #   * chart version  <- latest rke2-ingress-nginx chart published to rke2-charts
+#   * hardened image <- controller.image.tag from the selected chart's values
 #   * prime image    <- controller.image.primeTag from the selected chart's values
 #
 # The chart version pattern is pinned to the current nginx line on purpose, so a
@@ -37,6 +38,11 @@ sources:
         kind: "regex"
         # rke2-ingress-nginx chart on the nginx v1.15 (upstream chart 4.15) line
         pattern: '^4\.15\.\d+$'
+  hardened:
+    name: "Get ingress-nginx hardened image tag from the selected chart"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-ingress-nginx {{ source "chart" }} .controller.image.tag
   prime:
     name: "Get ingress-nginx prime image tag from the selected chart"
     kind: "shell"
@@ -71,6 +77,15 @@ targets:
     spec:
       file: charts/chart_versions.yaml
       key: '$.charts[5].version'
+  hardenedBuildImages:
+    name: 'Bump ingress-nginx hardened image to {{ source "hardened" }}'
+    kind: "file"
+    scmid: "rke2"
+    sourceid: hardened
+    spec:
+      file: scripts/build-images
+      matchpattern: 'INGRESS_NGINX_HARDENED_TAG=.*'
+      replacepattern: 'INGRESS_NGINX_HARDENED_TAG={{ source "hardened" }}'
   buildImages:
     name: 'Bump ingress-nginx prime image to {{ source "prime" }}'
     kind: "file"
@@ -95,5 +110,7 @@ actions:
         This is an automated PR to keep ingress-nginx in sync with upstream.
 
         - `rke2-ingress-nginx` chart -> `{{ source "chart" }}` (charts/chart_versions.yaml)
+        - hardened image tag -> `{{ source "hardened" }}` (scripts/build-images:
+          rancher/nginx-ingress-controller and rancher/kube-webhook-certgen)
         - prime image tag -> `{{ source "prime" }}` (scripts/build-images:
           rancher/nginx-ingress-controller and rancher/kube-webhook-certgen)
