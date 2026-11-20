@@ -1,16 +1,15 @@
 ---
-name: "Update ingress-nginx chart and prime image"
+name: "Update ingress-nginx chart and images"
 pipelineid: "rke2-charts"
 # Keeps the rke2-ingress-nginx chart version (charts/chart_versions.yaml) and the
-# ingress-nginx prime image tag (scripts/build-images) in sync with upstream:
+# ingress-nginx image tags (scripts/build-images) in sync with upstream:
 #
 #   * chart version  <- latest rke2-ingress-nginx chart published to rke2-charts
-#   * prime image    <- latest -primeN release (CVE rebuild) of the pinned nginx
-#                       hardened line in rancher/ingress-nginx
+#   * hardened image <- controller.image.tag from the selected chart's values
+#   * prime image    <- controller.image.primeTag from the selected chart's values
 #
-# Both version patterns are pinned to the current nginx line on purpose, so a
-# nginx minor/patch bump stays a deliberate human change. When that line is
-# bumped, update the two versionfilter patterns below.
+# The chart version pattern is pinned to the current nginx line on purpose, so a
+# nginx minor bump stays a deliberate human change.
 #
 # To test locally:
 #   have "UPDATECLI_GITHUB_ACTOR" env set to your github username
@@ -39,23 +38,16 @@ sources:
         kind: "regex"
         # rke2-ingress-nginx chart on the nginx v1.15 (upstream chart 4.15) line
         pattern: '^4\.15\.\d+$'
-  prime:
-    name: "Get latest ingress-nginx prime image tag"
-    kind: "githubrelease"
+  hardened:
+    name: "Get ingress-nginx hardened image tag from the selected chart"
+    kind: "shell"
     spec:
-      owner: rancher
-      repository: ingress-nginx
-      token: '{{ requiredEnv .github.token }}'
-      username: '{{ requiredEnv .github.username }}'
-      # Only consider published releases - never drafts or pre-releases.
-      typefilter:
-        release: true
-        draft: false
-        prerelease: false
-      versionfilter:
-        kind: "regex"
-        # -primeN CVE rebuilds of the pinned nginx v1.15.2 hardened line
-        pattern: 'v1\.15\.2-prime[0-9]+'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-ingress-nginx {{ source "chart" }} .controller.image.tag
+  prime:
+    name: "Get ingress-nginx prime image tag from the selected chart"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-ingress-nginx {{ source "chart" }} .controller.image.primeTag
 
 conditions:
   ingressNginxEntry:
@@ -75,18 +67,7 @@ conditions:
     sourceid: prime
     spec:
       command: bash ./updatecli/scripts/validate_version.sh rke2-ingress-nginx '{{ source "chart" }}'
-  verifyPrimeInChartValues:
-    name: "Verify prime image is contained in the source chart's values.yaml"
-    kind: "helmchart"
-    disablesourceinput: true
-    spec:
-      url: "https://rancher.github.io/rke2-charts"
-      name: "rke2-ingress-nginx"
-      version: '{{ source "chart" }}'
-      file: "values.yaml"
-      key: "primeTag"
-      value: '{{ source "prime" }}'
-      
+
 targets:
   chartVersion:
     name: 'Bump rke2-ingress-nginx chart to {{ source "chart" }}'
@@ -96,6 +77,15 @@ targets:
     spec:
       file: charts/chart_versions.yaml
       key: '$.charts[5].version'
+  hardenedBuildImages:
+    name: 'Bump ingress-nginx hardened image to {{ source "hardened" }}'
+    kind: "file"
+    scmid: "rke2"
+    sourceid: hardened
+    spec:
+      file: scripts/build-images
+      matchpattern: 'INGRESS_NGINX_HARDENED_TAG=.*'
+      replacepattern: 'INGRESS_NGINX_HARDENED_TAG={{ source "hardened" }}'
   buildImages:
     name: 'Bump ingress-nginx prime image to {{ source "prime" }}'
     kind: "file"
@@ -120,5 +110,7 @@ actions:
         This is an automated PR to keep ingress-nginx in sync with upstream.
 
         - `rke2-ingress-nginx` chart -> `{{ source "chart" }}` (charts/chart_versions.yaml)
+        - hardened image tag -> `{{ source "hardened" }}` (scripts/build-images:
+          rancher/nginx-ingress-controller and rancher/kube-webhook-certgen)
         - prime image tag -> `{{ source "prime" }}` (scripts/build-images:
           rancher/nginx-ingress-controller and rancher/kube-webhook-certgen)
