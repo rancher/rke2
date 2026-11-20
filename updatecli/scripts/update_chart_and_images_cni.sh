@@ -112,10 +112,11 @@ update_chart_images_windows() {
     export XDG_CACHE_HOME="${gh_state_dir}/xdg-cache"
     case "${1}" in
        "rke2-flannel")
-	  flanneld_sha256=$(gh api repos/flannel-io/flannel/releases/tags/v${app_version}   --jq '.assets[] | select(.name == "flanneld.exe") | .digest' | cut -d':' -f2)
+	  app_version="v${app_version#v}"
+	  flanneld_sha256=$(gh api repos/flannel-io/flannel/releases/tags/${app_version}   --jq '.assets[] | select(.name == "flanneld.exe") | .digest' | cut -d':' -f2)
           sed -i "s/echo \".*  flanneld.exe\" | sha256sum -c -/echo \"${flanneld_sha256}  flanneld.exe\" | sha256sum -c -/g" Dockerfile.windows
-	  sed -i "s/ENV FLANNEL_VERSION=.*/ENV FLANNEL_VERSION=\"v$app_version\"/g" Dockerfile.windows
-	  CNI_VERSION=$(helm template flannel --repo https://flannel-io.github.io/flannel/ --version "v$app_version" 2>/dev/null | \
+	  sed -i "s/ENV FLANNEL_VERSION=.*/ENV FLANNEL_VERSION=\"$app_version\"/g" Dockerfile.windows
+	  CNI_VERSION=$(helm template flannel --repo https://flannel-io.github.io/flannel/ --version "$app_version" 2>/dev/null | \
                         grep -oP 'flannel-cni-plugin:\K[\w.-]+' | \
                         head -n 1)
 	  if [ -z "$CNI_VERSION" ]; then
