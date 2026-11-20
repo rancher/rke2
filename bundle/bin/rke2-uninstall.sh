@@ -121,6 +121,10 @@ uninstall_remove_files()
     rm -rf /etc/rancher/rke2 /etc/rancher/node /etc/cni /opt/cni/bin /var/lib/cni/ /var/log/pods/ /var/log/containers /var/log/calico
     rm -d /etc/rancher || true
     rm --one-file-system -rf /var/lib/kubelet || true
+    # containerd's erofs snapshotter can mark layer blobs immutable (set_immutable), which blocks their removal
+    if [ -d "${RKE2_DATA_DIR}/agent/containerd/io.containerd.snapshotter.v1.erofs" ] && command -v chattr >/dev/null 2>&1; then
+        chattr -R -f -i "${RKE2_DATA_DIR}/agent/containerd/io.containerd.snapshotter.v1.erofs" || true
+    fi
     rm -rf -- "${RKE2_DATA_DIR}" || error "Failed to remove ${RKE2_DATA_DIR}"
     rm -d /var/lib/rancher || true
 
