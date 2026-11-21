@@ -12,10 +12,10 @@ charts:
     filename: /charts/rke2-calico-crd.yaml
     bootstrap: true
     package: rke2-calico-crd
-  - version: 1.49.002
+  - version: 1.50.801
     filename: /charts/rke2-coredns.yaml
     bootstrap: true
-  - version: 4.15.115
+  - version: 4.15.121
     filename: /charts/rke2-ingress-nginx.yaml
     bootstrap: false
   - version: 40.1.27
@@ -25,7 +25,7 @@ charts:
     filename: /charts/rke2-traefik-crd.yaml
     bootstrap: false
     package: rke2-traefik-crd
-  - version: 3.14.004
+  - version: 3.14.7
     filename: /charts/rke2-metrics-server.yaml
     bootstrap: false
   - version: 4.3.203+v1.3436
@@ -37,7 +37,7 @@ charts:
   - version: 1.16.600
     filename: /charts/rancher-vsphere-cpi.yaml
     bootstrap: true
-  - version: 3.8.0-rancher000
+  - version: 3.8.0-rancher1
     filename: /charts/rancher-vsphere-csi.yaml
     bootstrap: true
   - version: 0.2.1700
