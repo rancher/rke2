@@ -203,6 +203,8 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
+      labels:
+        - kind/updatecli
       title: '[{{ .github.branch }}] Update hardened runtime images'
       description: |
         Automated PR to bump the hardened runtime image tags in the `Dockerfile`
