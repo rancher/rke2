@@ -85,5 +85,7 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
+      labels:
+        - kind/updatecli
       title: '[{{ .github.branch }}] Update CNI charts'
       description: 'This is an automated PR to update Helm chart versions. issue #{{ source "issue" }}'
