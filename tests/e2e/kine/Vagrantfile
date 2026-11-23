@@ -85,7 +85,7 @@ def getDBType(role, role_num, vm)
   if EXTERNAL_DB == "mariadb"
     if role.include?("server") && role_num == 0
       dockerInstall(vm)
-      vm.provision "shell", inline: "docker run -d -p 3306:3306 --name #{EXTERNAL_DB} -e MARIADB_ROOT_PASSWORD=e2e mariadb:11"
+      vm.provision "shell", inline: "docker run -d -p 3306:3306 --name #{EXTERNAL_DB} -e MARIADB_ROOT_PASSWORD=e2e mariadb:12"
       vm.provision "shell", inline: "echo \"Wait for mariaDB to startup\"; sleep 10"
       return "datastore-endpoint: 'mysql://root:e2e@tcp(#{NETWORK_PREFIX}.100:3306)/rke2'"
     elsif role.include?("server") && role_num != 0
@@ -95,7 +95,7 @@ def getDBType(role, role_num, vm)
   elsif EXTERNAL_DB == "mysql"
     if role.include?("server") && role_num == 0
       dockerInstall(vm)
-      vm.provision "shell", inline: "docker run -d -p 3306:3306 --name #{EXTERNAL_DB} -e MYSQL_ROOT_PASSWORD=e2e mysql:5.7"
+      vm.provision "shell", inline: "docker run -d -p 3306:3306 --name #{EXTERNAL_DB} -e MYSQL_ROOT_PASSWORD=e2e mysql:9.7"
       vm.provision "shell", inline: "echo \"Wait for mysql to startup\"; sleep 10"
       return "datastore-endpoint: 'mysql://root:e2e@tcp(#{NETWORK_PREFIX}.100:3306)/rke2'"
     elsif role.include?("server") && role_num != 0
@@ -105,7 +105,7 @@ def getDBType(role, role_num, vm)
   elsif EXTERNAL_DB == "postgres"
     if role.include?("server") && role_num == 0
       dockerInstall(vm)
-      vm.provision "shell", type: "shell", inline: "docker run -d -p 5432:5432 --name postgres -e POSTGRES_PASSWORD=e2e  postgres:14-alpine"
+      vm.provision "shell", type: "shell", inline: "docker run -d -p 5432:5432 --name postgres -e POSTGRES_PASSWORD=e2e  postgres:18-alpine"
       vm.provision "shell", inline: "echo \"Wait for postgres to startup\"; sleep 10"
       return "datastore-endpoint: 'postgres://postgres:e2e@#{NETWORK_PREFIX}.100:5432/rke2?sslmode=disable'"
     elsif role.include?("server") && role_num != 0
