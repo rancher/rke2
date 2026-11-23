@@ -106,6 +106,22 @@ is_supported() {
     fi
 }
 
+# Prints the image lists a chart's images must be in: images-core.txt plus the
+# chart's own list (e.g. rke2-multus-crd -> images-multus.txt,
+# rancher-vsphere-csi -> images-vsphere.txt), if there is one.
+chart_image_lists() {
+    name=${1#rke2-}
+    name=${name#rancher-}
+    name=${name%-crd}
+    echo $2/images-core.txt
+    for list in $2/images-$name.txt $2/images-${name%%-*}.txt; do
+        if [ -f $list ]; then
+            echo $list
+            return
+        fi
+    done
+}
+
 check_airgap() {
     chart_version=$1
     chart_name=$2
@@ -133,6 +149,7 @@ check_airgap() {
             return
         fi
     fi
+    image_lists=$(chart_image_lists $chart_name $image_list_dir)
     awk '$1 ~ /^image:/ {
         gsub(/"/, "", $2)
         gsub(/^docker.io/, "", $2)
@@ -141,7 +158,7 @@ check_airgap() {
     ' $yaml_tmp | \
     while read image
     do
-        if ! grep -q $image $image_list_dir/images*.txt; then
+        if ! grep -q $image $image_lists; then
             echo $image
         fi
     done
