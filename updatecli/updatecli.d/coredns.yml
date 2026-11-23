@@ -23,26 +23,17 @@ sources:
     name: "Get hardened-coredns tag from the selected chart"
     kind: "shell"
     spec:
-      command: |
-        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rke2-coredns/rke2-coredns-{{ source "chart" }}.tgz" \
-          | tar xzO rke2-coredns/values.yaml \
-          | yq -r '.image.tag'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-coredns {{ source "chart" }} .image.tag
   clusterAutoscalerImage:
     name: "Get hardened-cluster-autoscaler tag from the selected chart"
     kind: "shell"
     spec:
-      command: |
-        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rke2-coredns/rke2-coredns-{{ source "chart" }}.tgz" \
-          | tar xzO rke2-coredns/values.yaml \
-          | yq -r '.autoscaler.image.tag'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-coredns {{ source "chart" }} .autoscaler.image.tag
   dnsNodeCacheImage:
     name: "Get hardened-dns-node-cache tag from the selected chart"
     kind: "shell"
     spec:
-      command: |
-        curl -sfL "https://github.com/rancher/rke2-charts/raw/main/assets/rke2-coredns/rke2-coredns-{{ source "chart" }}.tgz" \
-          | tar xzO rke2-coredns/values.yaml \
-          | yq -r '.nodelocal.image.tag'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-coredns {{ source "chart" }} .nodelocal.image.tag
 
 conditions:
   chartVersionShouldBeUpdated:
