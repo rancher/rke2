@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -85,6 +86,25 @@ func CheckDaemonSets(daemonsets []string, kubeconfigFile string) error {
 	}
 
 	return nil
+}
+
+// CheckHelmJob checks if the install Job for the named HelmChart has completed,
+// and returns the Job's config hash
+func CheckHelmJob(chart, kubeconfigFile string) (string, error) {
+	client, err := K8sClient(kubeconfigFile)
+	if err != nil {
+		return "", err
+	}
+	job, err := client.BatchV1().Jobs("kube-system").Get(context.Background(), "helm-install-"+chart, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+	for _, condition := range job.Status.Conditions {
+		if condition.Type == batchv1.JobComplete && condition.Status == corev1.ConditionTrue {
+			return job.Spec.Template.Annotations["helmcharts.helm.cattle.io/configHash"], nil
+		}
+	}
+	return "", fmt.Errorf("job %s has not completed", job.Name)
 }
 
 func ParseServices(kubeconfigFile string) ([]corev1.Service, error) {
