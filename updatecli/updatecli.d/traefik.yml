@@ -26,7 +26,7 @@ sources:
     name: "Get hardened-traefik tag from the selected chart"
     kind: "shell"
     spec:
-      command: helm show values rke2-traefik --repo https://rancher.github.io/rke2-charts --version {{ source "chart" }} | yq -r '.image.tag'
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-traefik {{ source "chart" }} .image.tag
 
 conditions:
   chartVersionShouldBeUpdated:
