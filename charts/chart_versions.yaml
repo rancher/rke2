@@ -31,7 +31,7 @@ charts:
   - version: 4.3.203+v1.3436
     filename: /charts/rke2-multus.yaml
     bootstrap: false
-  - version: v0.28.1005
+  - version: 0.28.1101
     filename: /charts/rke2-flannel.yaml
     bootstrap: true
   - version: 1.16.600
