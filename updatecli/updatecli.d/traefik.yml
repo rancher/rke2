@@ -67,6 +67,8 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
+      labels:
+        - kind/updatecli
       title: '[{{ .github.branch }}] Update bundled charts and images'
       description: |
         This is an automated PR to update the Traefik chart and related hardened images.

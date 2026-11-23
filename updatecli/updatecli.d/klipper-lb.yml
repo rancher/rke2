@@ -46,6 +46,8 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
+      labels:
+        - kind/updatecli
       title: '[{{ .github.branch }}] Update bundled charts and images'
       description: |
         Automated PR to bump `KLIPPERLB_VERSION` in `scripts/version.sh`.
