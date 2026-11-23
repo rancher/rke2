@@ -24,7 +24,7 @@ update_chart_version() {
         info "found version ${CURRENT_VERSION}, updating to ${NEW_VERSION}"
         chart_updated=true
         if test "$DRY_RUN" == "false"; then
-            sed -i "s|^\(  - version: \)${CURRENT_VERSION}\$|\1${NEW_VERSION}|g" ${CHART_VERSIONS_FILE}
+            CHART_TARGET="/charts/${1}.yaml" NEW_VERSION="${NEW_VERSION}" yq -i '(.charts[] | select(.filename == strenv(CHART_TARGET)) | .version) = strenv(NEW_VERSION)' "${CHART_VERSIONS_FILE}"
         else
             info "dry-run is enabled, no changes will occur"
         fi

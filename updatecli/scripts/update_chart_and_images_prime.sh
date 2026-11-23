@@ -42,7 +42,7 @@ update_chart_version() {
     if [ "${CURRENT_VERSION}" != "${NEW_VERSION}" ]; then
         info "found version ${CURRENT_VERSION}, updating to ${NEW_VERSION}"
         if test "$DRY_RUN" == "false"; then
-            sed -i "s/${CURRENT_VERSION}/${NEW_VERSION}/g" ${CHART_VERSIONS_FILE}
+            NEW_VERSION="${NEW_VERSION}" yq -i '(.charts[] | select(.filename == strenv(CHART_TARGET)) | .version) = strenv(NEW_VERSION)' "${CHART_VERSIONS_FILE}"
         else
             info "dry-run is enabled, no changes will occur"
         fi
