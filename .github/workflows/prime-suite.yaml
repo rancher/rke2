@@ -164,7 +164,7 @@ jobs:
         mv ./artifacts/rke2.*-amd64.tar.gz ./dist/artifacts
         sha256sum ./dist/artifacts/rke2.linux-amd64.tar.gz > ./dist/artifacts/sha256sum-amd64.txt
     - name: "Run Calico CNI Prime Test"
-      working-directory: tests/e2e/${{ matrix.test }}
+      working-directory: tests/e2e/${{ matrix.etest }}
       run: |
-        E2E_PRIME=true go test -timeout=45m ./${{ matrix.test }}_test.go -ci -local -cni=calico -ginkgo.v -test.v
+        E2E_PRIME=true go test -timeout=45m ./${{ matrix.etest }}_test.go -ci -local -cni=calico -ginkgo.v -test.v
 
