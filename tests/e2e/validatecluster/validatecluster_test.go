@@ -158,10 +158,11 @@ var _ = Describe("Verify Basic Cluster Creation", Ordered, func() {
 	It("Verifies dns access", func() {
 		_, err := tc.DeployWorkload("dnsutils.yaml")
 		Expect(err).NotTo(HaveOccurred())
-		cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default"
-		Eventually(func() (string, error) {
-			return e2e.RunCommand(cmd)
-		}, "120s", "2s").Should(ContainSubstring("kubernetes.default.svc.cluster.local"))
+		cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec dnsutils -- /agnhost connect --timeout=5s kubernetes.default:443"
+		Eventually(func() error {
+			_, err := e2e.RunCommand(cmd)
+			return err
+		}, "120s", "2s").Should(Succeed())
 	})
 
 	It("Verify Local Path Provisioner storage ", func() {

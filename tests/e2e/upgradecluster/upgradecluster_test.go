@@ -174,10 +174,11 @@ var _ = Describe("Verify Upgrade", Ordered, func() {
 				return e2e.RunCommand(cmd)
 			}, "420s", "2s").Should(ContainSubstring("dnsutils"))
 
-			cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default"
-			Eventually(func() (string, error) {
-				return e2e.RunCommand(cmd)
-			}, "420s", "2s").Should(ContainSubstring("kubernetes.default.svc.cluster.local"))
+			cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec dnsutils -- /agnhost connect --timeout=5s kubernetes.default:443"
+			Eventually(func() error {
+				_, err := e2e.RunCommand(cmd)
+				return err
+			}, "120s", "2s").Should(Succeed())
 		})
 
 		It("Verifies Local Path Provisioner storage ", func() {
@@ -325,10 +326,11 @@ var _ = Describe("Verify Upgrade", Ordered, func() {
 			}, "420s", "1s").Should(Succeed())
 		})
 		It("After upgrade verifies dns access", func() {
-			Eventually(func() (string, error) {
-				cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default"
-				return e2e.RunCommand(cmd)
-			}, "180s", "2s").Should((ContainSubstring("kubernetes.default.svc.cluster.local")))
+			cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec dnsutils -- /agnhost connect --timeout=5s kubernetes.default:443"
+			Eventually(func() error {
+				_, err := e2e.RunCommand(cmd)
+				return err
+			}, "180s", "2s").Should(Succeed())
 		})
 
 		It("After upgrade verify Local Path Provisioner storage ", func() {
