@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"strings"
@@ -10,6 +11,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rancher/rke2/tests"
 	"github.com/rancher/rke2/tests/docker"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
@@ -43,6 +46,8 @@ var _ = Describe("DualStack Tests", Ordered, func() {
 			Eventually(func(g Gomega) {
 				g.Expect(tests.CheckDefaultDeployments(tc.KubeconfigFile)).To(Succeed())
 				g.Expect(tests.CheckDefaultDaemonSets(tc.KubeconfigFile)).To(Succeed())
+				_, err := tests.CheckHelmJob("rke2-coredns", tc.KubeconfigFile)
+				g.Expect(err).NotTo(HaveOccurred())
 			}, "240s", "5s").Should(Succeed())
 			Eventually(func() error {
 				return tests.NodesReady(tc.KubeconfigFile, tc.GetNodeNames())
@@ -69,6 +74,15 @@ var _ = Describe("DualStack Tests", Ordered, func() {
 					Or(ContainSubstring("fd11:decf:c0ff"), ContainSubstring("2001:cafe:42")),
 				))
 			}
+		})
+
+		It("Verifies CoreDNS Service has IPv4 and IPv6", func() {
+			client, err := tests.K8sClient(tc.KubeconfigFile)
+			Expect(err).NotTo(HaveOccurred())
+			svc, err := client.CoreV1().Services("kube-system").Get(context.Background(), "rke2-coredns-rke2-coredns", metav1.GetOptions{})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(svc.Spec.ClusterIPs).To(HaveLen(2))
+			Expect(svc.Spec.IPFamilyPolicy).To(HaveValue(Equal(corev1.IPFamilyPolicyPreferDualStack)))
 		})
 
 		It("Verifies ClusterIP Service", func() {
@@ -138,8 +152,15 @@ var _ = Describe("DualStack Tests", Ordered, func() {
 	})
 	Context("Validate dnscache feature", func() {
 		It("deploys nodecache daemonset", func() {
-			_, err := tc.DeployWorkload("dns-node-cache.yaml")
+			prevHash, err := tests.CheckHelmJob("rke2-coredns", tc.KubeconfigFile)
 			Expect(err).NotTo(HaveOccurred())
+			_, err = tc.DeployWorkload("dns-node-cache.yaml")
+			Expect(err).NotTo(HaveOccurred())
+			Eventually(func(g Gomega) {
+				hash, err := tests.CheckHelmJob("rke2-coredns", tc.KubeconfigFile)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(hash).NotTo(Equal(prevHash), "helm job not yet updated")
+			}, "180s", "5s").Should(Succeed())
 			Eventually(func() error {
 				return tests.CheckDaemonSets([]string{"node-local-dns"}, tc.KubeconfigFile)
 			}, "120s", "5s").Should(Succeed())
