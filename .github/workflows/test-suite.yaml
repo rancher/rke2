@@ -8,6 +8,7 @@ on:
       - "**.md"
       - "channel.yaml"
       - "install.sh"
+      - "docs/**"
       - "updatecli/**"
       - ".github/**"
       - "!.github/workflows/test-suite.yaml"

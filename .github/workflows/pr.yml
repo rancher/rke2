@@ -4,6 +4,8 @@ on:
       - "**.md"
       - "channel.yaml"
       - "install.sh"
+      - "docs/**"
+      - "updatecli/**"
       - "!.github/workflows/test-suite.yaml"
 
 name: PR Build
