@@ -58,9 +58,9 @@ ARG KUBERNETES_VERSION=dev
 # windows runtime image
 ENV CRICTL_VERSION="v1.35.0"
 ENV CALICO_VERSION="v3.32.2"
-ENV CNI_PLUGIN_VERSION="v1.9.1"
-ENV FLANNEL_VERSION="v0.28.10"
-ENV CNI_FLANNEL_VERSION="v1.9.1-flannel3"
+ENV CNI_PLUGIN_VERSION="v1.10.0"
+ENV FLANNEL_VERSION="v0.28.11"
+ENV CNI_FLANNEL_VERSION="v1.10.0-flannel1"
 
 RUN mkdir -p rancher
 
@@ -77,7 +77,7 @@ RUN curl -fsSLO https://github.com/kubernetes-sigs/cri-tools/releases/download/$
     echo "a5329ebc16378ae1d2935414077695579d76617aaf936a9d8c8ed086951313f3  crictl-${CRICTL_VERSION}-windows-amd64.tar.gz" | sha256sum -c -
 
 RUN curl -fsSLO https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGIN_VERSION}/cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz && \
-    echo "c09a62523d76b32b883b6a9ee824c997b5c3cc8b3caebc8612c2f64fbbe97334  cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz" | sha256sum -c -
+    echo "df2664a53c722e29257136ef25151d4237f0e948c2a02a2e45bd6b5b225814b0  cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz" | sha256sum -c -
 
 RUN case "${KUBERNETES_VERSION}" in \
         v1.35.10) \
@@ -100,10 +100,10 @@ RUN case "${KUBERNETES_VERSION}" in \
 RUN curl -fsSLO https://github.com/projectcalico/calico/releases/download/${CALICO_VERSION}/calico-windows-${CALICO_VERSION}.zip && \
     echo "07f81f0c71a63919a0c93ada6c6f2bbc854fe0a89e0089b747d9d73a41369a0c  calico-windows-${CALICO_VERSION}.zip" | sha256sum -c -
 RUN curl -fsSL https://github.com/flannel-io/flannel/releases/download/${FLANNEL_VERSION}/flanneld.exe -o flanneld.exe && \
-    echo "eeb785867cda2287b06fc1047ebe3f14120269f8a1627a99a53ce01933a77bdb  flanneld.exe" | sha256sum -c - && \
+    echo "a192a48876779db372564e1705a333db8be71ed4bac543ae1159b26b12480cb2  flanneld.exe" | sha256sum -c - && \
     mv flanneld.exe rancher/flanneld.exe
 RUN curl -fsSL https://github.com/flannel-io/cni-plugin/releases/download/${CNI_FLANNEL_VERSION}/flannel-amd64.exe -o flannel.exe && \
-    echo "768c4a04e6ee3f7e3f9280488359b7e4bba4220246795261994a77a366860cc6  flannel.exe" | sha256sum -c - && \
+    echo "7e60a98105aa66653977fb4bbe4cefc52045c7ed711143789713bc22740d6b35  flannel.exe" | sha256sum -c - && \
     mv flannel.exe rancher/flannel.exe
 RUN curl -fsSL https://github.com/Microsoft/SDN/raw/master/Kubernetes/windows/hns.psm1 -o hns.psm1 && \
     echo "a8a53ed4fac2e27c7e4268db069d4cf3129a56d466ef3bf9465fb52dcd76a29c  hns.psm1" | sha256sum -c - && \
