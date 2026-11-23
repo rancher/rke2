@@ -105,6 +105,8 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
+      labels:
+        - kind/updatecli
       title: '[{{ .github.branch }}] Update bundled charts and images'
       description: |
         This is an automated PR to keep ingress-nginx in sync with upstream.

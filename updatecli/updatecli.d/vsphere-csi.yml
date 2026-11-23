@@ -119,4 +119,6 @@ actions:
         strategy: manual
       draft: false
       mergemethod: squash
+      labels:
+        - kind/updatecli
       title: '[{{ .github.branch }}] Update bundled charts and images'
