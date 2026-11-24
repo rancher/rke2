@@ -12,6 +12,7 @@ sonobuoy() {
     [[ " $* " == *' --wait=30 '* ]] || return 99
     [[ " $* " == *' --kube-conformance-image=registry.k8s.io/conformance@sha256:test '* ]] || return 99
     [[ " $* " != *'--kube-conformance-image-version='* ]] || return 99
+    [[ " $* " == *' --kubernetes-version=ignore '* ]] || return 99
     [[ " $* " == *' --plugin-env=e2e.E2E_EXTRA_GINKGO_ARGS=--seed=1729 --procs=7 '* ]] || return 99
     return "$launcher_code"
 }
