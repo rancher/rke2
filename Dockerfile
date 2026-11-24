@@ -5,7 +5,7 @@ FROM rancher/hardened-build-base:v1.26.10b1 AS base
 ARG BUILDARCH
 ENV ARCH $BUILDARCH
 RUN set -x && \
-    apk --no-cache add \
+    apk --no-cache add -u \
     bash \
     curl \
     file \
