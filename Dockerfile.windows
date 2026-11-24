@@ -10,7 +10,7 @@ ARG BUILDARCH
 ENV ARCH $BUILDARCH
 RUN apk update
 RUN set -x && \
-    apk add --no-cache \
+    apk add --no-cache -u \
     mingw-w64-gcc \
     libarchive-tools \
     gcc \
