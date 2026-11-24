@@ -20,7 +20,7 @@ The v1.37.2 image is digest-pinned across experiments. The local dry-run invento
 contains 462 conformance specs. The previous serial regex selected zero because
 some names put `[Conformance]` before `[Serial]`. Both orders are now supported,
 and the serial lane has an explicitly empty skip filter. Each CI job audits
-the union and disjointness of the parallel and serial dry-run inventories.
+complete coverage and absence of overlap in the parallel and serial inventories.
 Coverage restoration means the serial lane is not comparable with the previous
 empty serial jobs; compare benchmark branches with each other instead.
 
