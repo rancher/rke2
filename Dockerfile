@@ -20,6 +20,7 @@ RUN set -x && \
     pigz \
     tar \
     yq \
+    zstd \
     helm
 
 RUN if [ "${ARCH}" = "amd64" ]; then \
