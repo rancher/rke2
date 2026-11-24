@@ -18,6 +18,7 @@ RUN set -x && \
     containerd-ctr \
     aws-cli \
     pigz \
+    ztsd \
     tar \
     yq \
     helm
