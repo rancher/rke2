@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+source tests/docker/conformance-direct
+source tests/docker/test-setup-sonobuoy
+
+scratch="$PWD/.conformance-direct-test-$$"
+mkdir "$scratch"
+trap 'rm -r "$scratch"' EXIT
+mkdir "$scratch/fixture"
+printf 'full test output\n' > "$scratch/fixture/e2e.log"
+printf '[{"SuiteSucceeded":true,"SpecReports":[]}]\n' > "$scratch/fixture/ginkgo.json"
+printf '<testsuites/>\n' > "$scratch/fixture/junit_01.xml"
+CONFORMANCE_IMAGE=registry.k8s.io/conformance@sha256:test
+CONFORMANCE_REPORT_DIR="$scratch/reports"
+TEST_DIR="$scratch/cluster"
+LABEL=PARALLEL
+LOG_OUTPUT="$scratch/e2e-STATUS-output.log"
+CONFORMANCE_GINKGO_ARGS='--seed=1729 --json-report=/tmp/sonobuoy/results/ginkgo.json --procs=7'
+
+kubectl() {
+    printf '%s\n' "$*" >> "$scratch/calls"
+    case " $* " in
+        *' create namespace '*) return "$create_code" ;;
+        *' create -f '*)
+            [[ "$pod_create_code" == 0 ]] || return "$pod_create_code"
+            jq -e --arg focus "$expected_focus" --arg skip "$expected_skip" \
+                --arg args "$CONFORMANCE_GINKGO_ARGS --timeout=30m" '
+                .items[] | select(.kind == "Pod") | .spec |
+                .restartPolicy == "Never" and .serviceAccountName == "conformance" and
+                (.hostNetwork // false | not) and
+                .containers[0].imagePullPolicy == "IfNotPresent" and
+                .containers[1].volumeMounts[0].readOnly == true and
+                .containers[1].securityContext.runAsNonRoot == true and
+                ([.containers[0].env[] | {key:.name,value:.value}] | from_entries |
+                  .E2E_FOCUS == $focus and .E2E_SKIP == $skip and
+                  .E2E_PARALLEL == "1" and .KUBECONFIG == "" and
+                  .E2E_EXTRA_GINKGO_ARGS == $args)' "$scratch/reports/$LABEL/manifest.json" \
+                > /dev/null
+            ;;
+        *' get pod '*)
+            printf '{"status":{"containerStatuses":[{"name":"e2e","state":{"terminated":{"exitCode":%s}}}]}}\n' "$execution_code"
+            ;;
+        *' logs '*) cat "$scratch/fixture/e2e.log" ;;
+        *' tar -czf '*)
+            [[ "$collection_code" == 0 ]] || return "$collection_code"
+            tar -czf - -C "$scratch/fixture" .
+            ;;
+        *' cat /tmp/sonobuoy/results/ginkgo.json '*)
+            [[ "$missing_report" == false ]] || return 1
+            cat "$scratch/fixture/ginkgo.json"
+            ;;
+        *' kill -INT '*) ;;
+        *' delete '*) ;;
+        *) echo "Unexpected kubectl command: $*" >&2; return 1 ;;
+    esac
+}
+timeout() {
+    [[ "$1" == --foreground ]]
+    if [[ "$2" == 30m && "$timeout_code" != 0 ]]; then
+        return "$timeout_code"
+    fi
+    [[ "$2" == 30m || "$2" == 60s ]]
+    direct-wait
+}
+check() {
+    local expected=$1 actual=0
+    shift
+    : > "$scratch/calls"
+    (direct-conformance "$@") || actual=$?
+    [[ "$actual" == "$expected" ]]
+    if [[ "$create_code" == 0 ]]; then
+        grep -q 'delete namespace conformance-cluster' "$scratch/calls"
+        grep -q 'tar -czf' "$scratch/calls"
+        [[ $(cat "$scratch/reports/$LABEL/exit-code") == "$expected" ]]
+    else
+        ! grep -q 'delete ' "$scratch/calls"
+    fi
+}
+
+expected_focus='\[Conformance\]' expected_skip='\[Serial\]'
+execution_code=0 collection_code=0 timeout_code=0 create_code=0 pod_create_code=0 missing_report=false
+check 0 "${sonobuoyParallelArgs[@]}"
+tar -tzf "$scratch/reports/$LABEL/e2e-results.tar.gz" | grep -q junit_01.xml
+execution_code=17
+check 17 "${sonobuoyParallelArgs[@]}"
+execution_code=0 pod_create_code=11
+check 11 "${sonobuoyParallelArgs[@]}"
+pod_create_code=0
+execution_code=0 collection_code=5
+check 1 "${sonobuoyParallelArgs[@]}"
+collection_code=0 missing_report=true
+check 1 "${sonobuoyParallelArgs[@]}"
+missing_report=false timeout_code=124
+check 124 "${sonobuoyParallelArgs[@]}"
+grep -q 'kill -INT' "$scratch/calls"
+timeout_code=0 create_code=9
+check 9 "${sonobuoyParallelArgs[@]}"
+create_code=0 LABEL=SERIAL
+CONFORMANCE_GINKGO_ARGS='--seed=1729 --json-report=/tmp/sonobuoy/results/ginkgo.json'
+expected_focus='(\[Serial\].*\[Conformance\]|\[Conformance\].*\[Serial\])' expected_skip=''
+check 0 "${sonobuoySerialArgs[@]}"
+printf '[{"SuiteSucceeded":false}]\n' > "$scratch/fixture/ginkgo.json"
+check 1 "${sonobuoySerialArgs[@]}"
+
+unset CONFORMANCE_RUNNER
+sonobuoy-test() { printf '%s\n' "$*" > "$scratch/default-runner"; }
+start-test "${sonobuoySerialArgs[@]}"
+grep -q -- '--e2e-focus=' "$scratch/default-runner"
+echo 'Direct success, failure, timeout, collection, selection and default-runner tests passed'

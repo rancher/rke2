@@ -21,6 +21,10 @@ export sonobuoyParallelArgs=(--e2e-focus='\[Conformance\]' --e2e-skip='\[Serial\
 export sonobuoySerialArgs=(--e2e-focus='(\[Serial\].*\[Conformance\]|\[Conformance\].*\[Serial\])' --e2e-skip='')
 
 start-test() {
-  sonobuoy-test $@
+  case "${CONFORMANCE_RUNNER:-sonobuoy}" in
+    sonobuoy) sonobuoy-test "$@" ;;
+    direct) bash ./tests/docker/conformance-direct "$@" ;;
+    *) echo "Unsupported CONFORMANCE_RUNNER: $CONFORMANCE_RUNNER" >&2; return 1 ;;
+  esac
 }
 export -f start-test

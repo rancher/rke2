@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+direct-wait() {
+    local code
+    while true; do
+        code=$(kubectl --request-timeout=20s -n "$namespace" get pod conformance \
+            -o json | jq -r '.status.containerStatuses[]? |
+                select(.name == "e2e") | .state.terminated.exitCode // empty') || return 1
+        if [[ -n "$code" ]]; then
+            return "$code"
+        fi
+        sleep 5
+    done
+}
+export -f direct-wait
+
+direct-conformance() (
+    local focus='\[Conformance\]' skip='' arg code=0 owns_namespace=false
+    for arg in "$@"; do
+        case "$arg" in
+            --e2e-focus=*) focus=${arg#*=} ;;
+            --e2e-skip=*) skip=${arg#*=} ;;
+            --e2e-parallel=y) ;;
+            *) echo "Unsupported direct conformance argument: $arg" >&2; return 1 ;;
+        esac
+    done
+    : "${CONFORMANCE_IMAGE:?Set the same pinned image as the baseline}"
+    : "${CONFORMANCE_GINKGO_ARGS:?Set explicit Ginkgo seed and worker arguments}"
+    : "${CONFORMANCE_REPORT_DIR:?Set a persistent report directory}"
+    : "${TEST_DIR:?Run through the Docker test harness}"
+    : "${LABEL:?Set a unique suite label}"
+    export namespace="conformance-$(basename "$TEST_DIR" | tr '[:upper:]_' '[:lower:]-')"
+    local reports="$CONFORMANCE_REPORT_DIR/$LABEL"
+    mkdir -p "$reports"
+
+    # Only the result volume is archived; projected service-account credentials
+    # and the host kubeconfig never enter it. Do not extract pod-controlled tar
+    # paths on the host.
+    direct-collect() {
+        kubectl --request-timeout=20s -n "$namespace" logs conformance -c e2e \
+            > "$reports/runner.log" 2>&1 || code=1
+        kubectl --request-timeout=60s -n "$namespace" exec conformance -c results -- \
+            tar -czf - -C /tmp/sonobuoy/results . > "$reports/e2e-results.tar.gz" || code=1
+        tar -tzf "$reports/e2e-results.tar.gz" > /dev/null || code=1
+        kubectl --request-timeout=20s -n "$namespace" exec conformance -c results -- \
+            cat /tmp/sonobuoy/results/ginkgo.json > "$reports/ginkgo.json" || code=1
+        jq -e 'type == "array" and length > 0 and all(.[]; .SuiteSucceeded == true)' \
+            "$reports/ginkgo.json" > /dev/null || code=1
+        if [[ -n "${LOG_OUTPUT:-}" ]]; then
+            local status=passed
+            [[ "$code" == 0 ]] || status=failed
+            cp "$reports/runner.log" "${LOG_OUTPUT/-STATUS-/-$status-}" || code=1
+        fi
+    }
+    direct-cleanup() {
+        local status=$?
+        trap - EXIT INT TERM
+        set +e
+        if [[ "$owns_namespace" == true ]]; then
+            kubectl --request-timeout=20s delete clusterrolebinding "$namespace" --ignore-not-found
+            kubectl --request-timeout=20s delete clusterrole "$namespace" --ignore-not-found
+            kubectl --request-timeout=20s delete namespace "$namespace" --ignore-not-found --wait=false
+        fi
+        exit "$status"
+    }
+    direct-stop() {
+        # The upstream Go runner listens for INT, not TERM.
+        kubectl --request-timeout=20s -n "$namespace" exec conformance -c e2e -- \
+            sh -c 'kill -INT "$(cat /tmp/sonobuoy/results/.runner-pid)"' || true
+        timeout --foreground 60s bash -c direct-wait || true
+    }
+    trap direct-cleanup EXIT
+    trap 'code=130; direct-stop; direct-collect; exit 130' INT
+    trap 'code=143; direct-stop; direct-collect; exit 143' TERM
+
+    # Match Sonobuoy's Linux Job defaults: normal pod networking, no privileged
+    # container or host mounts, the e2e RBAC rules and job tolerations.
+    jq -n --arg namespace "$namespace" --arg image "$CONFORMANCE_IMAGE" \
+        --arg focus "$focus" --arg skip "$skip" \
+        --arg args "$CONFORMANCE_GINKGO_ARGS --timeout=30m" '
+        {apiVersion:"v1", kind:"List", items:[
+          {apiVersion:"v1", kind:"ServiceAccount",
+           metadata:{name:"conformance",namespace:$namespace}},
+          {apiVersion:"rbac.authorization.k8s.io/v1",kind:"ClusterRole",
+           metadata:{name:$namespace},rules:[
+             {apiGroups:["*"],resources:["*"],verbs:["*"]},
+             {nonResourceURLs:["/metrics","/logs","/logs/*"],verbs:["get"]}]},
+          {apiVersion:"rbac.authorization.k8s.io/v1",kind:"ClusterRoleBinding",
+           metadata:{name:$namespace},
+           roleRef:{apiGroup:"rbac.authorization.k8s.io",kind:"ClusterRole",name:$namespace},
+           subjects:[{kind:"ServiceAccount",name:"conformance",namespace:$namespace}]},
+          {apiVersion:"v1",kind:"Pod",metadata:{name:"conformance",namespace:$namespace},
+           spec:{restartPolicy:"Never",serviceAccountName:"conformance",
+             nodeSelector:{"kubernetes.io/os":"linux"},
+             tolerations:[
+               {key:"node-role.kubernetes.io/master",operator:"Exists",effect:"NoSchedule"},
+               {key:"CriticalAddonsOnly",operator:"Exists"},
+               {key:"kubernetes.io/e2e-evict-taint-key",operator:"Exists"}],
+             volumes:[{name:"results",emptyDir:{}}],
+             containers:[
+               {name:"e2e",image:$image,imagePullPolicy:"IfNotPresent",
+                command:["/bin/sh","-c"],
+                args:["kubeconformance & runner=$!; echo \"$runner\" > /tmp/sonobuoy/results/.runner-pid; wait \"$runner\""],
+                env:[{name:"E2E_FOCUS",value:$focus},{name:"E2E_SKIP",value:$skip},
+                     {name:"E2E_PARALLEL",value:"1"},{name:"E2E_PROVIDER",value:"local"},
+                     {name:"KUBECONFIG",value:""},{name:"RESULTS_DIR",value:"/tmp/sonobuoy/results"},
+                     {name:"E2E_EXTRA_GINKGO_ARGS",value:$args}],
+                volumeMounts:[{name:"results",mountPath:"/tmp/sonobuoy/results"}]},
+               {name:"results",image:$image,imagePullPolicy:"IfNotPresent",
+                securityContext:{runAsNonRoot:true,runAsUser:1000,runAsGroup:3000,
+                  allowPrivilegeEscalation:false,readOnlyRootFilesystem:true,
+                  capabilities:{drop:["ALL"]}},
+                command:["/bin/sh","-c"],args:["while true; do sleep 3600; done"],
+                volumeMounts:[{name:"results",mountPath:"/tmp/sonobuoy/results",readOnly:true}]}
+             ]}}
+        ]}' > "$reports/manifest.json"
+    date -u '+Direct conformance start: %FT%TZ'
+    kubectl --request-timeout=20s create namespace "$namespace" || {
+        code=$?
+        printf '%s\n' "$code" > "$reports/exit-code"
+        return "$code"
+    }
+    owns_namespace=true
+    kubectl --request-timeout=60s create -f "$reports/manifest.json" || code=$?
+    if [[ "$code" == 0 ]]; then
+        timeout --foreground 30m bash -c direct-wait || code=$?
+        if [[ "$code" == 124 ]]; then
+            # The Go runner handles INT and saves reports. Keep the collector
+            # alive during a bounded grace period, but retain the timeout failure.
+            direct-stop
+        fi
+    fi
+    local execution_code=$code
+    direct-collect
+    [[ "$execution_code" == 0 ]] || code=$execution_code
+    printf '%s\n' "$code" > "$reports/exit-code"
+    date -u '+Direct conformance collected: %FT%TZ'
+    return "$code"
+)
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    direct-conformance "$@"
+fi
