@@ -7,7 +7,6 @@ import (
 	"context"
 
 	daemonconfig "github.com/k3s-io/k3s/pkg/daemons/config"
-	opv1 "github.com/tigera/operator/api/v1"
 	"k8s.io/client-go/rest"
 )
 
@@ -70,7 +69,35 @@ type CalicoInstallation struct {
 }
 
 type CalicoInstallationSpec struct {
-	CalicoNetwork            opv1.CalicoNetworkSpec `json:"calicoNetwork,omitempty"`
-	FlexVolumePath           string                 `json:"flexVolumePath,omitempty"`
-	ControlPlaneNodeSelector map[string]string      `json:"controlPlaneNodeSelector,omitempty"`
+	CalicoNetwork            CalicoNetworkSpec `json:"calicoNetwork,omitempty"`
+	FlexVolumePath           string            `json:"flexVolumePath,omitempty"`
+	ControlPlaneNodeSelector map[string]string `json:"controlPlaneNodeSelector,omitempty"`
 }
+
+type CalicoNetworkSpec struct {
+	BGP                        *BGPOption                `json:"bgp,omitempty"`
+	NodeAddressAutodetectionV4 *NodeAddressAutodetection `json:"nodeAddressAutodetectionV4,omitempty"`
+	NodeAddressAutodetectionV6 *NodeAddressAutodetection `json:"nodeAddressAutodetectionV6,omitempty"`
+}
+
+type BGPOption string
+
+const (
+	BGPEnabled  BGPOption = "Enabled"
+	BGPDisabled BGPOption = "Disabled"
+)
+
+type NodeAddressAutodetection struct {
+	FirstFound    *bool                          `json:"firstFound,omitempty"`
+	Kubernetes    *KubernetesAutodetectionMethod `json:"kubernetes,omitempty"`
+	Interface     string                         `json:"interface,omitempty"`
+	SkipInterface string                         `json:"skipInterface,omitempty"`
+	CanReach      string                         `json:"canReach,omitempty"`
+	CIDRS         []string                       `json:"cidrs,omitempty"`
+}
+
+type KubernetesAutodetectionMethod string
+
+const (
+	NodeInternalIP KubernetesAutodetectionMethod = "NodeInternalIP"
+)
