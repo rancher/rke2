@@ -78,7 +78,7 @@ jobs:
     - name: Test Conformance
       env:
         SONOBUOY_SUITE: ${{ matrix.suite }}
-        CONFORMANCE_GINKGO_ARGS: --seed=1729 --json-report=/tmp/results/ginkgo.json
+        CONFORMANCE_GINKGO_ARGS: --seed=1729 --json-report=/tmp/sonobuoy/results/ginkgo.json
         CONFORMANCE_REPORT_DIR: /tmp/rke2-conformance-results
       run: |
         if [ "$SONOBUOY_SUITE" = parallel ]; then
