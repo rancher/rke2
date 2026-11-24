@@ -69,6 +69,7 @@ func reconcileStaticPods(ctx context.Context, containerRuntimeEndpoint, dataDir 
 
 		manifestDir := PodManifestsDir(dataDir)
 
+		var unsyncedPods bool
 		for _, pod := range []string{"etcd", "kube-apiserver"} {
 			manifestFile := filepath.Join(manifestDir, pod+".yaml")
 			if err := checkManifestDeployed(ctx, cRuntime, manifestFile); err != nil {
@@ -77,11 +78,12 @@ func reconcileStaticPods(ctx context.Context, containerRuntimeEndpoint, dataDir 
 					continue
 				}
 				logrus.Infof("Pod for %s not synced (%v), retrying", pod, err)
-				return false, nil
+				unsyncedPods = true
+			} else {
+				logrus.Infof("Pod for %s is synced", pod)
 			}
-			logrus.Infof("Pod for %s is synced", pod)
 		}
-		return true, nil
+		return !unsyncedPods, nil
 	}); err != nil && !errors.Is(err, context.Canceled) {
 		logrus.Fatalf("Failed waiting for static pods to sync: %v", err)
 	}
