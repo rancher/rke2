@@ -82,7 +82,6 @@ require (
 	github.com/rancher/wrangler/v3 v3.7.0
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/pflag v1.0.10
-	github.com/tigera/operator v1.36.13
 	github.com/urfave/cli/v2 v2.27.7
 	golang.org/x/crypto v0.58.0
 	golang.org/x/sync v0.25.0
@@ -352,8 +351,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/polydawn/refmt v0.90.0 // indirect
 	github.com/pquerna/cachecontrol v0.1.0 // indirect
-	github.com/projectcalico/api v0.0.0-20220722155641-439a754a988b // indirect
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.62.0 // indirect
 	github.com/prometheus/client_golang v1.25.0 // indirect
 	github.com/prometheus/client_model v0.6.3 // indirect
 	github.com/prometheus/common v0.72.1 // indirect
@@ -379,7 +376,6 @@ require (
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/t4db/t4 v1.1.16 // indirect
 	github.com/tidwall/btree v1.8.2 // indirect
-	github.com/tigera/api v0.0.0-20230406222214-ca74195900cb // indirect
 	github.com/tinylib/msgp v1.6.4 // indirect
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20220101234140-673ab2c3ae75 // indirect
 	github.com/vbatts/tar-split v0.12.2 // indirect
@@ -463,7 +459,6 @@ require (
 	modernc.org/memory v1.12.1 // indirect
 	modernc.org/sqlite v1.62.0 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.36.0 // indirect
-	sigs.k8s.io/controller-runtime v0.19.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/knftables v0.0.22 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
