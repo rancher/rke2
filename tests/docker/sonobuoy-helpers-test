@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -eo pipefail
+source "$(dirname "$0")/test-helpers"
+ARCH=amd64
+KUBERNETES_VERSION=v1.37.2
+CONFORMANCE_IMAGE=registry.k8s.io/conformance@sha256:test
+CONFORMANCE_GINKGO_ARGS='--seed=1729 --procs=7'
+CONFORMANCE_REPORT_DIR=
+
+sonobuoy() {
+    [[ $1 == run ]]
+    [[ " $* " == *' --wait=30 '* ]]
+    [[ " $* " == *' --kube-conformance-image=registry.k8s.io/conformance@sha256:test '* ]]
+    [[ " $* " == *' --plugin-env=e2e.E2E_EXTRA_GINKGO_ARGS=--seed=1729 --procs=7 '* ]]
+    return "$launcher_code"
+}
+timeout() {
+    [[ $1 == --foreground && $2 == 30m ]]
+    shift 2
+    if [[ $timeout_code != 0 ]]; then
+        return "$timeout_code"
+    fi
+    "$@"
+}
+retrieve-sonobuoy-logs() {
+    collected=true
+    return "$collection_code"
+}
+check() {
+    local expected=$1 actual=0
+    collected=false
+    sonobuoy-test --e2e-focus='\[Conformance\]' || actual=$?
+    [[ $actual == "$expected" && $collected == true ]]
+}
+
+launcher_code=0 collection_code=0 timeout_code=0
+check 0
+launcher_code=17
+check 17
+launcher_code=0 collection_code=1
+check 1
+collection_code=0 timeout_code=124
+check 124
+echo 'Sonobuoy launcher, collection failure, and timeout tests passed'

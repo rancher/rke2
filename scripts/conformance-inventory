@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+source tests/docker/test-setup-sonobuoy
+results=$(realpath -m "$1")
+mkdir -p "$results"
+
+inventory() {
+    local suite=$1
+    shift
+    local focus='\[Conformance\]' skip='' arg
+    for arg in "$@"; do
+        case "$arg" in
+            --e2e-focus=*) focus=${arg#*=} ;;
+            --e2e-skip=*) skip=${arg#*=} ;;
+        esac
+    done
+    docker run --rm -v "$results:/tmp/results" \
+        -e E2E_DRYRUN=true -e "E2E_FOCUS=$focus" -e "E2E_SKIP=$skip" \
+        -e "E2E_EXTRA_GINKGO_ARGS=--seed=1729 --json-report=/tmp/results/$suite.json" \
+        "${CONFORMANCE_IMAGE:?Set the pinned conformance image}" > "$results/$suite.log" 2>&1
+    jq '[.[0].SpecReports[] | select(.LeafNodeType == "It" and .State == "passed") |
+        ((.ContainerHierarchyTexts // []) + [.LeafNodeText] | join(" "))] | sort' \
+        "$results/$suite.json" > "$results/$suite-specs.json"
+}
+
+inventory all
+inventory parallel "${sonobuoyParallelArgs[@]}"
+inventory serial "${sonobuoySerialArgs[@]}"
+jq -n --slurpfile all "$results/all-specs.json" \
+    --slurpfile parallel "$results/parallel-specs.json" \
+    --slurpfile serial "$results/serial-specs.json" '
+    {all: ($all[0]|length), parallel: ($parallel[0]|length), serial: ($serial[0]|length),
+     missing: ($all[0] - ($parallel[0] + $serial[0])),
+     extra: (($parallel[0] + $serial[0]) - $all[0]),
+     overlap: ($parallel[0] - ($parallel[0] - $serial[0]))} |
+    if .all == 0 or (.missing|length) > 0 or (.extra|length) > 0 or (.overlap|length) > 0
+    then error("Conformance selection does not partition the upstream inventory")
+    else . end' | tee "$results/selection.json"

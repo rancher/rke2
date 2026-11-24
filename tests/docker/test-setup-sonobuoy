@@ -18,7 +18,7 @@ export NUM_AGENTS=1
 export WAIT_SERVICES="${all_services[@]}"
 
 export sonobuoyParallelArgs=(--e2e-focus='\[Conformance\]' --e2e-skip='\[Serial\]' --e2e-parallel=y)
-export sonobuoySerialArgs=(--e2e-focus='\[Serial\].*\[Conformance\]')
+export sonobuoySerialArgs=(--e2e-focus='(\[Serial\].*\[Conformance\]|\[Conformance\].*\[Serial\])' --e2e-skip='')
 
 start-test() {
   sonobuoy-test $@

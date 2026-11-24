@@ -45,6 +45,8 @@ jobs:
   test-conformance:
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
     needs: build-amd64
+    env:
+      CONFORMANCE_IMAGE: registry.k8s.io/conformance@sha256:d503a15722ea23662c482b72ce01ee6e9efec1e8b9c2d3834aa0c51bb2d0832a
     strategy:
       fail-fast: false
       matrix:
@@ -93,6 +95,9 @@ jobs:
         monitor=$!
         trap 'kill "$monitor"; wait "$monitor" || true' EXIT
         make in-docker-test-conformance
+    - name: Audit Conformance Selection
+      if: ${{ always() }}
+      run: bash scripts/conformance-inventory /tmp/rke2-conformance-results/inventory
     - name: Upload Conformance Results
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

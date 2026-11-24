@@ -14,9 +14,13 @@ the explicit start/collection timestamps separate Sonobuoy from Ginkgo runtime.
 Compare selected spec identities, runtime skips, failures, per-worker duration,
 total job duration and runner cost rather than relying on elapsed time alone.
 
-Serial jobs currently report zero specs. Audit this against the exact image's
-inventory before changing the filters or removing the serial lane. Empty serial
-runs are not evidence that full intended conformance coverage was exercised.
+The v1.37.2 image is digest-pinned across experiments. The local dry-run inventory
+contains 462 conformance specs. The previous serial regex selected zero because
+some names put `[Conformance]` before `[Serial]`. Both orders are now supported,
+and the serial lane has an explicitly empty skip filter. Each CI job audits
+the union and disjointness of the parallel and serial dry-run inventories.
+Coverage restoration means the serial lane is not comparable with the previous
+empty serial jobs; compare benchmark branches with each other instead.
 
 The launcher uses one bounded Sonobuoy wait instead of trying to wait on a
 parent-shell PID from a new shell. A launcher failure or missing/failed results
