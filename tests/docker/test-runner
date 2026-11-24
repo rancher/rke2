@@ -10,4 +10,4 @@ done
 
 test-setup
 provision-cluster
-start-test $@
+start-test "$@"

@@ -18,9 +18,16 @@ export NUM_AGENTS=1
 export WAIT_SERVICES="${all_services[@]}"
 
 export sonobuoyParallelArgs=(--e2e-focus='\[Conformance\]' --e2e-skip='\[Serial\]' --e2e-parallel=y)
-export sonobuoySerialArgs=(--e2e-focus='\[Serial\].*\[Conformance\]')
+if [[ -n "${SONOBUOY_PARALLEL_WORKERS:-}" ]]; then
+    sonobuoyParallelArgs+=(--plugin-env="e2e.E2E_EXTRA_GINKGO_ARGS=--procs=$SONOBUOY_PARALLEL_WORKERS")
+fi
+
+export sonobuoySerialArgs=(
+    --e2e-focus='(\[Serial\].*\[Conformance\]|\[Conformance\].*\[Serial\])'
+    --e2e-skip='validates that there exists conflict between pods with same hostPort and protocol but one using 0\.0\.0\.0 hostIP'
+)
 
 start-test() {
-  sonobuoy-test $@
+  sonobuoy-test "$@"
 }
 export -f start-test

@@ -243,7 +243,7 @@ sonobuoy-test() {
         --plugin-env=e2e.E2E_USE_GO_RUNNER=true \
         --kube-conformance-image-version=${KUBERNETES_VERSION} \
         --wait=90 \
-        $@ &
+        "$@" &
 
     local sonobuoyPID=$!
     local code=0
@@ -503,7 +503,7 @@ export -f early-exit
 
 run-test() {
     export PROVISION_LOCK=$(mktemp)
-    ./tests/docker/test-runner $@ &
+    ./tests/docker/test-runner "$@" &
     pids+=($!)
     (
         set +x
@@ -526,7 +526,7 @@ e2e-test() {
     if [ -n "$E2E_OUTPUT" ]; then
         logOutput=$E2E_OUTPUT/$logName
     fi
-    LABEL=$label LOG_OUTPUT=$logOutput run-test $@
+    LABEL=$label LOG_OUTPUT=$logOutput run-test "$@"
 }
 
 # ---
@@ -538,24 +538,24 @@ run-e2e-tests() {
         both)
             label=PARALLEL \
                 logName=e2e-STATUS-${ARCH}-parallel.log \
-                e2e-test ${sonobuoyParallelArgs[@]}
+                e2e-test "${sonobuoyParallelArgs[@]}"
             echo "Exit code $? for parallel start"
 
             label=SERIAL \
                 logName=e2e-STATUS-${ARCH}-serial.log \
-                e2e-test ${sonobuoySerialArgs[@]}
+                e2e-test "${sonobuoySerialArgs[@]}"
             echo "Exit code $? for serial start"
             ;;
         parallel)
             label=PARALLEL \
                 logName=e2e-STATUS-${ARCH}-parallel.log \
-                e2e-test ${sonobuoyParallelArgs[@]}
+                e2e-test "${sonobuoyParallelArgs[@]}"
             echo "Exit code $? for parallel start"
             ;;
         serial)
             label=SERIAL \
                 logName=e2e-STATUS-${ARCH}-serial.log \
-                e2e-test ${sonobuoySerialArgs[@]}
+                e2e-test "${sonobuoySerialArgs[@]}"
             echo "Exit code $? for serial start"
             ;;
         *)
