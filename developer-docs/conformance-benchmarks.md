@@ -2,8 +2,8 @@
 
 Experimental draft PR; do not merge runner sizing without comparing CI results.
 
-The parallel baseline uses eight vCPUs, seven Ginkgo processes and seed 1729.
-The serial job keeps its existing selection and runs without parallel workers.
+This experiment uses sixteen vCPUs, fourteen Ginkgo processes and seed 1729.
+The serial job uses eight vCPUs and runs without parallel workers.
 All experiments must compare the same upstream base, conformance image digest,
 suite selection, and seed. Run additional seeds before making a production choice.
 
