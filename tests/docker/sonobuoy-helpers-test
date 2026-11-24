@@ -8,14 +8,15 @@ CONFORMANCE_GINKGO_ARGS='--seed=1729 --procs=7'
 CONFORMANCE_REPORT_DIR=
 
 sonobuoy() {
-    [[ $1 == run ]]
-    [[ " $* " == *' --wait=30 '* ]]
-    [[ " $* " == *' --kube-conformance-image=registry.k8s.io/conformance@sha256:test '* ]]
-    [[ " $* " == *' --plugin-env=e2e.E2E_EXTRA_GINKGO_ARGS=--seed=1729 --procs=7 '* ]]
+    [[ $1 == run ]] || return 99
+    [[ " $* " == *' --wait=30 '* ]] || return 99
+    [[ " $* " == *' --kube-conformance-image=registry.k8s.io/conformance@sha256:test '* ]] || return 99
+    [[ " $* " != *'--kube-conformance-image-version='* ]] || return 99
+    [[ " $* " == *' --plugin-env=e2e.E2E_EXTRA_GINKGO_ARGS=--seed=1729 --procs=7 '* ]] || return 99
     return "$launcher_code"
 }
 timeout() {
-    [[ $1 == --foreground && $2 == 30m ]]
+    [[ $1 == --foreground && $2 == 30m ]] || return 99
     shift 2
     if [[ $timeout_code != 0 ]]; then
         return "$timeout_code"

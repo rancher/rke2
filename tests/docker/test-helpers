@@ -238,13 +238,14 @@ sonobuoy-test() {
     fi
     if [ -n "$CONFORMANCE_IMAGE" ]; then
         extraArgs+=(--kube-conformance-image="$CONFORMANCE_IMAGE")
+    else
+        extraArgs+=(--kube-conformance-image-version="${KUBERNETES_VERSION}")
     fi
     date -u '+Conformance start: %FT%TZ'
     local code=0
     time timeout --foreground 30m sonobuoy run \
         --config=scripts/sonobuoy-config.json \
         --plugin-env=e2e.E2E_USE_GO_RUNNER=true \
-        --kube-conformance-image-version=${KUBERNETES_VERSION} \
         --wait=30 \
         "${extraArgs[@]}" \
         "$@" || code=$?
