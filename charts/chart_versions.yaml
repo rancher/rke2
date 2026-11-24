@@ -48,7 +48,8 @@ charts:
   - version: 0.2.1700
     filename: /charts/harvester-cloud-provider.yaml
     bootstrap: true
-  - version: 0.1.3300
+  # Upstream chart 0.1.35 with RKE2 package revision 01.
+  - version: 0.1.3501
     filename: /charts/harvester-csi-driver.yaml
     bootstrap: true
   - version: 4.15.000
