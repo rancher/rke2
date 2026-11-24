@@ -19,7 +19,6 @@ import (
 	wapi "github.com/iamacarpet/go-win64api"
 	"github.com/libp2p/go-netroute"
 	"github.com/sirupsen/logrus"
-	opv1 "github.com/tigera/operator/api/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -105,7 +104,7 @@ func createHnsNetwork(backend string, networkAdapter string) (string, error) {
 }
 
 // nodeAddressAutodetection processes the HelmChartConfig info and returns the nodeAddressAutodetection method expected by Calico config
-func nodeAddressAutodetection(autoDetect opv1.NodeAddressAutodetection) (string, error) {
+func nodeAddressAutodetection(autoDetect NodeAddressAutodetection) (string, error) {
 	if autoDetect.FirstFound != nil && *autoDetect.FirstFound {
 		return "first-found", nil
 	}

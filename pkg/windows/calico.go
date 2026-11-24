@@ -20,7 +20,6 @@ import (
 	"github.com/k3s-io/k3s/pkg/version"
 	"github.com/rancher/rke2/pkg/logging"
 	"github.com/sirupsen/logrus"
-	opv1 "github.com/tigera/operator/api/v1"
 	"golang.org/x/sys/windows"
 	authv1 "k8s.io/api/authentication/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -381,7 +380,7 @@ func (c *Calico) overrideCalicoConfigByHelm(restConfig *rest.Config) error {
 		}
 	}
 	if bgpEnabled := overrides.Installation.CalicoNetwork.BGP; bgpEnabled != nil {
-		if *bgpEnabled == opv1.BGPEnabled {
+		if *bgpEnabled == BGPEnabled {
 			c.CNICfg.OverlayEncap = "windows-bgp"
 		}
 	}
@@ -389,7 +388,7 @@ func (c *Calico) overrideCalicoConfigByHelm(restConfig *rest.Config) error {
 }
 
 // findCalicoInterface finds the interface to use for Calico based on the NodeAddressAutodetectionV4
-func findCalicoInterface(nodeV4 *opv1.NodeAddressAutodetection) (IPAutoDetectionMethod, calicoInterface string, err error) {
+func findCalicoInterface(nodeV4 *NodeAddressAutodetection) (IPAutoDetectionMethod, calicoInterface string, err error) {
 	IPAutoDetectionMethod, err = nodeAddressAutodetection(*nodeV4)
 	if err != nil {
 		return "", "", err
