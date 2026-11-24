@@ -43,7 +43,7 @@ jobs:
           build/images/rke2-images.linux-amd64.tar.zst
           build/images/rke2-test-*.tar
   test-conformance:
-    runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
+    runs-on: runs-on,runner=${{ matrix.suite == 'parallel' && '16cpu-linux-x64' || '8cpu-linux-x64' }},run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
     needs: build-amd64
     env:
       CONFORMANCE_IMAGE: registry.k8s.io/conformance@sha256:d503a15722ea23662c482b72ce01ee6e9efec1e8b9c2d3834aa0c51bb2d0832a
@@ -82,7 +82,7 @@ jobs:
         CONFORMANCE_REPORT_DIR: /tmp/rke2-conformance-results
       run: |
         if [ "$SONOBUOY_SUITE" = parallel ]; then
-          export CONFORMANCE_GINKGO_ARGS="$CONFORMANCE_GINKGO_ARGS --procs=7"
+          export CONFORMANCE_GINKGO_ARGS="$CONFORMANCE_GINKGO_ARGS --procs=10"
         fi
         mkdir -p "$CONFORMANCE_REPORT_DIR"
         (
