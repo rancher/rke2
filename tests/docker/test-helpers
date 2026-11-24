@@ -188,12 +188,12 @@ retrieve-sonobuoy-logs() {
         code=1
     fi
 
-    mkdir -p $TEST_DIR/sonobuoy
+    mkdir -p "$TEST_DIR/sonobuoy" || return 1
     sonobuoy retrieve $TEST_DIR/sonobuoy || return 1
     local logTarball=$TEST_DIR/sonobuoy/*_sonobuoy_*.tar.gz
 
     if [ -f $logTarball ]; then
-        tar -xz -f $logTarball -C $TEST_DIR/sonobuoy
+        tar -xz -f $logTarball -C $TEST_DIR/sonobuoy || return 1
         rm $logTarball
     else
         rm -rf $TEST_DIR/sonobuoy
@@ -207,31 +207,21 @@ retrieve-sonobuoy-logs() {
         cp $e2eLog $(sed -e "s/-STATUS-/-$status-/g" <<< "$LOG_OUTPUT")
     fi
     if [ -n "$CONFORMANCE_REPORT_DIR" ]; then
-        mkdir -p "$CONFORMANCE_REPORT_DIR/$LABEL"
-        cp -r "$TEST_DIR/sonobuoy/plugins/e2e/results/." "$CONFORMANCE_REPORT_DIR/$LABEL/"
+        mkdir -p "$CONFORMANCE_REPORT_DIR/$LABEL" || return 1
+        local report
+        for report in "$TEST_DIR/sonobuoy/plugins/e2e/results/global/"*; do
+            case "$(basename "$report")" in
+                e2e.log|ginkgo.json|junit*.xml)
+                    cp "$report" "$CONFORMANCE_REPORT_DIR/$LABEL/" || return 1
+                    ;;
+            esac
+        done
     fi
     tail -11 $e2eLog
     awk '/^Summarizing .* Failures?:$/,0' $e2eLog
     return $code
 }
 export -f retrieve-sonobuoy-logs
-
-# ---
-
-test-wait() {
-    wait $1 || echo "test wait exit code $?"
-    local delay=15
-    sleep $delay
-    while sonobuoy status | grep -q -E ' +e2e +running +'; do
-        sleep $delay
-    done
-    sleep $delay
-    if sonobuoy status | grep -q -E ' +e2e +complete +passed +'; then
-        return 0
-    fi
-    return 1
-}
-export -f test-wait
 
 # ---
 
@@ -246,13 +236,16 @@ sonobuoy-test() {
     if [ -n "$CONFORMANCE_GINKGO_ARGS" ]; then
         extraArgs+=(--plugin-env="e2e.E2E_EXTRA_GINKGO_ARGS=$CONFORMANCE_GINKGO_ARGS")
     fi
+    if [ -n "$CONFORMANCE_IMAGE" ]; then
+        extraArgs+=(--kube-conformance-image="$CONFORMANCE_IMAGE")
+    fi
     date -u '+Conformance start: %FT%TZ'
     local code=0
     time timeout --foreground 30m sonobuoy run \
         --config=scripts/sonobuoy-config.json \
         --plugin-env=e2e.E2E_USE_GO_RUNNER=true \
         --kube-conformance-image-version=${KUBERNETES_VERSION} \
-        --wait=1800 \
+        --wait=30 \
         "${extraArgs[@]}" \
         "$@" || code=$?
     echo "Sonobuoy finished with code $code"
@@ -428,6 +421,7 @@ export -f provision-agent
 # ---
 
 provision-cluster() {
+    date -u '+Cluster provisioning start: %FT%TZ'
     run-function cluster-pre-hook
 
     if [ "${ENABLE_REGISTRY}" == 'true' ]; then
@@ -447,7 +441,9 @@ provision-cluster() {
     fi
 
     timeout --foreground 4m bash -c "wait-for-nodes $(( NUM_SERVERS + NUM_AGENTS ))"
+    date -u '+Nodes ready: %FT%TZ'
     timeout --foreground 8m bash -c "wait-for-services $WAIT_SERVICES"
+    date -u '+System containers ready: %FT%TZ'
 
     run-function cluster-post-hook
 
