@@ -8,6 +8,8 @@ All experiments must compare the same upstream base, conformance image digest,
 suite selection, and seed. Run additional seeds before making a production choice.
 
 Successful and failed jobs retain the e2e results, including Ginkgo's JSON report.
+Sonobuoy's mounted results directory is `/tmp/sonobuoy/results`; JSON reports
+must be written there, not to the upstream image's unmounted `/tmp/results`.
 The host resource log samples CPU, memory and I/O pressure every ten seconds.
 GitHub step timings separate artifact transfer and bootstrap from execution;
 the explicit start/collection timestamps separate Sonobuoy from Ginkgo runtime.
