@@ -76,7 +76,29 @@ jobs:
     - name: Test Conformance
       env:
         SONOBUOY_SUITE: ${{ matrix.suite }}
-      run: make in-docker-test-conformance
+        CONFORMANCE_GINKGO_ARGS: --seed=1729 --json-report=/tmp/results/ginkgo.json
+        CONFORMANCE_REPORT_DIR: /tmp/rke2-conformance-results
+      run: |
+        if [ "$SONOBUOY_SUITE" = parallel ]; then
+          export CONFORMANCE_GINKGO_ARGS="$CONFORMANCE_GINKGO_ARGS --procs=7"
+        fi
+        mkdir -p "$CONFORMANCE_REPORT_DIR"
+        (
+          while true; do
+            date -u '+%FT%TZ'
+            cat /proc/loadavg /proc/meminfo /proc/pressure/cpu /proc/pressure/io /proc/pressure/memory /proc/stat /proc/diskstats
+            sleep 10
+          done
+        ) > "$CONFORMANCE_REPORT_DIR/host-resources.log" &
+        monitor=$!
+        trap 'kill "$monitor"; wait "$monitor" || true' EXIT
+        make in-docker-test-conformance
+    - name: Upload Conformance Results
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      with:
+        name: conformance-results-${{ matrix.suite }}
+        path: /tmp/rke2-conformance-results/
     - name: Prepare Test Logs on Failure
       if: ${{ failure() }}
       run: |

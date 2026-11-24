@@ -189,7 +189,7 @@ retrieve-sonobuoy-logs() {
     fi
 
     mkdir -p $TEST_DIR/sonobuoy
-    sonobuoy retrieve $TEST_DIR/sonobuoy 2>/dev/null || true
+    sonobuoy retrieve $TEST_DIR/sonobuoy || return 1
     local logTarball=$TEST_DIR/sonobuoy/*_sonobuoy_*.tar.gz
 
     if [ -f $logTarball ]; then
@@ -205,6 +205,10 @@ retrieve-sonobuoy-logs() {
     fi
     if [ -n "$LOG_OUTPUT" ]; then
         cp $e2eLog $(sed -e "s/-STATUS-/-$status-/g" <<< "$LOG_OUTPUT")
+    fi
+    if [ -n "$CONFORMANCE_REPORT_DIR" ]; then
+        mkdir -p "$CONFORMANCE_REPORT_DIR/$LABEL"
+        cp -r "$TEST_DIR/sonobuoy/plugins/e2e/results/." "$CONFORMANCE_REPORT_DIR/$LABEL/"
     fi
     tail -11 $e2eLog
     awk '/^Summarizing .* Failures?:$/,0' $e2eLog
@@ -238,18 +242,22 @@ sonobuoy-test() {
     fi
     echo 'Starting sonobuoy tests'
 
-    sonobuoy run \
+    local extraArgs=()
+    if [ -n "$CONFORMANCE_GINKGO_ARGS" ]; then
+        extraArgs+=(--plugin-env="e2e.E2E_EXTRA_GINKGO_ARGS=$CONFORMANCE_GINKGO_ARGS")
+    fi
+    date -u '+Conformance start: %FT%TZ'
+    local code=0
+    time timeout --foreground 30m sonobuoy run \
         --config=scripts/sonobuoy-config.json \
         --plugin-env=e2e.E2E_USE_GO_RUNNER=true \
         --kube-conformance-image-version=${KUBERNETES_VERSION} \
-        --wait=90 \
-        $@ &
-
-    local sonobuoyPID=$!
-    local code=0
-    time timeout --foreground 30m bash -c test-wait $sonobuoyPID || code=$?
+        --wait=1800 \
+        "${extraArgs[@]}" \
+        "$@" || code=$?
     echo "Sonobuoy finished with code $code"
-    retrieve-sonobuoy-logs
+    retrieve-sonobuoy-logs || code=1
+    date -u '+Conformance collected: %FT%TZ'
     return $code
 }
 export -f sonobuoy-test
