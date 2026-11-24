@@ -237,7 +237,7 @@ sonobuoy-test() {
         extraArgs+=(--plugin-env="e2e.E2E_EXTRA_GINKGO_ARGS=$CONFORMANCE_GINKGO_ARGS")
     fi
     if [ -n "$CONFORMANCE_IMAGE" ]; then
-        extraArgs+=(--kube-conformance-image="$CONFORMANCE_IMAGE")
+        extraArgs+=(--kubernetes-version=ignore --kube-conformance-image="$CONFORMANCE_IMAGE")
     else
         extraArgs+=(--kube-conformance-image-version="${KUBERNETES_VERSION}")
     fi
