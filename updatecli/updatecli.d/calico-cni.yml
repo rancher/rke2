@@ -24,6 +24,46 @@ sources:
       versionfilter:
         kind: "regex"
         pattern: ^v?\d+\.\d+\.\d+$
+  calicoPrimeOperator:
+    name: "Get Calico Prime operator image tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-calico {{ source "calico" }} .global.prime.operator.version
+  calicoPrimeCalico:
+    name: "Get Calico Prime calico image tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-calico {{ source "calico" }} .global.prime.imageTagOverrides.calico
+  calicoPrimeEnvoyGateway:
+    name: "Get Calico Prime envoy-gateway image tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-calico {{ source "calico" }} '.global.prime.imageTagOverrides."envoy-gateway"'
+  calicoPrimeEnvoyProxy:
+    name: "Get Calico Prime envoy-proxy image tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-calico {{ source "calico" }} '.global.prime.imageTagOverrides."envoy-proxy"'
+  calicoPrimeEnvoyRatelimit:
+    name: "Get Calico Prime envoy-ratelimit image tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-calico {{ source "calico" }} '.global.prime.imageTagOverrides."envoy-ratelimit"'
+  calicoPrimeNode:
+    name: "Get Calico Prime node image tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-calico {{ source "calico" }} .global.prime.imageTagOverrides.node
+  calicoPrimeThirdPartyCniPlugins:
+    name: "Get Calico Prime third-party-cni-plugins image tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-calico {{ source "calico" }} '.global.prime.imageTagOverrides."third-party-cni-plugins"'
+  calicoPrimeWhisker:
+    name: "Get Calico Prime whisker image tag"
+    kind: "shell"
+    spec:
+      command: bash ./updatecli/scripts/retrieve_image_tag.sh rke2-calico {{ source "calico" }} .global.prime.imageTagOverrides.whisker
   issue:
     name: "Get issue number"
     kind: "shell"
@@ -57,6 +97,78 @@ targets:
         spec:
           files:
             - charts/chart_versions.yaml
+  calicoPrimeOperatorImage:
+    name: 'Bump Calico Prime operator image to {{ source "calicoPrimeOperator" }}'
+    kind: "file"
+    scmid: "rke2"
+    sourceid: calicoPrimeOperator
+    spec:
+      file: scripts/build-images
+      matchpattern: 'hardened-calico-operator:.*'
+      replacepattern: 'hardened-calico-operator:{{ source "calicoPrimeOperator" }}'
+  calicoPrimeCalicoImage:
+    name: 'Bump Calico Prime calico image to {{ source "calicoPrimeCalico" }}'
+    kind: "file"
+    scmid: "rke2"
+    sourceid: calicoPrimeCalico
+    spec:
+      file: scripts/build-images
+      matchpattern: 'hardened-calico-calico:.*'
+      replacepattern: 'hardened-calico-calico:{{ source "calicoPrimeCalico" }}'
+  calicoPrimeEnvoyGatewayImage:
+    name: 'Bump Calico Prime envoy-gateway image to {{ source "calicoPrimeEnvoyGateway" }}'
+    kind: "file"
+    scmid: "rke2"
+    sourceid: calicoPrimeEnvoyGateway
+    spec:
+      file: scripts/build-images
+      matchpattern: 'hardened-calico-envoy-gateway:.*'
+      replacepattern: 'hardened-calico-envoy-gateway:{{ source "calicoPrimeEnvoyGateway" }}'
+  calicoPrimeEnvoyProxyImage:
+    name: 'Bump Calico Prime envoy-proxy image to {{ source "calicoPrimeEnvoyProxy" }}'
+    kind: "file"
+    scmid: "rke2"
+    sourceid: calicoPrimeEnvoyProxy
+    spec:
+      file: scripts/build-images
+      matchpattern: 'hardened-calico-envoy-proxy:.*'
+      replacepattern: 'hardened-calico-envoy-proxy:{{ source "calicoPrimeEnvoyProxy" }}'
+  calicoPrimeEnvoyRatelimitImage:
+    name: 'Bump Calico Prime envoy-ratelimit image to {{ source "calicoPrimeEnvoyRatelimit" }}'
+    kind: "file"
+    scmid: "rke2"
+    sourceid: calicoPrimeEnvoyRatelimit
+    spec:
+      file: scripts/build-images
+      matchpattern: 'hardened-calico-envoy-ratelimit:.*'
+      replacepattern: 'hardened-calico-envoy-ratelimit:{{ source "calicoPrimeEnvoyRatelimit" }}'
+  calicoPrimeNodeImage:
+    name: 'Bump Calico Prime node image to {{ source "calicoPrimeNode" }}'
+    kind: "file"
+    scmid: "rke2"
+    sourceid: calicoPrimeNode
+    spec:
+      file: scripts/build-images
+      matchpattern: 'hardened-calico-node:.*'
+      replacepattern: 'hardened-calico-node:{{ source "calicoPrimeNode" }}'
+  calicoPrimeThirdPartyCniPluginsImage:
+    name: 'Bump Calico Prime third-party-cni-plugins image to {{ source "calicoPrimeThirdPartyCniPlugins" }}'
+    kind: "file"
+    scmid: "rke2"
+    sourceid: calicoPrimeThirdPartyCniPlugins
+    spec:
+      file: scripts/build-images
+      matchpattern: 'hardened-calico-third-party-cni-plugins:.*'
+      replacepattern: 'hardened-calico-third-party-cni-plugins:{{ source "calicoPrimeThirdPartyCniPlugins" }}'
+  calicoPrimeWhiskerImage:
+    name: 'Bump Calico Prime whisker image to {{ source "calicoPrimeWhisker" }}'
+    kind: "file"
+    scmid: "rke2"
+    sourceid: calicoPrimeWhisker
+    spec:
+      file: scripts/build-images
+      matchpattern: 'hardened-calico-whisker:.*'
+      replacepattern: 'hardened-calico-whisker:{{ source "calicoPrimeWhisker" }}'
 
 actions:
   github:
