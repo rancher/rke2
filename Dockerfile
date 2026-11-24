@@ -3,7 +3,7 @@ ARG KUBERNETES_VERSION=dev
 # Base image for common build tools
 FROM rancher/hardened-build-base:v1.26.11b1 AS base
 ARG BUILDARCH
-ENV ARCH $BUILDARCH
+ENV ARCH=$BUILDARCH
 RUN set -x && \
     apk --no-cache add -u \
     bash \
@@ -33,7 +33,7 @@ RUN zypper install -y systemd-rpm-macros
 # Build environment
 FROM base AS build-env
 ARG BUILDARCH
-ENV ARCH $BUILDARCH
+ENV ARCH=$BUILDARCH
 RUN if [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "arm64" ]; then \
         VERSION=0.56.10 OS=linux && \
         if [ "${ARCH}" = "amd64" ]; then \
