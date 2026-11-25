@@ -91,11 +91,17 @@ jobs:
   build-arm64:
     runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu24-full-arm64,hdd=64
     steps:
+    # RunsOn local-SSD instances overlay /home/runner, which breaks BuildKit's overlay mounts.
+    - name: Prepare Docker runtime directory
+      run: |
+        sudo install -d -m 0755 -o "$(id -u)" -g "$(id -g)" /opt/rke2-docker
+        df -T "$HOME" /opt/rke2-docker
     - name: Set up Docker
       uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5.7.0
       with:
         version: type=image,tag=29
         daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        runtime-basedir: /opt/rke2-docker
         set-host: true
     - name: Set up Containerd
       run: |
