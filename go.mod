@@ -69,7 +69,8 @@ require (
 	github.com/aws/aws-sdk-go v1.55.6
 	github.com/containerd/containerd/v2 v2.4.2
 	github.com/containernetworking/plugins v1.10.0
-	github.com/google/go-containerregistry v0.20.3
+	github.com/distribution/reference v0.6.0
+	github.com/google/go-containerregistry v0.20.6
 	github.com/iamacarpet/go-win64api v0.0.0-20240507095429-873e84e85847
 	github.com/k3s-io/helm-controller v0.17.11
 	github.com/k3s-io/k3s v1.35.11-0.20261125213253-1d2e1e229fa6 // release-1.35
@@ -159,7 +160,6 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.1 // indirect
-	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/cli v29.2.0+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/docker v28.3.3+incompatible // indirect
