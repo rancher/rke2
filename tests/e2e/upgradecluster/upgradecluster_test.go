@@ -12,8 +12,8 @@ import (
 	"github.com/rancher/rke2/tests/e2e"
 )
 
-// Valid nodeOS: bento/ubuntu-24.04, opensuse/Leap-15.6.x86_64
-var nodeOS = flag.String("nodeOS", "bento/ubuntu-24.04", "VM operating system")
+// Valid nodeOS: bento/ubuntu-26.04, opensuse/Leap-15.6.x86_64
+var nodeOS = flag.String("nodeOS", "bento/ubuntu-26.04", "VM operating system")
 var serverCount = flag.Int("serverCount", 3, "number of server nodes")
 var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
@@ -174,10 +174,11 @@ var _ = Describe("Verify Upgrade", Ordered, func() {
 				return e2e.RunCommand(cmd)
 			}, "420s", "2s").Should(ContainSubstring("dnsutils"))
 
-			cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default"
-			Eventually(func() (string, error) {
-				return e2e.RunCommand(cmd)
-			}, "420s", "2s").Should(ContainSubstring("kubernetes.default.svc.cluster.local"))
+			cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec dnsutils -- /agnhost connect --timeout=5s kubernetes.default:443"
+			Eventually(func() error {
+				_, err := e2e.RunCommand(cmd)
+				return err
+			}, "120s", "2s").Should(Succeed())
 		})
 
 		It("Verifies Local Path Provisioner storage ", func() {
@@ -325,10 +326,11 @@ var _ = Describe("Verify Upgrade", Ordered, func() {
 			}, "420s", "1s").Should(Succeed())
 		})
 		It("After upgrade verifies dns access", func() {
-			Eventually(func() (string, error) {
-				cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default"
-				return e2e.RunCommand(cmd)
-			}, "180s", "2s").Should((ContainSubstring("kubernetes.default.svc.cluster.local")))
+			cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec dnsutils -- /agnhost connect --timeout=5s kubernetes.default:443"
+			Eventually(func() error {
+				_, err := e2e.RunCommand(cmd)
+				return err
+			}, "180s", "2s").Should(Succeed())
 		})
 
 		It("After upgrade verify Local Path Provisioner storage ", func() {

@@ -13,8 +13,8 @@ import (
 	"github.com/rancher/rke2/tests/e2e"
 )
 
-// Valid nodeOS: bento/ubuntu-24.04, opensuse/Leap-15.6.x86_64
-var nodeOS = flag.String("nodeOS", "bento/ubuntu-24.04", "VM operating system")
+// Valid nodeOS: bento/ubuntu-26.04, opensuse/Leap-15.6.x86_64
+var nodeOS = flag.String("nodeOS", "bento/ubuntu-26.04", "VM operating system")
 var etcdCount = flag.Int("etcdCount", 1, "number of server nodes only deploying etcd")
 var controlPlaneCount = flag.Int("controlPlaneCount", 1, "number of server nodes acting as control plane")
 var agentCount = flag.Int("agentCount", 1, "number of agent nodes")
@@ -196,10 +196,11 @@ var _ = Describe("Verify Create", Ordered, func() {
 				return e2e.RunCommand(cmd)
 			}, "420s", "2s").Should(ContainSubstring("dnsutils"), "failed cmd: "+cmd)
 
-			cmd = "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default"
-			Eventually(func() (string, error) {
-				return e2e.RunCommand(cmd)
-			}, "420s", "2s").Should(ContainSubstring("kubernetes.default.svc.cluster.local"), "failed cmd: "+cmd)
+			cmd = "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec dnsutils -- /agnhost connect --timeout=5s kubernetes.default:443"
+			Eventually(func() error {
+				_, err := e2e.RunCommand(cmd)
+				return err
+			}, "120s", "2s").Should(Succeed())
 		})
 	})
 })

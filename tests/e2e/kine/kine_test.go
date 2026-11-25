@@ -12,8 +12,8 @@ import (
 	"github.com/rancher/rke2/tests/e2e"
 )
 
-// Valid nodeOS: bento/ubuntu-24.04, opensuse/Leap-15.6.x86_64
-var nodeOS = flag.String("nodeOS", "bento/ubuntu-24.04", "VM operating system")
+// Valid nodeOS: bento/ubuntu-26.04, opensuse/Leap-15.6.x86_64
+var nodeOS = flag.String("nodeOS", "bento/ubuntu-26.04", "VM operating system")
 var serverCount = flag.Int("serverCount", 1, "number of server nodes")
 var agentCount = flag.Int("agentCount", 0, "number of agent nodes")
 var ci = flag.Bool("ci", false, "running on CI")
@@ -161,10 +161,11 @@ var _ = Describe("Verify Basic Cluster Creation with Kine", Ordered, func() {
 	It("Verifies dns access", func() {
 		_, err := tc.DeployWorkload("dnsutils.yaml")
 		Expect(err).NotTo(HaveOccurred())
-		cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec -i -t dnsutils -- nslookup kubernetes.default"
-		Eventually(func() (string, error) {
-			return e2e.RunCommand(cmd)
-		}, "120s", "2s").Should(ContainSubstring("kubernetes.default.svc.cluster.local"))
+		cmd := "kubectl --kubeconfig=" + tc.KubeconfigFile + " exec dnsutils -- /agnhost connect --timeout=5s kubernetes.default:443"
+		Eventually(func() error {
+			_, err := e2e.RunCommand(cmd)
+			return err
+		}, "120s", "2s").Should(Succeed())
 	})
 
 	It("Verify Local Path Provisioner storage ", func() {
