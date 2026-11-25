@@ -21,6 +21,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/distribution/reference"
 	"github.com/k3s-io/k3s/pkg/agent/containerd"
 	"github.com/k3s-io/k3s/pkg/agent/cri"
 	"github.com/k3s-io/k3s/pkg/agent/cridockerd"
@@ -115,7 +116,11 @@ func (s *StaticPodConfig) Bootstrap(ctx context.Context, nodeConfig *daemonconfi
 	if err != nil {
 		return err
 	}
-	nodeConfig.AgentConfig.PauseImage = pauseImage.Name()
+	normalized, err := reference.ParseDockerRef(pauseImage.Name())
+	if err != nil {
+		return errors.WithMessage(err, "failed to normalize pause image reference")
+	}
+	nodeConfig.AgentConfig.PauseImage = normalized.String()
 
 	if binDir, err := bootstrap.BinDir(s.Resolver, cfg); err != nil {
 		return err

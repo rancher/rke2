@@ -7,6 +7,7 @@ import (
 
 	"github.com/k3s-io/k3s/pkg/cli/cmds"
 	"github.com/k3s-io/k3s/pkg/util/errors"
+	"github.com/rancher/rke2/pkg/images"
 	"github.com/urfave/cli/v2"
 	"google.golang.org/grpc/grpclog"
 )
@@ -32,6 +33,7 @@ func Set(_ *cli.Context, dataDir string) error {
 	cmds.ServerConfig.ExtraAPIArgs = PrependToStringSlice(cmds.ServerConfig.ExtraAPIArgs, []string{
 		"enable-admission-plugins=NodeRestriction",
 	})
+	cmds.AgentConfig.PauseImage = images.DefaultPauseImage
 	cmds.AgentConfig.ExtraKubeletArgs = PrependToStringSlice(cmds.AgentConfig.ExtraKubeletArgs, []string{
 		"stderrthreshold=FATAL",
 		"log-file-max-size=50",
