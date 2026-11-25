@@ -47,12 +47,12 @@ jobs:
     env:
       GOCOVERDIR: /tmp/rke2cov
     steps:
-    - name: Configure Docker
-      uses: ./.github/actions/config-docker
     - name: Checkout
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         fetch-depth: 1
+    - name: Configure Docker
+      uses: ./.github/actions/config-docker
     - name: Install Go
       uses: ./.github/actions/setup-go
     - name: Setup Build Directories
@@ -96,11 +96,11 @@ jobs:
       matrix:
         dtest: [basics, flannel, profile, ingress-nginx, ing_migration, gatewayapi, prime, upgrade]
     steps:
-      - name: Configure Docker
-        uses: ./.github/actions/config-docker
       - name: "Checkout"
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with: {fetch-depth: 1}
+      - name: Configure Docker
+        uses: ./.github/actions/config-docker
       - name: Install Go
         uses: ./.github/actions/setup-go
       - name: Download RKE2 Binary and Runtime Image
@@ -162,13 +162,13 @@ jobs:
       matrix:
         dtest: [dualstack, secretsencryption, splitserver]
     steps:
+      - name: "Checkout"
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with: {fetch-depth: 1}
       - name: Configure Docker
         uses: ./.github/actions/config-docker
         with:
           hosted: true
-      - name: "Checkout"
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with: {fetch-depth: 1}
       - name: Check Memory
         run: lsmem
       - name: Install Go

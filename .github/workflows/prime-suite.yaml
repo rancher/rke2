@@ -32,12 +32,12 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - name: Configure Docker
-        uses: ./.github/actions/config-docker
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 1
+      - name: Configure Docker
+        uses: ./.github/actions/config-docker
       - name: Install Go
         uses: ./.github/actions/setup-go
       - name: Download RKE2 Binary and Runtime Image

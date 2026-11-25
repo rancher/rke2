@@ -20,14 +20,13 @@ jobs:
   test:
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=256
     steps:
+    - name: Checkout code
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - name: Configure Docker
       uses: ./.github/actions/config-docker
       with:
         hosted: true
         setup-buildx: true
-
-    - name: Checkout code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
     - name: Build
       run: |
@@ -61,14 +60,13 @@ jobs:
           - { arch: amd64, runner-arch: x64 }
           - { arch: arm64, runner-arch: arm64 }
     steps:
+    - name: Checkout code
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - name: Configure Docker
       uses: ./.github/actions/config-docker
       with:
         hosted: true
         setup-buildx: true
-
-    - name: Checkout code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
     - name: Validate Release
       run: |
@@ -158,13 +156,12 @@ jobs:
           - { arch: arm64, runner-arch: arm64, make-target: publish-image-runtime,         destination: staging  }
           - { arch: arm64, runner-arch: arm64, make-target: publish-image-runtime,         destination: prime    }
     steps:
+    - name: Checkout code
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - name: Configure Docker
       uses: ./.github/actions/config-docker
       with:
         hosted: true
-
-    - name: Checkout code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@4c8f4e741954651c502bb7739c46ae1bad26b44d # main
@@ -251,13 +248,12 @@ jobs:
           - { destination: staging  }
           - { destination: prime    }
     steps:
+    - name: Checkout code
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - name: Configure Docker
       uses: ./.github/actions/config-docker
       with:
         hosted: true
-
-    - name: Checkout code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
     - name: "Read secrets"
       uses: rancher-eio/read-vault-secrets@4c8f4e741954651c502bb7739c46ae1bad26b44d # main
@@ -334,13 +330,12 @@ jobs:
     needs: [manifest]
     runs-on: runs-on,runner=8cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
     steps:
+    - name: Checkout code
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
     - name: Configure Docker
       uses: ./.github/actions/config-docker
       with:
         hosted: true
-
-    - name: Checkout code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
     - name: Download Artifacts
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -432,11 +427,10 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - name: Configure Docker
-        uses: ./.github/actions/config-docker
-
       - name: Checkout code
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Configure Docker
+        uses: ./.github/actions/config-docker
 
       - name: Install crane
         uses: ./.github/actions/install-crane
@@ -524,13 +518,12 @@ jobs:
       TAG: ${{ github.ref_name }}
       GH_TOKEN: ${{ github.token }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Configure Docker
         uses: ./.github/actions/config-docker
         with:
           hosted: true
-
-      - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: setup ecm-distro-tools
         uses: rancher/ecm-distro-tools@b8127344173a5750da03068316ee40c547652c15 # v0.78.3
