@@ -5,7 +5,7 @@ RUN apk --no-cache add \
     unzip
 
 # Build environment
-FROM rancher/hardened-build-base:v1.26.10b1 AS build-env
+FROM rancher/hardened-build-base:v1.26.11b1 AS build-env
 ARG BUILDARCH
 ENV ARCH $BUILDARCH
 RUN apk update
@@ -24,10 +24,10 @@ RUN set -x && \
     file \
     bash \
     py-pip
-RUN KUBECTL_VERSION=v1.35.10 && \
+RUN KUBECTL_VERSION=v1.35.11 && \
     case "${ARCH}" in \
-        amd64) KUBECTL_SHA256="c49a28f1f4efc4d475ed05f47f2ce8e563bf7bef69ed77fe1b924ea6d83b6327" ;; \
-        arm64) KUBECTL_SHA256="c49a28f1f4efc4d475ed05f47f2ce8e563bf7bef69ed77fe1b924ea6d83b6327" ;; \
+        amd64) KUBECTL_SHA256="eeddea383a302f9a633a292af1d886054c7cf152fb407f827f12bfe286dc46d6" ;; \
+        arm64) KUBECTL_SHA256="eeddea383a302f9a633a292af1d886054c7cf152fb407f827f12bfe286dc46d6" ;; \
         *) echo "Unsupported architecture for kubectl: ${ARCH}" && exit 1 ;; \
     esac && \
     cd /tmp && \
@@ -80,10 +80,10 @@ RUN curl -fsSLO https://github.com/containernetworking/plugins/releases/download
     echo "df2664a53c722e29257136ef25151d4237f0e948c2a02a2e45bd6b5b225814b0  cni-plugins-windows-amd64-${CNI_PLUGIN_VERSION}.tgz" | sha256sum -c -
 
 RUN case "${KUBERNETES_VERSION}" in \
-        v1.35.10) \
-            KUBECTL_SHA256="c546d84d0b5b6c8a796ce328b9493f7a9260a67f775fe16425aa7b1ab10531b4" && \
-            KUBELET_SHA256="c7bd7109f94b1ac956ed65f38f8ab29a520fb3e8d9477235f29ea35fb4647465" && \
-            KUBE_PROXY_SHA256="d71e89f7357629253c5855deb7993a7127464d265ae33f107452e815575f8b92"; \
+        v1.35.11) \
+            KUBECTL_SHA256="5716da856ab16cf7d14a3b3b05582d531e8a324c3f4a21f844fdeb8bfd80b77f" && \
+            KUBELET_SHA256="c57c2caeb8e6be682d1a8abc0c2aced98a29f0688f5649e7fa0ffc92eb999999" && \
+            KUBE_PROXY_SHA256="94b316258563a611784941291a2084d012a2a38047e48ea3ea63876602e430a4"; \
             ;; \
         *) echo "Unsupported KUBERNETES_VERSION for pinned Windows binaries: ${KUBERNETES_VERSION}" && exit 1 ;; \
     esac && \
