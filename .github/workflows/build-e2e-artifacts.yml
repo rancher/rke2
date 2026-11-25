@@ -19,13 +19,11 @@ jobs:
       contents: read
       id-token: write
     steps:
-    - name: Set up Docker
+    - name: Configure Docker
       if: inputs.setup-docker
-      uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5.7.0
+      uses: ./.github/actions/config-docker
       with:
-        version: type=image,tag=29
-        daemon-config: '{"features":{"containerd-snapshotter":true}}'
-        set-host: true
+        hosted: ${{ github.repository == 'rancher/rke2' }}
     - name: Setup Buildx
       uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
     - name: Checkout

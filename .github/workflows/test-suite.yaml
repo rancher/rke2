@@ -47,15 +47,8 @@ jobs:
     env:
       GOCOVERDIR: /tmp/rke2cov
     steps:
-    - name: Set up Docker
-      uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5.7.0
-      with:
-        version: type=image,tag=29
-        daemon-config: '{"features":{"containerd-snapshotter":true}}'
-        set-host: true
-    - name: Set up Containerd
-      run: |
-        echo CONTAINERD_ADDRESS=$(docker info -f '{{.Containerd.Address}}') >> "$GITHUB_ENV"
+    - name: Configure Docker
+      uses: ./.github/actions/config-docker
     - name: Checkout
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
@@ -103,15 +96,8 @@ jobs:
       matrix:
         dtest: [basics, flannel, profile, ingress-nginx, ing_migration, gatewayapi, prime, upgrade]
     steps:
-      - name: Set up Docker
-        uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5.7.0
-        with:
-          version: type=image,tag=29
-          daemon-config: '{"features":{"containerd-snapshotter":true}}'
-          set-host: true
-      - name: Set up Containerd
-        run: |
-          echo CONTAINERD_ADDRESS=$(docker info -f '{{.Containerd.Address}}') >> "$GITHUB_ENV"
+      - name: Configure Docker
+        uses: ./.github/actions/config-docker
       - name: "Checkout"
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with: {fetch-depth: 1}
@@ -176,15 +162,10 @@ jobs:
       matrix:
         dtest: [dualstack, secretsencryption, splitserver]
     steps:
-      - name: Set up Docker
-        uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5.7.0
+      - name: Configure Docker
+        uses: ./.github/actions/config-docker
         with:
-          version: type=image,tag=29
-          daemon-config: '{"features":{"containerd-snapshotter":true}}'
-          set-host: true
-      - name: Set up Containerd
-        run: |
-          echo CONTAINERD_ADDRESS=$(docker info -f '{{.Containerd.Address}}') >> "$GITHUB_ENV"
+          hosted: true
       - name: "Checkout"
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with: {fetch-depth: 1}
