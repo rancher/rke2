@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/Microsoft/hcsshim/hcn"
+	"github.com/distribution/reference"
 	"github.com/k3s-io/k3s/pkg/agent/containerd"
 	"github.com/k3s-io/k3s/pkg/agent/cri"
 	"github.com/k3s-io/k3s/pkg/agent/cridockerd"
@@ -25,6 +26,7 @@ import (
 	"github.com/k3s-io/k3s/pkg/daemons/executor"
 	"github.com/k3s-io/k3s/pkg/signals"
 	"github.com/k3s-io/k3s/pkg/util"
+	"github.com/k3s-io/k3s/pkg/util/errors"
 	"github.com/rancher/rke2/pkg/bootstrap"
 	"github.com/rancher/rke2/pkg/images"
 	"github.com/rancher/rke2/pkg/logging"
@@ -112,7 +114,11 @@ func (p *PEBinaryConfig) Bootstrap(ctx context.Context, nodeConfig *config.Node,
 	if err != nil {
 		return err
 	}
-	nodeConfig.AgentConfig.PauseImage = pauseImage.Name()
+	normalized, err := reference.ParseDockerRef(pauseImage.Name())
+	if err != nil {
+		return errors.WithMessage(err, "failed to normalize pause image reference")
+	}
+	nodeConfig.AgentConfig.PauseImage = normalized.String()
 
 	setWindowsAgentSpecificSettings(p.DataDir, nodeConfig)
 
