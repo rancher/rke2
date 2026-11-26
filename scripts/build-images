@@ -93,7 +93,7 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-calico.txt
     ${REGISTRY}/rancher/hardened-calico-envoy-proxy:v3.33.1-build20261125
     ${REGISTRY}/rancher/hardened-calico-envoy-ratelimit:v3.33.1-build20261118
     ${REGISTRY}/rancher/hardened-calico-third-party-cni-plugins:v3.33.1-build20261125
-    ${REGISTRY}/rancher/hardened-calico-whisker:v3.33.1-build20261118
+    ${REGISTRY}/rancher/hardened-calico-whisker:v3.33.1-build20261125
 EOF
 else
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-calico.txt
