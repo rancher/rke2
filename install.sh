@@ -517,10 +517,35 @@ do_install_rpm() {
             ${transactional_update_run} mkdir -p /var/lib/rpm-state
             # configure infix and rpm_installer
             rpm_site_infix=microos
-            if [ "${VARIANT_ID:-}" = sle-micro ] || [ "${ID:-}" = sle-micro ] || [ "${ID:-}" = sl-micro ] || [ "${ID:-}" = sles ]; then
-                rpm_site_infix=slemicro
-                package_installer=zypper
-            fi
+            case "${ID:-}" in
+                sle-micro|sle-micro-rancher)
+                    rpm_site_infix=slemicro
+                    ;;
+                sles)
+                    rpm_site_infix=slemicro
+                    if [ "${VERSION_ID%%.*}" -ge 16 ] 2>/dev/null; then
+                        rpm_site_infix=sle
+                    fi
+                    ;;
+                sl-micro)
+                    rpm_site_infix=sle
+                    ;;
+                opensuse-leap)
+                    # Leap 16 uses the sle packages, which are built on Leap 16
+                    if [ "${VERSION_ID%%.*}" -ge 16 ] 2>/dev/null; then
+                        rpm_site_infix=sle
+                    fi
+                    ;;
+            esac
+            case "${VARIANT_ID:-}" in
+                sle-micro)
+                    rpm_site_infix=slemicro
+                    ;;
+                transactional)
+                    # SL Micro 6.2 reports the same ID=sles as SLES 16
+                    rpm_site_infix=sle
+                    ;;
+            esac
             rpm_installer="zypper --gpg-auto-import-keys"
             if [ "${TRANSACTIONAL_UPDATE=false}" != "true" ] && [ -x /usr/sbin/transactional-update ]; then
                 rpm_installer="transactional-update --no-selfupdate -d run ${rpm_installer}"
