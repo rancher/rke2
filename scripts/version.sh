@@ -33,7 +33,7 @@ REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code;
 PLATFORM=${GOOS}-${GOARCH}
 RELEASE=${PROG}.${PLATFORM}
 # hardcode versions unless set specifically
-ETCD_IMAGE_TAG=${ETCD_IMAGE_TAG:-v3.7.1-k3s3-build20261119}
+ETCD_IMAGE_TAG=${ETCD_IMAGE_TAG:-v3.7.1-k3s3-build20261126}
 KUBERNETES_VERSION=${KUBERNETES_VERSION:-v1.37.3}
 KUBERNETES_IMAGE_TAG=${KUBERNETES_IMAGE_TAG:-v1.37.3-rke2r1-build20261125}
 PAUSE_VERSION=${PAUSE_VERSION:-3.10.2}
