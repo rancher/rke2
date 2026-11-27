@@ -36,7 +36,7 @@ charts:
     bootstrap: false
     takeOwnership: true
     package: rke2-multus-crd
-  - version: 0.28.1101
+  - version: 0.28.1102
     filename: /charts/rke2-flannel.yaml
     bootstrap: true
   - version: 1.16.600
