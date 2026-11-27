@@ -180,7 +180,7 @@ LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-runtim
 LABEL org.opencontainers.image.source="https://github.com/rancher/rke2"
 COPY --from=runtime-collect / /
 
-FROM opensuse/leap:16.0 AS test
+FROM opensuse/leap:16.1 AS test
 ARG TARGETARCH
 VOLUME /var/lib/rancher/rke2
 VOLUME /var/lib/kubelet
