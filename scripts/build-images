@@ -53,9 +53,9 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-traefik.txt
 EOF
 
 xargs -n1 -t $PULL_CMD_CORE << EOF > $BUILD_DIR/images-canal.txt
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.10.0-build20261110
-    ${REGISTRY}/rancher/hardened-calico:v3.33.1-build20261120
-    ${REGISTRY}/rancher/hardened-flannel:v0.28.11-build20261120
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.10.0-build20261126
+    ${REGISTRY}/rancher/hardened-calico:v3.33.1-build20261125
+    ${REGISTRY}/rancher/hardened-flannel:v0.28.11-build20261126
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-cilium.txt
@@ -69,7 +69,7 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-cilium.txt
     ${REGISTRY}/rancher/mirrored-cilium-operator-aws:v1.20.5
     ${REGISTRY}/rancher/mirrored-cilium-operator-azure:v1.20.5
     ${REGISTRY}/rancher/mirrored-cilium-operator-generic:v1.20.5
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.10.0-build20261120
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.10.0-build20261126
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-calico.txt
@@ -122,11 +122,11 @@ EOF
 fi
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-multus.txt
-    ${REGISTRY}/rancher/hardened-multus-cni:v4.3.2-build20261110
-    ${REGISTRY}/rancher/hardened-multus-thick:v4.3.2-build20261110
+    ${REGISTRY}/rancher/hardened-multus-cni:v4.3.2-build20261126
+    ${REGISTRY}/rancher/hardened-multus-thick:v4.3.2-build20261126
     ${REGISTRY}/rancher/hardened-multus-dynamic-networks-controller:v0.3.9-build20261120
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.10.0-build20261120
-    ${REGISTRY}/rancher/hardened-whereabouts:v0.9.4-build20261119
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.10.0-build20261126
+    ${REGISTRY}/rancher/hardened-whereabouts:v0.9.4-build20261127
     ${REGISTRY}/rancher/mirrored-library-busybox:1.38.0
 EOF
 
@@ -142,8 +142,8 @@ xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-harvester.txt
 EOF
 
 xargs -n1 -t $PULL_CMD << EOF > $BUILD_DIR/images-flannel.txt
-    ${REGISTRY}/rancher/hardened-flannel:v0.28.11-build20261120
-    ${REGISTRY}/rancher/hardened-cni-plugins:v1.10.0-build20261120
+    ${REGISTRY}/rancher/hardened-flannel:v0.28.11-build20261126
+    ${REGISTRY}/rancher/hardened-cni-plugins:v1.10.0-build20261126
 EOF
 
 # Continue to provide a legacy airgap archive set with the default CNI images
