@@ -54,12 +54,13 @@ charts:
   - version: 4.15.000
     filename: /charts/rke2-ovirt-csi-driver.yaml
     bootstrap: true
-  - version: 5.4.001
+  - version: 5.4.4
     filename: /charts/rke2-snapshot-controller.yaml
     bootstrap: false
-  - version: 5.4.001
+  - version: 5.4.4
     filename: /charts/rke2-snapshot-controller-crd.yaml
     bootstrap: false
+    package: rke2-snapshot-controller-crd
   - version: 0.0.0 # this empty chart addon can be removed in v1.34, after we have shipped two minor versions that have never included it.
     filename: /charts/rke2-snapshot-validation-webhook.yaml
     bootstrap: false
