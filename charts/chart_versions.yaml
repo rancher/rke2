@@ -12,20 +12,20 @@ charts:
     filename: /charts/rke2-calico-crd.yaml
     bootstrap: true
     package: rke2-calico-crd
-  - version: 1.50.802
+  - version: 1.50.804
     filename: /charts/rke2-coredns.yaml
     bootstrap: true
   - version: 4.15.121
     filename: /charts/rke2-ingress-nginx.yaml
     bootstrap: false
-  - version: 40.1.28
+  - version: 40.1.29
     filename: /charts/rke2-traefik.yaml
     bootstrap: false
-  - version: 40.1.28
+  - version: 40.1.29
     filename: /charts/rke2-traefik-crd.yaml
     bootstrap: false
     package: rke2-traefik-crd
-  - version: 3.14.7
+  - version: 3.14.9
     filename: /charts/rke2-metrics-server.yaml
     bootstrap: false
   - version: 4.3.204+v1.3436
