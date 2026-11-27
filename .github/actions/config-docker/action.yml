@@ -1,0 +1,35 @@
+name: Configure Docker
+description: Configures Docker for with a specific runtime directory and daemon features.
+inputs:
+  hosted:
+    description: Use the dedicated Docker runtime directory for hosted runners
+    required: false
+    default: false
+  setup-buildx:
+    description: Set up Docker Buildx
+    required: false
+    default: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Prepare Docker runtime directory
+      if: ${{ inputs.hosted == 'true' }}
+      shell: bash
+      run: |
+        sudo install -d -m 0755 -o "$(id -u)" -g "$(id -g)" /opt/rke2-docker
+        df -T "$HOME" /opt/rke2-docker
+    - name: Set up Docker
+      uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5.7.0
+      with:
+        version: type=image,tag=29
+        daemon-config: '{"features":{"containerd-snapshotter":true}}'
+        runtime-basedir: ${{ inputs.hosted == 'true' && '/opt/rke2-docker' || '' }}
+        set-host: true
+    - name: Set up Containerd
+      shell: bash
+      run: |
+        echo "CONTAINERD_ADDRESS=$(docker info -f '{{.Containerd.Address}}')" >> "$GITHUB_ENV"
+    - name: Setup Buildx
+      if: ${{ inputs.setup-buildx == 'true' }}
+      uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
