@@ -152,7 +152,7 @@ RUN rm -vf /charts/*.sh /charts/*.md /charts/chart_versions.yaml
 # If you bump any of these to a new minor, don't forget to bump the updateCLI regex in hardened-runtime-images.yml
 FROM rancher/hardened-containerd:v2.3.7-k3s1-build20261126 AS containerd
 FROM rancher/hardened-crictl:v1.37.0-build20261110 AS crictl
-FROM rancher/hardened-runc:v1.4.4-build20261117 AS runc
+FROM rancher/hardened-runc:v1.5.3-build20261117 AS runc
 FROM rancher/hardened-kubernetes:v1.37.3-rke2r1-build20261125 AS kubernetes
 
 FROM scratch AS runtime-collect
