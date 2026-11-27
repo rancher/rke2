@@ -13,19 +13,13 @@ jobs:
   build-amd64:
     runs-on: runs-on,runner=16cpu-linux-x64,run-id=${{ github.run_id }},image=ubuntu24-full-x64,hdd=64
     steps:
-    - name: Set up Docker
-      uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5.7.0
-      with:
-        version: type=image,tag=29
-        daemon-config: '{"features":{"containerd-snapshotter":true}}'
-        set-host: true
-    - name: Setup Buildx
-      uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
-    - name: Set up Containerd
-      run: |
-        echo CONTAINERD_ADDRESS=$(docker info -f '{{.Containerd.Address}}') >> "$GITHUB_ENV"
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - name: Configure Docker
+      uses: ./.github/actions/config-docker
+      with:
+        hosted: true
+        setup-buildx: true
     - name: Build
       run: make ci
       env:
@@ -48,17 +42,12 @@ jobs:
       matrix:
         suite: [parallel, serial]
     steps:
-    - name: Set up Docker
-      uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5.7.0
-      with:
-        version: type=image,tag=29
-        daemon-config: '{"features":{"containerd-snapshotter":true}}'
-        set-host: true
-    - name: Set up Containerd
-      run: |
-        echo CONTAINERD_ADDRESS=$(docker info -f '{{.Containerd.Address}}') >> "$GITHUB_ENV"
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - name: Configure Docker
+      uses: ./.github/actions/config-docker
+      with:
+        hosted: true
     - name: Download Build Artifacts
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       with:
@@ -89,17 +78,12 @@ jobs:
   build-arm64:
     runs-on: runs-on,runner=8cpu-linux-arm64,run-id=${{ github.run_id }},image=ubuntu24-full-arm64,hdd=64
     steps:
-    - name: Set up Docker
-      uses: docker/setup-docker-action@3f1ab1ab0e29231562e4db4ca600c1a49653bac6 # v5.7.0
-      with:
-        version: type=image,tag=29
-        daemon-config: '{"features":{"containerd-snapshotter":true}}'
-        set-host: true
-    - name: Set up Containerd
-      run: |
-        echo CONTAINERD_ADDRESS=$(docker info -f '{{.Containerd.Address}}') >> "$GITHUB_ENV"
     - name: Checkout code
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - name: Configure Docker
+      uses: ./.github/actions/config-docker
+      with:
+        hosted: true
     - name: Build
       run: |
         make ci
